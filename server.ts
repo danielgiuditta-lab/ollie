@@ -533,7 +533,7 @@ async function startServer() {
     try {
       const { chatId } = req.params;
       const sanitizedId = chatId.replace(/[^a-zA-Z0-9_\-]/g, "_");
-      const { projectName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles } = req.body;
+      const { projectName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles, members } = req.body;
 
       const payload = {
         chatId: sanitizedId,
@@ -544,6 +544,7 @@ async function startServer() {
         sandboxUrl: sandboxUrl || "",
         sandboxFiles: sandboxFiles || [],
         userEmail: userEmail || "",
+        members: members || [],
         updatedAt: new Date().toISOString()
       };
 

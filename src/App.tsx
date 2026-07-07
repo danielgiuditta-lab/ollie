@@ -578,7 +578,8 @@ export default function App() {
           activeSpaceId: folderId,
           sandboxUrl: activeSandboxUrl || sandboxUrl || '',
           sandboxFiles: filesToSave,
-          userEmail: userProfile?.email || ''
+          userEmail: userProfile?.email || '',
+          members: members
         })
       });
 
@@ -2152,7 +2153,9 @@ export default function App() {
             sandboxUrl: '',
             projectName: cleanFolderName,
             sandboxFiles: newSandboxFiles,
-            members: selectedPeople
+            members: selectedPeople,
+            userEmail: userProfile?.email || '',
+            activeSpaceId: spaceId
           })
         });
       } catch (saveChatErr) {
@@ -2352,7 +2355,9 @@ export default function App() {
             sandboxUrl: '',
             projectName: cleanFolderName,
             sandboxFiles: newSandboxFiles,
-            members: []
+            members: [],
+            userEmail: userProfile?.email || '',
+            activeSpaceId: spaceId
           })
         });
       } catch (saveChatErr) {
