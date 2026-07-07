@@ -719,7 +719,7 @@ async function startServer() {
         return res.status(401).json({ error: "No authorization header" });
       }
 
-      const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?fields=id,name,mimeType`, {
+      const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?fields=id,name,mimeType,size`, {
         headers: { Authorization: authHeader }
       });
       const meta = await metaRes.json();
@@ -731,7 +731,7 @@ async function startServer() {
       let filesToIngest = [];
 
       if (meta.mimeType === 'application/vnd.google-apps.folder') {
-         const childrenRes = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType)`, {
+         const childrenRes = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,size)`, {
            headers: { Authorization: authHeader }
          });
          const children = await childrenRes.json();
@@ -743,22 +743,52 @@ async function startServer() {
       }
 
       const ingestPromises = filesToIngest.map(async (file) => {
+        const mType = (file.mimeType || '').toLowerCase();
+        
+        // Identify if it's text/code/doc/sheet
+        const isGoogleDoc = mType === 'application/vnd.google-apps.document';
+        const isGoogleSheet = mType === 'application/vnd.google-apps.spreadsheet';
+        const isTextOrCode = mType.startsWith('text/') || 
+                             mType === 'application/json' || 
+                             mType === 'application/javascript' || 
+                             mType === 'application/x-javascript' ||
+                             isGoogleDoc || 
+                             isGoogleSheet;
+        
+        const sizeNum = file.size ? parseInt(file.size, 10) : 0;
+        const isTooLarge = sizeNum > 1000000; // 1MB limit
+        
+        if (!isTextOrCode || isTooLarge) {
+          // Do not fetch content. Return metadata placeholder.
+          return { 
+            id: file.id, 
+            filename: file.name, 
+            content: isTooLarge ? `[File is too large to display: ${(sizeNum / 1024 / 1024).toFixed(2)} MB]` : '', 
+            mimeType: file.mimeType 
+          };
+        }
+
         let downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
-        if (file.mimeType === 'application/vnd.google-apps.document') {
+        if (isGoogleDoc) {
           downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
-        } else if (file.mimeType === 'application/vnd.google-apps.spreadsheet') {
+        } else if (isGoogleSheet) {
           downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
         }
 
-        const contentRes = await fetch(downloadUrl, {
-           headers: { Authorization: authHeader }
-        });
-        if (contentRes.ok) {
-          const text = await contentRes.text();
-          return { id: file.id, filename: file.name, content: text, mimeType: file.mimeType };
-        } else {
-          console.warn(`Failed to download content for ${file.name}`);
-          return null;
+        try {
+          const contentRes = await fetch(downloadUrl, {
+            headers: { Authorization: authHeader }
+          });
+          if (contentRes.ok) {
+            const text = await contentRes.text();
+            return { id: file.id, filename: file.name, content: text, mimeType: file.mimeType };
+          } else {
+            console.warn(`Failed to download content for ${file.name}, status: ${contentRes.status}`);
+            return { id: file.id, filename: file.name, content: '', mimeType: file.mimeType };
+          }
+        } catch (dlErr) {
+          console.warn(`Error fetching content for ${file.name}:`, dlErr);
+          return { id: file.id, filename: file.name, content: '', mimeType: file.mimeType };
         }
       });
       const ingestedResults = await Promise.all(ingestPromises);
@@ -1023,54 +1053,11 @@ Ensure all IDs are unique. Keep tasks concise and actionable. Return ONLY the ra
         }
       }
 
-      // Download content for top 5 files to get context for Gemini
-      const filesToDownload = files.slice(0, 5);
-      let downloadedContents: { name: string, id: string, content: string, owners: any[] }[] = [];
-
-      if (filesToDownload.length > 0 && isValidAuth) {
-        const downloadedContentsRaw = await Promise.all(
-          filesToDownload.map(async (file) => {
-            let downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
-            const mType = (file.mimeType || '').toLowerCase();
-            
-            if (mType.includes('google-apps.document')) {
-              downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
-            } else if (mType.includes('google-apps.spreadsheet')) {
-              downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
-            } else if (mType.includes('google-apps.presentation')) {
-              return {
-                name: file.name,
-                id: file.id,
-                content: `Presentation: ${file.name}\nFile ID: ${file.id}\n(Google Slides metadata only)`,
-                owners: file.owners || []
-              };
-            }
-
-            try {
-              const contentRes = await fetch(downloadUrl, { headers: { Authorization: authHeader } });
-              if (contentRes.ok) {
-                let text = await contentRes.text();
-                const limit = 5000;
-                if (text.length > limit) {
-                  text = text.substring(0, limit) + "\n\n... [TRUNCATED] ...";
-                }
-                return { name: file.name, id: file.id, content: text, owners: file.owners || [] };
-              } else {
-                return { name: file.name, id: file.id, content: `[Error loading content, status: ${contentRes.status}]`, owners: file.owners || [] };
-              }
-            } catch (dlErr) {
-              return { name: file.name, id: file.id, content: `[Error downloading file content: ${String(dlErr)}]`, owners: file.owners || [] };
-            }
-          })
-        );
-        downloadedContents = downloadedContentsRaw.filter(Boolean) as any[];
-      }
-
-      // Extract all owners from fetched files
+      // Extract all owners from fetched files metadata directly
       const allExtractedOwners: any[] = [];
-      downloadedContents.forEach(d => {
-        if (d.owners) {
-          d.owners.forEach((o: any) => {
+      files.forEach(f => {
+        if (f.owners) {
+          f.owners.forEach((o: any) => {
             if (o.emailAddress && !allExtractedOwners.some(x => x.email === o.emailAddress)) {
               allExtractedOwners.push({
                 name: o.displayName || o.emailAddress.split('@')[0],
@@ -1090,14 +1077,14 @@ Ensure all IDs are unique. Keep tasks concise and actionable. Return ONLY the ra
         }
       });
 
-      // Format context for Gemini
-      const filesContextBlock = downloadedContents.length > 0
-        ? downloadedContents.map(d => `--- FILE: ${d.name} (ID: ${d.id})\nOwners: ${JSON.stringify(d.owners)}\nContent: ${d.content}\n--- END ---`).join('\n\n')
-        : `No relevant Google Drive file contents were found.`;
+      // Format context for Gemini using file metadata (avoiding slow content downloads)
+      const filesContextBlock = files.length > 0
+        ? files.map(f => `--- FILE: ${f.name} (ID: ${f.id})\nDescription: ${f.description || 'No description'}\nOwners: ${JSON.stringify(f.owners || [])}\n--- END ---`).join('\n\n')
+        : `No relevant Google Drive files were found.`;
 
       // Select members based on retrieved context files
       const finalPrompt = `You are an expert AI project assistant. We are setting up a new shared Space/folder for a project/topic: "${prompt}".
-We searched Google Drive for relevant files and got the following files and their contents:
+We searched Google Drive for relevant files and got the following files and metadata:
 
 ${filesContextBlock}
 
@@ -1132,6 +1119,7 @@ Do not include any markdown formatting, code block wrappers (like \`\`\`json), o
         .map((email: string) => allPossibleMembers.find(m => m.email.toLowerCase() === email.toLowerCase()))
         .filter(Boolean);
 
+      const filesToDownload = files.slice(0, 5);
       res.json({
         files: filesToDownload.map(f => ({
           id: f.id,

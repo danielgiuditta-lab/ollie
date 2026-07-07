@@ -284,6 +284,9 @@ export default function App() {
   // Keep track of active folder ID to prevent race conditions during async fetches
   const activeSpaceIdRef = useRef<string | null>(null);
 
+  // Timeout ref to debounce silent background updates when clicking between spaces in the LeftNav
+  const syncTimeoutRef = useRef<any>(null);
+
   // Synchronize active workspace state changes back to the in-memory cache
   useEffect(() => {
     if (activeSpaceId && activeLoadedFolderIdRef.current === activeSpaceId) {
@@ -2049,38 +2052,63 @@ export default function App() {
     
     setIsCreatingSpace(true);
     setSyncStatus('syncing');
+
+    // Add to recentTasks immediately so the new space appears in the left navigation instantly
+    setRecentTasks(prev => {
+      const now = Date.now();
+      const filtered = prev.filter(t => {
+        const id = typeof t === 'string' ? '' : t.id;
+        const name = typeof t === 'string' ? t : t.name;
+        return id !== spaceId && name.toLowerCase() !== cleanFolderName.toLowerCase();
+      });
+      return [{ id: spaceId, name: cleanFolderName, type: 'space', activeSpaceId: spaceId, updatedAt: now }, ...filtered];
+    });
     
     try {
       const fileTasks = spaceCreationSources.map(async (file, idx) => {
         let content = file.content || '';
+        const mType = (file.mimeType || '').toLowerCase().trim();
+        
+        // Skip content download for binary/unknown formats at space creation
+        const isTextOrCode = mType.startsWith('text/') || 
+                             mType === 'application/json' || 
+                             mType === 'application/javascript' || 
+                             mType === 'application/x-javascript' ||
+                             mType.includes('google-apps.document') || 
+                             mType.includes('google-apps.spreadsheet');
+
         if (!content && accessToken) {
-          let url = '';
-          const mType = (file.mimeType || '').toLowerCase().trim();
-          if (mType.includes('google-apps.document')) {
-            url = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
-          } else if (mType.includes('google-apps.spreadsheet')) {
-            url = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
-          } else if (mType.includes('google-apps.presentation')) {
-            url = `https://www.googleapis.com/drive/v3/files/${file.id}?fields=description,name,mimeType`;
-          } else {
-            url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
-          }
-          
-          try {
-            const contentRes = await fetch(url, {
-              headers: { Authorization: `Bearer ${accessToken}` }
-            });
-            if (contentRes.ok) {
-              if (mType === 'application/vnd.google-apps.presentation') {
-                const pMeta = await contentRes.json();
-                content = `# Presentation: ${pMeta.name}\n\nType: Google Slides\nFile ID: ${file.id}`;
-              } else {
-                content = await contentRes.text();
-              }
+          const isPresentation = mType === 'application/vnd.google-apps.presentation';
+          if (isTextOrCode || isPresentation) {
+            let url = '';
+            if (mType.includes('google-apps.document')) {
+              url = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
+            } else if (mType.includes('google-apps.spreadsheet')) {
+              url = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
+            } else if (isPresentation) {
+              url = `https://www.googleapis.com/drive/v3/files/${file.id}?fields=description,name,mimeType`;
+            } else {
+              url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
             }
-          } catch (dlErr) {
-            console.error("Failed to download file content during space finalize:", dlErr);
-            content = `# ${file.name}\n\n[Drive File Content]`;
+            
+            try {
+              const contentRes = await fetch(url, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+              });
+              if (contentRes.ok) {
+                if (isPresentation) {
+                  const pMeta = await contentRes.json();
+                  content = `# Presentation: ${pMeta.name}\n\nType: Google Slides\nFile ID: ${file.id}`;
+                } else {
+                  content = await contentRes.text();
+                }
+              }
+            } catch (dlErr) {
+              console.error("Failed to download file content during space finalize:", dlErr);
+              content = `# ${file.name}\n\n[Drive File Content]`;
+            }
+          } else {
+            content = ''; // Placeholder/empty for binary files
           }
         }
         
@@ -2173,15 +2201,6 @@ export default function App() {
       setSpaceCreationSources([]);
     }
 
-    setRecentTasks(prev => {
-      const now = Date.now();
-      const filtered = prev.filter(t => {
-        const id = typeof t === 'string' ? '' : t.id;
-        const name = typeof t === 'string' ? t : t.name;
-        return id !== spaceId && name.toLowerCase() !== cleanFolderName.toLowerCase();
-      });
-      return [{ id: spaceId, name: cleanFolderName, type: 'space', activeSpaceId: spaceId, updatedAt: now }, ...filtered];
-    });
   };
 
   const createSpace = async (promptText?: string) => {
@@ -3127,6 +3146,9 @@ export default function App() {
   }, [accessToken, currentPath, resetChatForDirectoryItem]);
 
   const handleFileClick = async (file: any, skipSelect = false, options?: { isFromRecents?: boolean }) => {
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
     const isFromRecents = options?.isFromRecents ?? false;
     const folderId = typeof file === 'string' ? file : (file.id || file.activeSpaceId);
     if (!folderId) return;
@@ -3223,97 +3245,102 @@ export default function App() {
 
       if (!accessToken) return;
 
-      // 2. Fetch in background (silent sync) to check if anything changed on Drive
-      try {
-        const chatRes = await fetch(`/api/chats/${folderId}`);
+      // 2. Fetch in background (silent sync) with debouncing to prevent multiple parallel fetches
+      syncTimeoutRef.current = setTimeout(async () => {
         if (activeSpaceIdRef.current !== folderId) return;
-
-        let latestMessages = cached.messages;
-        let latestEnvId = cached.envId;
-        let latestSandboxUrl = cached.sandboxUrl;
-        
-        if (chatRes.ok) {
-          const chatData = await chatRes.json();
+        try {
+          const chatRes = await fetch(`/api/chats/${folderId}`);
           if (activeSpaceIdRef.current !== folderId) return;
-          if (chatData) {
-            setMembers(chatData.members || []);
-            if (chatData.messages) {
-              const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(cached.messages);
-              if (messagesChanged) {
-                latestMessages = chatData.messages;
-                setMessages(chatData.messages);
-              }
-              if (chatData.envId) latestEnvId = chatData.envId;
-              if (chatData.sandboxUrl) latestSandboxUrl = chatData.sandboxUrl;
-            }
-          }
-        }
 
-        const res = await fetch('/api/ingest-context', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({ folderId })
-        });
-        if (activeSpaceIdRef.current !== folderId) return;
-        
-        if (res.ok) {
-          const data = await res.json();
-          if (activeSpaceIdRef.current !== folderId) return;
-          if (data.files) {
-            const filesChanged = data.files.length !== cached.ingestedFiles.length ||
-              data.files.some((f: any, idx: number) => {
-                const cachedF = cached.ingestedFiles[idx];
-                return !cachedF || cachedF.id !== f.id || cachedF.content !== f.content;
-              });
-
-            if (filesChanged) {
-              setIngestedFiles(data.files);
-              const sandboxMapped = data.files.map((f: any, i: number) => ({
-                 name: f.filename,
-                 type: 'code',
-                 content: f.content,
-                 driveId: f.id,
-                 mimeType: f.mimeType,
-                 id: `ingested-file-${i}`
-              }));
-
-              setSandboxFiles(sandboxMapped);
-              sandboxMapped.forEach((f: any) => {
-                lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
-              });
-
-              const envIdFile = sandboxMapped.find((f: any) => f.name === '.env_id');
-              if (envIdFile && envIdFile.content) {
-                latestEnvId = envIdFile.content.trim();
+          let latestMessages = cached.messages;
+          let latestEnvId = cached.envId;
+          let latestSandboxUrl = cached.sandboxUrl;
+          
+          if (chatRes.ok) {
+            const chatData = await chatRes.json();
+            if (activeSpaceIdRef.current !== folderId) return;
+            if (chatData) {
+              setMembers(chatData.members || []);
+              if (chatData.messages) {
+                const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(cached.messages);
+                if (messagesChanged) {
+                  latestMessages = chatData.messages;
+                  setMessages(chatData.messages);
+                }
+                if (chatData.envId) latestEnvId = chatData.envId;
+                if (chatData.sandboxUrl) latestSandboxUrl = chatData.sandboxUrl;
               }
             }
           }
-        }
 
-        if (latestEnvId !== cached.envId) {
-          setEnvId(latestEnvId);
-        }
-        if (latestSandboxUrl !== cached.sandboxUrl) {
-          setSandboxUrl(latestSandboxUrl);
-        }
+          const res = await fetch('/api/ingest-context', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({ folderId })
+          });
+          if (activeSpaceIdRef.current !== folderId) return;
+          
+          let latestIngested = cached.ingestedFiles;
+          if (res.ok) {
+            const data = await res.json();
+            if (activeSpaceIdRef.current !== folderId) return;
+            if (data.files) {
+              latestIngested = data.files;
+              const filesChanged = data.files.length !== cached.ingestedFiles.length ||
+                data.files.some((f: any, idx: number) => {
+                  const cachedF = cached.ingestedFiles[idx];
+                  return !cachedF || cachedF.id !== f.id || cachedF.content !== f.content;
+                });
 
-        // Update the cache item
-        workspaceCacheRef.current[folderId] = {
-          ingestedFiles: ingestedFiles,
-          sandboxFiles: sandboxFiles,
-          envId: latestEnvId,
-          sandboxUrl: latestSandboxUrl,
-          messages: latestMessages,
-          projectName: fileName || projectName,
-          selectedFile: selectedFile,
-          indexFileSelected: indexFileSelected
-        };
-      } catch (err) {
-        console.error("Failed background update for workspace:", err);
-      }
+              if (filesChanged) {
+                setIngestedFiles(data.files);
+                const sandboxMapped = data.files.map((f: any, i: number) => ({
+                   name: f.filename,
+                   type: 'code',
+                   content: f.content,
+                   driveId: f.id,
+                   mimeType: f.mimeType,
+                   id: `ingested-file-${i}`
+                }));
+
+                setSandboxFiles(sandboxMapped);
+                sandboxMapped.forEach((f: any) => {
+                  lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
+                });
+
+                const envIdFile = sandboxMapped.find((f: any) => f.name === '.env_id');
+                if (envIdFile && envIdFile.content) {
+                  latestEnvId = envIdFile.content.trim();
+                }
+              }
+            }
+          }
+
+          if (latestEnvId !== cached.envId) {
+            setEnvId(latestEnvId);
+          }
+          if (latestSandboxUrl !== cached.sandboxUrl) {
+            setSandboxUrl(latestSandboxUrl);
+          }
+
+          // Update the cache item
+          workspaceCacheRef.current[folderId] = {
+            ingestedFiles: latestIngested,
+            sandboxFiles: sandboxFiles,
+            envId: latestEnvId,
+            sandboxUrl: latestSandboxUrl,
+            messages: latestMessages,
+            projectName: fileName || projectName,
+            selectedFile: selectedFile,
+            indexFileSelected: indexFileSelected
+          };
+        } catch (err) {
+          console.error("Failed background update for workspace:", err);
+        }
+      }, 1000);
     } else if (file.filesToLoad && file.filesToLoad.length > 0 && !file.filesToLoad[0]?.content?.includes('Contents will load dynamically')) {
       setSandboxFiles(file.filesToLoad);
       const indexHTML = file.filesToLoad.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || file.filesToLoad[0];
@@ -4101,30 +4128,52 @@ export default function App() {
                   const parts = folderName ? [folderName] : currentPath;
                   handleDirectoryNavigate(file, parts);
                 } else {
-                  if (activeSpaceId?.startsWith('space-creation-')) {
-                    if (!file.content && accessToken) {
-                      setIsLoading(true);
-                      try {
-                        let downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
-                        const mType = (file.mimeType || '').toLowerCase();
-                        if (mType.includes('google-apps.document')) {
-                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
-                        } else if (mType.includes('google-apps.spreadsheet')) {
-                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
-                        }
+                  if (!file.content && accessToken) {
+                    setIsLoading(true);
+                    try {
+                      const fileId = file.driveId || file.id;
+                      let downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+                      const mType = (file.mimeType || '').toLowerCase();
+                      if (mType.includes('google-apps.document')) {
+                        downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/plain`;
+                      } else if (mType.includes('google-apps.spreadsheet')) {
+                        downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/csv`;
+                      }
+                      
+                      const isTextOrCode = mType.startsWith('text/') || 
+                                           mType === 'application/json' || 
+                                           mType === 'application/javascript' || 
+                                           mType === 'application/x-javascript' ||
+                                           mType.includes('google-apps.document') || 
+                                           mType.includes('google-apps.spreadsheet');
+                      
+                      if (isTextOrCode) {
                         const res = await fetch(downloadUrl, {
                           headers: { Authorization: `Bearer ${accessToken}` }
                         });
                         if (res.ok) {
                           const text = await res.text();
                           file.content = text;
-                          setSpaceCreationSources(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
+                          
+                          if (activeSpaceId?.startsWith('space-creation-')) {
+                            setSpaceCreationSources(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
+                          } else {
+                            setSandboxFiles(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
+                            if (activeSpaceId) {
+                              const cached = workspaceCacheRef.current[activeSpaceId];
+                              if (cached && cached.sandboxFiles) {
+                                cached.sandboxFiles = cached.sandboxFiles.map((f: any) => f.id === file.id ? { ...f, content: text } : f);
+                              }
+                            }
+                          }
                         }
-                      } catch (err) {
-                        console.error("Failed to download file content for preview:", err);
-                      } finally {
-                        setIsLoading(false);
+                      } else {
+                        file.content = `[Binary content / display not supported for mimeType: ${file.mimeType || 'unknown'}]`;
                       }
+                    } catch (err) {
+                      console.error("Failed to download file content for preview:", err);
+                    } finally {
+                      setIsLoading(false);
                     }
                   }
                   setSelectedFile(file);

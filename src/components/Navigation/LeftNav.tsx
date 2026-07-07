@@ -175,12 +175,10 @@ export function LeftNav({
       id={isExpandedActive ? 'left-nav-expanded' : 'left-nav-collapsed'}
     >
       {/* 1. Brand Logo Header */}
-      <div className={`flex items-center shrink-0 w-full relative h-[64px] ${isExpandedActive ? 'pl-[28px] justify-start' : 'justify-center'}`}>
+      <div className="flex items-center shrink-0 w-full relative h-[64px] pl-[24px] justify-start">
         <div 
           onClick={() => onViewChange && onViewChange('home')}
-          className={`cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center ${
-            isExpandedActive ? 'w-6 h-6' : 'w-10 h-10'
-          }`}
+          className="cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center w-6 h-6 shrink-0"
         >
           <img src={logoImg} alt="Logo" className="w-6 h-6 object-contain" />
         </div>
@@ -190,17 +188,18 @@ export function LeftNav({
       <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar w-full px-4 gap-4">
         
         {/* Home Row (Dashboard) */}
-        {isExpandedActive ? (
-          <div className="flex flex-col gap-1 w-full shrink-0">
-            <div 
-              onClick={() => onViewChange && onViewChange('home')}
-              className={`h-[40px] px-3 rounded-[20px] flex items-center justify-between cursor-pointer transition-colors duration-200 shrink-0 ${
-                activeView === 'home' 
-                  ? 'bg-f0f4f9 dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold'
-                  : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10'
-              }`}
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
+        <div className="flex flex-col gap-1 w-full shrink-0">
+          <div 
+            onClick={() => onViewChange && onViewChange('home')}
+            className={`h-[40px] px-2 rounded-[20px] flex items-center justify-between cursor-pointer transition-colors duration-200 shrink-0 ${
+              activeView === 'home' 
+                ? 'bg-[#f0f4f9] dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold'
+                : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10'
+            }`}
+            title={isExpandedActive ? undefined : "Home"}
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-6 h-6 flex items-center justify-center shrink-0">
                 <span 
                   className="material-symbols-rounded shrink-0" 
                   style={{ 
@@ -210,36 +209,18 @@ export function LeftNav({
                 >
                   home
                 </span>
-                <span className="text-[14px] leading-none font-medium">Home</span>
               </div>
+              <span className={`text-[14px] leading-none font-medium whitespace-nowrap transition-opacity duration-200 ${isExpandedActive ? 'opacity-100' : 'opacity-0'}`}>
+                Home
+              </span>
+            </div>
+            {isExpandedActive && (
               <span className="material-symbols-rounded text-slate-400 text-sm shrink-0">
                 chevron_right
               </span>
-            </div>
+            )}
           </div>
-        ) : (
-          <div className="flex flex-col gap-2 w-full shrink-0 items-center">
-            <div 
-              onClick={() => onViewChange && onViewChange('home')}
-              className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 mx-auto ${
-                activeView === 'home' 
-                  ? 'bg-f0f4f9 dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold' 
-                  : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10'
-              }`}
-              title="Home"
-            >
-              <span 
-                className="material-symbols-rounded" 
-                style={{ 
-                  fontSize: '24px', 
-                  fontVariationSettings: activeView === 'home' ? "'FILL' 1" : "'FILL' 0" 
-                }}
-              >
-                home
-              </span>
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* Spaces items */}
         <div className="flex flex-col gap-1 w-full shrink-0">
@@ -247,7 +228,7 @@ export function LeftNav({
             const isActive = isSpaceActive(space);
             const isSpaceExpanded = expandedSpaces[space.id];
 
-            return isExpandedActive ? (
+            return (
               <div key={space.id} className="w-full flex flex-col">
                 {/* Space primary row */}
                 <div 
@@ -257,46 +238,53 @@ export function LeftNav({
                     e.stopPropagation();
                     setContextMenu({ x: e.clientX, y: e.clientY, task: space.raw, isProject: space.isProject });
                   }}
-                  className={`h-[40px] px-3 rounded-[20px] flex items-center justify-between group cursor-pointer transition-colors duration-200 shrink-0 ${
+                  className={`h-[40px] px-2 rounded-[20px] flex items-center justify-between group cursor-pointer transition-colors duration-200 shrink-0 ${
                     isActive 
-                      ? 'bg-f0f4f9 dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold shadow-none'
+                      ? 'bg-[#f0f4f9] dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold'
                       : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'
                   }`}
+                  title={isExpandedActive ? undefined : space.name}
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <span className="text-xl shrink-0 leading-none">{getSpaceEmoji(space.name)}</span>
+                    <span className="text-xl shrink-0 leading-none w-6 h-6 flex items-center justify-center">
+                      {getSpaceEmoji(space.name)}
+                    </span>
                     <span 
-                      className={`text-[14px] truncate leading-none ${isActive ? 'font-semibold' : 'font-medium'}`}
+                      className={`text-[14px] truncate leading-none whitespace-nowrap transition-opacity duration-200 ${
+                        isActive ? 'font-semibold' : 'font-medium'
+                      } ${isExpandedActive ? 'opacity-100' : 'opacity-0'}`}
                       style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
                     >
                       {space.name}
                     </span>
                   </div>
                   
-                  {ENABLE_MANY_CHATS_MODEL ? (
-                    <button 
-                      onClick={(e) => toggleSpaceExpand(space.id, e)}
-                      className="p-1 rounded-full hover:bg-gray-250/50 dark:hover:bg-white/10 cursor-pointer text-slate-500 hover:text-slate-800"
-                    >
-                      <span 
-                        className="material-symbols-rounded flex items-center justify-center transition-transform duration-205" 
-                        style={{ 
-                          fontSize: '18px',
-                          transform: isSpaceExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'
-                        }}
+                  {isExpandedActive && (
+                    ENABLE_MANY_CHATS_MODEL ? (
+                      <button 
+                        onClick={(e) => toggleSpaceExpand(space.id, e)}
+                        className="p-1 rounded-full hover:bg-gray-250/50 dark:hover:bg-white/10 cursor-pointer text-slate-500 hover:text-slate-800"
                       >
-                        expand_more
+                        <span 
+                          className="material-symbols-rounded flex items-center justify-center transition-transform duration-205" 
+                          style={{ 
+                            fontSize: '18px',
+                            transform: isSpaceExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'
+                          }}
+                        >
+                          expand_more
+                        </span>
+                      </button>
+                    ) : (
+                      <span className="material-symbols-rounded text-slate-400 text-sm shrink-0">
+                        chevron_right
                       </span>
-                    </button>
-                  ) : (
-                    <span className="material-symbols-rounded text-slate-400 text-sm shrink-0">
-                      chevron_right
-                    </span>
+                    )
                   )}
                 </div>
 
                 {/* Model B chats list */}
-                {ENABLE_MANY_CHATS_MODEL && isSpaceExpanded && (
+                {ENABLE_MANY_CHATS_MODEL && isSpaceExpanded && isExpandedActive && (
                   <div className="pl-10 pr-2 py-1 space-y-0.5 w-full shrink-0">
                     {space.chats.map((chat: any) => (
                       <div 
@@ -310,35 +298,17 @@ export function LeftNav({
                   </div>
                 )}
               </div>
-            ) : (
-              <div 
-                key={space.id} 
-                onClick={() => onSelectSpace(space)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setContextMenu({ x: e.clientX, y: e.clientY, task: space.raw, isProject: space.isProject });
-                }}
-                className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 mx-auto ${
-                  isActive 
-                    ? 'bg-f0f4f9 dark:bg-[#2B2D31]' 
-                    : 'hover:bg-black/5 dark:hover:bg-white/10'
-                }`}
-                title={space.name}
-              >
-                <span className="text-xl shrink-0 leading-none">{getSpaceEmoji(space.name)}</span>
-              </div>
             );
           })}
 
           {/* New Space Button below the last space */}
-          {isExpandedActive && (
-            <div 
-              onClick={onCreateSpace}
-              className="h-[40px] px-3 rounded-[20px] flex items-center cursor-pointer transition-colors duration-200 shrink-0 text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white mt-2"
-              title="Create space"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
+          <div 
+            onClick={onCreateSpace}
+            className="h-[40px] px-2 rounded-[20px] flex items-center cursor-pointer transition-colors duration-200 shrink-0 text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white mt-2"
+            title="Create space"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-6 h-6 flex items-center justify-center shrink-0">
                 <span 
                   className="material-symbols-rounded shrink-0" 
                   style={{ 
@@ -348,57 +318,39 @@ export function LeftNav({
                 >
                   add
                 </span>
-                <span 
-                  className="text-[14px] leading-none font-medium"
-                  style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
-                >
-                  Create space
-                </span>
               </div>
+              <span 
+                className={`text-[14px] leading-none font-medium whitespace-nowrap transition-opacity duration-200 ${isExpandedActive ? 'opacity-100' : 'opacity-0'}`}
+                style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
+              >
+                Create space
+              </span>
             </div>
-          )}
+          </div>
         </div>
 
       </div>
 
       {/* 3. Bottom controls: Collapse button, Profile Avatar */}
-      {isExpandedActive ? (
-        <div className="mt-auto flex flex-col items-start gap-4 pl-[20px] w-full select-none pb-2 shrink-0">
-          <button 
-            onClick={() => toggleExpand(false)}
-            className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition border-none outline-none hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-            title="Collapse Panel"
-          >
-            <span className="material-symbols-rounded" style={{ fontSize: '24px' }}>chevron_left</span>
-          </button>
-          
-          <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 text-blue-650 dark:text-blue-400 shadow-3xs">
-            {userProfile?.picture ? (
-              <img src={userProfile.picture} alt="user profile" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xs font-bold font-sans uppercase">{userProfile?.name?.substring(0, 2) || "U"}</span>
-            )}
-          </div>
+      <div className="mt-auto flex flex-col items-start gap-4 pl-[16px] w-full select-none pb-2 shrink-0">
+        <button 
+          onClick={() => toggleExpand(!isExpandedActive)}
+          className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition border-none outline-none hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+          title={isExpandedActive ? "Collapse Panel" : "Expand Panel"}
+        >
+          <span className="material-symbols-rounded" style={{ fontSize: '24px' }}>
+            {isExpandedActive ? 'chevron_left' : 'chevron_right'}
+          </span>
+        </button>
+        
+        <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 text-blue-650 dark:text-blue-400 shadow-3xs ml-[2px]">
+          {userProfile?.picture ? (
+            <img src={userProfile.picture} alt="user profile" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xs font-bold font-sans uppercase">{userProfile?.name?.substring(0, 2) || "U"}</span>
+          )}
         </div>
-      ) : (
-        <div className="mt-auto flex flex-col items-center gap-4 w-[72px] select-none pb-2 shrink-0 mx-auto">
-          <button 
-            onClick={() => toggleExpand(true)}
-            className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition border-none outline-none hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-            title="Expand Panel"
-          >
-            <span className="material-symbols-rounded" style={{ fontSize: '24px' }}>chevron_right</span>
-          </button>
-          
-          <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-3xs">
-            {userProfile?.picture ? (
-              <img src={userProfile.picture} alt="user profile" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xs font-bold font-sans uppercase">{userProfile?.name?.substring(0, 2) || "U"}</span>
-            )}
-          </div>
-        </div>
-      )}
+      </div>
 
       {contextMenu && (
         <ContextMenu
