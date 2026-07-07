@@ -212,19 +212,6 @@ export function LeftNav({
                 chevron_right
               </span>
             </div>
-            
-            <div 
-              onClick={onCreateSpace}
-              className="h-[40px] px-3 rounded-[20px] flex items-center justify-between cursor-pointer transition-colors duration-200 shrink-0 text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 mt-1"
-              title="Create New Space"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <span className="material-symbols-rounded shrink-0 text-blue-500 font-semibold" style={{ fontSize: '24px' }}>
-                  add
-                </span>
-                <span className="text-[14px] leading-none font-semibold text-blue-600 dark:text-blue-400">New Space</span>
-              </div>
-            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-2 w-full shrink-0 items-center">
@@ -245,16 +232,6 @@ export function LeftNav({
                 }}
               >
                 home
-              </span>
-            </div>
-            
-            <div 
-              onClick={onCreateSpace}
-              className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 mx-auto text-slate-705 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 mt-1 border border-dashed border-slate-300 dark:border-slate-700"
-              title="Create New Space"
-            >
-              <span className="material-symbols-rounded text-blue-500 font-semibold" style={{ fontSize: '24px' }}>
-                add
               </span>
             </div>
           </div>
@@ -349,6 +326,32 @@ export function LeftNav({
               </div>
             );
           })}
+
+          {/* New Space Button below the last space */}
+          {isExpandedActive ? (
+            <div 
+              onClick={onCreateSpace}
+              className="h-[40px] px-3 rounded-[20px] flex items-center justify-between cursor-pointer transition-colors duration-200 shrink-0 text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 mt-2"
+              title="Create New Space"
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <span className="material-symbols-rounded shrink-0 text-blue-500 font-semibold" style={{ fontSize: '24px' }}>
+                  add
+                </span>
+                <span className="text-[14px] leading-none font-semibold text-blue-600 dark:text-blue-400">New Space</span>
+              </div>
+            </div>
+          ) : (
+            <div 
+              onClick={onCreateSpace}
+              className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 mx-auto text-slate-705 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 mt-2 border border-dashed border-slate-300 dark:border-slate-700"
+              title="Create New Space"
+            >
+              <span className="material-symbols-rounded text-blue-500 font-semibold" style={{ fontSize: '24px' }}>
+                add
+              </span>
+            </div>
+          )}
         </div>
 
       </div>

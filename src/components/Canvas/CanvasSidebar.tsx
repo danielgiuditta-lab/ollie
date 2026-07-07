@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  X
 } from 'lucide-react';
 import { IconButton } from '../Shared/IconButton';
 import { FileRow } from '../Shared/FileRow';
@@ -22,6 +23,8 @@ interface CanvasSidebarProps {
   loadingDirectories?: Record<string, boolean>;
   impactSpaceId?: string | null;
   animatingFileIds?: string[];
+  onCloseSidebar?: () => void;
+  forceSingleColumn?: boolean;
 }
 
 interface ExplorerItem {
@@ -46,7 +49,9 @@ export function CanvasSidebar({
   onDirectoryNavigate,
   loadingDirectories,
   impactSpaceId,
-  animatingFileIds = []
+  animatingFileIds = [],
+  onCloseSidebar,
+  forceSingleColumn = false
 }: CanvasSidebarProps) {
 
 
@@ -246,10 +251,9 @@ export function CanvasSidebar({
   };
 
   const isGeminiOpen = activeSidebar === 'gemini';
-  const shouldCollapseToSingleCol = isGeminiOpen && !!selectedFile;
+  const shouldCollapseToSingleCol = forceSingleColumn || (isGeminiOpen && !!selectedFile);
 
   if (shouldCollapseToSingleCol) {
-    // Single column mode when Gemini is open
     const activeLevelItems = getItemsAtPath(currentPath);
     const activeFolderName = currentPath.length > 0 ? currentPath[currentPath.length - 1] : 'Files';
 
@@ -257,12 +261,12 @@ export function CanvasSidebar({
       <div className="flex items-center h-full shrink-0 relative z-20">
         <div 
           style={{ width: `${singleColWidth}px` }}
-          className="flex flex-col h-full bg-white dark:bg-[#1E1F22] select-none shrink-0 rounded-[24px] overflow-hidden" 
+          className="flex flex-col h-full bg-white dark:bg-[#1E1F22] select-none shrink-0 rounded-[24px] overflow-hidden border border-slate-200/60 dark:border-slate-800" 
           id="canvas-files-sidebar"
         >
-          {/* Header Panel */}
-          <div className="flex items-center gap-3 px-4 pt-4 pb-4 shrink-0 select-none">
-            {currentPath.length > 0 && (
+          {/* Header Panel with back / close controls and no title in sources panel mode */}
+          <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 select-none">
+            {currentPath.length > 0 ? (
               <IconButton 
                 variant="borderless" 
                 onClick={handleBackClick} 
@@ -272,13 +276,28 @@ export function CanvasSidebar({
               >
                 <ChevronLeft size={18} className="text-[#5F6368] dark:text-[#E3E3E3]" />
               </IconButton>
+            ) : <div />}
+
+            {onCloseSidebar ? (
+              <IconButton 
+                variant="borderless" 
+                onClick={onCloseSidebar} 
+                title="Close sources panel"
+                theme={theme}
+                id="canvas-files-sidebar-close"
+              >
+                <X size={18} className="text-[#5F6368] dark:text-[#E3E3E3]" />
+              </IconButton>
+            ) : (
+              !forceSingleColumn && (
+                <h2 
+                  className="font-semibold tracking-tight text-gray-800 dark:text-white text-[16px] truncate"
+                  style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
+                >
+                  {currentPath.length > 0 ? activeFolderName : 'Files'}
+                </h2>
+              )
             )}
-            <h2 
-              className="font-semibold tracking-tight text-gray-800 dark:text-white text-[16px] truncate"
-              style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
-            >
-              {currentPath.length > 0 ? activeFolderName : 'Files'}
-            </h2>
           </div>
 
           {/* Scrollable contents */}

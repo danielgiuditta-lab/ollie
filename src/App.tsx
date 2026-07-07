@@ -16,7 +16,6 @@ import { NativeViewer } from './components/Canvas/NativeViewer';
 import { HomeLanding, SUGGESTED_ITEMS } from './components/Canvas/HomeLanding';
 import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
-import { CanvasTopBar } from './components/Canvas/CanvasTopBar';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
 
@@ -165,6 +164,8 @@ export default function App() {
   const [isCreatingSpace, setIsCreatingSpace] = useState(false);
   const [spaceCreationSources, setSpaceCreationSources] = useState<any[]>([]);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'failed'>('idle');
+  const [members, setMembers] = useState<any[]>([]);
+  const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(true);
 
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
@@ -2024,6 +2025,8 @@ export default function App() {
     setSandboxFiles([]);
     setSpaceCreationSources([]);
     setSelectedFile(null);
+    setMembers([]);
+    setIsSourcesPanelOpen(true);
     setViewState('app');
     setActiveSidebar('gemini');
     setIsAiSummarySnapped(false);
@@ -2041,6 +2044,7 @@ export default function App() {
 
     setActiveSpaceId(spaceId);
     setProjectName(cleanFolderName);
+    setMembers(selectedPeople);
     
     setIsCreatingSpace(true);
     setSyncStatus('syncing');
@@ -2217,6 +2221,7 @@ export default function App() {
 
       setProjectName(cleanFolderName);
       setActiveSpaceId(spaceId);
+      setMembers([]);
 
       // Ingest/download contents of selected files in parallel directly from their source Drive location
       const fileTasks = selectedDriveFiles.map(async (file, idx) => {
@@ -3142,8 +3147,10 @@ export default function App() {
           } else {
             setMessages([]);
           }
+          setMembers(chatData.members || []);
         } else {
           setMessages([]);
+          setMembers([]);
         }
       } catch (err) {
         console.error("Failed to load home chat:", err);
@@ -3223,14 +3230,17 @@ export default function App() {
         if (chatRes.ok) {
           const chatData = await chatRes.json();
           if (activeSpaceIdRef.current !== folderId) return;
-          if (chatData && chatData.messages) {
-            const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(cached.messages);
-            if (messagesChanged) {
-              latestMessages = chatData.messages;
-              setMessages(chatData.messages);
+          if (chatData) {
+            setMembers(chatData.members || []);
+            if (chatData.messages) {
+              const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(cached.messages);
+              if (messagesChanged) {
+                latestMessages = chatData.messages;
+                setMessages(chatData.messages);
+              }
+              if (chatData.envId) latestEnvId = chatData.envId;
+              if (chatData.sandboxUrl) latestSandboxUrl = chatData.sandboxUrl;
             }
-            if (chatData.envId) latestEnvId = chatData.envId;
-            if (chatData.sandboxUrl) latestSandboxUrl = chatData.sandboxUrl;
           }
         }
 
@@ -3314,6 +3324,7 @@ export default function App() {
         if (chatRes.ok) {
           const chatData = await chatRes.json();
           if (chatData) {
+            setMembers(chatData.members || []);
             if (chatData.messages && isFromRecents) setMessages(chatData.messages);
             if (chatData.envId) setEnvId(chatData.envId);
             if (chatData.sandboxUrl) setSandboxUrl(chatData.sandboxUrl);
@@ -3417,12 +3428,15 @@ export default function App() {
               const chatData = await chatRes.json();
               if (activeSpaceIdRef.current !== folderId) return;
 
-              if (chatData && chatData.messages) {
-                currentMessages = chatData.messages;
-                if (isFromRecents) {
-                  setMessages(chatData.messages);
-                } else {
-                  setMessages([]);
+              if (chatData) {
+                setMembers(chatData.members || []);
+                if (chatData.messages) {
+                  currentMessages = chatData.messages;
+                  if (isFromRecents) {
+                    setMessages(chatData.messages);
+                  } else {
+                    setMessages([]);
+                  }
                 }
                 if (chatData.envId) {
                   currentEnvId = chatData.envId;
@@ -3864,69 +3878,18 @@ export default function App() {
             handleFileClick(getHomeChatId(), true);
             setHomeJourney('search');
           }}
+          onCloseFile={() => setSelectedFile(null)}
+          selectedFile={selectedFile}
+          members={members}
+          onOpenInDrive={handleOpenInDrive}
+          onToggleSourcesPanel={() => setIsSourcesPanelOpen(!isSourcesPanelOpen)}
+          isSourcesPanelOpen={isSourcesPanelOpen}
           peers={peers}
           theme={appTheme}
         />
         <div className="flex-1 flex overflow-hidden gap-4 relative">
-          {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
-            <CanvasSidebar 
-              files={activeSpaceId?.startsWith('space-creation-') ? spaceCreationSources : sandboxFiles}
-              driveFiles={driveFiles}
-              selectedFile={selectedFile}
-              indexFileSelected={indexFileSelected}
-              onFileSelect={async (file) => {
-                if (!file) {
-                  setSelectedFile(null);
-                  return;
-                }
-                if (file.type === 'folder' || (file.mimeType && file.mimeType.includes('folder'))) {
-                  const folderName = file.name || file.filename || '';
-                  const parts = folderName ? [folderName] : currentPath;
-                  handleDirectoryNavigate(file, parts);
-                } else {
-                  if (activeSpaceId?.startsWith('space-creation-')) {
-                    if (!file.content && accessToken) {
-                      setIsLoading(true);
-                      try {
-                        let downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
-                        const mType = (file.mimeType || '').toLowerCase();
-                        if (mType.includes('google-apps.document')) {
-                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
-                        } else if (mType.includes('google-apps.spreadsheet')) {
-                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
-                        }
-                        const res = await fetch(downloadUrl, {
-                          headers: { Authorization: `Bearer ${accessToken}` }
-                        });
-                        if (res.ok) {
-                          const text = await res.text();
-                          file.content = text;
-                          setSpaceCreationSources(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
-                        }
-                      } catch (err) {
-                        console.error("Failed to download file content for preview:", err);
-                      } finally {
-                        setIsLoading(false);
-                      }
-                    }
-                  }
-                  setSelectedFile(file);
-                  setIndexFileSelected(file.name.toLowerCase() === 'index.html' || file.name.toLowerCase().endsWith('/index.html'));
-                  setViewState('app');
-                }
-              }}
-              activeSidebar={activeSidebar}
-              currentPath={currentPath}
-              setCurrentPath={setCurrentPath}
-              theme={appTheme}
-              directoryContentsMap={directoryContentsMap}
-              onDirectoryNavigate={handleDirectoryNavigate}
-              loadingDirectories={loadingDirectories}
-              impactSpaceId={impactSpaceId}
-              animatingFileIds={animatingFileIds}
-            />
-          )}
-
+          
+          {/* Main Viewport Content first (on the LEFT) */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative gap-4">
             <div className="flex-1 min-h-0 relative">
               {(viewState === 'home' || viewState === 'null' || viewState === 'ai_summary' || viewState === 'projector' || viewState === 'app' || viewState === 'files' || selectedFile) && (
@@ -4055,48 +4018,31 @@ export default function App() {
                   )}
                   {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && (
                     <div 
-                      className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent" 
+                      className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200" 
                       id="canvas-unified-workspace"
                     >
-                      <div className="w-full h-full relative pt-[72px]">
-                        <CanvasTopBar
-                          file={selectedFile}
-                          viewMode={viewMode}
-                          onViewModeChange={setViewMode}
+                      {(((selectedFile?.name?.toLowerCase().endsWith('.html') || selectedFile?.name?.toLowerCase().endsWith('.htm')) && viewMode === 'preview') || (indexFileSelected && viewMode === 'preview')) ? (
+                        <AppView 
+                          sandboxUrl={sandboxUrl} 
+                          files={sandboxFiles} 
+                          envId={envId} 
+                          projectName={projectName} 
+                          onIframeRef={registerIframe}
+                          selectedFile={selectedFile}
+                        />
+                      ) : (
+                        <NativeViewer 
+                          file={selectedFile} 
+                          onSave={handleSaveToDrive} 
+                          sandboxUrl={sandboxUrl}
+                          hideHeader={true}
+                          mode={viewMode}
                           onClose={() => {
                             setSelectedFile(null);
                           }}
-                          onExpand={() => {
-                            setViewState('projector');
-                          }}
-                          onOpenInDrive={handleOpenInDrive}
-                          appTheme={appTheme}
-                          peers={peers}
+                          theme={appTheme}
                         />
-
-                        {(((selectedFile?.name?.toLowerCase().endsWith('.html') || selectedFile?.name?.toLowerCase().endsWith('.htm')) && viewMode === 'preview') || (indexFileSelected && viewMode === 'preview')) ? (
-                          <AppView 
-                            sandboxUrl={sandboxUrl} 
-                            files={sandboxFiles} 
-                            envId={envId} 
-                            projectName={projectName} 
-                            onIframeRef={registerIframe}
-                            selectedFile={selectedFile}
-                          />
-                        ) : (
-                          <NativeViewer 
-                            file={selectedFile} 
-                            onSave={handleSaveToDrive} 
-                            sandboxUrl={sandboxUrl}
-                            hideHeader={true}
-                            mode={viewMode}
-                            onClose={() => {
-                              setSelectedFile(null);
-                            }}
-                            theme={appTheme}
-                          />
-                        )}
-                      </div>
+                      )}
                     </div>
                   )}
                   {viewState === 'projector' && (
@@ -4141,6 +4087,68 @@ export default function App() {
               </div>
             )}
           </div>
+
+          {/* Sources panel sidebar rendered on the RIGHT */}
+          {isSourcesPanelOpen && (viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
+            <CanvasSidebar 
+              files={activeSpaceId?.startsWith('space-creation-') ? spaceCreationSources : sandboxFiles}
+              driveFiles={driveFiles}
+              selectedFile={selectedFile}
+              indexFileSelected={indexFileSelected}
+              onFileSelect={async (file) => {
+                if (!file) {
+                  setSelectedFile(null);
+                  return;
+                }
+                if (file.type === 'folder' || (file.mimeType && file.mimeType.includes('folder'))) {
+                  const folderName = file.name || file.filename || '';
+                  const parts = folderName ? [folderName] : currentPath;
+                  handleDirectoryNavigate(file, parts);
+                } else {
+                  if (activeSpaceId?.startsWith('space-creation-')) {
+                    if (!file.content && accessToken) {
+                      setIsLoading(true);
+                      try {
+                        let downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
+                        const mType = (file.mimeType || '').toLowerCase();
+                        if (mType.includes('google-apps.document')) {
+                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
+                        } else if (mType.includes('google-apps.spreadsheet')) {
+                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
+                        }
+                        const res = await fetch(downloadUrl, {
+                          headers: { Authorization: `Bearer ${accessToken}` }
+                        });
+                        if (res.ok) {
+                          const text = await res.text();
+                          file.content = text;
+                          setSpaceCreationSources(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
+                        }
+                      } catch (err) {
+                        console.error("Failed to download file content for preview:", err);
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }
+                  }
+                  setSelectedFile(file);
+                  setIndexFileSelected(file.name.toLowerCase() === 'index.html' || file.name.toLowerCase().endsWith('/index.html'));
+                  setViewState('app');
+                }
+              }}
+              activeSidebar={activeSidebar}
+              currentPath={currentPath}
+              setCurrentPath={setCurrentPath}
+              theme={appTheme}
+              directoryContentsMap={directoryContentsMap}
+              onDirectoryNavigate={handleDirectoryNavigate}
+              loadingDirectories={loadingDirectories}
+              impactSpaceId={impactSpaceId}
+              animatingFileIds={animatingFileIds}
+              onCloseSidebar={() => setIsSourcesPanelOpen(false)}
+              forceSingleColumn={true}
+            />
+          )}
         </div>
       </div>
 
