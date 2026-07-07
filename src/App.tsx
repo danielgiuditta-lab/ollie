@@ -19,6 +19,13 @@ import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
+const inferChatName = (text: string): string => {
+  const clean = text.replace(/[#*`_\[\]]/g, '').trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return 'New Chat';
+  const candidate = words.slice(0, 5).join(' ');
+  return candidate.length > 30 ? candidate.substring(0, 27) + '...' : candidate;
+};
 
 export default function App() {
   const [activeSidebar, setActiveSidebar] = useState<'gemini' | 'comments' | 'history' | null>('gemini');
@@ -34,6 +41,12 @@ export default function App() {
   const [isAiSummarySnapped, setIsAiSummarySnapped] = useState(false);
   const [previousViewState, setPreviousViewState] = useState<'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | null>(null);
   const lastSelectedFileRef = useRef<string | null>(null);
+
+  const [chatModel, setChatModel] = useState<'A' | 'B'>(() => {
+    return (localStorage.getItem('chat-model') as 'A' | 'B') || 'A';
+  });
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+
 
   // Unified filesystem mapping states
   const [directoryContentsMap, setFolderContentsMap] = useState<Record<string, any[]>>({});
@@ -278,6 +291,10 @@ export default function App() {
     indexFileSelected: boolean;
   }>>({});
 
+  const chatSessionsCacheRef = useRef<Record<string, {
+    messages: any[];
+  }>>({});
+
   // Tracks the folder/workspace ID that is currently loaded in the React state.
   // Helps avoid race conditions when switching folders before all asynchronous updates resolve.
   const [loadedFolderId, setLoadedFolderId] = useState<string | null>(null);
@@ -303,6 +320,16 @@ export default function App() {
       };
     }
   }, [activeSpaceId, loadedFolderId, messages, sandboxFiles, ingestedFiles, envId, sandboxUrl, projectName, selectedFile, indexFileSelected]);
+
+  // Synchronize active chat messages back to the in-memory cache
+  useEffect(() => {
+    if (activeChatId) {
+      chatSessionsCacheRef.current[activeChatId] = {
+        messages
+      };
+    }
+  }, [activeChatId, messages]);
+
 
   // Ref to track file IDs created from the composer in order to format output of blank docs
   const createdFromComposerFileIdsRef = useRef<Set<string>>(new Set());
@@ -540,12 +567,14 @@ export default function App() {
       const indexFile = sandboxFiles.find(f => f.name && f.name.toLowerCase() === 'index.html');
       
       if (!selectedFile) {
-        if (indexFile) {
-          setSelectedFile(indexFile);
-          setIndexFileSelected(true);
-        } else {
-          setSelectedFile(sandboxFiles[0]);
-          setIndexFileSelected(sandboxFiles[0].name.toLowerCase() === 'index.html');
+        if (viewState === 'app') {
+          if (indexFile) {
+            setSelectedFile(indexFile);
+            setIndexFileSelected(true);
+          } else {
+            setSelectedFile(sandboxFiles[0]);
+            setIndexFileSelected(sandboxFiles[0].name.toLowerCase() === 'index.html');
+          }
         }
       } else {
         const currentSelected = sandboxFiles.find(f => f.name === selectedFile.name);
@@ -560,7 +589,7 @@ export default function App() {
         }
       }
     }
-  }, [sandboxFiles]);
+  }, [sandboxFiles, viewState]);
 
   const saveChatToDb = async (folderId: string, messagesList: any[], activeEnv: string | null, activeSandboxUrl?: string, customProjectName?: string, customFiles?: any[]) => {
     if (!folderId) return;
@@ -3148,6 +3177,11 @@ export default function App() {
   }, [accessToken, currentPath, resetChatForDirectoryItem]);
 
   const handleFileClick = async (file: any, skipSelect = false, options?: { isFromRecents?: boolean }) => {
+    console.log("[DEBUG] handleFileClick called with:", {
+      fileName: typeof file === 'string' ? file : file?.name || file?.filename || file?.id,
+      skipSelect,
+      options
+    });
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current);
     }
@@ -3240,7 +3274,11 @@ export default function App() {
       });
 
       // Show the view immediately!
-      setViewState('app');
+      if (!skipSelect) {
+        setViewState('app');
+      } else {
+        setViewState('files');
+      }
       
       // Allow cache updates for the newly active folder
       setLoadedFolderId(folderId);
@@ -3808,6 +3846,13 @@ export default function App() {
     return <ComponentsCatalog />;
   }
 
+  console.log("[DEBUG] App render state:", {
+    viewState,
+    activeSpaceId,
+    selectedFile: selectedFile?.name || null,
+    isSourcesPanelOpen
+  });
+
   return (
     <div className="w-full h-screen bg-white dark:bg-[#0B0B0C] text-slate-800 dark:text-[#E3E3E3] flex font-sans overflow-hidden relative">
       <LeftNav 
@@ -3816,13 +3861,15 @@ export default function App() {
         onToggleExpand={setIsLeftNavExpanded}
         activeView={viewState}
         onViewChange={(view) => {
-          setViewState(view);
           setSelectedFile(null);
           if (view === 'home') {
             setHomeJourney('search');
             setActiveAiSummaryTaskId(null);
             setActiveSidebar('gemini');
             setIsAiSummarySnapped(false);
+            handleFileClick(getHomeChatId(), true); // Reset activeSpaceId to home chat ID
+          } else {
+            setViewState(view);
           }
         }}
         recentTasks={recentTasks}

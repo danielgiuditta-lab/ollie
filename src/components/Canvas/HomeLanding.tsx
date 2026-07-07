@@ -1180,6 +1180,12 @@ export function HomeLanding({
     );
   }
 
+  console.log("[DEBUG] HomeLanding render state:", {
+    activeSpaceId,
+    projectName,
+    todoCount: filteredTodoItems.length
+  });
+
   return (
     <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-y-auto pt-16 px-10 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
       <div className="w-full max-w-[640px] mt-8 text-left space-y-6">
