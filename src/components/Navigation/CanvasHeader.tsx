@@ -86,10 +86,7 @@ export function CanvasHeader({
   const renderBreadcrumbs = () => {
     if (isHome) {
       return (
-        <span 
-          className={`font-semibold text-lg leading-none ${isDark ? 'text-white' : 'text-slate-900'}`}
-          style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
-        >
+        <span className="text-slate-800 dark:text-white text-lg font-medium">
           Home
         </span>
       );
@@ -99,19 +96,14 @@ export function CanvasHeader({
 
     if (!selectedFile && viewState !== 'ai_summary') {
       return (
-        <div className="flex items-center gap-2">
-          <span 
-            className={`font-semibold text-lg leading-none ${isDark ? 'text-white' : 'text-slate-900'}`}
-            style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
-          >
-            {spaceName}
-          </span>
+        <div className="flex items-center gap-1.5 bg-[#003BC4]/5 dark:bg-[#2B2D31] px-3 py-1 rounded-xl text-slate-950 dark:text-white font-semibold">
+          <span>{spaceName}</span>
           <button 
             onClick={onCloseWorkspace}
-            className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-1 transition cursor-pointer border-none outline-none flex items-center justify-center shrink-0 bg-[#003BC4]/5 dark:bg-[#2B2D31]"
+            className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center"
             title="Close Space"
           >
-            <X size={12} className="text-slate-650 dark:text-slate-350 stroke-[2.2]" />
+            <X size={14} className="text-slate-500 dark:text-slate-400" />
           </button>
         </div>
       );
@@ -120,24 +112,23 @@ export function CanvasHeader({
     const artifactName = selectedFile ? selectedFile.name : (viewState === 'ai_summary' ? 'Search Summary' : '');
 
     return (
-      <div className="flex items-center text-slate-700 dark:text-slate-200 font-normal font-sans">
+      <div className="flex items-center text-slate-700 dark:text-slate-200 text-lg font-normal font-sans">
         <span 
           onClick={onHomeClick}
-          className={`cursor-pointer hover:underline transition font-semibold text-lg ${isDark ? 'text-white/80 hover:text-white' : 'text-slate-700 hover:text-slate-950'}`}
-          style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
+          className="cursor-pointer hover:text-slate-900 dark:hover:text-white transition font-medium"
         >
           {spaceName}
         </span>
         <ChevronRight size={18} className="mx-2 text-slate-400 dark:text-slate-500 shrink-0" />
         
-        <div className="flex items-center gap-1.5 bg-[#003BC4]/5 dark:bg-[#2B2D31] px-3.5 py-1.5 rounded-full text-slate-950 dark:text-white font-semibold text-[13px] shadow-2xs border border-slate-100/50 dark:border-transparent">
+        <div className="flex items-center gap-1.5 bg-[#003BC4]/5 dark:bg-[#2B2D31] px-3 py-1 rounded-xl text-slate-950 dark:text-white font-semibold">
           <span>{artifactName}</span>
           <button 
             onClick={selectedFile ? onCloseFile : onCloseWorkspace}
             className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center"
             title={selectedFile ? "Close file" : "Close search"}
           >
-            <X size={12} className="text-slate-600 dark:text-slate-300 stroke-[2.2]" />
+            <X size={14} className="text-slate-500 dark:text-slate-400" />
           </button>
         </div>
       </div>
@@ -145,7 +136,7 @@ export function CanvasHeader({
   };
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 w-full h-[64px] shrink-0 z-30 relative bg-transparent border-b border-slate-200/80 dark:border-slate-800/65 text-slate-850 dark:text-white select-none">
+    <div className="flex items-center justify-between px-6 py-4 w-full h-[64px] shrink-0 z-20 relative bg-transparent text-slate-800 dark:text-white select-none">
       <div className="flex items-center gap-2">
         {renderBreadcrumbs()}
       </div>
