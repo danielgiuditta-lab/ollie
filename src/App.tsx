@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
+import { AnimatePresence } from 'motion/react';
 import { LeftNav } from './components/Navigation/LeftNav';
 import { TopBar } from './components/Navigation/TopBar';
 import { CanvasHeader } from './components/Navigation/CanvasHeader';
@@ -3920,7 +3921,7 @@ export default function App() {
           peers={peers}
           theme={appTheme}
         />
-        <div className="flex-1 flex overflow-hidden gap-4 relative">
+        <div className={`flex-1 flex overflow-hidden relative ${isSourcesPanelOpen ? 'gap-0' : 'gap-4'}`}>
           
           {/* Main Viewport Content first (on the LEFT) */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative gap-4">
@@ -4051,7 +4052,7 @@ export default function App() {
                   )}
                   {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && (
                     <div 
-                      className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200" 
+                      className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200 p-4" 
                       id="canvas-unified-workspace"
                     >
                       {(((selectedFile?.name?.toLowerCase().endsWith('.html') || selectedFile?.name?.toLowerCase().endsWith('.htm')) && viewMode === 'preview') || (indexFileSelected && viewMode === 'preview')) ? (
@@ -4112,88 +4113,90 @@ export default function App() {
           </div>
 
           {/* Sources panel sidebar rendered on the RIGHT */}
-          {isSourcesPanelOpen && (viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
-            <CanvasSidebar 
-              files={activeSpaceId?.startsWith('space-creation-') ? spaceCreationSources : sandboxFiles}
-              driveFiles={driveFiles}
-              selectedFile={selectedFile}
-              indexFileSelected={indexFileSelected}
-              onFileSelect={async (file) => {
-                if (!file) {
-                  setSelectedFile(null);
-                  return;
-                }
-                if (file.type === 'folder' || (file.mimeType && file.mimeType.includes('folder'))) {
-                  const folderName = file.name || file.filename || '';
-                  const parts = folderName ? [folderName] : currentPath;
-                  handleDirectoryNavigate(file, parts);
-                } else {
-                  if (!file.content && accessToken) {
-                    setIsLoading(true);
-                    try {
-                      const fileId = file.driveId || file.id;
-                      let downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
-                      const mType = (file.mimeType || '').toLowerCase();
-                      if (mType.includes('google-apps.document')) {
-                        downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/plain`;
-                      } else if (mType.includes('google-apps.spreadsheet')) {
-                        downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/csv`;
-                      }
-                      
-                      const isTextOrCode = mType.startsWith('text/') || 
-                                           mType === 'application/json' || 
-                                           mType === 'application/javascript' || 
-                                           mType === 'application/x-javascript' ||
-                                           mType.includes('google-apps.document') || 
-                                           mType.includes('google-apps.spreadsheet');
-                      
-                      if (isTextOrCode) {
-                        const res = await fetch(downloadUrl, {
-                          headers: { Authorization: `Bearer ${accessToken}` }
-                        });
-                        if (res.ok) {
-                          const text = await res.text();
-                          file.content = text;
-                          
-                          if (activeSpaceId?.startsWith('space-creation-')) {
-                            setSpaceCreationSources(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
-                          } else {
-                            setSandboxFiles(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
-                            if (activeSpaceId) {
-                              const cached = workspaceCacheRef.current[activeSpaceId];
-                              if (cached && cached.sandboxFiles) {
-                                cached.sandboxFiles = cached.sandboxFiles.map((f: any) => f.id === file.id ? { ...f, content: text } : f);
+          <AnimatePresence>
+            {isSourcesPanelOpen && (viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
+              <CanvasSidebar 
+                files={activeSpaceId?.startsWith('space-creation-') ? spaceCreationSources : sandboxFiles}
+                driveFiles={driveFiles}
+                selectedFile={selectedFile}
+                indexFileSelected={indexFileSelected}
+                onFileSelect={async (file) => {
+                  if (!file) {
+                    setSelectedFile(null);
+                    return;
+                  }
+                  if (file.type === 'folder' || (file.mimeType && file.mimeType.includes('folder'))) {
+                    const folderName = file.name || file.filename || '';
+                    const parts = folderName ? [folderName] : currentPath;
+                    handleDirectoryNavigate(file, parts);
+                  } else {
+                    if (!file.content && accessToken) {
+                      setIsLoading(true);
+                      try {
+                        const fileId = file.driveId || file.id;
+                        let downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+                        const mType = (file.mimeType || '').toLowerCase();
+                        if (mType.includes('google-apps.document')) {
+                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/plain`;
+                        } else if (mType.includes('google-apps.spreadsheet')) {
+                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/csv`;
+                        }
+                        
+                        const isTextOrCode = mType.startsWith('text/') || 
+                                             mType === 'application/json' || 
+                                             mType === 'application/javascript' || 
+                                             mType === 'application/x-javascript' ||
+                                             mType.includes('google-apps.document') || 
+                                             mType.includes('google-apps.spreadsheet');
+                        
+                        if (isTextOrCode) {
+                          const res = await fetch(downloadUrl, {
+                            headers: { Authorization: `Bearer ${accessToken}` }
+                          });
+                          if (res.ok) {
+                            const text = await res.text();
+                            file.content = text;
+                            
+                            if (activeSpaceId?.startsWith('space-creation-')) {
+                              setSpaceCreationSources(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
+                            } else {
+                              setSandboxFiles(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
+                              if (activeSpaceId) {
+                                const cached = workspaceCacheRef.current[activeSpaceId];
+                                if (cached && cached.sandboxFiles) {
+                                  cached.sandboxFiles = cached.sandboxFiles.map((f: any) => f.id === file.id ? { ...f, content: text } : f);
+                                }
                               }
                             }
                           }
+                        } else {
+                          file.content = `[Binary content / display not supported for mimeType: ${file.mimeType || 'unknown'}]`;
                         }
-                      } else {
-                        file.content = `[Binary content / display not supported for mimeType: ${file.mimeType || 'unknown'}]`;
+                      } catch (err) {
+                        console.error("Failed to download file content for preview:", err);
+                      } finally {
+                        setIsLoading(false);
                       }
-                    } catch (err) {
-                      console.error("Failed to download file content for preview:", err);
-                    } finally {
-                      setIsLoading(false);
                     }
+                    setSelectedFile(file);
+                    setIndexFileSelected(file.name.toLowerCase() === 'index.html' || file.name.toLowerCase().endsWith('/index.html'));
+                    setViewState('app');
                   }
-                  setSelectedFile(file);
-                  setIndexFileSelected(file.name.toLowerCase() === 'index.html' || file.name.toLowerCase().endsWith('/index.html'));
-                  setViewState('app');
-                }
-              }}
-              activeSidebar={activeSidebar}
-              currentPath={currentPath}
-              setCurrentPath={setCurrentPath}
-              theme={appTheme}
-              directoryContentsMap={directoryContentsMap}
-              onDirectoryNavigate={handleDirectoryNavigate}
-              loadingDirectories={loadingDirectories}
-              impactSpaceId={impactSpaceId}
-              animatingFileIds={animatingFileIds}
-              onCloseSidebar={() => setIsSourcesPanelOpen(false)}
-              forceSingleColumn={true}
-            />
-          )}
+                }}
+                activeSidebar={activeSidebar}
+                currentPath={currentPath}
+                setCurrentPath={setCurrentPath}
+                theme={appTheme}
+                directoryContentsMap={directoryContentsMap}
+                onDirectoryNavigate={handleDirectoryNavigate}
+                loadingDirectories={loadingDirectories}
+                impactSpaceId={impactSpaceId}
+                animatingFileIds={animatingFileIds}
+                onCloseSidebar={() => setIsSourcesPanelOpen(false)}
+                forceSingleColumn={true}
+              />
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

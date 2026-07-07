@@ -780,9 +780,9 @@ export function NativeViewer({
 
     if (hideHeader) {
       return (
-        <div className="w-full h-full bg-f8f9fa flex items-center justify-center overflow-hidden select-none relative">
+        <div className="w-full h-full bg-transparent flex items-center justify-center overflow-hidden select-none relative">
           {/* Slide Stage Container with NO black borders or outlines */}
-          <div className="w-full h-full bg-white p-5 flex flex-col justify-between text-left relative overflow-hidden text-neutral-850">
+          <div className="w-full h-full bg-white border-none rounded-none p-5 flex flex-col justify-between text-left relative overflow-hidden text-neutral-850">
             <div className="absolute top-4 left-5 right-5 flex justify-between select-none border-b border-slate-100 pb-1">
               <span className="text-[8px] text-fbbc05 font-bold tracking-widest uppercase">Slide Preview</span>
               <span className="text-[8px] text-slate-400 font-medium">Slide {activeSlideIndex + 1} of {slides.length}</span>
@@ -1383,7 +1383,7 @@ export function NativeViewer({
       if (isGoogleDoc) {
         embedUrl = `https://docs.google.com/document/d/${driveId}/preview`;
       } else if (isGoogleSlide) {
-        embedUrl = `https://docs.google.com/presentation/d/${driveId}/preview`;
+        embedUrl = `https://docs.google.com/presentation/d/${driveId}/preview?rm=minimal`;
       } else if (isGoogleSheet) {
         embedUrl = `https://docs.google.com/spreadsheets/d/${driveId}/preview`;
       }
@@ -1396,7 +1396,7 @@ export function NativeViewer({
           cleanEmbedUrl = `https://docs.google.com/document/d/${driveId}/preview`;
           artifactType = 'doc';
         } else if (isGoogleSlide) {
-          cleanEmbedUrl = `https://docs.google.com/presentation/d/${driveId}/embed?rm=minimal`;
+          cleanEmbedUrl = `https://docs.google.com/presentation/d/${driveId}/preview?rm=minimal`;
           artifactType = 'slide';
         } else if (isGoogleSheet) {
           cleanEmbedUrl = `https://docs.google.com/spreadsheets/d/${driveId}/preview`;
@@ -1438,11 +1438,11 @@ export function NativeViewer({
               )}
             </div>
           )}
-          <div className="flex-1 bg-f4f5f7 p-4 relative overflow-hidden">
-            <div className="w-full h-full relative overflow-hidden rounded-2xl bg-white">
+          <div className="flex-1 bg-transparent relative overflow-hidden">
+            <div className="w-full h-full relative overflow-hidden rounded-none bg-white">
               <iframe 
                 src={embedUrl}
-                className="w-full h-[calc(100%+56px)] -mt-[56px] border border-gray-200 rounded-2xl bg-white shadow-sm"
+                className="w-full h-[calc(100%+56px)] -mt-[56px] border-none rounded-none bg-white"
                 allow="autoplay"
                 title={file.name}
               />
@@ -1567,24 +1567,24 @@ export function NativeViewer({
             </div>
           )}
 
-          <div className={`flex-1 ${isPreviewCard ? 'bg-white p-0 overflow-hidden' : 'bg-gray-50 p-4 pr-16'}`}>
+          <div className="flex-1 bg-transparent overflow-hidden">
             {sandboxUrl ? (
               <iframe 
                 src={previewUrl}
-                className={`w-full h-full bg-white ${isPreviewCard ? 'border-none select-none pointer-events-none rounded-none' : 'border border-gray-200 rounded-2xl shadow-sm'}`}
+                className="w-full h-full bg-white border-none rounded-none"
                 allow="camera; microphone; geolocation"
                 title={file.name}
               />
             ) : (file.content && !file.content.includes('Contents will load dynamically')) ? (
               <iframe 
                 srcDoc={file.content}
-                className={`w-full h-full bg-white ${isPreviewCard ? 'border-none select-none pointer-events-none rounded-none' : 'border border-gray-200 rounded-2xl shadow-sm'}`}
+                className="w-full h-full bg-white border-none rounded-none"
                 allow="camera; microphone; geolocation"
                 title={file.name}
               />
             ) : (
-              <div className={`w-full h-full flex flex-col items-center justify-center bg-white ${isPreviewCard ? 'border-none rounded-none p-2' : 'rounded-2xl border border-gray-150 p-6'} text-center text-gray-500`}>
-                <Info size={isPreviewCard ? 18 : 24} className="mb-1.5 text-gray-400" />
+              <div className="w-full h-full flex flex-col items-center justify-center bg-white border-none rounded-none p-6 text-center text-gray-500">
+                <Info size={24} className="mb-1.5 text-gray-400" />
                 <p className="text-[11px] font-semibold text-slate-700">HTML Preview</p>
                 {!isPreviewCard && (
                   <p className="text-xs text-gray-400 mt-1">Please start the active environment to view the responsive iframe.</p>
@@ -1623,8 +1623,8 @@ export function NativeViewer({
             </div>
           )}
 
-          <div className={hideHeader ? "flex-1 overflow-hidden p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : "flex-1 overflow-auto p-4 pr-16"}>
-            <div className={hideHeader ? "bg-white border-0 w-full h-full max-w-full" : "bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm max-w-full"}>
+          <div className="flex-1 overflow-auto bg-transparent">
+            <div className="bg-white border-none w-full h-full max-w-full rounded-none">
               <table className="w-full border-collapse text-left text-xs text-gray-700">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-250 select-none">

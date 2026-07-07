@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, X, ChevronLeft } from 'lucide-react';
 
 interface CanvasHeaderProps {
   projectName?: string;
@@ -138,41 +138,19 @@ export function CanvasHeader({
         {/* Actual people avatars shared with */}
         {!isHome && <SharedMembersAvatars />}
 
-        {/* Open in drive/editor button */}
-        {isNativeDrive && (
-          onOpenInDrive ? (
-            <button
-              onClick={() => onOpenInDrive(selectedFile)}
-              className="h-9 px-4 rounded-full text-[11px] font-bold tracking-wide transition-all duration-200 flex items-center justify-center hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 shrink-0"
-              title={`Open this in Google ${editorName}`}
-            >
-              <span>Open in {editorName}</span>
-            </button>
-          ) : (
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-9 px-4 rounded-full text-[11px] font-bold tracking-wide transition-all duration-200 flex items-center justify-center hover:scale-[1.02] active:scale-[0.98] cursor-pointer decoration-transparent focus:outline-none bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 shrink-0"
-              title={`Open this in Google ${editorName}`}
-            >
-              <span>Open in {editorName}</span>
-            </a>
-          )
-        )}
-
-        {/* Sources side panel toggle borderless button with docs symbol */}
+        {/* Sources side panel toggle button (Context) */}
         {!isHome && onToggleSourcesPanel && (
           <button
             onClick={onToggleSourcesPanel}
-            className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition select-none outline-none border-none bg-transparent ${
-              isSourcesPanelOpen
-                ? 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10'
-                : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/5'
-            }`}
-            title="Toggle space sources panel"
+            className="h-9 px-3.5 rounded-full text-[11px] font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-slate-700 dark:text-[#E3E3E3] shrink-0"
+            title="Toggle space context panel"
           >
-            <span className="material-symbols-rounded font-medium select-none" style={{ fontSize: '22px' }}>description</span>
+            {isSourcesPanelOpen ? (
+              <ChevronRight size={15} className="text-slate-500 dark:text-slate-400" />
+            ) : (
+              <ChevronLeft size={15} className="text-slate-500 dark:text-slate-400" />
+            )}
+            <span>Context</span>
           </button>
         )}
       </div>

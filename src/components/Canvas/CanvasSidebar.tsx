@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { 
   ChevronRight,
   ChevronLeft,
@@ -258,50 +259,31 @@ export function CanvasSidebar({
     const activeFolderName = currentPath.length > 0 ? currentPath[currentPath.length - 1] : 'Files';
 
     return (
-      <div className="flex items-center h-full shrink-0 relative z-20">
+      <motion.div 
+        initial={{ width: 0, opacity: 0 }}
+        animate={{ width: singleColWidth, opacity: 1 }}
+        exit={{ width: 0, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+        className="flex items-stretch h-full shrink-0 relative z-20 overflow-hidden"
+      >
         <div 
           style={{ width: `${singleColWidth}px` }}
-          className="flex flex-col h-full bg-white dark:bg-[#1E1F22] select-none shrink-0 rounded-[24px] overflow-hidden border border-slate-200/60 dark:border-slate-800" 
+          className="flex flex-col h-full bg-white dark:bg-[#1E1F22] select-none shrink-0 relative rounded-none border-none outline-none" 
           id="canvas-files-sidebar"
         >
-          {/* Header Panel with back / close controls and no title in sources panel mode */}
-          <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 select-none">
-            {currentPath.length > 0 ? (
-              <IconButton 
-                variant="borderless" 
-                onClick={handleBackClick} 
-                title="Go Back"
-                theme={theme}
-                id="canvas-files-sidebar-back"
-              >
-                <ChevronLeft size={18} className="text-[#5F6368] dark:text-[#E3E3E3]" />
-              </IconButton>
-            ) : <div />}
-
-            {onCloseSidebar ? (
-              <IconButton 
-                variant="borderless" 
-                onClick={onCloseSidebar} 
-                title="Close sources panel"
-                theme={theme}
-                id="canvas-files-sidebar-close"
-              >
-                <X size={18} className="text-[#5F6368] dark:text-[#E3E3E3]" />
-              </IconButton>
-            ) : (
-              !forceSingleColumn && (
-                <h2 
-                  className="font-semibold tracking-tight text-gray-800 dark:text-white text-[16px] truncate"
-                  style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
-                >
-                  {currentPath.length > 0 ? activeFolderName : 'Files'}
-                </h2>
-              )
-            )}
-          </div>
-
+          {/* Left hairline divider, inset 16px from top/bottom */}
+          <div className="absolute left-0 top-4 bottom-4 w-[1px] bg-slate-200/60 dark:bg-slate-800" />
           {/* Scrollable contents */}
           <div className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5">
+            {currentPath.length > 0 && (
+              <div 
+                onClick={handleBackClick}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-[#E3E3E3] text-[12px] font-semibold transition duration-150 select-none mb-1"
+              >
+                <ChevronLeft size={16} />
+                <span>Back</span>
+              </div>
+            )}
             {activeLevelItems.length === 0 ? (
               <div className="py-8 text-center text-xs text-gray-400">
                 Empty folder
@@ -361,7 +343,7 @@ export function CanvasSidebar({
           onMouseDown={startResizeSingleCol}
           title="Drag to resize file sidebar"
         />
-      </div>
+      </motion.div>
     );
   }
 
