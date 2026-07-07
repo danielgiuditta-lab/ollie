@@ -237,7 +237,10 @@ export function LeftNav({
         {/* Spaces items */}
         <div className="flex flex-col gap-1 w-full shrink-0">
           {spaces.map((space) => {
-            const isActive = isSpaceActive(space);
+            const isActive = isSpaceActive(space) && !(
+              chatModel === 'B' && 
+              space.chats.some((chat: any) => chat.id === activeChatId)
+            );
             const isSpaceExpanded = expandedSpaces[space.id];
 
             return (
@@ -304,11 +307,12 @@ export function LeftNav({
                         <div 
                           key={chat.id}
                           onClick={() => handleSelectChat(space, chat)}
-                          className={`h-[32px] px-3 rounded-lg flex items-center cursor-pointer text-xs font-medium transition-colors ${
+                          className={`h-[32px] px-3 rounded-[20px] flex items-center cursor-pointer text-[14px] transition-colors duration-200 ${
                             isChatActive
-                              ? 'bg-blue-50/70 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
-                              : 'text-slate-600 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/5'
+                              ? 'bg-[#f0f4f9] dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold'
+                              : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white font-medium'
                           }`}
+                          style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
                         >
                           {chat.name}
                         </div>
