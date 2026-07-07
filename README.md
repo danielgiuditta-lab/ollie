@@ -44,6 +44,12 @@ This guide is written specifically for **designers and builders**. It puts our *
 
 ---
 
+### ⚡ 7. Inferred Proactive Tasks
+* **What Happens**: The platform scans the user's workspace history (emails, chat threads, Drive comments) in the background and uses Gemini to infer actionable To-Do tasks. If a task is actionable, a background developer agent automatically drafts the changes in an isolated sandbox, displaying a loading status loader on the dashboard followed by a visual preview card. The user can click the preview to inspect, edit, or approve and publish the draft back to Google Drive.
+* **Views & Components Used**: [`InferredTaskCard.tsx`](src/components/Chat/InferredTaskCard.tsx) (flat task cells), [`StatusIndicator.tsx`](src/components/Chat/StatusIndicator.tsx) (animated progress indicator), `/api/workspace-digest` (LLM workspace synthesis route).
+
+---
+
 ## 🎨 2. Core Architecture & Terminology
 
 Here are the core domain terms used throughout the code and design system so you can vibe-code with precision.
@@ -85,7 +91,8 @@ Below is the master catalog of all React UI components in the repository, organi
 * **[`ChatSidebar.tsx`](src/components/Chat/ChatSidebar.tsx)** — Main container for agent conversation trajectory and streaming state.
 * **[`Composer.tsx`](src/components/Chat/Composer.tsx)** — Input text box featuring file attachment chips, prompt send controls, and AI mode switches.
 * **[`TaskCard.tsx`](src/components/Chat/TaskCard.tsx)** — Expandable accordion card rendering agent tool calls, execution steps, and progress timeline.
-* **[`BotMessage.tsx`](src/components/Chat/BotMessage.tsx)** — Agent output speech bubble formatted with syntax highlighting and markdown parsing.
+* **[`InferredTaskCard.tsx`](src/components/Chat/InferredTaskCard.tsx)** — Flat light-grey cell representing inferred proactive tasks on the Home landing dashboard.
+* **[`BotMessage.tsx`](src/components/Chat/BotMessage.tsx)** — Agent speech bubble.
 * **[`UserMessage.tsx`](src/components/Chat/UserMessage.tsx)** — User prompt bubble with attached resource capsule chips.
 * **[`ThinkingAnimation.tsx`](src/components/Chat/ThinkingAnimation.tsx)** — Smooth looping pulsing indicator representing model inference.
 

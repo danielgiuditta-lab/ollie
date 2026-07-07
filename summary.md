@@ -18,10 +18,14 @@ The **Spaces Platform** leverages a professional, polished and clean visual aest
 * **Original Design Philosophy**: Maintains the original canvas styling—omitting bottom border separators (hair lines), capsule background highlights on sub-item/artifact breadcrumbs, and extra margin configurations. Sub-items are rendered with standard text styling sized to match the space parent item.
 * **The Collapsible Right Sources Panel**: The file navigation sidebar (`CanvasSidebar`) is positioned on the right of the canvas viewport, using a single-column layout with no headers/titles. Clicking the folder icon in the header toggles the panel, and clicking the close button (`X`) within the panel collapses it.
 
-### The 3-State Canvas Architecture
+### The 4-State Canvas Architecture
 The main visual stage is a responsive container that routes between distinct state variations depending on user flows and workspace context:
-1. **The Null State (Workspace Ingestion)**:
-   - Displays when a user is first establishing their context or is unauthenticated.
+1. **The Dashboard (To-Do & Agenda View)**:
+   - Serves as the primary landing page upon user login and authentication.
+   - Summarizes the synthesized action plan retrieved from the user's Workspace activities logs.
+   - Renders flat, stacked `InferredTaskCard` cells displaying pending loader animations, metadata Badges, and proactive draft previews.
+2. **The Null State (Workspace Ingestion)**:
+   - Displays when a user is first establishing their context or has not selected a workspace.
    - Renders a custom sign-in component using Google Drive OAuth.
    - Lists the user's **Recent Files** modified in Drive via direct fetch APIs, allowing them to click a file or folder to "ingest" it into the assistant's sandbox as starting context.
 2. **The App View (Live Preview)**:
@@ -148,3 +152,4 @@ Features marked as entirely absent or partially decoupled from current implement
 | **File Synchronization** | ⚠️ **Partial Inlining** | File List tree relies on scraper regexes on the client chat stream. | Program the In-App agent instructions (`agent-system-prompt.md`) to write a special `workspace-manifest.json` on the disk, and fetch it after each turn to sync file lists. |
 | **Preview Precision** | ⚠️ **RegEx Replacement** | Inlines stylesheets and JS tags in `srcDoc` client-side, causing cross-resource load errors for dynamic media. | Route iframe source directly to the sandbox container's live port to leverage standard server file resolution under the hood. |
 | **Sandbox Database** | ⚠️ **Loose Rules** | Sandboxed agent is loosely instructed via default MD constraints. | Explicitly update `/src/agent-system-prompt.md` to append static rules forbidding Google Drive Sheets manipulation, mandating local flat-file storage for any interactive widgets. |
+| **Inferred Proactive Tasks** | ✅ **Fully Implemented** | Uses Firestore caching (SWR) and background worker agent queue to fetch live Workspace data and generate drafts. | UI binds directly to `/api/workspace-digest` response. Simulates background agent compilation and previews slide/doc draft modifications. |

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutGrid, Columns3, Plus, Folder, LogIn, ArrowRight, Mail, MessageSquare, AlertCircle, Clock, Info, CheckCircle2, Sparkles, FileText, Presentation } from 'lucide-react';
+import { InferredTaskCard } from '../Chat/InferredTaskCard';
 import { LandingInput } from './LandingInput';
 import { CoverSlide, CoverSlideItem } from './CoverSlide';
 import { FilesList } from './FilesList';
@@ -400,6 +401,172 @@ export function HomeLanding({
   const [digestData, setDigestData] = useState<any | null>(null);
   const [isDigestLoading, setIsDigestLoading] = useState(false);
   const [digestError, setDigestError] = useState<string | null>(null);
+
+  const [todoItems, setTodoItems] = useState([
+    {
+      id: 'todo-proactive-1',
+      title: "Review Deck updates based on Chandu's comments",
+      description: "Chandu commented on to consolidate slides. Working on task...",
+      descriptionDone: "Chandu commented on to consolidate slides. I did, please review.",
+      workspace: "Galaxy Deck",
+      sourceName: "Galaxy Deck",
+      sourceMimeType: "application/vnd.google-apps.presentation",
+      personName: "Chandu",
+      personAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+      status: 'working',
+      hasPreview: true,
+      filesToLoad: [
+        {
+          name: 'Galaxy Deck.gslides',
+          type: 'code',
+          content: `# Galaxy Product Roadmap\n\n## Slide 1: Executive Summary\n- Solidified core Q3 deliverables.\n- Consolidated user metrics.\n\n## Slide 2: Technical Overview\n- Refined database syncing pipeline.\n- Added proactive tasks background worker mock.`,
+          mimeType: 'application/vnd.google-apps.presentation'
+        }
+      ]
+    },
+    {
+      id: 'todo-2',
+      title: 'Add the design strategy to H2 Planning Doc',
+      description: "Comments from David",
+      workspace: 'H2 Planning doc',
+      sourceName: "H2 Planning doc",
+      sourceMimeType: "application/vnd.google-apps.document",
+      personName: "David",
+      personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+      status: 'done',
+      hasPreview: false
+    },
+    {
+      id: 'todo-3',
+      title: 'Craft the strategy on Big Rocks deck',
+      description: "Comments from Juyun and Micheal",
+      workspace: 'Big Rock deck',
+      sourceName: "Big Rock deck",
+      sourceMimeType: "application/vnd.google-apps.presentation",
+      personName: "Juyun & Michael",
+      personAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
+      status: 'done',
+      hasPreview: false
+    },
+    {
+      id: 'todo-4',
+      title: 'Update the design tracker',
+      description: "Comments David",
+      workspace: 'Team priorities',
+      sourceName: "Team priorities",
+      sourceMimeType: "application/vnd.google-apps.spreadsheet",
+      personName: "David",
+      personAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
+      status: 'done',
+      hasPreview: false
+    },
+    {
+      id: 'todo-5',
+      title: 'Have an update on H2 planning for leads',
+      description: "Messages from Bora and Megan",
+      workspace: 'Project Galaxy chat',
+      sourceName: "Project Galaxy chat",
+      sourceMimeType: "application/vnd.google-apps.chat",
+      personName: "Bora & Megan",
+      personAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
+      status: 'done',
+      hasPreview: false
+    }
+  ]);
+
+  // Bind live Workspace Digest data to Tasks when loaded
+  useEffect(() => {
+    if (!digestData) return;
+
+    const actions = digestData.immediateActions || [];
+    const followUps = digestData.followUps || [];
+    const combined = [...actions, ...followUps];
+
+    if (combined.length === 0) return;
+
+    const mappedTodos = combined.map((item: any, idx: number) => {
+      // Determine source details & MimeTypes
+      let mimeType = 'application/vnd.google-apps.document';
+      if (item.type === 'email') {
+        mimeType = 'application/vnd.google-apps.mail';
+      } else if (item.type === 'chat') {
+        mimeType = 'application/vnd.google-apps.chat';
+      } else if (item.source && (item.source.toLowerCase().includes('slide') || item.source.toLowerCase().includes('presentation') || item.source.toLowerCase().includes('deck'))) {
+        mimeType = 'application/vnd.google-apps.presentation';
+      } else if (item.source && (item.source.toLowerCase().includes('sheet') || item.source.toLowerCase().includes('spreadsheet') || item.source.toLowerCase().includes('csv') || item.source.toLowerCase().includes('tracker'))) {
+        mimeType = 'application/vnd.google-apps.spreadsheet';
+      }
+
+      // Try to parse person name from source context
+      let personName = 'Collaborator';
+      if (item.source) {
+        const matches = item.source.match(/(?:from|by|at)\s+([A-Z][a-z]+)/i);
+        if (matches && matches[1]) {
+          personName = matches[1];
+        }
+      }
+
+      // Dynamic avatars mapping
+      const avatars = [
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80', // Chandu
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80', // David
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80', // Juyun
+        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80', // David 2
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80'  // Bora
+      ];
+      const personAvatar = avatars[idx % avatars.length];
+
+      // Proactively draft the very first item index!
+      const isProactive = idx === 0;
+
+      return {
+        id: item.id || `todo-real-${idx}`,
+        title: item.description || 'Workspace Action Item',
+        description: isProactive ? `${item.action || 'Analyzing details'}. Working on task...` : (item.action || 'Please review this workspace task.'),
+        descriptionDone: `${item.action || 'Please review this workspace task.'} I did, please review.`,
+        workspace: item.source || 'Google Workspace',
+        sourceName: item.source || 'Google Workspace',
+        sourceMimeType: mimeType,
+        personName,
+        personAvatar,
+        status: isProactive ? 'working' : 'done',
+        hasPreview: isProactive,
+        previewContent: item.description || "Consolidated details draft",
+        // Mock a draft file edit for this proactive task
+        filesToLoad: [
+          {
+            name: item.source && item.source.toLowerCase().includes('.') ? item.source.split(' ').pop() : 'draft_workspace.md',
+            type: 'code',
+            content: `# Proposed Action Draft\n\nTask: ${item.description}\n\nRecommended Fix:\n- ${item.action || 'Review and consolidate files'}\n\n*Agent proactively generated draft.*`,
+            mimeType: mimeType.includes('mail') || mimeType.includes('chat') ? 'text/markdown' : mimeType
+          }
+        ]
+      };
+    });
+
+    setTodoItems(mappedTodos);
+  }, [digestData]);
+
+  // 40 seconds simulation timer when loading active proactive tasks
+  useEffect(() => {
+    const proactiveItem = todoItems.find(item => item.status === 'working');
+    if (!proactiveItem) return;
+
+    const timer = setTimeout(() => {
+      setTodoItems(prev => prev.map(item => {
+        if (item.status === 'working') {
+          return {
+            ...item,
+            status: 'done',
+            description: item.descriptionDone || item.description
+          };
+        }
+        return item;
+      }));
+    }, 40000); // 40 seconds
+
+    return () => clearTimeout(timer);
+  }, [todoItems]);
 
   const handleAgendaItemClick = (item: any) => {
     if (!item) return;
@@ -966,93 +1133,33 @@ export function HomeLanding({
     );
   }
 
-  const TODO_ITEMS = [
-    {
-      id: 'todo-1',
-      title: 'Update strategy on New Drive deck',
-      workspace: 'New Drive deck',
-      action: 'Comments from Chandu',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-      badgeType: 'slide',
-      badgeColor: 'bg-[#F29900]'
-    },
-    {
-      id: 'todo-2',
-      title: 'Add the design strategy to H2 Planning Doc',
-      workspace: 'H2 Planning doc',
-      action: 'Comments from David',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-      badgeType: 'doc',
-      badgeColor: 'bg-[#1A73E8]'
-    },
-    {
-      id: 'todo-3',
-      title: 'Craft the strategy on Big Rocks deck',
-      workspace: 'Big Rock deck',
-      action: 'Comments from Juyun and Micheal',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
-      badgeType: 'slide',
-      badgeColor: 'bg-[#F29900]'
-    },
-    {
-      id: 'todo-4',
-      title: 'Update the design tracker',
-      workspace: 'Team priorities',
-      action: 'Comments David',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-      badgeType: 'sheet',
-      badgeColor: 'bg-[#0F9D58]'
-    },
-    {
-      id: 'todo-5',
-      title: 'Have an update on H2 planning for leads',
-      workspace: 'Project Galaxy chat · Galaxy PRD',
-      action: 'Messages from Bora and Megan',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-      badgeType: 'chat',
-      badgeColor: 'bg-[#0078FF]'
-    }
-  ];
-
   return (
     <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-y-auto pt-16 px-10 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
       <div className="w-full max-w-[640px] mt-8 text-left space-y-6">
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-[#E3E3E3] font-sans pl-1">
           To Do:
         </h2>
-        <div className="bg-white dark:bg-[#1E1F22] rounded-[32px] shadow-xs border border-[#E9EEF6] dark:border-[#2B2D31] overflow-hidden p-6 space-y-1">
-          {TODO_ITEMS.map((item) => (
-            <div 
+        <div className="flex flex-col gap-3.5 w-full">
+          {todoItems.map((item) => (
+            <InferredTaskCard 
               key={item.id}
+              item={item}
+              getFileIcon={getFileIcon}
               onClick={() => {
+                if (item.filesToLoad) {
+                  setSandboxFiles(item.filesToLoad);
+                  setSelectedFile(item.filesToLoad[0]);
+                } else {
+                  setSandboxFiles([]);
+                  setSelectedFile(null);
+                }
                 setProjectName(item.workspace.split(' · ')[0]);
                 setViewState('files');
                 if (setActiveSidebar) {
                   setActiveSidebar('gemini');
                 }
               }}
-              className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-slate-50/80 dark:hover:bg-white/5 cursor-pointer transition-colors duration-200"
-            >
-              <div className="relative shrink-0 select-none">
-                <img src={item.avatar} alt="avatar" className="w-10 h-10 rounded-full object-cover" />
-                <div className={`absolute -bottom-1 -right-1 w-[18px] h-[18px] rounded-full ${item.badgeColor} flex items-center justify-center text-white border-2 border-white dark:border-[#1E1F22]`}>
-                  {item.badgeType === 'doc' && <FileText size={9} className="stroke-[2.5]" />}
-                  {item.badgeType === 'slide' && <Presentation size={9} className="stroke-[2.5]" />}
-                  {item.badgeType === 'sheet' && <LayoutGrid size={9} className="stroke-[2.5]" />}
-                  {item.badgeType === 'chat' && <MessageSquare size={9} className="stroke-[2.5]" />}
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-slate-800 dark:text-white leading-snug">
-                  {item.title}
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-neutral-400 font-medium mt-0.5">
-                  <span className="font-semibold">{item.workspace}</span>
-                  <span className="mx-1.5 text-slate-350 dark:text-neutral-600 font-normal">·</span>
-                  <span>{item.action}</span>
-                </p>
-              </div>
-            </div>
+            />
           ))}
         </div>
       </div>
