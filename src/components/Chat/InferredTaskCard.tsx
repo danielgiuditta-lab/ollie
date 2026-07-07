@@ -43,13 +43,13 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
         </div>
         {/* Source and Person capsule chips */}
         <div className="flex flex-wrap items-center gap-2 mt-2">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/50 dark:border-[#3E4042] text-[11px] font-semibold text-slate-650 dark:text-neutral-300">
-            <img src={getFileIcon(item.sourceMimeType)} alt="doc icon" className="w-3.5 h-3.5 object-contain" />
-            <span>{item.sourceName}</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/50 dark:border-[#3E4042] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
+            <img src={getFileIcon(item.sourceMimeType)} alt="doc icon" className="w-3.5 h-3.5 object-contain shrink-0" />
+            <span className="max-w-[100px] truncate block">{item.sourceName}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/50 dark:border-[#3E4042] text-[11px] font-semibold text-slate-650 dark:text-neutral-300">
-            <img src={item.personAvatar} alt="avatar icon" className="w-3.5 h-3.5 rounded-full object-cover" />
-            <span>{item.personName}</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/50 dark:border-[#3E4042] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
+            <img src={item.personAvatar} alt="avatar icon" className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
+            <span className="max-w-[80px] truncate block">{item.personName}</span>
           </div>
         </div>
       </div>

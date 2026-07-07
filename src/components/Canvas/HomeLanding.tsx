@@ -6,6 +6,7 @@ import { CoverSlide, CoverSlideItem } from './CoverSlide';
 import { FilesList } from './FilesList';
 import { SearchJourney } from './SearchJourney';
 import { CreationJourney } from './CreationJourney';
+import { ShapeLoader } from '../Shared/ShapeLoader';
 
 import docsIcon from '../../assets/docs.png';
 import sheetsIcon from '../../assets/sheets.png';
@@ -502,6 +503,7 @@ export function HomeLanding({
       }
     ];
   });
+  const todoCacheRef = React.useRef<Record<string, any[]>>({});
 
   // Bind live Workspace Digest data to Tasks when loaded
   useEffect(() => {
@@ -578,7 +580,9 @@ export function HomeLanding({
     });
 
     setTodoItems(mappedTodos);
-  }, [digestData]);
+    const spaceKey = activeSpaceId || 'home';
+    todoCacheRef.current[spaceKey] = mappedTodos;
+  }, [digestData, activeSpaceId]);
 
   // 40 seconds simulation timer when loading active proactive tasks
   useEffect(() => {
@@ -586,20 +590,25 @@ export function HomeLanding({
     if (!proactiveItem) return;
 
     const timer = setTimeout(() => {
-      setTodoItems(prev => prev.map(item => {
-        if (item.status === 'working') {
-          return {
-            ...item,
-            status: 'done',
-            description: item.descriptionDone || item.description
-          };
-        }
-        return item;
-      }));
+      setTodoItems(prev => {
+        const updated = prev.map(item => {
+          if (item.status === 'working') {
+            return {
+              ...item,
+              status: 'done',
+              description: item.descriptionDone || item.description
+            };
+          }
+          return item;
+        });
+        const spaceKey = activeSpaceId || 'home';
+        todoCacheRef.current[spaceKey] = updated;
+        return updated;
+      });
     }, 40000); // 40 seconds
 
     return () => clearTimeout(timer);
-  }, [todoItems]);
+  }, [todoItems, activeSpaceId]);
 
   // Filter todoItems based on the active space/project
   const filteredTodoItems = React.useMemo(() => {
@@ -693,10 +702,19 @@ export function HomeLanding({
   React.useEffect(() => {
     if (!accessToken) {
       setDigestData(null);
+      setTodoItems([]);
       return;
     }
 
-    setTodoItems([]); // Clear mock tasks immediately when accessToken is loaded
+    const spaceKey = activeSpaceId || 'home';
+    const cached = todoCacheRef.current[spaceKey];
+    if (cached) {
+      setTodoItems(cached);
+      setIsDigestLoading(false);
+      return;
+    }
+
+    setTodoItems([]); // Clear mock tasks immediately when accessToken or space changes
     const loadDigest = async () => {
       setIsDigestLoading(true);
       setDigestError(null);
@@ -721,7 +739,7 @@ export function HomeLanding({
     };
 
     loadDigest();
-  }, [accessToken]);
+  }, [accessToken, activeSpaceId]);
 
   // Fallback check to support bypassing authentication or showing login CTA
   const isLoggedIn = accessToken !== null || bypassAuth;
@@ -1231,29 +1249,35 @@ export function HomeLanding({
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-[#E3E3E3] font-sans pl-1">
           To Do:
         </h2>
-        <div className="flex flex-col gap-3.5 w-full">
-          {filteredTodoItems.map((item) => (
-            <InferredTaskCard 
-              key={item.id}
-              item={item}
-              getFileIcon={getFileIcon}
-              onClick={() => {
-                if (item.filesToLoad) {
-                  setSandboxFiles(item.filesToLoad);
-                  setSelectedFile(item.filesToLoad[0]);
-                } else {
-                  setSandboxFiles([]);
-                  setSelectedFile(null);
-                }
-                setProjectName(item.workspace.split(' · ')[0]);
-                setViewState('files');
-                if (setActiveSidebar) {
-                  setActiveSidebar('gemini');
-                }
-              }}
-            />
-          ))}
-        </div>
+        {isDigestLoading ? (
+          <div className="w-full py-16 flex items-center justify-center">
+            <ShapeLoader size={80} />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3.5 w-full">
+            {filteredTodoItems.map((item) => (
+              <InferredTaskCard 
+                key={item.id}
+                item={item}
+                getFileIcon={getFileIcon}
+                onClick={() => {
+                  if (item.filesToLoad) {
+                    setSandboxFiles(item.filesToLoad);
+                    setSelectedFile(item.filesToLoad[0]);
+                  } else {
+                    setSandboxFiles([]);
+                    setSelectedFile(null);
+                  }
+                  setProjectName(item.workspace.split(' · ')[0]);
+                  setViewState('files');
+                  if (setActiveSidebar) {
+                    setActiveSidebar('gemini');
+                  }
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
