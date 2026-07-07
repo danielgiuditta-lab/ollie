@@ -1,5 +1,4 @@
-import React from 'react';
-import { ChevronRight, X, ChevronLeft } from 'lucide-react';
+import { ChevronRight, X } from 'lucide-react';
 
 interface CanvasHeaderProps {
   projectName?: string;
@@ -142,13 +141,13 @@ export function CanvasHeader({
         {!isHome && onToggleSourcesPanel && (
           <button
             onClick={onToggleSourcesPanel}
-            className="h-9 px-3.5 rounded-full text-[11px] font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-slate-700 dark:text-[#E3E3E3] shrink-0"
+            className="h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 bg-[#003BC4]/5 dark:bg-[#282A2D] hover:bg-[#003BC4]/10 dark:hover:bg-[#35373A] text-slate-700 dark:text-white"
             title="Toggle space context panel"
           >
             {isSourcesPanelOpen ? (
-              <ChevronRight size={15} className="text-slate-500 dark:text-slate-400" />
+              <span className="material-symbols-rounded text-[20px] select-none text-slate-500 dark:text-slate-400">chevron_right</span>
             ) : (
-              <ChevronLeft size={15} className="text-slate-500 dark:text-slate-400" />
+              <span className="material-symbols-rounded text-[20px] select-none text-slate-500 dark:text-slate-400">chevron_left</span>
             )}
             <span>Context</span>
           </button>
