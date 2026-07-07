@@ -3833,6 +3833,7 @@ export default function App() {
         projectName={projectName}
         activeSpaceId={activeSpaceId}
         onCreateSpace={handleCreateSpace}
+        isChatSide={viewState !== 'ai_summary' && chatDockPosition === 'side'}
       />
       {/* 2. Chat Sidebar (Docked to Side) */}
       {viewState !== 'ai_summary' && chatDockPosition === 'side' && (
@@ -4070,25 +4071,15 @@ export default function App() {
                 className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text"
                 id="floating-bottom-chat"
               >
-                <div className="bg-white dark:bg-[#1E1F22] rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-lg p-3 flex items-end gap-3">
-                  <div className="flex-1 min-w-0">
-                    <Composer 
-                      onSend={handleSendMessage}
-                      disabled={isLoading}
-                      placeholder="Ask Gemini anything about your workspace..."
-                      theme={appTheme}
-                      onCreateArtifact={handleCreateArtifactApp}
-                    />
-                  </div>
-                  
-                  <button
-                    onClick={() => setChatDockPosition('side')}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 hover:bg-slate-100 dark:bg-[#2B2D31] dark:hover:bg-[#3E4042] border border-slate-200 dark:border-slate-700 text-slate-650 dark:text-slate-350 cursor-pointer shadow-xs shrink-0 mb-1"
-                    title="Snap to side"
-                  >
-                    <span className="material-symbols-rounded text-[20px]">grid_layout_side</span>
-                  </button>
-                </div>
+                <Composer 
+                  onSend={handleSendMessage}
+                  disabled={isLoading}
+                  placeholder="Search, add files or tell me what you want to build..."
+                  theme={appTheme}
+                  onCreateArtifact={handleCreateArtifactApp}
+                  layout="bottom"
+                  onDockToSide={() => setChatDockPosition('side')}
+                />
               </div>
             )}
           </div>

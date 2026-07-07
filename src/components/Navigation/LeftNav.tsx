@@ -25,6 +25,7 @@ interface LeftNavProps {
   activeAiSummaryTaskId?: string | null;
   userProfile?: any;
   onCreateSpace?: () => void;
+  isChatSide?: boolean;
 }
 
 // Deterministic emoji helper based on space name hash
@@ -59,7 +60,8 @@ export function LeftNav({
   activeSpaceId = null,
   activeAiSummaryTaskId = null,
   userProfile = null,
-  onCreateSpace
+  onCreateSpace,
+  isChatSide = false
 }: LeftNavProps) {
   const [localExpanded, setLocalExpanded] = useState(false);
   const [expandedSpaces, setExpandedSpaces] = useState<Record<string, boolean>>({});
@@ -167,7 +169,9 @@ export function LeftNav({
         width: isExpandedActive ? 256 : 72,
       }}
       transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-      className="h-full py-6 flex flex-col gap-6 shrink-0 z-20 select-none border-t-0 border-b-0 border-l-0 border-r border-slate-200 dark:border-[#2B2D31] outline-none overflow-hidden relative bg-white dark:bg-[#0B0B0C] text-slate-800 dark:text-white"
+      className={`h-full py-6 flex flex-col gap-6 shrink-0 z-20 select-none border-t-0 border-b-0 border-l-0 ${
+        isChatSide ? 'border-r-0' : 'border-r border-slate-200 dark:border-[#2B2D31]'
+      } outline-none overflow-hidden relative bg-white dark:bg-[#0B0B0C] text-slate-800 dark:text-white`}
       id={isExpandedActive ? 'left-nav-expanded' : 'left-nav-collapsed'}
     >
       {/* 1. Brand Logo Header */}
