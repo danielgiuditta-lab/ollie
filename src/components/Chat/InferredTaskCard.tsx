@@ -24,7 +24,7 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
   return (
     <div 
       onClick={onClick}
-      className="w-full flex items-center justify-between gap-4 px-5 py-4 rounded-[24px] bg-slate-50 dark:bg-[#2B2D31] border border-slate-200 dark:border-[#3E4042] hover:bg-slate-100 dark:hover:bg-[#3E4042] cursor-pointer transition-all duration-200 select-none"
+      className="w-full flex items-center justify-between gap-4 px-4 py-2 rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] hover:bg-[#F1F3F9] dark:hover:bg-[#2B2D31] cursor-pointer transition-all duration-200 select-none"
     >
       {/* Left Column: Status Indicator */}
       <div className="shrink-0 w-8 h-8 flex items-center justify-center">
@@ -32,15 +32,17 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
       </div>
 
       {/* Center Column: Text & Sources */}
-      <div className="flex-1 min-w-0 flex flex-col gap-1.5 text-left">
-        <h4 className="text-sm font-semibold text-slate-800 dark:text-white leading-snug">
-          {item.title}
-        </h4>
-        <p className="text-xs text-slate-500 dark:text-neutral-400 font-medium leading-relaxed">
-          {item.description}
-        </p>
+      <div className="flex-1 min-w-0 flex flex-col text-left">
+        <div className="flex flex-col min-w-0">
+          <h4 className="text-[16px] leading-[24px] font-medium font-['Google_Sans_Text','Inter',sans-serif] text-[#1B1C1D] dark:text-white truncate">
+            {item.title}
+          </h4>
+          <p className="text-[14px] leading-[20px] font-normal font-['Google_Sans_Text','Inter',sans-serif] text-[#575B5F] dark:text-neutral-400 truncate">
+            {item.description}
+          </p>
+        </div>
         {/* Source and Person capsule chips */}
-        <div className="flex flex-wrap items-center gap-2 mt-1">
+        <div className="flex flex-wrap items-center gap-2 mt-2">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/50 dark:border-[#3E4042] text-[11px] font-semibold text-slate-650 dark:text-neutral-300">
             <img src={getFileIcon(item.sourceMimeType)} alt="doc icon" className="w-3.5 h-3.5 object-contain" />
             <span>{item.sourceName}</span>
