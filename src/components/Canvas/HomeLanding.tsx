@@ -7,6 +7,7 @@ import { FilesList } from './FilesList';
 import { SearchJourney } from './SearchJourney';
 import { CreationJourney } from './CreationJourney';
 import { ShapeLoader } from '../Shared/ShapeLoader';
+import { NullTitle } from '../Shared/NullTitle';
 
 import docsIcon from '../../assets/docs.png';
 import sheetsIcon from '../../assets/sheets.png';
@@ -14,6 +15,96 @@ import slidesIcon from '../../assets/slides.png';
 import formsIcon from '../../assets/forms.png';
 import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
+
+export const DEFAULT_TODO_ITEMS = [
+  {
+    id: 'todo-proactive-1',
+    title: "Review Brand Guidelines & updates based on Emily's comments",
+    description: "Emily commented to consolidate the Brand Kit layout. Working on task...",
+    descriptionDone: "Emily commented to consolidate the Brand Kit layout. I did, please review.",
+    workspace: "Branding",
+    sourceName: "Branding",
+    sourceMimeType: "text/html",
+    personName: "Emily",
+    personAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+    status: 'working',
+    hasPreview: true,
+    involvesMe: true,
+    filesToLoad: [
+      {
+        name: 'branding.html',
+        type: 'code',
+        content: `<!DOCTYPE html>\n<html>\n<head>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="bg-neutral-950 text-white p-12 flex flex-col items-center justify-center min-h-screen">\n  <h1 class="text-5xl font-bold tracking-tight text-indigo-400">ecopaws</h1>\n  <p class="text-sm uppercase tracking-wider text-slate-400 mt-2">Sustainable Pet Brand - Final Guidelines Draft</p>\n  <div class="flex gap-3 mt-8">\n    <div class="w-10 h-10 rounded-full bg-[#FCDBDB] border-2 border-white shadow-md"></div>\n    <div class="w-10 h-10 rounded-full bg-[#DFF1FD] border-2 border-white shadow-md"></div>\n    <div class="w-10 h-10 rounded-full bg-[#FFF2E0] border-2 border-white shadow-md"></div>\n  </div>\n  <p class="mt-8 text-xs text-slate-500">Draft updated based on feedback. Consolidating Q3 brand specs.</p>\n</body>\n</html>`,
+        mimeType: 'text/html'
+      }
+    ]
+  },
+  {
+    id: 'todo-2',
+    title: 'Add the design strategy to Marketing campaign brief',
+    description: "Comments from David",
+    workspace: 'Marketing',
+    sourceName: "Marketing",
+    sourceMimeType: "application/vnd.google-apps.document",
+    personName: "David",
+    personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+    status: 'done',
+    hasPreview: false,
+    involvesMe: true
+  },
+  {
+    id: 'todo-3',
+    title: 'Craft the strategy on Pricing Proposal doc',
+    description: "Comments from Juyun and Michael",
+    workspace: 'Pricing Proposal',
+    sourceName: "Pricing Proposal",
+    sourceMimeType: "application/vnd.google-apps.document",
+    personName: "Juyun & Michael",
+    personAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
+    status: 'done',
+    hasPreview: false,
+    involvesMe: true
+  },
+  {
+    id: 'todo-space-external-1',
+    title: "Chandu to update branding layout visuals",
+    description: "David left feedback forChandu to fix visuals",
+    workspace: "Branding",
+    sourceName: "Branding",
+    sourceMimeType: "text/html",
+    personName: "David",
+    personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+    status: 'done',
+    hasPreview: false,
+    involvesMe: false
+  },
+  {
+    id: 'todo-4',
+    title: 'Update the sales performance tracker (annual_sales.csv)',
+    description: "Comments from David",
+    workspace: 'Sales',
+    sourceName: "Sales",
+    sourceMimeType: "application/vnd.google-apps.spreadsheet",
+    personName: "David",
+    personAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
+    status: 'done',
+    hasPreview: false,
+    involvesMe: true
+  },
+  {
+    id: 'todo-5',
+    title: 'Have an update on Operations for leads',
+    description: "Messages from Bora and Megan",
+    workspace: 'Operations',
+    sourceName: "Operations",
+    sourceMimeType: "application/vnd.google-apps.chat",
+    personName: "Bora & Megan",
+    personAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
+    status: 'done',
+    hasPreview: false,
+    involvesMe: true
+  }
+];
 
 interface HomeLandingProps {
   accessToken: string | null;
@@ -40,6 +131,10 @@ interface HomeLandingProps {
   activeSpaceId?: string | null;
   projectName?: string;
   sandboxFiles?: any[];
+  todoItems: any[];
+  setTodoItems: React.Dispatch<React.SetStateAction<any[]>>;
+  isLoggedIn?: boolean;
+  onBypassAuth?: () => void;
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -400,109 +495,19 @@ export function HomeLanding({
   onResetChat,
   activeSpaceId,
   projectName,
-  sandboxFiles = []
+  sandboxFiles = [],
+  todoItems,
+  setTodoItems,
+  isLoggedIn: isLoggedInProp,
+  onBypassAuth
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [bypassAuth, setBypassAuth] = useState(false);
+  const [localBypassAuth, setLocalBypassAuth] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [digestData, setDigestData] = useState<any | null>(null);
   const [isDigestLoading, setIsDigestLoading] = useState(false);
   const [digestError, setDigestError] = useState<string | null>(null);
 
-  const [todoItems, setTodoItems] = useState(() => {
-    if (accessToken) {
-      return [];
-    }
-    return [
-      {
-        id: 'todo-proactive-1',
-        title: "Review Brand Guidelines & updates based on Emily's comments",
-        description: "Emily commented to consolidate the Brand Kit layout. Working on task...",
-        descriptionDone: "Emily commented to consolidate the Brand Kit layout. I did, please review.",
-        workspace: "Branding",
-        sourceName: "Branding",
-        sourceMimeType: "text/html",
-        personName: "Emily",
-        personAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
-        status: 'working',
-        hasPreview: true,
-        involvesMe: true,
-        filesToLoad: [
-          {
-            name: 'branding.html',
-            type: 'code',
-            content: `<!DOCTYPE html>\n<html>\n<head>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="bg-neutral-950 text-white p-12 flex flex-col items-center justify-center min-h-screen">\n  <h1 class="text-5xl font-bold tracking-tight text-indigo-400">ecopaws</h1>\n  <p class="text-sm uppercase tracking-wider text-slate-400 mt-2">Sustainable Pet Brand - Final Guidelines Draft</p>\n  <div class="flex gap-3 mt-8">\n    <div class="w-10 h-10 rounded-full bg-[#FCDBDB] border-2 border-white shadow-md"></div>\n    <div class="w-10 h-10 rounded-full bg-[#DFF1FD] border-2 border-white shadow-md"></div>\n    <div class="w-10 h-10 rounded-full bg-[#FFF2E0] border-2 border-white shadow-md"></div>\n  </div>\n  <p class="mt-8 text-xs text-slate-500">Draft updated based on feedback. Consolidating Q3 brand specs.</p>\n</body>\n</html>`,
-            mimeType: 'text/html'
-          }
-        ]
-      },
-      {
-        id: 'todo-2',
-        title: 'Add the design strategy to Marketing campaign brief',
-        description: "Comments from David",
-        workspace: 'Marketing',
-        sourceName: "Marketing",
-        sourceMimeType: "application/vnd.google-apps.document",
-        personName: "David",
-        personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-        status: 'done',
-        hasPreview: false,
-        involvesMe: true
-      },
-      {
-        id: 'todo-3',
-        title: 'Craft the strategy on Pricing Proposal doc',
-        description: "Comments from Juyun and Michael",
-        workspace: 'Pricing Proposal',
-        sourceName: "Pricing Proposal",
-        sourceMimeType: "application/vnd.google-apps.document",
-        personName: "Juyun & Michael",
-        personAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
-        status: 'done',
-        hasPreview: false,
-        involvesMe: true
-      },
-      {
-        id: 'todo-space-external-1',
-        title: "Chandu to update branding layout visuals",
-        description: "David left feedback forChandu to fix visuals",
-        workspace: "Branding",
-        sourceName: "Branding",
-        sourceMimeType: "text/html",
-        personName: "David",
-        personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-        status: 'done',
-        hasPreview: false,
-        involvesMe: false // Teammate task (shows in Space view, filters out of Home)
-      },
-      {
-        id: 'todo-4',
-        title: 'Update the sales performance tracker (annual_sales.csv)',
-        description: "Comments from David",
-        workspace: 'Sales',
-        sourceName: "Sales",
-        sourceMimeType: "application/vnd.google-apps.spreadsheet",
-        personName: "David",
-        personAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-        status: 'done',
-        hasPreview: false,
-        involvesMe: true
-      },
-      {
-        id: 'todo-5',
-        title: 'Have an update on Operations for leads',
-        description: "Messages from Bora and Megan",
-        workspace: 'Operations',
-        sourceName: "Operations",
-        sourceMimeType: "application/vnd.google-apps.chat",
-        personName: "Bora & Megan",
-        personAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-        status: 'done',
-        hasPreview: false,
-        involvesMe: true
-      }
-    ];
-  });
   const todoCacheRef = React.useRef<Record<string, any[]>>({});
 
   // Bind live Workspace Digest data to Tasks when loaded
@@ -742,7 +747,7 @@ export function HomeLanding({
   }, [accessToken, activeSpaceId]);
 
   // Fallback check to support bypassing authentication or showing login CTA
-  const isLoggedIn = accessToken !== null || bypassAuth;
+  const isLoggedIn = isLoggedInProp !== undefined ? isLoggedInProp : (accessToken !== null || localBypassAuth);
 
   React.useEffect(() => {
     if (!accessToken) {
@@ -1205,33 +1210,24 @@ export function HomeLanding({
   if (!isLoggedIn) {
     return (
       <div id="home-login-overlay" className="w-full h-full flex flex-col items-center justify-center animate-in fade-in duration-300 px-6 select-none bg-transparent">
-        <div className="max-w-md w-full bg-white dark:bg-[#1E1F22] border border-slate-200 dark:border-[#2B2D31] p-8 text-center flex flex-col items-center gap-6 relative shadow-none">
-          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-3xl mb-2 shadow-none">
-            🔑
-          </div>
-          <h2 className="text-3xl font-sans tracking-tight font-medium text-slate-800 dark:text-[#E3E3E3]">
-            Sign In with Google
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-neutral-400 leading-relaxed max-w-sm mb-4">
-            Connect your workspace to access real-time cloud data, fetch suggested spaces, and run live interactive sandboxes.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-            <button
-              id="home-landing-login-btn"
-              onClick={onLogin}
-              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-none"
-            >
-              <LogIn size={16} /> Login to Drive
-            </button>
-            <button
-              id="home-landing-mock-btn"
-              onClick={() => setBypassAuth(true)}
-              className="w-full h-12 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-[#2B2D31] dark:hover:bg-[#3E4042] text-slate-700 dark:text-[#E3E3E3] font-semibold text-sm transition-all duration-200 border border-slate-200 dark:border-[#3E4042] cursor-pointer"
-            >
-              Examine Mock Sandbox
-            </button>
-          </div>
+        <div className="w-full h-[33.33%] flex items-center justify-center shrink-0">
+          <NullTitle theme={theme}>Sign in with Google</NullTitle>
+        </div>
+        <div className="flex items-center gap-3 justify-center w-full mt-6">
+          <button
+            id="home-landing-login-btn"
+            onClick={onLogin}
+            className="h-10 px-6 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all duration-200 cursor-pointer shadow-none border-none outline-none flex items-center justify-center"
+          >
+            Login
+          </button>
+          <button
+            id="home-landing-mock-btn"
+            onClick={() => onBypassAuth ? onBypassAuth() : setLocalBypassAuth(true)}
+            className="h-10 px-6 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#2B2D31] dark:hover:bg-[#3E4042] text-slate-700 dark:text-[#E3E3E3] font-semibold text-sm transition-all duration-200 border-none cursor-pointer"
+          >
+            Mock Data
+          </button>
         </div>
       </div>
     );

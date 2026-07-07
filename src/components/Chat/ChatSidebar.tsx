@@ -6,7 +6,7 @@ import { HeroTitle } from '../Shared/HeroTitle';
 import { NullTitle } from '../Shared/NullTitle';
 import { IconButton } from '../Shared/IconButton';
 import { TaskCard } from './TaskCard';
-import { MessageSquare, History, FileText, ChevronRight, Activity, Smile, X, LayoutDashboard, CheckCircle2, Presentation, FolderKanban } from 'lucide-react';
+import { MessageSquare, History, FileText, ChevronRight, Activity, Smile, X, LayoutDashboard, CheckCircle2, Presentation, FolderKanban, Sparkles } from 'lucide-react';
 
 interface ChatSidebarProps {
   messages: any[];
@@ -30,6 +30,11 @@ interface ChatSidebarProps {
   onFinalizeSpace?: (name: string, selectedPeople: any[]) => Promise<void> | void;
   chatModel?: 'A' | 'B';
   onNewChat?: () => void;
+  isLoggedIn?: boolean;
+  onLogin?: () => void;
+  onBypassAuth?: () => void;
+  projectName?: string;
+  todoItems?: any[];
 }
 
 export function ChatSidebar({ 
@@ -53,8 +58,71 @@ export function ChatSidebar({
   onChangeChatDockPosition,
   onFinalizeSpace,
   chatModel = 'A',
-  onNewChat
+  onNewChat,
+  isLoggedIn = false,
+  onLogin,
+  onBypassAuth,
+  projectName = '',
+  todoItems = []
 }: ChatSidebarProps) {
+  const isHome = !projectName || projectName === 'Home Dashboard' || projectName === 'Home';
+
+  const getSuggestions = () => {
+    const list = todoItems || [];
+    
+    const getPillLabel = (title: string) => {
+      const lower = title.toLowerCase();
+      if (lower.includes('brand') || lower.includes('guidelines')) return 'Review Brand Guidelines';
+      if (lower.includes('marketing') || lower.includes('brief')) return 'Add Marketing Design Strategy';
+      if (lower.includes('pricing') || lower.includes('proposal')) return 'Draft Pricing Proposal Strategy';
+      if (lower.includes('sales') || lower.includes('performance')) return 'Update Sales Tracker';
+      if (lower.includes('operations') || lower.includes('leads')) return 'Update Operations Leads';
+      return title.length > 40 ? title.substring(0, 40) + '...' : title;
+    };
+
+    let filtered = [];
+    if (isHome) {
+      filtered = list.filter(item => item.involvesMe !== false);
+    } else {
+      const currentProject = (projectName || '').toLowerCase().trim();
+      filtered = list.filter(item => {
+        const itemWorkspace = (item.workspace || '').toLowerCase().trim();
+        return itemWorkspace === currentProject || currentProject.includes(itemWorkspace) || itemWorkspace.includes(currentProject);
+      });
+    }
+
+    if (filtered.length > 0) {
+      return filtered.map(item => ({
+        label: getPillLabel(item.title),
+        prompt: `Help me with: ${item.title}`
+      }));
+    }
+
+    // Fallback default suggestions
+    return [
+      { label: "Make an interactive dashboard", prompt: "Make an interactive dashboard" },
+      { label: "Make a project tracker", prompt: "Make a project tracker" },
+      { label: "Make an interactive presentation", prompt: "Make an interactive presentation" },
+      ...(fileCount > 3 ? [{ label: "Organize files", prompt: "Organize files" }] : [])
+    ];
+  };
+
+  const suggestions = getSuggestions();
+
+  const getTaskIcon = (title: string) => {
+    const lower = title.toLowerCase();
+    if (lower.includes('dashboard') || lower.includes('visual')) {
+      return <LayoutDashboard size={20} className="shrink-0 text-slate-800 dark:text-neutral-200" />;
+    }
+    if (lower.includes('tracker') || lower.includes('sales') || lower.includes('guidelines') || lower.includes('review') || lower.includes('brief') || lower.includes('marketing')) {
+      return <CheckCircle2 size={20} className="shrink-0 text-slate-800 dark:text-neutral-200" />;
+    }
+    if (lower.includes('presentation') || lower.includes('proposal') || lower.includes('strategy')) {
+      return <Presentation size={20} className="shrink-0 text-slate-800 dark:text-neutral-200" />;
+    }
+    return <FolderKanban size={20} className="shrink-0 text-slate-800 dark:text-neutral-200" />;
+  };
+
   // Local state for comment stream prototyping
   const [localComments, setLocalComments] = useState<any[]>([]);
 
@@ -187,67 +255,57 @@ export function ChatSidebar({
         {/* Perfectly Spaced & Aligned Start Building Overlay */}
         {messages.length === 0 && variant === 'gemini' && (
           <div className="absolute inset-0 flex flex-col items-center px-6 pt-0 pb-[16px] pointer-events-none select-none z-15">
-            {/* Centered Title top block matching canvas h-[33.33%] */}
-            <div className="w-full h-[33.33%] flex items-center justify-center shrink-0">
-              <NullTitle theme={theme}>Start building</NullTitle>
-            </div>
+            {!isLoggedIn ? (
+              <>
+                <div className="w-full h-[33.33%] flex items-center justify-center shrink-0">
+                  <NullTitle theme={theme}>Sign in with Google</NullTitle>
+                </div>
+                <div className="flex-1 flex flex-col gap-2.5 w-full items-start pointer-events-none animate-fade-in-up min-h-0 px-2" style={{ animationDelay: '200ms' }}>
+                  <div className="flex items-center gap-3 justify-center w-full pointer-events-auto mt-4">
+                    <button
+                      onClick={onLogin}
+                      className="h-10 px-6 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all duration-200 cursor-pointer shadow-none border-none outline-none flex items-center justify-center"
+                    >
+                      Login
+                    </button>
+                    <button
+                      onClick={onBypassAuth}
+                      className="h-10 px-6 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#2B2D31] dark:hover:bg-[#3E4042] text-slate-700 dark:text-[#E3E3E3] font-semibold text-sm transition-all duration-200 border-none cursor-pointer"
+                    >
+                      Mock Data
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Centered Title top block matching canvas h-[33.33%] */}
+                <div className="w-full h-[33.33%] flex items-center justify-center shrink-0">
+                  <NullTitle theme={theme}>
+                    {isHome ? 'How can I help' : `How can I help on ${projectName || 'this space'}`}
+                  </NullTitle>
+                </div>
 
-            {/* Suggestions list perfectly aligned at vertical baseline of Suggested Files top cell */}
-            <div className="flex-1 flex flex-col gap-2.5 w-full items-start pointer-events-none animate-fade-in-up min-h-0" style={{ animationDelay: '200ms' }}>
-              <button 
-                onClick={() => onSendMessage("Make an interactive dashboard")}
-                className="w-fit flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto bg-f8fafd hover:bg-f0f4f9"
-              >
-                <LayoutDashboard size={20} className="shrink-0 text-slate-800" />
-                <span 
-                  className="text-sm font-medium text-slate-800"
-                  style={{ fontFamily: '"Google Sans Flex", "Google Sans", "Product Sans", "Inter", sans-serif' }}
-                >
-                  Make an interactive dashboard
-                </span>
-              </button>
-
-              <button 
-                onClick={() => onSendMessage("Make a project tracker")}
-                className="w-fit flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto bg-f8fafd hover:bg-f0f4f9"
-              >
-                <CheckCircle2 size={20} className="shrink-0 text-slate-800" />
-                <span 
-                  className="text-sm font-medium text-slate-800"
-                  style={{ fontFamily: '"Google Sans Flex", "Google Sans", "Product Sans", "Inter", sans-serif' }}
-                >
-                  Make a project tracker
-                </span>
-              </button>
-
-              <button 
-                onClick={() => onSendMessage("Make an interactive presentation")}
-                className="w-fit flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto bg-f8fafd hover:bg-f0f4f9"
-              >
-                <Presentation size={20} className="shrink-0 text-slate-800" />
-                <span 
-                  className="text-sm font-medium text-slate-800"
-                  style={{ fontFamily: '"Google Sans Flex", "Google Sans", "Product Sans", "Inter", sans-serif' }}
-                >
-                  Make an interactive presentation
-                </span>
-              </button>
-
-              {fileCount > 3 && (
-                <button 
-                  onClick={() => onSendMessage("Organize files")}
-                  className="w-fit flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto bg-f8fafd hover:bg-f0f4f9"
-                >
-                  <FolderKanban size={20} className="shrink-0 text-slate-800" />
-                  <span 
-                    className="text-sm font-medium text-slate-800"
-                    style={{ fontFamily: '"Google Sans Flex", "Google Sans", "Product Sans", "Inter", sans-serif' }}
-                  >
-                    Organize files
-                  </span>
-                </button>
-              )}
-            </div>
+                {/* Suggestions list */}
+                <div className="flex-1 flex flex-col gap-2.5 w-full items-start pointer-events-none animate-fade-in-up min-h-0 px-2" style={{ animationDelay: '200ms' }}>
+                  {suggestions.map((pill, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => onSendMessage(pill.prompt)}
+                      className="w-fit flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto bg-f8fafd hover:bg-f0f4f9"
+                    >
+                      {getTaskIcon(pill.prompt)}
+                      <span 
+                        className="text-sm font-medium text-slate-800 dark:text-neutral-200"
+                        style={{ fontFamily: '"Google Sans Flex", "Google Sans", "Product Sans", "Inter", sans-serif' }}
+                      >
+                        {pill.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -375,7 +433,7 @@ export function ChatSidebar({
           }`}>
             <Composer 
               onSend={variant === 'comments' ? handlePostComment : onSendMessage} 
-              disabled={variant === 'gemini' ? isLoading : false} 
+              disabled={variant === 'gemini' ? (isLoading || !isLoggedIn) : false} 
               placeholder={
                 variant === 'comments' 
                   ? "Add a comment..." 

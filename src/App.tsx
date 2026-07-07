@@ -14,7 +14,7 @@ import { usePresence } from './hooks/usePresence';
 import { PeerCursors } from './components/Canvas/PeerCursors';
 import { CanvasSidebar } from './components/Canvas/CanvasSidebar';
 import { NativeViewer } from './components/Canvas/NativeViewer';
-import { HomeLanding, SUGGESTED_ITEMS } from './components/Canvas/HomeLanding';
+import { HomeLanding, SUGGESTED_ITEMS, DEFAULT_TODO_ITEMS } from './components/Canvas/HomeLanding';
 import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
@@ -182,6 +182,9 @@ export default function App() {
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(true);
 
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [bypassAuth, setBypassAuth] = useState(false);
+  const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
+  const isLoggedIn = accessToken !== null || bypassAuth;
 
   const fetchGeminiTasks = async (token?: string | null, email?: string) => {
     try {
@@ -2110,11 +2113,16 @@ export default function App() {
   };
 
   const handleCreateNewChat = () => {
-    if (!activeSpaceId || isHomeChatId(activeSpaceId)) return;
+    if (!activeSpaceId) return;
+    const isHome = isHomeChatId(activeSpaceId);
     const tempChatId = `${activeSpaceId}-chat-temp-${Date.now()}`;
     setActiveChatId(tempChatId);
     setMessages([]);
-    setViewState('app');
+    if (isHome) {
+      setViewState('home');
+    } else {
+      setViewState('app');
+    }
     setActiveSidebar('gemini');
   };
 
@@ -2245,7 +2253,7 @@ export default function App() {
         setSelectedFile(null);
       }
       
-      setViewState('files');
+      setViewState(newSandboxFiles.length > 0 ? 'files' : 'null');
       setSyncStatus('synced');
 
       const welcomeText = `Welcome to **${cleanFolderName}**! This is a workspace contextually initialized with matching files and shared with ${selectedPeople.map(p => p.name).join(', ') || 'no one else yet'}. Ask me to start building files, like 'make an interactive dashboard'.`;
@@ -3345,9 +3353,15 @@ export default function App() {
         setIndexFileSelected((cached.selectedFile || autoSelectFile)?.name?.toLowerCase().includes('index.html') ?? false);
 
         if (cached.viewState) {
-          setViewState(cached.viewState);
+          if (cached.viewState === 'files' && cached.sandboxFiles.length === 0 && !isHomeChatId(folderId)) {
+            setViewState('null');
+          } else {
+            setViewState(cached.viewState);
+          }
         } else {
-          if (!skipSelect) {
+          if (cached.sandboxFiles.length === 0 && !isHomeChatId(folderId)) {
+            setViewState('null');
+          } else if (!skipSelect) {
             setViewState('app');
           } else {
             setViewState('files');
@@ -3597,6 +3611,8 @@ export default function App() {
             }
           } else {
             setSelectedFile(null);
+            setIndexFileSelected(false);
+            setViewState(isHomeChatId(folderId) ? 'home' : 'null');
           }
 
           let currentMessages: any[] = [];
@@ -4080,6 +4096,11 @@ export default function App() {
           onFinalizeSpace={handleFinalizeSpace}
           chatModel={chatModel}
           onNewChat={handleCreateNewChat}
+          isLoggedIn={isLoggedIn}
+          onLogin={login}
+          onBypassAuth={() => setBypassAuth(true)}
+          projectName={projectName}
+          todoItems={todoItems}
         />
       )}
 
@@ -4132,7 +4153,7 @@ export default function App() {
                   currentUserId={localUser?.id}
                   selectedFile={selectedFile}
                 >
-                  <div className={(viewState === 'home' || (viewState === 'files' && !selectedFile)) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                  <div className={((viewState === 'home' || (viewState === 'files' && !selectedFile)) && isHomeChatId(activeSpaceId)) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
                     <HomeLanding 
                       accessToken={accessToken} 
                       userProfile={userProfile} 
@@ -4158,6 +4179,10 @@ export default function App() {
                       activeSpaceId={activeSpaceId}
                       projectName={projectName}
                       sandboxFiles={sandboxFiles}
+                      todoItems={todoItems}
+                      setTodoItems={setTodoItems}
+                      isLoggedIn={isLoggedIn}
+                      onBypassAuth={() => setBypassAuth(true)}
                     />
                   </div>
                   {viewState === 'null' && (
@@ -4452,6 +4477,11 @@ export default function App() {
                 onDoDifferently={handleDoDifferentlyOrganize}
                 isOrganizingFiles={isOrganizingFiles}
                 onFinalizeSpace={handleFinalizeSpace}
+                isLoggedIn={isLoggedIn}
+                onLogin={login}
+                onBypassAuth={() => setBypassAuth(true)}
+                projectName={projectName}
+                todoItems={todoItems}
               />
             )}
           </div>
