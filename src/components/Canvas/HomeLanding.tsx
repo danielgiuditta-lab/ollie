@@ -36,6 +36,8 @@ interface HomeLandingProps {
   onFileRemove?: (file: any) => void;
   onCreateArtifact?: (type: 'doc' | 'slide' | 'sheet' | 'pix' | 'site' | 'upload') => void;
   onResetChat?: () => void;
+  activeSpaceId?: string | null;
+  projectName?: string;
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -393,7 +395,9 @@ export function HomeLanding({
   journey = 'search',
   onFileRemove,
   onCreateArtifact: onCreateArtifactProp,
-  onResetChat
+  onResetChat,
+  activeSpaceId,
+  projectName
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [bypassAuth, setBypassAuth] = useState(false);
@@ -567,6 +571,27 @@ export function HomeLanding({
 
     return () => clearTimeout(timer);
   }, [todoItems]);
+
+  // Filter todoItems based on the active space/project
+  const filteredTodoItems = React.useMemo(() => {
+    if (!activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home') {
+      return todoItems;
+    }
+
+    const currentProject = (projectName || '').toLowerCase().trim();
+    if (!currentProject || currentProject === 'home dashboard') {
+      return todoItems;
+    }
+
+    return todoItems.filter(item => {
+      const itemWorkspace = (item.workspace || '').toLowerCase().trim();
+      const itemSourceName = (item.sourceName || '').toLowerCase().trim();
+      
+      // Match if the task workspace matches the project name (e.g. "Galaxy Deck")
+      return itemWorkspace.includes(currentProject) || currentProject.includes(itemWorkspace) ||
+             itemSourceName.includes(currentProject) || currentProject.includes(itemSourceName);
+    });
+  }, [todoItems, activeSpaceId, projectName]);
 
   const handleAgendaItemClick = (item: any) => {
     if (!item) return;
@@ -1140,7 +1165,7 @@ export function HomeLanding({
           To Do:
         </h2>
         <div className="flex flex-col gap-3.5 w-full">
-          {todoItems.map((item) => (
+          {filteredTodoItems.map((item) => (
             <InferredTaskCard 
               key={item.id}
               item={item}

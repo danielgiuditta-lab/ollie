@@ -3905,12 +3905,22 @@ export default function App() {
           projectName={projectName}
           viewState={viewState}
           onHomeClick={() => {
-            handleFileClick(getHomeChatId(), true);
-            setHomeJourney('search');
+            if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
+              setSelectedFile(null);
+              setViewState('files');
+            } else {
+              handleFileClick(getHomeChatId(), true);
+              setHomeJourney('search');
+            }
           }}
           onCloseWorkspace={() => {
-            handleFileClick(getHomeChatId(), true);
-            setHomeJourney('search');
+            if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
+              setSelectedFile(null);
+              setViewState('files');
+            } else {
+              handleFileClick(getHomeChatId(), true);
+              setHomeJourney('search');
+            }
           }}
           onCloseFile={() => setSelectedFile(null)}
           selectedFile={selectedFile}
@@ -3938,7 +3948,7 @@ export default function App() {
                   currentUserId={localUser?.id}
                   selectedFile={selectedFile}
                 >
-                  <div className={viewState === 'home' ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                  <div className={(viewState === 'home' || (viewState === 'files' && !selectedFile)) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
                     <HomeLanding 
                       accessToken={accessToken} 
                       userProfile={userProfile} 
@@ -3961,6 +3971,8 @@ export default function App() {
                       onFileRemove={handleRemoveFile}
                       onCreateArtifact={handleCreateArtifactApp}
                       onResetChat={resetChatForDirectoryItem}
+                      activeSpaceId={activeSpaceId}
+                      projectName={projectName}
                     />
                   </div>
                   {viewState === 'null' && (
