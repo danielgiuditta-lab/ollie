@@ -96,16 +96,9 @@ export function CanvasHeader({
 
     if (!selectedFile && viewState !== 'ai_summary') {
       return (
-        <div className="flex items-center gap-1.5 bg-[#003BC4]/5 dark:bg-[#2B2D31] px-3 py-1 rounded-xl text-slate-950 dark:text-white font-semibold">
-          <span>{spaceName}</span>
-          <button 
-            onClick={onCloseWorkspace}
-            className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center"
-            title="Close Space"
-          >
-            <X size={14} className="text-slate-500 dark:text-slate-400" />
-          </button>
-        </div>
+        <span className="text-slate-800 dark:text-white text-lg font-medium">
+          {spaceName}
+        </span>
       );
     }
 
@@ -121,11 +114,11 @@ export function CanvasHeader({
         </span>
         <ChevronRight size={18} className="mx-2 text-slate-400 dark:text-slate-500 shrink-0" />
         
-        <div className="flex items-center gap-1.5 bg-[#003BC4]/5 dark:bg-[#2B2D31] px-3 py-1 rounded-xl text-slate-950 dark:text-white font-semibold">
+        <div className="flex items-center gap-1.5 text-slate-800 dark:text-white font-medium">
           <span>{artifactName}</span>
           <button 
             onClick={selectedFile ? onCloseFile : onCloseWorkspace}
-            className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center"
+            className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center animate-fade-in"
             title={selectedFile ? "Close file" : "Close search"}
           >
             <X size={14} className="text-slate-500 dark:text-slate-400" />
