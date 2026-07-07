@@ -408,95 +408,100 @@ export function HomeLanding({
   const [isDigestLoading, setIsDigestLoading] = useState(false);
   const [digestError, setDigestError] = useState<string | null>(null);
 
-  const [todoItems, setTodoItems] = useState([
-    {
-      id: 'todo-proactive-1',
-      title: "Review Deck updates based on Chandu's comments",
-      description: "Chandu commented on to consolidate slides. Working on task...",
-      descriptionDone: "Chandu commented on to consolidate slides. I did, please review.",
-      workspace: "Galaxy Deck",
-      sourceName: "Galaxy Deck",
-      sourceMimeType: "application/vnd.google-apps.presentation",
-      personName: "Chandu",
-      personAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
-      status: 'working',
-      hasPreview: true,
-      involvesMe: true,
-      filesToLoad: [
-        {
-          name: 'Galaxy Deck.gslides',
-          type: 'code',
-          content: `# Galaxy Product Roadmap\n\n## Slide 1: Executive Summary\n- Solidified core Q3 deliverables.\n- Consolidated user metrics.\n\n## Slide 2: Technical Overview\n- Refined database syncing pipeline.\n- Added proactive tasks background worker mock.`,
-          mimeType: 'application/vnd.google-apps.presentation'
-        }
-      ]
-    },
-    {
-      id: 'todo-2',
-      title: 'Add the design strategy to H2 Planning Doc',
-      description: "Comments from David",
-      workspace: 'H2 Planning doc',
-      sourceName: "H2 Planning doc",
-      sourceMimeType: "application/vnd.google-apps.document",
-      personName: "David",
-      personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-      status: 'done',
-      hasPreview: false,
-      involvesMe: true
-    },
-    {
-      id: 'todo-3',
-      title: 'Craft the strategy on Big Rocks deck',
-      description: "Comments from Juyun and Micheal",
-      workspace: 'Big Rock deck',
-      sourceName: "Big Rock deck",
-      sourceMimeType: "application/vnd.google-apps.presentation",
-      personName: "Juyun & Michael",
-      personAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
-      status: 'done',
-      hasPreview: false,
-      involvesMe: true
-    },
-    {
-      id: 'todo-space-external-1',
-      title: "Chandu to update slide 3 diagram layouts",
-      description: "David left feedback for Chandu to fix visuals",
-      workspace: "Galaxy Deck",
-      sourceName: "Galaxy Deck",
-      sourceMimeType: "application/vnd.google-apps.presentation",
-      personName: "David",
-      personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-      status: 'done',
-      hasPreview: false,
-      involvesMe: false // Teammate task (shows in Space view, filters out of Home)
-    },
-    {
-      id: 'todo-4',
-      title: 'Update the design tracker',
-      description: "Comments David",
-      workspace: 'Team priorities',
-      sourceName: "Team priorities",
-      sourceMimeType: "application/vnd.google-apps.spreadsheet",
-      personName: "David",
-      personAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-      status: 'done',
-      hasPreview: false,
-      involvesMe: true
-    },
-    {
-      id: 'todo-5',
-      title: 'Have an update on H2 planning for leads',
-      description: "Messages from Bora and Megan",
-      workspace: 'Project Galaxy chat',
-      sourceName: "Project Galaxy chat",
-      sourceMimeType: "application/vnd.google-apps.chat",
-      personName: "Bora & Megan",
-      personAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-      status: 'done',
-      hasPreview: false,
-      involvesMe: true
+  const [todoItems, setTodoItems] = useState(() => {
+    if (accessToken) {
+      return [];
     }
-  ]);
+    return [
+      {
+        id: 'todo-proactive-1',
+        title: "Review Brand Guidelines & updates based on Emily's comments",
+        description: "Emily commented to consolidate the Brand Kit layout. Working on task...",
+        descriptionDone: "Emily commented to consolidate the Brand Kit layout. I did, please review.",
+        workspace: "Branding",
+        sourceName: "Branding",
+        sourceMimeType: "text/html",
+        personName: "Emily",
+        personAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+        status: 'working',
+        hasPreview: true,
+        involvesMe: true,
+        filesToLoad: [
+          {
+            name: 'branding.html',
+            type: 'code',
+            content: `<!DOCTYPE html>\n<html>\n<head>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="bg-neutral-950 text-white p-12 flex flex-col items-center justify-center min-h-screen">\n  <h1 class="text-5xl font-bold tracking-tight text-indigo-400">ecopaws</h1>\n  <p class="text-sm uppercase tracking-wider text-slate-400 mt-2">Sustainable Pet Brand - Final Guidelines Draft</p>\n  <div class="flex gap-3 mt-8">\n    <div class="w-10 h-10 rounded-full bg-[#FCDBDB] border-2 border-white shadow-md"></div>\n    <div class="w-10 h-10 rounded-full bg-[#DFF1FD] border-2 border-white shadow-md"></div>\n    <div class="w-10 h-10 rounded-full bg-[#FFF2E0] border-2 border-white shadow-md"></div>\n  </div>\n  <p class="mt-8 text-xs text-slate-500">Draft updated based on feedback. Consolidating Q3 brand specs.</p>\n</body>\n</html>`,
+            mimeType: 'text/html'
+          }
+        ]
+      },
+      {
+        id: 'todo-2',
+        title: 'Add the design strategy to Marketing campaign brief',
+        description: "Comments from David",
+        workspace: 'Marketing',
+        sourceName: "Marketing",
+        sourceMimeType: "application/vnd.google-apps.document",
+        personName: "David",
+        personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+        status: 'done',
+        hasPreview: false,
+        involvesMe: true
+      },
+      {
+        id: 'todo-3',
+        title: 'Craft the strategy on Pricing Proposal doc',
+        description: "Comments from Juyun and Michael",
+        workspace: 'Pricing Proposal',
+        sourceName: "Pricing Proposal",
+        sourceMimeType: "application/vnd.google-apps.document",
+        personName: "Juyun & Michael",
+        personAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
+        status: 'done',
+        hasPreview: false,
+        involvesMe: true
+      },
+      {
+        id: 'todo-space-external-1',
+        title: "Chandu to update branding layout visuals",
+        description: "David left feedback forChandu to fix visuals",
+        workspace: "Branding",
+        sourceName: "Branding",
+        sourceMimeType: "text/html",
+        personName: "David",
+        personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+        status: 'done',
+        hasPreview: false,
+        involvesMe: false // Teammate task (shows in Space view, filters out of Home)
+      },
+      {
+        id: 'todo-4',
+        title: 'Update the sales performance tracker (annual_sales.csv)',
+        description: "Comments from David",
+        workspace: 'Sales',
+        sourceName: "Sales",
+        sourceMimeType: "application/vnd.google-apps.spreadsheet",
+        personName: "David",
+        personAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
+        status: 'done',
+        hasPreview: false,
+        involvesMe: true
+      },
+      {
+        id: 'todo-5',
+        title: 'Have an update on Operations for leads',
+        description: "Messages from Bora and Megan",
+        workspace: 'Operations',
+        sourceName: "Operations",
+        sourceMimeType: "application/vnd.google-apps.chat",
+        personName: "Bora & Megan",
+        personAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
+        status: 'done',
+        hasPreview: false,
+        involvesMe: true
+      }
+    ];
+  });
 
   // Bind live Workspace Digest data to Tasks when loaded
   useEffect(() => {
@@ -506,7 +511,10 @@ export function HomeLanding({
     const followUps = digestData.followUps || [];
     const combined = [...actions, ...followUps];
 
-    if (combined.length === 0) return;
+    if (combined.length === 0) {
+      setTodoItems([]);
+      return;
+    }
 
     const mappedTodos = combined.map((item: any, idx: number) => {
       // Determine source details & MimeTypes
@@ -595,7 +603,7 @@ export function HomeLanding({
 
   // Filter todoItems based on the active space/project
   const filteredTodoItems = React.useMemo(() => {
-    const isHome = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home';
+    const isHome = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
     if (isHome) {
       // Home Dashboard shows ONLY tasks that involve the user (involvesMe !== false)
       return todoItems.filter(item => item.involvesMe !== false);
@@ -606,6 +614,18 @@ export function HomeLanding({
       return todoItems.filter(item => item.involvesMe !== false);
     }
 
+    // Helper function for smart matching (bidirectional + word overlap)
+    const matchesText = (target: string, query: string) => {
+      if (!target || !query) return false;
+      const t = target.toLowerCase().trim();
+      const q = query.toLowerCase().trim();
+      if (t.includes(q) || q.includes(t)) return true;
+      
+      const wordsT = t.split(/[\s·_\-\/]+/).filter(w => w.length > 3);
+      const wordsQ = q.split(/[\s·_\-\/]+/).filter(w => w.length > 3);
+      return wordsT.some(w => wordsQ.includes(w));
+    };
+
     // Space Dashboard shows ALL tasks for the space, including teammate tasks
     return todoItems.filter(item => {
       const itemWorkspace = (item.workspace || '').toLowerCase().trim();
@@ -613,8 +633,9 @@ export function HomeLanding({
       const itemTitle = (item.title || '').toLowerCase().trim();
       const itemDesc = (item.description || '').toLowerCase().trim();
       
-      const isProjectMatch = itemWorkspace.includes(currentProject) || currentProject.includes(itemWorkspace) ||
-                             itemSourceName.includes(currentProject) || currentProject.includes(itemSourceName);
+      const isProjectMatch = matchesText(itemWorkspace, currentProject) || 
+                             matchesText(itemSourceName, currentProject) ||
+                             matchesText(itemTitle, currentProject);
                              
       if (isProjectMatch) return true;
 
@@ -624,10 +645,10 @@ export function HomeLanding({
         const cleanFileName = file.name.split('/').pop().toLowerCase().replace(/\.[^/.]+$/, "").trim();
         if (cleanFileName.length < 3) return false;
 
-        return itemWorkspace.includes(cleanFileName) || 
-               itemSourceName.includes(cleanFileName) ||
-               itemTitle.includes(cleanFileName) ||
-               itemDesc.includes(cleanFileName);
+        return matchesText(itemWorkspace, cleanFileName) || 
+               matchesText(itemSourceName, cleanFileName) ||
+               matchesText(itemTitle, cleanFileName) ||
+               matchesText(itemDesc, cleanFileName);
       });
     });
   }, [todoItems, activeSpaceId, projectName, sandboxFiles]);
@@ -675,6 +696,7 @@ export function HomeLanding({
       return;
     }
 
+    setTodoItems([]); // Clear mock tasks immediately when accessToken is loaded
     const loadDigest = async () => {
       setIsDigestLoading(true);
       setDigestError(null);
