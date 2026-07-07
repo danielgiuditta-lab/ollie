@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { LeftNav } from './components/Navigation/LeftNav';
 import { TopBar } from './components/Navigation/TopBar';
+import { CanvasHeader } from './components/Navigation/CanvasHeader';
 import { CanvasMain } from './components/Canvas/CanvasMain';
 import { NullState } from './components/Canvas/NullState';
 import { AppView } from './components/Canvas/AppView';
@@ -19,7 +20,7 @@ import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
 
 export default function App() {
-  const [activeSidebar, setActiveSidebar] = useState<'gemini' | 'comments' | 'history' | null>(null);
+  const [activeSidebar, setActiveSidebar] = useState<'gemini' | 'comments' | 'history' | null>('gemini');
   const [chatDockPosition, setChatDockPosition] = useState<'side' | 'bottom'>('side');
   const [currentPath, setCurrentPath] = useState<string[]>([]);
   const [viewState, setViewState] = useState<'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary'>('home');
@@ -3576,7 +3577,7 @@ export default function App() {
           if (view === 'home') {
             setHomeJourney('search');
             setActiveAiSummaryTaskId(null);
-            setActiveSidebar(null);
+            setActiveSidebar('gemini');
             setIsAiSummarySnapped(false);
           }
         }}
@@ -3679,27 +3680,25 @@ export default function App() {
 
       {/* 3. Canvas Container (Everything else) */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative pr-4 pl-4 pt-1 pb-4 gap-4">
-        <TopBar 
-          onLogin={() => login()} 
-          onLogout={logout} 
-          userProfile={userProfile} 
-          projectName={projectName} 
-          envId={envId}
-          sandboxFiles={sandboxFiles}
-          activeSidebar={activeSidebar}
-          setActiveSidebar={setActiveSidebar}
-          syncStatus={syncStatus}
+        <CanvasHeader 
+          projectName={projectName}
           viewState={viewState}
-          isAiSummarySnapped={isAiSummarySnapped}
           onHomeClick={() => {
             setViewState('home');
             setHomeJourney('search');
             setSelectedFile(null);
-            setActiveSidebar(null);
+            setActiveSidebar('gemini');
             setIsAiSummarySnapped(false);
           }}
+          onCloseWorkspace={() => {
+            setViewState('home');
+            setHomeJourney('search');
+            setSelectedFile(null);
+            setActiveSidebar('gemini');
+            setIsAiSummarySnapped(false);
+          }}
+          peers={peers}
           theme={appTheme}
-          onToggleTheme={toggleAppTheme}
         />
         <div className="flex-1 flex overflow-hidden gap-4 relative">
           {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (

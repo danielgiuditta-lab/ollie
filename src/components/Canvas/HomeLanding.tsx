@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutGrid, Columns3, Plus, Folder, LogIn, ArrowRight, Mail, MessageSquare, AlertCircle, Clock, Info, CheckCircle2, Sparkles } from 'lucide-react';
+import { LayoutGrid, Columns3, Plus, Folder, LogIn, ArrowRight, Mail, MessageSquare, AlertCircle, Clock, Info, CheckCircle2, Sparkles, FileText, Presentation } from 'lucide-react';
 import { LandingInput } from './LandingInput';
 import { CoverSlide, CoverSlideItem } from './CoverSlide';
 import { FilesList } from './FilesList';
@@ -966,302 +966,96 @@ export function HomeLanding({
     );
   }
 
-  // 2. AUTHENTICATED/BYPASSED VIEW - Welcome Title + Search Input + Suggested Board Grid/List
+  const TODO_ITEMS = [
+    {
+      id: 'todo-1',
+      title: 'Update strategy on New Drive deck',
+      workspace: 'New Drive deck',
+      action: 'Comments from Chandu',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
+      badgeType: 'slide',
+      badgeColor: 'bg-[#F29900]'
+    },
+    {
+      id: 'todo-2',
+      title: 'Add the design strategy to H2 Planning Doc',
+      workspace: 'H2 Planning doc',
+      action: 'Comments from David',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+      badgeType: 'doc',
+      badgeColor: 'bg-[#1A73E8]'
+    },
+    {
+      id: 'todo-3',
+      title: 'Craft the strategy on Big Rocks deck',
+      workspace: 'Big Rock deck',
+      action: 'Comments from Juyun and Micheal',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
+      badgeType: 'slide',
+      badgeColor: 'bg-[#F29900]'
+    },
+    {
+      id: 'todo-4',
+      title: 'Update the design tracker',
+      workspace: 'Team priorities',
+      action: 'Comments David',
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
+      badgeType: 'sheet',
+      badgeColor: 'bg-[#0F9D58]'
+    },
+    {
+      id: 'todo-5',
+      title: 'Have an update on H2 planning for leads',
+      workspace: 'Project Galaxy chat · Galaxy PRD',
+      action: 'Messages from Bora and Megan',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
+      badgeType: 'chat',
+      badgeColor: 'bg-[#0078FF]'
+    }
+  ];
+
   return (
-    <div id="home-landing-content" className="absolute inset-0 w-full h-full flex flex-col items-center overflow-y-auto pt-16 px-10 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 text-center select-none bg-transparent">
-      
-      {/* Journey conditional rendering */}
-      {journey === 'search' ? (
-        <SearchJourney 
-          onSubmit={(val, aiMode, contextFiles) => handleSendMessage(val, aiMode, contextFiles)}
-          onChange={(val) => setSearchQuery(val)}
-          onFileSelect={handleItemClick}
-          theme={theme}
-          accessToken={accessToken}
-          recentItems={suggestedList}
-        />
-      ) : (
-        <CreationJourney 
-          onSubmit={(val, aiMode, contextFiles) => handleSendMessage(val, aiMode, contextFiles)}
-          onChange={(val) => setSearchQuery(val)}
-          onCreateArtifact={(type) => {
-            if (onCreateArtifactProp) onCreateArtifactProp(type);
-            else handleCreateArtifact(type);
-          }}
-          theme={theme}
-        />
-      )}
-
-      {/* Workspace Agenda Dashboard */}
-      {isLoggedIn && (
-        <div className="w-full max-w-7xl mt-10 text-left select-none animate-in fade-in duration-300">
-          <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-100 dark:border-slate-800">
-            <span 
-              className="text-[24px] font-sans text-slate-800 dark:text-[#E3E3E3] font-normal tracking-tight"
-              style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
+    <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-y-auto pt-16 px-10 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
+      <div className="w-full max-w-[640px] mt-8 text-left space-y-6">
+        <h2 className="text-2xl font-semibold text-slate-800 dark:text-[#E3E3E3] font-sans pl-1">
+          To Do:
+        </h2>
+        <div className="bg-white dark:bg-[#1E1F22] rounded-[32px] shadow-xs border border-[#E9EEF6] dark:border-[#2B2D31] overflow-hidden p-6 space-y-1">
+          {TODO_ITEMS.map((item) => (
+            <div 
+              key={item.id}
+              onClick={() => {
+                setProjectName(item.workspace.split(' · ')[0]);
+                setViewState('files');
+                if (setActiveSidebar) {
+                  setActiveSidebar('gemini');
+                }
+              }}
+              className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-slate-50/80 dark:hover:bg-white/5 cursor-pointer transition-colors duration-200"
             >
-              Today's Agenda
-            </span>
-            {isDigestLoading && (
-              <span className="text-xs text-slate-400 animate-pulse flex items-center gap-1.5 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></span>
-                Syncing workspace...
-              </span>
-            )}
-          </div>
-
-          {isDigestLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white dark:bg-[#1E1F22] border border-[#E9EEF6] dark:border-[#2B2D31] rounded-3xl p-6 h-64 animate-pulse flex flex-col justify-between">
-                  <div className="space-y-3">
-                    <div className="h-4 bg-slate-200 dark:bg-[#2B2D31] rounded-full w-2/3"></div>
-                    <div className="h-3 bg-slate-100 dark:bg-[#2B2D31] rounded-full w-5/6"></div>
-                    <div className="h-3 bg-slate-100 dark:bg-[#2B2D31] rounded-full w-1/2"></div>
-                  </div>
-                  <div className="h-3 bg-slate-100 dark:bg-[#2B2D31] rounded-full w-1/3"></div>
-                </div>
-              ))}
-            </div>
-          ) : digestError ? (
-            <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900 p-6 rounded-3xl text-center text-sm text-red-655 dark:text-red-400">
-              {digestError}
-            </div>
-          ) : digestData ? (
-            <div className="space-y-6">
-              {/* Daily Summary banner */}
-              <div className="bg-blue-50/40 dark:bg-blue-950/10 border border-blue-100/50 dark:border-blue-900/30 p-5 rounded-3xl flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-blue-100/60 dark:bg-blue-900/30 text-blue-650 dark:text-blue-400 flex items-center justify-center shrink-0">
-                  <Sparkles size={18} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-1">Morning Overview</h4>
-                  <p className="text-sm text-slate-650 dark:text-neutral-350 leading-relaxed font-medium">
-                    {digestData.summary || "Your daily workspace activity summary."}
-                  </p>
+              <div className="relative shrink-0 select-none">
+                <img src={item.avatar} alt="avatar" className="w-10 h-10 rounded-full object-cover" />
+                <div className={`absolute -bottom-1 -right-1 w-[18px] h-[18px] rounded-full ${item.badgeColor} flex items-center justify-center text-white border-2 border-white dark:border-[#1E1F22]`}>
+                  {item.badgeType === 'doc' && <FileText size={9} className="stroke-[2.5]" />}
+                  {item.badgeType === 'slide' && <Presentation size={9} className="stroke-[2.5]" />}
+                  {item.badgeType === 'sheet' && <LayoutGrid size={9} className="stroke-[2.5]" />}
+                  {item.badgeType === 'chat' && <MessageSquare size={9} className="stroke-[2.5]" />}
                 </div>
               </div>
-
-              {/* Three-column Dashboard Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                {/* Column 1: Immediate Action */}
-                <div className="bg-white dark:bg-[#1E1F22] border border-[#E9EEF6] dark:border-[#2B2D31] rounded-[24px] overflow-hidden flex flex-col h-[340px]">
-                  <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-[#FCF8F7] dark:bg-[#2E201B] flex items-center justify-between shrink-0">
-                    <span className="font-semibold text-sm text-red-800 dark:text-red-400 flex items-center gap-2">
-                      <AlertCircle size={16} className="text-red-600 dark:text-red-400" />
-                      Immediate Attention
-                    </span>
-                    <span className="text-[10px] bg-red-100/60 dark:bg-red-950/40 text-red-800 dark:text-red-400 font-bold px-2 py-0.5 rounded-full">
-                      {digestData.immediateActions?.length || 0}
-                    </span>
-                  </div>
-                  
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
-                    {(!digestData.immediateActions || digestData.immediateActions.length === 0) ? (
-                      <div className="h-full flex items-center justify-center text-xs text-slate-400 italic">
-                        All caught up!
-                      </div>
-                    ) : (
-                      digestData.immediateActions.map((item: any) => (
-                        <div 
-                          key={item.id} 
-                          onClick={() => handleAgendaItemClick(item)}
-                          className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-red-200 dark:hover:border-red-900/60 hover:bg-slate-105/50 dark:hover:bg-[#2B2D31]/70 transition-colors duration-150 cursor-pointer text-left"
-                        >
-                          <div className="flex items-start gap-2.5">
-                            <span className="mt-0.5 shrink-0">
-                              {item.type === 'email' ? <Mail size={14} className="text-slate-500" /> : item.type === 'comment' ? <MessageSquare size={14} className="text-slate-500" /> : <MessageSquare size={14} className="text-slate-500" />}
-                            </span>
-                            <div className="space-y-1 min-w-0">
-                              <p className="text-xs font-semibold text-slate-800 dark:text-[#E3E3E3] leading-snug">
-                                {item.description}
-                              </p>
-                              <p className="text-[10px] text-slate-400 truncate">
-                                {item.source}
-                              </p>
-                            </div>
-                          </div>
-                          {item.action && (
-                            <div className="text-[10px] text-red-855 dark:text-red-400 bg-red-50/40 dark:bg-red-950/20 px-2.5 py-1 rounded-lg border border-red-100/40 dark:border-red-900/20 font-medium">
-                              Action: {item.action}
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* Column 2: Follow-ups */}
-                <div className="bg-white dark:bg-[#1E1F22] border border-[#E9EEF6] dark:border-[#2B2D31] rounded-[24px] overflow-hidden flex flex-col h-[340px]">
-                  <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-[#F3F6FC] dark:bg-[#1D253A] flex items-center justify-between shrink-0">
-                    <span className="font-semibold text-sm text-indigo-800 dark:text-indigo-400 flex items-center gap-2">
-                      <Clock size={16} className="text-indigo-600 dark:text-indigo-400" />
-                      Follow-ups
-                    </span>
-                    <span className="text-[10px] bg-indigo-100/60 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-400 font-bold px-2 py-0.5 rounded-full">
-                      {digestData.followUps?.length || 0}
-                    </span>
-                  </div>
-                  
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
-                    {(!digestData.followUps || digestData.followUps.length === 0) ? (
-                      <div className="h-full flex items-center justify-center text-xs text-slate-400 italic">
-                        No pending follow-ups.
-                      </div>
-                    ) : (
-                      digestData.followUps.map((item: any) => (
-                        <div 
-                          key={item.id} 
-                          onClick={() => handleAgendaItemClick(item)}
-                          className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-indigo-200 dark:hover:border-indigo-900/60 hover:bg-slate-100/50 dark:hover:bg-[#2B2D31]/70 transition-colors duration-150 cursor-pointer text-left"
-                        >
-                          <div className="flex items-start gap-2.5">
-                            <span className="mt-0.5 shrink-0">
-                              {item.type === 'email' ? <Mail size={14} className="text-slate-500" /> : item.type === 'comment' ? <MessageSquare size={14} className="text-slate-500" /> : <MessageSquare size={14} className="text-slate-500" />}
-                            </span>
-                            <div className="space-y-1 min-w-0">
-                              <p className="text-xs font-semibold text-slate-800 dark:text-[#E3E3E3] leading-snug">
-                                {item.description}
-                              </p>
-                              <p className="text-[10px] text-slate-400 truncate">
-                                {item.source}
-                              </p>
-                            </div>
-                          </div>
-                          {item.action && (
-                            <div className="text-[10px] text-indigo-855 dark:text-indigo-400 bg-indigo-50/40 dark:bg-indigo-950/20 px-2.5 py-1 rounded-lg border border-indigo-100/40 dark:border-indigo-900/20 font-medium">
-                              Action: {item.action}
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* Column 3: Important Updates */}
-                <div className="bg-white dark:bg-[#1E1F22] border border-[#E9EEF6] dark:border-[#2B2D31] rounded-[24px] overflow-hidden flex flex-col h-[340px]">
-                  <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-[#F4F4F5] dark:bg-[#252528] flex items-center justify-between shrink-0">
-                    <span className="font-semibold text-sm text-slate-700 dark:text-slate-350 flex items-center gap-2">
-                      <Info size={16} className="text-slate-500 dark:text-slate-400" />
-                      Important Updates
-                    </span>
-                    <span className="text-[10px] bg-slate-200/60 dark:bg-neutral-850/60 text-slate-700 dark:text-slate-350 font-bold px-2 py-0.5 rounded-full">
-                      {digestData.updates?.length || 0}
-                    </span>
-                  </div>
-                  
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
-                    {(!digestData.updates || digestData.updates.length === 0) ? (
-                      <div className="h-full flex items-center justify-center text-xs text-slate-400 italic">
-                        No general updates.
-                      </div>
-                    ) : (
-                      digestData.updates.map((item: any) => (
-                        <div 
-                          key={item.id} 
-                          onClick={() => handleAgendaItemClick(item)}
-                          className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-slate-350 dark:hover:border-slate-700 hover:bg-slate-100/50 dark:hover:bg-[#2B2D31]/70 transition-colors duration-150 cursor-pointer text-left"
-                        >
-                          <div className="flex items-start gap-2.5">
-                            <span className="mt-0.5 shrink-0">
-                              {item.type === 'email' ? <Mail size={14} className="text-slate-500" /> : item.type === 'comment' ? <MessageSquare size={14} className="text-slate-500" /> : <MessageSquare size={14} className="text-slate-500" />}
-                            </span>
-                            <div className="space-y-1 min-w-0">
-                              <p className="text-xs font-semibold text-slate-800 dark:text-[#E3E3E3] leading-snug">
-                                {item.description}
-                              </p>
-                              <p className="text-[10px] text-slate-400 truncate">
-                                {item.source}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-white leading-snug">
+                  {item.title}
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-neutral-400 font-medium mt-0.5">
+                  <span className="font-semibold">{item.workspace}</span>
+                  <span className="mx-1.5 text-slate-350 dark:text-neutral-600 font-normal">·</span>
+                  <span>{item.action}</span>
+                </p>
               </div>
             </div>
-          ) : null}
+          ))}
         </div>
-      )}
-
-      {/* Suggested Folders & Files Main Header Section */}
-      <div className="w-full max-w-7xl mt-4 select-none">
-        
-        {/* Row Header with Segmented View Controller */}
-        <div className="flex items-center justify-between mb-8 pb-3">
-          <span 
-            className="text-[24px] font-sans text-slate-800 dark:text-[#E3E3E3] font-normal tracking-tight"
-            style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
-          >
-            Jump back in
-          </span>
-          
-          {/* Segmented Grid / Columns Control Tabs */}
-          <div id="home-segmented-controller" className="flex bg-[#f0f4f9] dark:bg-[#2B2D31] p-1.5 rounded-full items-center gap-1.5">
-            <button
-               id="view-list-toggle"
-               onClick={() => setViewMode('list')}
-               aria-label="Columns view"
-               className={`w-12 h-12 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center outline-none focus:outline-none focus-visible:outline-none ${
-                 viewMode === 'list'
-                   ? 'bg-[#dbdee6] dark:bg-[#3E4042] text-[#1f2024] dark:text-white'
-                   : 'text-[#5f6368] dark:text-[#A9ABB0] hover:bg-[#e1e5ed]/50 dark:hover:bg-white/5'
-               }`}
-            >
-              <Columns3 size={20} className={viewMode === 'list' ? 'stroke-[2.5]' : 'stroke-[2]'} />
-            </button>
-            <button
-               id="view-grid-toggle"
-               onClick={() => setViewMode('grid')}
-               aria-label="Grid view"
-               className={`w-12 h-12 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center outline-none focus:outline-none focus-visible:outline-none ${
-                 viewMode === 'grid'
-                   ? 'bg-[#dbdee6] dark:bg-[#3E4042] text-[#1f2024] dark:text-white'
-                   : 'text-[#5f6368] dark:text-[#A9ABB0] hover:bg-[#e1e5ed]/50 dark:hover:bg-white/5'
-               }`}
-            >
-              <LayoutGrid size={20} className={viewMode === 'grid' ? 'stroke-[2.5]' : 'stroke-[2]'} />
-            </button>
-          </div>
-        </div>
-
-        {/* 1. GRID ACTION (Interactive CoverSlides aspect 4:3 block grid) */}
-        {isLoadingDrive ? (
-          <div className="w-full flex flex-col items-center justify-center py-16 bg-slate-50/50 border border-slate-150/50 rounded-3xl animate-pulse">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
-            <p className="text-slate-500 font-medium text-xs font-sans tracking-tight">Fetching real templates and structures from your Drive account...</p>
-          </div>
-        ) : (
-          (() => {
-            const filteredList = suggestedList;
-
-            return viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-                {filteredList.map((item) => (
-                  <CoverSlide 
-                    key={item.id} 
-                    item={item} 
-                    onClick={() => handleItemClick(item)} 
-                    onRemove={(it) => onFileRemove && onFileRemove(it)}
-                    sandboxUrl={sandboxUrl}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="w-full rounded-3xl overflow-hidden bg-white dark:bg-[#1E1F22] border border-[#E9EEF6] dark:border-[#2B2D31] text-left select-none">
-                <FilesList files={filteredList} onFileSelect={handleItemClick} onFileRemove={onFileRemove} userProfile={userProfile} theme={theme} />
-              </div>
-            );
-          })()
-        )}
       </div>
-
     </div>
   );
 }
