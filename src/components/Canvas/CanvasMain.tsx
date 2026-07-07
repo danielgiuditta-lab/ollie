@@ -74,13 +74,7 @@ export function CanvasMain({
         )}
         
         {/* Inner Container with rounded corners and overflow-hidden */}
-        <div 
-          className={`flex flex-col flex-1 h-full min-h-0 overflow-hidden relative z-10 transition-all duration-300 ${
-            isTransparentContainer 
-              ? 'border-transparent bg-transparent shadow-none' 
-              : `rounded-[32px] overflow-hidden border-0 border-transparent shadow-none ${containerBgClass}`
-          }`}
-        >
+        <div className="flex flex-col flex-1 h-full min-h-0 overflow-hidden relative z-10 bg-transparent border-transparent shadow-none">
           {!(isLoading && !isDocTask && viewState !== 'ai_summary') ? (
             <div 
               id="canvas-main-viewport"

@@ -31,6 +31,7 @@ interface LandingInputProps {
   accessToken?: string | null;
   recentItems?: any[];
   userProfile?: any;
+  defaultAiMode?: boolean;
 }
 
 export function LandingInput({ 
@@ -44,12 +45,13 @@ export function LandingInput({
   defaultDrawerOpen = false,
   accessToken = null,
   recentItems = [],
-  userProfile
+  userProfile,
+  defaultAiMode = false
 }: LandingInputProps) {
   const [value, setValue] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(defaultDrawerOpen);
   const [isPlusOpen, setIsPlusOpen] = useState(false);
-  const [aiMode, setAiMode] = useState(false);
+  const [aiMode, setAiMode] = useState(defaultAiMode);
 
   // Selected work contexts (people or files)
   const [selectedContexts, setSelectedContexts] = useState<any[]>([]);
@@ -239,7 +241,7 @@ export function LandingInput({
             value={value}
             onChange={handleInputChange}
             onKeyDown={handleKeyPress}
-            placeholder={aiMode ? "Search and get AI summaries of your Drive files..." : placeholder}
+            placeholder={placeholder || (aiMode ? "Search and get AI summaries of your Drive files..." : "Create or add...")}
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"

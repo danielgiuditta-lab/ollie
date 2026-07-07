@@ -125,9 +125,9 @@ export function ChatSidebar({
         style={isBottom ? undefined : { width: `${width}px` }}
         className={`h-full w-full flex flex-col pt-0 shrink-0 ${
           theme === 'dark' 
-            ? 'bg-[#1E1F22]' 
-            : 'bg-white'
-        } rounded-[32px] relative overflow-hidden z-20 spring-transition shadow-none`}
+            ? 'bg-[#1E1F22] border-r border-[#2B2D31]' 
+            : 'bg-white border-r border-slate-200'
+        } rounded-none relative overflow-hidden z-20 spring-transition shadow-none`}
       >
         {/* Header Panel */}
         <div className="flex items-center justify-between px-4 pt-4 pb-4">

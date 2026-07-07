@@ -14,6 +14,7 @@ import { PeerCursors } from './components/Canvas/PeerCursors';
 import { CanvasSidebar } from './components/Canvas/CanvasSidebar';
 import { NativeViewer } from './components/Canvas/NativeViewer';
 import { HomeLanding, SUGGESTED_ITEMS } from './components/Canvas/HomeLanding';
+import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
 import { CanvasTopBar } from './components/Canvas/CanvasTopBar';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
@@ -148,9 +149,19 @@ export default function App() {
   const [suggestedListCache, setSuggestedListCache] = useState<any[]>(SUGGESTED_ITEMS);
   const [isDriveSuggestLoading, setIsDriveSuggestLoading] = useState(false);
 
+  const getHomeChatId = useCallback(() => {
+    const email = userProfile?.email || 'guest';
+    const sanitizedEmail = email.replace(/[^a-zA-Z0-9_\-]/g, "_");
+    return `home_${sanitizedEmail}`;
+  }, [userProfile?.email]);
+
+  const isHomeChatId = useCallback((id: string | null) => {
+    return !id || id.startsWith('home_');
+  }, []);
+
   // makeFolder Workspace States
   const [selectedDriveFiles, setSelectedDriveFiles] = useState<any[]>([]);
-  const [driveFolderId, setDriveFolderId] = useState<string | null>(null);
+  const [driveFolderId, setDriveFolderId] = useState<string | null>('home_guest');
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'failed'>('idle');
 
@@ -200,8 +211,8 @@ export default function App() {
         console.error("Error fetching user chats from Firestore:", fErr);
       }
 
-      // Filter to only items with active messages/LLM interactions
-      const mergedTasks = firestoreTasks.filter(ft => ft.messages && ft.messages.length > 0);
+      // Filter to only items with active messages/LLM interactions and exclude home chats
+      const mergedTasks = firestoreTasks.filter(ft => ft.messages && ft.messages.length > 0 && !isHomeChatId(ft.id));
       
       // Sort reverse-chronologically by timestamp
       mergedTasks.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
@@ -215,6 +226,32 @@ export default function App() {
   useEffect(() => {
     fetchGeminiTasks(accessToken, userProfile?.email);
   }, [accessToken, userProfile?.email]);
+
+  useEffect(() => {
+    const homeId = getHomeChatId();
+    const loadHomeChat = async () => {
+      try {
+        const chatRes = await fetch(`/api/chats/${homeId}`);
+        if (chatRes.ok) {
+          const chatData = await chatRes.json();
+          if (chatData && chatData.messages) {
+            setMessages(chatData.messages);
+            return;
+          }
+        }
+        setMessages([]);
+      } catch (err) {
+        console.error("Failed to load home chat:", err);
+        setMessages([]);
+      }
+    };
+
+    if (isHomeChatId(driveFolderId)) {
+      setDriveFolderId(homeId);
+      setProjectName('Home Dashboard');
+      loadHomeChat();
+    }
+  }, [userProfile?.email]);
 
   useEffect(() => {
     if (selectedFile) {
@@ -544,7 +581,7 @@ export default function App() {
       });
 
       // Only add to recent tasks in side panel if the app is built and we have a descriptive title
-      if (activeName) {
+      if (activeName && !isHomeChatId(folderId)) {
         setRecentTasks(prev => {
           const now = Date.now();
           const newTask = {
@@ -1366,25 +1403,22 @@ export default function App() {
     let contextToUse = sandboxFiles;
     let activeEnvId = envId;
     let activeSandboxUrl = sandboxUrl;
+    let resolvedFolderId = driveFolderId;
 
     // "when i land on the landing page and oauth in, the files i select should be added to the folder i create and be used as context"
-    if (accessToken && !driveFolderId) {
-      const initMessage = selectedDriveFiles.length > 0 
-        ? 'Initializing Google Drive folder and setting up workspace files...'
-        : 'Initializing Google Drive folder and setting up workspace...';
+    if (accessToken && isHomeChatId(driveFolderId) && selectedDriveFiles.length > 0) {
+      const initMessage = 'Initializing Google Drive folder and setting up workspace files...';
       setMessages(prev => [...prev, { role: 'bot', text: initMessage }]);
       const resVal = await createFolderAndCopyFiles(text);
       if (resVal) {
         activeFolderId = resVal.folderId;
+        resolvedFolderId = resVal.folderId;
         contextToUse = resVal.files;
         if (resVal.isExisting) {
           if (resVal.envId) activeEnvId = resVal.envId;
           if (resVal.sandboxUrl) activeSandboxUrl = resVal.sandboxUrl;
         }
       }
-    } else if (!driveFolderId) {
-      activeFolderId = `local-workspace-${Date.now()}`;
-      setDriveFolderId(activeFolderId);
     }
 
     try {
@@ -1756,8 +1790,11 @@ export default function App() {
                   setSandboxUrl('');
 
                   if (combinedFilesForSync.length > 0) {
-                    const activeFolder = activeFolderId || driveFolderId || `workspace-${Date.now()}`;
-                    if (!driveFolderId) {
+                    const activeFolder = (isHomeChatId(driveFolderId) || !driveFolderId)
+                      ? (activeFolderId || `workspace-${Date.now()}`)
+                      : driveFolderId;
+                    resolvedFolderId = activeFolder;
+                    if (isHomeChatId(driveFolderId) || !driveFolderId) {
                       setDriveFolderId(activeFolder);
                     }
 
@@ -1842,7 +1879,7 @@ export default function App() {
       setMessages(prev => [...prev, { role: 'bot', text: 'Failed to connect to backend.' }]);
     } finally {
       setIsLoading(false);
-      const targetFolder = activeFolderId || driveFolderId;
+      const targetFolder = resolvedFolderId;
       if (targetFolder) {
         setMessages(currentMessages => {
           setTimeout(() => {
@@ -2975,6 +3012,38 @@ export default function App() {
     const folderId = typeof file === 'string' ? file : (file.id || file.driveFolderId);
     if (!folderId) return;
 
+    if (isHomeChatId(folderId)) {
+      driveFolderIdRef.current = folderId;
+      activeLoadedFolderIdRef.current = folderId;
+      setDriveFolderId(folderId);
+      setProjectName('Home Dashboard');
+      setIsAiSummarySnapped(false);
+      setActiveAiSummaryTaskId(null);
+      setActiveSidebar('gemini');
+      setSandboxFiles([]);
+      setIngestedFiles([]);
+      setSelectedFile(null);
+      
+      try {
+        const chatRes = await fetch(`/api/chats/${folderId}`);
+        if (chatRes.ok) {
+          const chatData = await chatRes.json();
+          if (chatData && chatData.messages) {
+            setMessages(chatData.messages);
+          } else {
+            setMessages([]);
+          }
+        } else {
+          setMessages([]);
+        }
+      } catch (err) {
+        console.error("Failed to load home chat:", err);
+        setMessages([]);
+      }
+      setViewState('home');
+      return;
+    }
+
     // Track active folder ID to prevent race conditions from delayed network responses
     driveFolderIdRef.current = folderId;
 
@@ -3565,7 +3634,7 @@ export default function App() {
   }
 
   return (
-    <div className="w-full h-screen bg-f8fafd dark:bg-[#0B0B0C] text-slate-800 dark:text-[#E3E3E3] flex font-sans overflow-hidden relative">
+    <div className="w-full h-screen bg-white dark:bg-[#0B0B0C] text-slate-800 dark:text-[#E3E3E3] flex font-sans overflow-hidden relative">
       <LeftNav 
         theme={appTheme}
         isExpanded={isLeftNavExpanded}
@@ -3637,19 +3706,12 @@ export default function App() {
         driveFolderId={driveFolderId}
       />
       {/* 2. Chat Sidebar (Docked to Side) */}
-      {activeSidebar && (viewState !== 'home' || isAiSummarySnapped) && viewState !== 'ai_summary' && chatDockPosition === 'side' && (
+      {viewState !== 'ai_summary' && chatDockPosition === 'side' && (
         <ChatSidebar 
           messages={isAiSummarySnapped ? aiSummaryMessages : messages} 
           onSendMessage={handleSendMessage} 
           isLoading={isLoading} 
-          variant={activeSidebar}
-          onClose={() => {
-            setActiveSidebar(null);
-            if (isAiSummarySnapped) {
-              setIsAiSummarySnapped(false);
-              setViewState('ai_summary');
-            }
-          }}
+          variant={activeSidebar || 'gemini'}
           onCreateArtifact={handleCreateArtifactApp}
           currentTask={currentTask}
           theme={appTheme}
@@ -3679,23 +3741,17 @@ export default function App() {
       )}
 
       {/* 3. Canvas Container (Everything else) */}
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative pr-4 pl-4 pt-1 pb-4 gap-4">
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-white dark:bg-[#1E1F22] border-t-0 border-r-0 border-b-0 border-l border-slate-200 dark:border-[#2B2D31] rounded-none p-0">
         <CanvasHeader 
           projectName={projectName}
           viewState={viewState}
           onHomeClick={() => {
-            setViewState('home');
+            handleFileClick(getHomeChatId(), true);
             setHomeJourney('search');
-            setSelectedFile(null);
-            setActiveSidebar('gemini');
-            setIsAiSummarySnapped(false);
           }}
           onCloseWorkspace={() => {
-            setViewState('home');
+            handleFileClick(getHomeChatId(), true);
             setHomeJourney('search');
-            setSelectedFile(null);
-            setActiveSidebar('gemini');
-            setIsAiSummarySnapped(false);
           }}
           peers={peers}
           theme={appTheme}
@@ -3862,9 +3918,8 @@ export default function App() {
                   )}
                   {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && (
                     <div 
-                      className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 rounded-[32px]" 
+                      className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent" 
                       id="canvas-unified-workspace"
-                      style={{ backgroundColor: appTheme === 'dark' ? '#1E1F22' : '#ffffff' }}
                     >
                       <div className="w-full h-full relative pt-[72px]">
                         <CanvasTopBar
@@ -3922,46 +3977,30 @@ export default function App() {
               )}
             </div>
 
-            {activeSidebar && (viewState !== 'home' || isAiSummarySnapped) && viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
-              <div className="h-[360px] w-full shrink-0 flex flex-col min-h-0 relative">
-                <ChatSidebar 
-                  messages={isAiSummarySnapped ? aiSummaryMessages : messages} 
-                  onSendMessage={handleSendMessage} 
-                  isLoading={isLoading} 
-                  variant={activeSidebar}
-                  onClose={() => {
-                    setActiveSidebar(null);
-                    if (isAiSummarySnapped) {
-                      setIsAiSummarySnapped(false);
-                      setViewState('ai_summary');
-                    }
-                  }}
-                  onCreateArtifact={handleCreateArtifactApp}
-                  currentTask={currentTask}
-                  theme={appTheme}
-                  isAiSummarySnapped={isAiSummarySnapped}
-                  onUnsnapAiSummary={() => {
-                    setIsAiSummarySnapped(false);
-                    setViewState('ai_summary');
-                    setActiveSidebar(null);
-                  }}
-                  onSourceClick={(fileId) => {
-                    const matched = aiSummarySources.find(s => s.id === fileId || s.driveId === fileId);
-                    if (matched) {
-                      setSelectedFile(matched);
-                      setViewMode('preview');
-                      setViewState('files');
-                      resetChatForDirectoryItem();
-                    }
-                  }}
-                  sources={aiSummarySources}
-                  fileCount={sandboxFiles.length > 0 ? sandboxFiles.length : (selectedDriveFiles.length > 0 ? selectedDriveFiles.length : driveFiles.length)}
-                  onApplyMoves={handleApplyOrganizeMoves}
-                  onDoDifferently={handleDoDifferentlyOrganize}
-                  isOrganizingFiles={isOrganizingFiles}
-                  chatDockPosition={chatDockPosition}
-                  onChangeChatDockPosition={setChatDockPosition}
-                />
+            {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
+              <div 
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text"
+                id="floating-bottom-chat"
+              >
+                <div className="bg-white dark:bg-[#1E1F22] rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-lg p-3 flex items-end gap-3">
+                  <div className="flex-1 min-w-0">
+                    <Composer 
+                      onSend={handleSendMessage}
+                      disabled={isLoading}
+                      placeholder="Ask Gemini anything about your workspace..."
+                      theme={appTheme}
+                      onCreateArtifact={handleCreateArtifactApp}
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={() => setChatDockPosition('side')}
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 hover:bg-slate-100 dark:bg-[#2B2D31] dark:hover:bg-[#3E4042] border border-slate-200 dark:border-slate-700 text-slate-650 dark:text-slate-350 cursor-pointer shadow-xs shrink-0 mb-1"
+                    title="Snap to side"
+                  >
+                    <span className="material-symbols-rounded text-[20px]">grid_layout_side</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
