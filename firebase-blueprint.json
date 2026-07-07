@@ -1,0 +1,126 @@
+{
+  "entities": {
+    "shard": {
+      "title": "Shard",
+      "description": "A mapping of a unique URL ID to an Antigravity container environment state.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique shared token or slug."
+        },
+        "envId": {
+          "type": "string",
+          "description": "The Antigravity container environment ID."
+        },
+        "workspaceName": {
+          "type": "string",
+          "description": "Descriptive title of the workspace layout."
+        },
+        "owner": {
+          "type": "string",
+          "description": "The email of the creator."
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "The authenticated user ID of the creator."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "envId",
+        "workspaceName",
+        "owner",
+        "ownerId",
+        "createdAt"
+      ]
+    },
+    "syncState": {
+      "title": "SyncState",
+      "description": "A real-time state slot representing shared widget data syncing across peers.",
+      "type": "object",
+      "properties": {
+        "envId": {
+          "type": "string",
+          "description": "The active container environment ID."
+        },
+        "key": {
+          "type": "string",
+          "description": "The specific state descriptor key."
+        },
+        "data": {
+          "type": "object",
+          "description": "The arbitrary JSON payload stored by the running widget."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last updated timestamp."
+        }
+      },
+      "required": [
+        "envId",
+        "key",
+        "data",
+        "updatedAt"
+      ]
+    },
+    "chat": {
+      "title": "Chat",
+      "description": "Stored chat conversation session with the agent, mapped by workspace ID.",
+      "type": "object",
+      "properties": {
+        "chatId": {
+          "type": "string"
+        },
+        "projectName": {
+          "type": "string"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "envId": {
+          "type": "string"
+        },
+        "driveFolderId": {
+          "type": "string"
+        },
+        "sandboxUrl": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "chatId",
+        "projectName",
+        "messages",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/shards/{shardId}": {
+      "schema": "shard",
+      "description": "Collection of shared workspace containers."
+    },
+    "/sync/{syncId}": {
+      "schema": "syncState",
+      "description": "Collection of real-time widget states."
+    },
+    "/chats/{chatId}": {
+      "schema": "chat",
+      "description": "Collection of saved chat conversation histories."
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "command": "/bin/bash",
+  "args": [
+    "start.sh"
+  ],
+  "restart_policy": "always",
+  "description": "Automatically run the dev server on startup",
+  "env": {
+    "PATH": "/usr/local/google/home/danielgiuditta/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  },
+  "has_web_ui": true,
+  "display_name": "App Preview",
+  "ui_config": {
+    "display_name": "App Preview",
+    "views": [
+      {
+        "path": "/",
+        "entrypoint": "SIDECAR_UI_ENTRYPOINT_FULL_PANE"
+      }
+    ]
+  }
+}

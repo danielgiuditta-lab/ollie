@@ -1,0 +1,18 @@
+{
+  "chatId": "ai-summary-1782409965425",
+  "projectName": "give me the latest on ai mode in drive",
+  "messages": [
+    {
+      "role": "user",
+      "text": "give me the latest on ai mode in drive"
+    },
+    {
+      "role": "bot",
+      "text": "Here is the latest status, feature plans, and ongoing developments for **AI Mode in Drive (AIM)** based on recent team discussions and documentation:\n\n## Strategic Focus & Development Status\nThe team's primary focus is successfully delivering **Projects** and **AI Mode (AIM)** in accordance with leadership feedback [📄 [Drive Big Rock] Drive Refresh: A New Drive](https://drive.google.com/open?id=1UR5cZ02YzE8JRJoE5urj1lDy3N1Liv6RRz3sioV1Cks). \n\nTo streamline testing, engineering is consolidating various standalone prototypes into a single, functional stack (using a \"jet ski\" environment). This unified prototype will connect to live Drive APIs and natively support both AI Mode and immersive canvas functionalities [📄 [:05] AI DUX Daily](https://drive.google.com/open?id=1gVIxV6q2j7Pgbf-E_sY-2ouwhWQoH2KgwzA8sHXinjY) [📄 [Drive Big Rock] Drive Refresh: A New Drive](https://drive.google.com/open?id=1UR5cZ02YzE8JRJoE5urj1lDy3N1Liv6RRz3sioV1Cks).\n\n## Key Features & Entry Points\n* **Search-Based AI Entry:** A search-based entry mode for AI has been identified as a high-conviction concept. The \"Day 2\" prototyping roadmap includes a search-forward home page and a dedicated AI-mode entry point directly within Drive Search [📄 [Drive Big Rock] Drive Refresh: A New Drive](https://drive.google.com/open?id=1UR5cZ02YzE8JRJoE5urj1lDy3N1Liv6RRz3sioV1Cks) [📄 New Drive Feature Stack Rank](https://drive.google.com/open?id=17rPqF52FpRM57VbYwgEeTzBS-DOz2RGpgPgYwEo_4WA).\n* **Gemini Sparkle Side Panel:** In the planned toolbar, clicking the Gemini sparkle will open a companion side panel. This panel's context automatically adapts to what you are viewing—either the highlighted file (if in preview mode) or the current folder. Users will be able to add files/folders as context to persist across the chat thread, and conversation histories will be saved and accessible via a hamburger menu [📄 New Drive Feature Stack Rank](https://drive.google.com/open?id=17rPqF52FpRM57VbYwgEeTzBS-DOz2RGpgPgYwEo_4WA).\n* **Opening Projects:** Clicking directly on a project row successfully opens that project within AI Mode [📄 [:05] AI DUX Daily](https://drive.google.com/open?id=1gVIxV6q2j7Pgbf-E_sY-2ouwhWQoH2KgwzA8sHXinjY).\n\n## Current Issues & Bugs\n* **\"Ask Gemini\" Context Menu Bug:** Right-clicking on a project in the project tab currently shows the \"Ask Gemini\" option as disabled, or displays an incorrect \"unsupported file type\" error (likely due to a lack of support for nested projects). The team is currently discussing whether to fix this contextual menu behavior so it matches standard project-opening behavior or hide the option entirely [📄 [:05] AI DUX Daily](https://drive.google.com/open?id=1gVIxV6q2j7Pgbf-E_sY-2ouwhWQoH2KgwzA8sHXinjY).\n\n---\n\n### Sources\n* [📄 [:05] AI DUX Daily - 2026/06/25 09:31 MDT - Notes by Gemini](https://drive.google.com/open?id=1gVIxV6q2j7Pgbf-E_sY-2ouwhWQoH2KgwzA8sHXinjY)\n* [📄 [Drive Big Rock] Drive Refresh: A New Drive - 2026/06/25 09:00 MST - Notes by Gemini](https://drive.google.com/open?id=1UR5cZ02YzE8JRJoE5urj1lDy3N1Liv6RRz3sioV1Cks)\n* [📄 New Drive Feature Stack Rank](https://drive.google.com/open?id=17rPqF52FpRM57VbYwgEeTzBS-DOz2RGpgPgYwEo_4WA)"
+    }
+  ],
+  "envId": null,
+  "driveFolderId": null,
+  "sandboxUrl": "",
+  "updatedAt": "2026-06-25T17:53:29.393Z"
+}

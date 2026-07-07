@@ -1,0 +1,24 @@
+{
+  "envId": "39b20f5b-f5de-4023-aad7-837ed2bb8c36",
+  "key": "flappy_workspace_leaderboard_v1",
+  "data": [
+    {
+      "name": "Alpha",
+      "score": 12
+    },
+    {
+      "name": "Beta",
+      "score": 8
+    },
+    {
+      "name": "Delta",
+      "score": 5
+    },
+    {
+      "name": "Guest Pilot",
+      "score": 0,
+      "date": "2026-06-26T16:19:25.181Z"
+    }
+  ],
+  "updatedAt": "2026-06-26T16:19:26.340Z"
+}

@@ -1,0 +1,19 @@
+{
+  "chatId": "ai-summary-1782437225479",
+  "projectName": "tell me about project sojo",
+  "messages": [
+    {
+      "role": "user",
+      "text": "tell me about project sojo"
+    },
+    {
+      "role": "bot",
+      "text": "Project Sojo is an agentic platform designed to shift the digital workspace from a conversation-centric model to a **work-centric architecture**. Rather than fragmenting work across scattered chats, threads, and runs, Sojo establishes the **Task** as its core primitive—a durable, living source of truth that tracks goals, states, plans, and progress [📄 Task as a primitive in Sojo](https://drive.google.com/open?id=1c3NpVR1Mw91m3pT6NQv27aLRXBDqs0Ca2Sh2N3mT_c4).\n\n### Core Philosophy & Architecture\n* **Tasks over Sessions:** While sessions (chats, emails, or mobile interactions) act as temporary windows for dialogue, the Task itself holds the structured, durable state of work [📄 Task as a primitive in Sojo](https://drive.google.com/open?id=1c3NpVR1Mw91m3pT6NQv27aLRXBDqs0Ca2Sh2N3mT_c4).\n* **Structured Handoffs:** Instead of sharing unstructured history, tasks communicate using \"handoffs\"—focused summaries containing goals, decisions, key artifacts, and next steps [📄 Task as a primitive in Sojo](https://drive.google.com/open?id=1c3NpVR1Mw91m3pT6NQv27aLRXBDqs0Ca2Sh2N3mT_c4).\n* **Role-Based Agents (A2):** Autonomous, role-based agents coordinate the work end-to-end, deciding when to parallelize, continue in place, or merge tasks across various channels (like Studio, Gmail, and WhatsApp) [📄 Task as a primitive in Sojo](https://drive.google.com/open?id=1c3NpVR1Mw91m3pT6NQv27aLRXBDqs0Ca2Sh2N3mT_c4).\n\n### Ecosystem & Entry Points\nThe team is developing complementary, highly focused tools to drive adoption. For instance, **Orchestra** (an opinionated marketing-task prototype built on the Jet Ski platform) is being positioned as a mobile-friendly \"Trojan horse\" to seamlessly bring small business users into the broader Sojo ecosystem [📄 Business in a Box Weekly - 2026/05/13 12:02 EDT - Notes by Gemini](https://drive.google.com/open?id=1gQEAOQtZiaoaezax-XxdKlIv0TDQ6_AJ82UsnB2V_WA).\n\n### Sources\n* [📄 Task as a primitive in Sojo](https://drive.google.com/open?id=1c3NpVR1Mw91m3pT6NQv27aLRXBDqs0Ca2Sh2N3mT_c4)\n* [📄 Business in a Box Weekly - 2026/05/13 12:02 EDT - Notes by Gemini](https://drive.google.com/open?id=1gQEAOQtZiaoaezax-XxdKlIv0TDQ6_AJ82UsnB2V_WA)\n* [📄 Project Sojo Primer [go/sojo-primer]](https://drive.google.com/open?id=1XvPFu10AHRzGzQJx0N7gEkkrAK_Uab0IJG8I0lLw8Cs)\n* [📄 Sojo UX Steering - go/sojo-ux-ux-steering](https://drive.google.com/open?id=10rerdJ3tj7E29fuaF649EHO6dsSWYDZMoY7uEpaZv6Q)"
+    }
+  ],
+  "envId": null,
+  "driveFolderId": null,
+  "sandboxUrl": "",
+  "userEmail": "danielgiuditta@google.com",
+  "updatedAt": "2026-06-26T01:27:27.151Z"
+}
