@@ -10,10 +10,16 @@ import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
 import videoIcon from '../../assets/video.png';
 
+const getSpaceEmoji = (name: string): string => {
+  const sum = Array.from(name).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const emojis = ['📁', '💼', '💡', '🚀', '🌟', '🛠', '⚙️', '📝', '🎯', '🌱'];
+  return emojis[sum % emojis.length];
+};
+
 export interface CoverSlideItem {
   id: string;
   name: string;
-  type: 'folder' | 'file';
+  type: 'space' | 'file';
   mimeType?: string;
   previewType?: 'marketing' | 'sales' | 'pricing' | 'ads' | 'branding' | 'support' | 'doc-proposal' | 'operations' | 'roadmap' | 'feedback' | 'legal' | 'investor' | 'engineering' | 'finance' | 'hr' | 'social';
   filesToLoad?: any[]; // optional, list of files inside this simulated workspace
@@ -38,13 +44,10 @@ export function CoverSlide({ item, onClick, onRemove, sandboxUrl }: CoverSlidePr
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   // Helper to determine the leader icon based on item type and mimetype
   const renderIcon = () => {
-    if (item.type === 'folder') {
+    if (item.type === 'space') {
       return (
-        <span 
-          className="material-symbols-rounded select-none text-[#444746] dark:text-[#C4C7C5] shrink-0 inline-flex items-center justify-center" 
-          style={{ fontSize: '24px', fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
-        >
-          folder
+        <span className="text-xl shrink-0 leading-none w-6 h-6 flex items-center justify-center">
+          {getSpaceEmoji(item.name)}
         </span>
       );
     }
@@ -97,7 +100,7 @@ export function CoverSlide({ item, onClick, onRemove, sandboxUrl }: CoverSlidePr
     };
 
     if (item.isReal) {
-      if (item.type === 'folder') {
+      if (item.type === 'space') {
         const children = item.realChildren || [];
         const files = item.filesToLoad || [];
 
@@ -226,7 +229,7 @@ export function CoverSlide({ item, onClick, onRemove, sandboxUrl }: CoverSlidePr
                 </>
               ) : (
                 <div className="flex-1 flex items-center justify-center border border-dashed border-slate-200 rounded-xl py-3 text-slate-400 text-[10px]">
-                  Empty folder
+                  Empty space
                 </div>
               )}
             </div>

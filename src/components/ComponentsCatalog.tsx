@@ -115,7 +115,7 @@ Bio Dish,12.00,450`
   const mockCoverSlideItem = {
     id: 'cover-marketing',
     name: 'Q3 Marketing Launch Campaign',
-    type: 'folder' as const,
+    type: 'space' as const,
     previewType: 'marketing' as const,
     filesToLoad: [mockFileHTML]
   };

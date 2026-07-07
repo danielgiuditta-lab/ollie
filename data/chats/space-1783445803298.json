@@ -1,12 +1,7 @@
 {
   "chatId": "space-1783445803298",
   "projectName": "New Drive",
-  "messages": [
-    {
-      "role": "bot",
-      "text": "Welcome to **New Drive**! This is a workspace contextually initialized with matching files and shared with Chantel Zapata Pray, Michelle Haq, Daniel Giuditta, David Wurtz. Ask me to start building files, like 'make an interactive dashboard'."
-    }
-  ],
+  "messages": [],
   "envId": null,
   "activeSpaceId": "space-1783445803298",
   "sandboxUrl": "",

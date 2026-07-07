@@ -142,7 +142,7 @@ export const SUGGESTED_ITEMS: CoverSlideItem[] = [
   { 
     id: 'sug-marketing', 
     name: 'Marketing', 
-    type: 'folder', 
+    type: 'space', 
     previewType: 'marketing',
     filesToLoad: [
       {
@@ -255,7 +255,7 @@ This brief sits at the root directory level.`
   { 
     id: 'sug-sales', 
     name: 'Sales', 
-    type: 'folder', 
+    type: 'space', 
     previewType: 'sales',
     filesToLoad: [
       {
@@ -331,7 +331,7 @@ Date: June 2026
   { 
     id: 'sug-ads', 
     name: 'Ad performance', 
-    type: 'folder', 
+    type: 'space', 
     previewType: 'ads',
     filesToLoad: [
       {
@@ -363,7 +363,7 @@ Date: June 2026
   { 
     id: 'sug-branding', 
     name: 'Branding', 
-    type: 'folder', 
+    type: 'space', 
     previewType: 'branding',
     filesToLoad: [
       {
@@ -390,7 +390,7 @@ Date: June 2026
   { 
     id: 'sug-support', 
     name: 'Support', 
-    type: 'folder', 
+    type: 'space', 
     previewType: 'support',
     filesToLoad: [
       {
@@ -431,7 +431,7 @@ We aim to harness micro-influencers and pet channels to demonstrate eco-consciou
   { 
     id: 'sug-operations', 
     name: 'Operations', 
-    type: 'folder', 
+    type: 'space', 
     previewType: 'operations',
     filesToLoad: [
       {
@@ -917,8 +917,8 @@ export function HomeLanding({
         if (combined.length > 0) {
           const mappedItems: CoverSlideItem[] = await Promise.all(
             combined.map(async (file: any) => {
-              const type = file.mimeType === 'application/vnd.google-apps.folder' ? 'folder' : 'file';
-              const isFolder = type === 'folder';
+              const type = file.mimeType === 'application/vnd.google-apps.folder' ? 'space' : 'file';
+              const isFolder = type === 'space';
               
               const item: CoverSlideItem = {
                 id: file.id,
@@ -1107,7 +1107,7 @@ export function HomeLanding({
     }
     const isRealFile = item.isReal || !!item.mimeType || !!item.driveId || item.type === 'file';
     if (isRealFile) {
-      if (item.type === 'folder') {
+      if (item.type === 'space') {
         if (setActiveSpaceId) {
           setActiveSpaceId(item.id);
         }

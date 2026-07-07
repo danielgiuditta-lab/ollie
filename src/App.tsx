@@ -2121,7 +2121,9 @@ export default function App() {
     if (isHome) {
       setViewState('home');
     } else {
-      setViewState('app');
+      if (viewState === 'home') {
+        setViewState(selectedFile ? 'app' : (sandboxFiles.length > 0 ? 'files' : 'null'));
+      }
     }
     setActiveSidebar('gemini');
   };
@@ -2237,6 +2239,7 @@ export default function App() {
         lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
       });
 
+      let defaultSelect: any = null;
       if (newSandboxFiles.length > 0) {
         const preferredDoc = newSandboxFiles.find(f => {
           const mType = (f.mimeType || '').toLowerCase();
@@ -2244,7 +2247,7 @@ export default function App() {
                  f.name.toLowerCase().endsWith('.md') || f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx');
         });
         const firstNonIndex = newSandboxFiles.find(f => f.name.toLowerCase() !== 'index.html');
-        const defaultSelect = preferredDoc || firstNonIndex || newSandboxFiles[0];
+        defaultSelect = preferredDoc || firstNonIndex || newSandboxFiles[0];
         if (defaultSelect) {
           setSelectedFile(defaultSelect);
           setIndexFileSelected(defaultSelect.name.toLowerCase() === 'index.html');
@@ -2253,7 +2256,7 @@ export default function App() {
         setSelectedFile(null);
       }
       
-      setViewState('home');
+      setViewState(defaultSelect ? 'app' : (newSandboxFiles.length > 0 ? 'files' : 'null'));
       setSyncStatus('synced');
       setMessages([]);
 
@@ -3350,7 +3353,7 @@ export default function App() {
         setIndexFileSelected((cached.selectedFile || autoSelectFile)?.name?.toLowerCase().includes('index.html') ?? false);
 
         if (skipSelect) {
-          setViewState('home');
+          setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'null');
           setSelectedFile(null);
         } else {
           if (cached.viewState) {
@@ -3510,7 +3513,7 @@ export default function App() {
                 } else {
                   setSelectedFile(null);
                   setIndexFileSelected(false);
-                  setViewState('home');
+                  setViewState(chatData.sandboxFiles?.length > 0 ? 'files' : 'null');
                 }
                 
                 workspaceCacheRef.current[folderId] = {
@@ -3599,12 +3602,12 @@ export default function App() {
             } else {
               setSelectedFile(null);
               setIndexFileSelected(false);
-              setViewState('home');
+              setViewState(sandboxMapped.length > 0 ? 'files' : 'null');
             }
           } else {
             setSelectedFile(null);
             setIndexFileSelected(false);
-            setViewState('home');
+            setViewState('null');
           }
 
           let currentMessages: any[] = [];
@@ -4145,7 +4148,7 @@ export default function App() {
                   currentUserId={localUser?.id}
                   selectedFile={selectedFile}
                 >
-                  <div className={(viewState === 'home' || (viewState === 'files' && !selectedFile && isHomeChatId(activeSpaceId))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                  <div className={(viewState === 'home' || ((viewState === 'files' || viewState === 'app') && !selectedFile)) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
                     <HomeLanding 
                       accessToken={accessToken} 
                       userProfile={userProfile} 
