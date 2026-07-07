@@ -163,6 +163,7 @@ export default function App() {
   const [selectedDriveFiles, setSelectedDriveFiles] = useState<any[]>([]);
   const [activeSpaceId, setActiveSpaceId] = useState<string | null>('home_guest');
   const [isCreatingSpace, setIsCreatingSpace] = useState(false);
+  const [spaceCreationSources, setSpaceCreationSources] = useState<any[]>([]);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'failed'>('idle');
 
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -865,23 +866,67 @@ export default function App() {
       }
       setProjectName(detectedName);
 
-      const allMembers = getTeamMembers();
-      const suggestions = allMembers.slice(0, 2);
+      try {
+        const response = await fetch('/api/space-creation-rag', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            prompt: text,
+            teamMembers: getTeamMembers()
+          })
+        });
 
-      setTimeout(() => {
+        if (response.ok) {
+          const data = await response.json();
+          const matchedFiles = data.files || [];
+          const suggestions = data.suggestedPeople || [];
+          const explanation = data.explanation || "";
+
+          setSpaceCreationSources(matchedFiles);
+
+          const allPossibleMembers = getTeamMembers();
+          const mergedMembers = [...allPossibleMembers];
+          suggestions.forEach((s: any) => {
+            if (!mergedMembers.some(m => m.email === s.email)) {
+              mergedMembers.push(s);
+            }
+          });
+
+          setMessages(prev => [
+            ...prev,
+            {
+              role: 'bot',
+              text: `I've named the space **${detectedName}**.\n\n${explanation}\n\nHere are some team members I suggest adding based on your workspace context:`,
+              isSpacePeopleSelector: true,
+              suggestedPeople: suggestions,
+              teamMembers: mergedMembers,
+              targetSpaceName: detectedName
+            }
+          ]);
+        } else {
+          throw new Error("RAG API returned error status");
+        }
+      } catch (err) {
+        console.error("Space RAG error:", err);
+        const allMembers = getTeamMembers();
+        const suggestions = allMembers.slice(0, 2);
         setMessages(prev => [
           ...prev,
           {
             role: 'bot',
-            text: `I've named the space **${detectedName}**. Here are some team members I suggest adding based on your workspace context:`,
+            text: `I've named the space **${detectedName}**. (Failed to query workspace files context). Here are some team members I suggest adding:`,
             isSpacePeopleSelector: true,
             suggestedPeople: suggestions,
             teamMembers: allMembers,
             targetSpaceName: detectedName
           }
         ]);
+      } finally {
         setIsLoading(false);
-      }, 1000);
+      }
       return;
     }
 
@@ -1977,6 +2022,7 @@ export default function App() {
       }
     ]);
     setSandboxFiles([]);
+    setSpaceCreationSources([]);
     setSelectedFile(null);
     setViewState('app');
     setActiveSidebar('gemini');
@@ -1995,10 +2041,131 @@ export default function App() {
 
     setActiveSpaceId(spaceId);
     setProjectName(cleanFolderName);
-    setSandboxFiles([]);
-    setSelectedFile(null);
-    setViewState('files');
     
+    setIsCreatingSpace(true);
+    setSyncStatus('syncing');
+    
+    try {
+      const fileTasks = spaceCreationSources.map(async (file, idx) => {
+        let content = file.content || '';
+        if (!content && accessToken) {
+          let url = '';
+          const mType = (file.mimeType || '').toLowerCase().trim();
+          if (mType.includes('google-apps.document')) {
+            url = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
+          } else if (mType.includes('google-apps.spreadsheet')) {
+            url = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
+          } else if (mType.includes('google-apps.presentation')) {
+            url = `https://www.googleapis.com/drive/v3/files/${file.id}?fields=description,name,mimeType`;
+          } else {
+            url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
+          }
+          
+          try {
+            const contentRes = await fetch(url, {
+              headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            if (contentRes.ok) {
+              if (mType === 'application/vnd.google-apps.presentation') {
+                const pMeta = await contentRes.json();
+                content = `# Presentation: ${pMeta.name}\n\nType: Google Slides\nFile ID: ${file.id}`;
+              } else {
+                content = await contentRes.text();
+              }
+            }
+          } catch (dlErr) {
+            console.error("Failed to download file content during space finalize:", dlErr);
+            content = `# ${file.name}\n\n[Drive File Content]`;
+          }
+        }
+        
+        return {
+          sandboxFile: {
+            name: file.name,
+            type: 'code',
+            content: content,
+            driveId: file.id,
+            mimeType: file.mimeType,
+            id: `copied-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 5)}`
+          },
+          ingestedFile: {
+            id: file.id,
+            filename: file.name,
+            content: content,
+            mimeType: file.mimeType
+          }
+        };
+      });
+
+      const taskResults = await Promise.all(fileTasks);
+      const newSandboxFiles: any[] = [];
+      const newIngestedFiles: any[] = [];
+
+      for (const res of taskResults) {
+        if (res) {
+          newSandboxFiles.push(res.sandboxFile);
+          newIngestedFiles.push(res.ingestedFile);
+        }
+      }
+
+      setSandboxFiles(newSandboxFiles);
+      setIngestedFiles(newIngestedFiles);
+      
+      newSandboxFiles.forEach((f: any) => {
+        lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
+      });
+
+      if (newSandboxFiles.length > 0) {
+        const preferredDoc = newSandboxFiles.find(f => {
+          const mType = (f.mimeType || '').toLowerCase();
+          return mType.includes('document') || mType.includes('spreadsheet') || mType.includes('presentation') || 
+                 f.name.toLowerCase().endsWith('.md') || f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx');
+        });
+        const firstNonIndex = newSandboxFiles.find(f => f.name.toLowerCase() !== 'index.html');
+        const defaultSelect = preferredDoc || firstNonIndex || newSandboxFiles[0];
+        if (defaultSelect) {
+          setSelectedFile(defaultSelect);
+          setIndexFileSelected(defaultSelect.name.toLowerCase() === 'index.html');
+        }
+      } else {
+        setSelectedFile(null);
+      }
+      
+      setViewState('files');
+      setSyncStatus('synced');
+
+      const welcomeText = `Welcome to **${cleanFolderName}**! This is a workspace contextually initialized with matching files and shared with ${selectedPeople.map(p => p.name).join(', ') || 'no one else yet'}. Ask me to start building files, like 'make an interactive dashboard'.`;
+      const initMessages = [{ role: 'bot', text: welcomeText }];
+      setMessages(initMessages);
+
+      try {
+        await fetch(`/api/chats/${spaceId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: initMessages,
+            envId: null,
+            sandboxUrl: '',
+            projectName: cleanFolderName,
+            sandboxFiles: newSandboxFiles,
+            members: selectedPeople
+          })
+        });
+      } catch (saveChatErr) {
+        console.warn("Failed to save welcome chat:", saveChatErr);
+      }
+
+    } catch (e) {
+      console.error("Failed to copy RAG context files to space:", e);
+      setSandboxFiles([]);
+      setSelectedFile(null);
+      setViewState('files');
+      setSyncStatus('failed');
+    } finally {
+      setIsCreatingSpace(false);
+      setSpaceCreationSources([]);
+    }
+
     setRecentTasks(prev => {
       const now = Date.now();
       const filtered = prev.filter(t => {
@@ -2008,26 +2175,6 @@ export default function App() {
       });
       return [{ id: spaceId, name: cleanFolderName, type: 'space', activeSpaceId: spaceId, updatedAt: now }, ...filtered];
     });
-
-    const welcomeText = `Welcome to **${cleanFolderName}**! This is a blank space shared with ${selectedPeople.map(p => p.name).join(', ') || 'no one else yet'}. Ask me to start building files, like 'make an interactive dashboard'.`;
-    const initMessages = [{ role: 'bot', text: welcomeText }];
-    setMessages(initMessages);
-
-    try {
-      await fetch(`/api/chats/${spaceId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: initMessages,
-          envId: null,
-          sandboxUrl: '',
-          projectName: cleanFolderName,
-          members: selectedPeople
-        })
-      });
-    } catch (saveChatErr) {
-      console.warn("Failed to save welcome chat:", saveChatErr);
-    }
   };
 
   const createSpace = async (promptText?: string) => {
@@ -3723,11 +3870,11 @@ export default function App() {
         <div className="flex-1 flex overflow-hidden gap-4 relative">
           {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
             <CanvasSidebar 
-              files={sandboxFiles}
+              files={activeSpaceId?.startsWith('space-creation-') ? spaceCreationSources : sandboxFiles}
               driveFiles={driveFiles}
               selectedFile={selectedFile}
               indexFileSelected={indexFileSelected}
-              onFileSelect={(file) => {
+              onFileSelect={async (file) => {
                 if (!file) {
                   setSelectedFile(null);
                   return;
@@ -3737,6 +3884,32 @@ export default function App() {
                   const parts = folderName ? [folderName] : currentPath;
                   handleDirectoryNavigate(file, parts);
                 } else {
+                  if (activeSpaceId?.startsWith('space-creation-')) {
+                    if (!file.content && accessToken) {
+                      setIsLoading(true);
+                      try {
+                        let downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
+                        const mType = (file.mimeType || '').toLowerCase();
+                        if (mType.includes('google-apps.document')) {
+                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
+                        } else if (mType.includes('google-apps.spreadsheet')) {
+                          downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
+                        }
+                        const res = await fetch(downloadUrl, {
+                          headers: { Authorization: `Bearer ${accessToken}` }
+                        });
+                        if (res.ok) {
+                          const text = await res.text();
+                          file.content = text;
+                          setSpaceCreationSources(prev => prev.map(f => f.id === file.id ? { ...f, content: text } : f));
+                        }
+                      } catch (err) {
+                        console.error("Failed to download file content for preview:", err);
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }
+                  }
                   setSelectedFile(file);
                   setIndexFileSelected(file.name.toLowerCase() === 'index.html' || file.name.toLowerCase().endsWith('/index.html'));
                   setViewState('app');

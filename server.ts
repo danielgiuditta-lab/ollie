@@ -977,6 +977,178 @@ Ensure all IDs are unique. Keep tasks concise and actionable. Return ONLY the ra
     }
   });
 
+  app.post("/api/space-creation-rag", async (req, res) => {
+    try {
+      const { prompt, teamMembers } = req.body;
+      const authHeader = req.headers.authorization;
+      if (!prompt) {
+        return res.status(400).json({ error: "Prompt is required" });
+      }
+
+      const ai = getGenAI();
+      if (!ai) {
+        return res.status(550).json({ error: "Gemini API key is not configured on the server." });
+      }
+
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+
+      let files: any[] = [];
+      let driveQuery = "trashed = false";
+
+      if (isValidAuth) {
+        try {
+          const cleanPrompt = prompt.toLowerCase().trim();
+          const stopWords = new Set(["tell", "me", "about", "show", "open", "give", "find", "search", "a", "the", "in", "my", "of", "and", "to", "for", "with", "on", "at", "by", "from", "please", "can", "you"]);
+          const words = cleanPrompt.split(/\s+/).map((w: string) => w.replace(/[^a-zA-Z0-9_\-]/g, '')).filter((w: string) => w && w.length > 2 && !stopWords.has(w));
+          
+          if (words.length > 0) {
+            const keywordFilters = words.map((w: string) => `(name contains '${w.replace(/'/g, "\\'")}' or fullText contains '${w.replace(/'/g, "\\'")}')`).join(" and ");
+            driveQuery = `${keywordFilters} and trashed = false`;
+          } else {
+            driveQuery = `name contains '${cleanPrompt.replace(/'/g, "\\'")}' and trashed = false`;
+          }
+
+          const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(driveQuery)}&pageSize=10&fields=files(id,name,mimeType,modifiedTime,size,description,owners)`;
+          const listRes = await fetch(listUrl, { headers: { Authorization: authHeader } });
+          if (listRes.ok) {
+            const listData = await listRes.json();
+            files = listData.files || [];
+          } else {
+            const errText = await listRes.text();
+            console.warn(`[Space RAG] Drive list API returned status ${listRes.status}: ${errText}`);
+          }
+        } catch (driveErr) {
+          console.error("[Space RAG] Error querying Google Drive API:", driveErr);
+        }
+      }
+
+      // Download content for top 5 files to get context for Gemini
+      const filesToDownload = files.slice(0, 5);
+      let downloadedContents: { name: string, id: string, content: string, owners: any[] }[] = [];
+
+      if (filesToDownload.length > 0 && isValidAuth) {
+        const downloadedContentsRaw = await Promise.all(
+          filesToDownload.map(async (file) => {
+            let downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
+            const mType = (file.mimeType || '').toLowerCase();
+            
+            if (mType.includes('google-apps.document')) {
+              downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
+            } else if (mType.includes('google-apps.spreadsheet')) {
+              downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
+            } else if (mType.includes('google-apps.presentation')) {
+              return {
+                name: file.name,
+                id: file.id,
+                content: `Presentation: ${file.name}\nFile ID: ${file.id}\n(Google Slides metadata only)`,
+                owners: file.owners || []
+              };
+            }
+
+            try {
+              const contentRes = await fetch(downloadUrl, { headers: { Authorization: authHeader } });
+              if (contentRes.ok) {
+                let text = await contentRes.text();
+                const limit = 5000;
+                if (text.length > limit) {
+                  text = text.substring(0, limit) + "\n\n... [TRUNCATED] ...";
+                }
+                return { name: file.name, id: file.id, content: text, owners: file.owners || [] };
+              } else {
+                return { name: file.name, id: file.id, content: `[Error loading content, status: ${contentRes.status}]`, owners: file.owners || [] };
+              }
+            } catch (dlErr) {
+              return { name: file.name, id: file.id, content: `[Error downloading file content: ${String(dlErr)}]`, owners: file.owners || [] };
+            }
+          })
+        );
+        downloadedContents = downloadedContentsRaw.filter(Boolean) as any[];
+      }
+
+      // Extract all owners from fetched files
+      const allExtractedOwners: any[] = [];
+      downloadedContents.forEach(d => {
+        if (d.owners) {
+          d.owners.forEach((o: any) => {
+            if (o.emailAddress && !allExtractedOwners.some(x => x.email === o.emailAddress)) {
+              allExtractedOwners.push({
+                name: o.displayName || o.emailAddress.split('@')[0],
+                email: o.emailAddress,
+                avatar: o.photoLink || ""
+              });
+            }
+          });
+        }
+      });
+
+      // Combine potential team members and extracted owners
+      const allPossibleMembers = [...(teamMembers || [])];
+      allExtractedOwners.forEach(o => {
+        if (!allPossibleMembers.some(m => m.email === o.email)) {
+          allPossibleMembers.push(o);
+        }
+      });
+
+      // Format context for Gemini
+      const filesContextBlock = downloadedContents.length > 0
+        ? downloadedContents.map(d => `--- FILE: ${d.name} (ID: ${d.id})\nOwners: ${JSON.stringify(d.owners)}\nContent: ${d.content}\n--- END ---`).join('\n\n')
+        : `No relevant Google Drive file contents were found.`;
+
+      // Select members based on retrieved context files
+      const finalPrompt = `You are an expert AI project assistant. We are setting up a new shared Space/folder for a project/topic: "${prompt}".
+We searched Google Drive for relevant files and got the following files and their contents:
+
+${filesContextBlock}
+
+Here is the list of all potential team members:
+${JSON.stringify(allPossibleMembers)}
+
+Your task:
+1. Identify which team members from the potential list are relevant to this project/topic or the retrieved files (e.g. they are mentioned in the files, are owners of the files, or their role/name aligns with the project domain).
+2. Select up to 4 most relevant suggested people.
+3. Output your response STRICTLY as a JSON object with this exact format:
+{
+  "suggestedEmails": ["email1@example.com", "email2@example.com"],
+  "explanation": "Short summary of why these files and people are recommended for the space."
+}
+Do not include any markdown formatting, code block wrappers (like \`\`\`json), or extra text outside the JSON object.`;
+
+      const response = await retryWithBackoff(() => ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: finalPrompt,
+        config: { responseMimeType: "application/json" }
+      }));
+
+      const responseText = response.text || "{}";
+      let result = { suggestedEmails: [] as string[], explanation: "" };
+      try {
+        result = JSON.parse(responseText);
+      } catch (jsonErr) {
+        console.warn("[Space RAG] Failed to parse Gemini JSON output:", responseText);
+      }
+
+      const suggestedPeople = (result.suggestedEmails || [])
+        .map((email: string) => allPossibleMembers.find(m => m.email.toLowerCase() === email.toLowerCase()))
+        .filter(Boolean);
+
+      res.json({
+        files: filesToDownload.map(f => ({
+          id: f.id,
+          name: f.name,
+          mimeType: f.mimeType,
+          modifiedTime: f.modifiedTime,
+          size: f.size
+        })),
+        suggestedPeople,
+        explanation: result.explanation || `Suggested based on search query matching files for "${prompt}".`
+      });
+
+    } catch (error) {
+      console.error("Space RAG error:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   app.post("/api/ai-summary", async (req, res) => {
     try {
       const { prompt, contextFileIds, history } = req.body;
