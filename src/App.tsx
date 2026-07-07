@@ -1443,17 +1443,13 @@ export default function App() {
 
     // "when i land on the landing page and oauth in, the files i select should be added to the folder i create and be used as context"
     if (accessToken && isHomeChatId(activeSpaceId) && selectedDriveFiles.length > 0) {
-      const initMessage = 'Initializing Google Drive folder and setting up workspace files...';
+      const initMessage = 'Initializing space and setting up files...';
       setMessages(prev => [...prev, { role: 'bot', text: initMessage }]);
       const resVal = await createSpace(text);
       if (resVal) {
-        activeFolderId = resVal.folderId;
-        resolvedFolderId = resVal.folderId;
+        activeFolderId = resVal.spaceId;
+        resolvedFolderId = resVal.spaceId;
         contextToUse = resVal.files;
-        if (resVal.isExisting) {
-          if (resVal.envId) activeEnvId = resVal.envId;
-          if (resVal.sandboxUrl) activeSandboxUrl = resVal.sandboxUrl;
-        }
       }
     }
 
@@ -1988,62 +1984,14 @@ export default function App() {
   };
 
   const handleFinalizeSpace = async (name: string, selectedPeople: any[]) => {
-    if (!accessToken) {
-      alert("Please log in first!");
-      return;
-    }
-    
     const cleanFolderName = name
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
-    const folderMeta = {
-      name: cleanFolderName,
-      mimeType: 'application/vnd.google-apps.folder',
-      properties: {
-        makeFolderWorkspace: "true"
-      }
-    };
-    
-    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(folderMeta)
-    });
-    
-    if (!createRes.ok) {
-      throw new Error(`Failed to create Google Drive folder: ${createRes.status}`);
-    }
-    
-    const createdFolder = await createRes.json();
-    const folderId = createdFolder.id;
+    const spaceId = `space-${Date.now()}`;
 
-    for (const person of selectedPeople) {
-      if (person.email) {
-        try {
-          await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}/permissions`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              role: 'writer',
-              type: 'user',
-              emailAddress: person.email
-            })
-          });
-        } catch (shareErr) {
-          console.warn(`Failed to share folder with ${person.email}:`, shareErr);
-        }
-      }
-    }
-
-    setActiveSpaceId(folderId);
+    setActiveSpaceId(spaceId);
     setProjectName(cleanFolderName);
     setSandboxFiles([]);
     setSelectedFile(null);
@@ -2054,9 +2002,9 @@ export default function App() {
       const filtered = prev.filter(t => {
         const id = typeof t === 'string' ? '' : t.id;
         const name = typeof t === 'string' ? t : t.name;
-        return id !== folderId && name.toLowerCase() !== cleanFolderName.toLowerCase();
+        return id !== spaceId && name.toLowerCase() !== cleanFolderName.toLowerCase();
       });
-      return [{ id: folderId, name: cleanFolderName, type: 'space', activeSpaceId: folderId, updatedAt: now }, ...filtered];
+      return [{ id: spaceId, name: cleanFolderName, type: 'space', activeSpaceId: spaceId, updatedAt: now }, ...filtered];
     });
 
     const welcomeText = `Welcome to **${cleanFolderName}**! This is a blank space shared with ${selectedPeople.map(p => p.name).join(', ') || 'no one else yet'}. Ask me to start building files, like 'make an interactive dashboard'.`;
@@ -2064,14 +2012,15 @@ export default function App() {
     setMessages(initMessages);
 
     try {
-      await fetch(`/api/chats/${folderId}`, {
+      await fetch(`/api/chats/${spaceId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: initMessages,
           envId: null,
           sandboxUrl: '',
-          projectName: cleanFolderName
+          projectName: cleanFolderName,
+          members: selectedPeople
         })
       });
     } catch (saveChatErr) {
@@ -2087,34 +2036,9 @@ export default function App() {
     setIsCreatingSpace(true);
     setSyncStatus('syncing');
     try {
-      const fileIdsSignature = selectedDriveFiles
-        .map(f => f.id)
-        .filter(Boolean)
-        .sort()
-        .join(',');
-
-      let targetFolderId = null;
-      let targetFolderName = "";
-
-      // 1. Try checking by selected files signature
-      if (fileIdsSignature) {
-        try {
-          const q = `mimeType = 'application/vnd.google-apps.folder' and trashed = false and properties has { key='makeFolderSourceFileIds' and value='${fileIdsSignature}' }`;
-          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`;
-          const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.files && data.files.length > 0) {
-              targetFolderId = data.files[0].id;
-              targetFolderName = data.files[0].name;
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to check for existing folder by signature:", err);
-        }
-      }
-
-      // 2. Summarize task/prompt to get project name
+      const spaceId = `space-${Date.now()}`;
+      
+      // Summarize task/prompt to get project name
       let folderName = "Web App Project";
       let sourcePrompt = promptText;
       if (!sourcePrompt && selectedDriveFiles.length > 0) {
@@ -2142,178 +2066,23 @@ export default function App() {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 
-      // 3. Try checking by folder name to ensure one canonical chat per folder/task
-      if (!targetFolderId) {
-        try {
-          const nameQ = `mimeType = 'application/vnd.google-apps.folder' and trashed = false and name = '${cleanFolderName.replace(/'/g, "\\'")}'`;
-          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(nameQ)}&fields=files(id,name)`;
-          const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.files && data.files.length > 0) {
-              targetFolderId = data.files[0].id;
-              targetFolderName = data.files[0].name;
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to check for existing folder by name:", err);
-        }
-      }
-
-      // 4. If found via either method, reuse and restore the session in place
-      if (targetFolderId) {
-        setActiveSpaceId(targetFolderId);
-        setProjectName(targetFolderName);
-
-        const ingestRes = await fetch('/api/ingest-context', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({ folderId: targetFolderId })
-        });
-
-        let ingestedFilesList = [];
-        if (ingestRes.ok) {
-          const ingestData = await ingestRes.json();
-          ingestedFilesList = ingestData.files || [];
-        }
-
-        const sandboxMapped = ingestedFilesList.map((f: any, i: number) => ({
-          name: f.filename,
-          type: 'code',
-          content: f.content,
-          driveId: f.id,
-          mimeType: f.mimeType,
-          id: `ingested-file-${i}`
-        }));
-
-        setSandboxFiles(sandboxMapped);
-        setIngestedFiles(ingestedFilesList);
-
-        sandboxMapped.forEach((f: any) => {
-          lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
-        });
-
-        const chatRes = await fetch(`/api/chats/${targetFolderId}`);
-        let existingMessages = [];
-        let resolvedEnvId = null;
-        let resolvedSandboxUrl = '';
-        if (chatRes.ok) {
-          const chatData = await chatRes.json();
-          if (chatData && chatData.messages) {
-            existingMessages = chatData.messages;
-            if (chatData.envId) {
-              resolvedEnvId = chatData.envId;
-              setEnvId(chatData.envId);
-            }
-            if (chatData.sandboxUrl) {
-              resolvedSandboxUrl = chatData.sandboxUrl;
-              setSandboxUrl(chatData.sandboxUrl);
-            }
-          }
-        }
-
-        let combinedMessages = existingMessages;
-        if (promptText) {
-          combinedMessages = [...existingMessages, { role: 'user', text: promptText }];
-        }
-        setMessages(combinedMessages);
-
-        setSelectedDriveFiles([]);
-        setViewState('files');
-        setIsCreatingSpace(false);
-        setSyncStatus('synced');
-
-        if (sandboxMapped.length > 0) {
-          const preferredDoc = sandboxMapped.find(f => {
-            const mType = (f.mimeType || '').toLowerCase();
-            return mType.includes('document') || mType.includes('spreadsheet') || mType.includes('presentation') || 
-                   f.name.toLowerCase().endsWith('.md') || f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx');
-          });
-          const firstNonIndex = sandboxMapped.find(f => f.name.toLowerCase() !== 'index.html');
-          const defaultSelect = preferredDoc || firstNonIndex || sandboxMapped[0];
-          if (defaultSelect) {
-            setSelectedFile(defaultSelect);
-            setIndexFileSelected(defaultSelect.name.toLowerCase() === 'index.html');
-          }
-        }
-
-        return { 
-          folderId: targetFolderId, 
-          files: sandboxMapped, 
-          isExisting: true, 
-          envId: resolvedEnvId,
-          sandboxUrl: resolvedSandboxUrl,
-          messages: combinedMessages 
-        };
-      }
-
       setProjectName(cleanFolderName);
+      setActiveSpaceId(spaceId);
 
-      // 2. Create the folder on Google Drive
-      const folderMeta = {
-        name: cleanFolderName,
-        mimeType: 'application/vnd.google-apps.folder',
-        properties: {
-          makeFolderWorkspace: "true",
-          ...(fileIdsSignature ? { makeFolderSourceFileIds: fileIdsSignature } : {})
-        }
-      };
-      
-      const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(folderMeta)
-      });
-      
-      if (!createRes.ok) {
-        throw new Error(`Failed to create Google Drive folder: ${createRes.status}`);
-      }
-      
-      const folderData = await createRes.json();
-      const newFolderId = folderData.id;
-      setActiveSpaceId(newFolderId);
-
-      // 3. Copy/Upload selected files into the newly created folder in parallel
+      // Ingest/download contents of selected files in parallel directly from their source Drive location
       const fileTasks = selectedDriveFiles.map(async (file, idx) => {
         if (file.id) {
-          // It's a Google Drive file, copy it!
-          const copyRes = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}/copy`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              parents: [newFolderId]
-            })
-          });
-          
-          let copiedFileId = '';
-          if (copyRes.ok) {
-            const copiedMeta = await copyRes.json();
-            copiedFileId = copiedMeta.id;
-          } else {
-            console.warn(`Failed to copy file ${file.name} to project folder. Status: ${copyRes.status}. Falling back to original file ID.`);
-            copiedFileId = file.id;
-          }
-          
-          // Ingest/download contents of this copied/original file
+          // It's a Google Drive file, download its contents directly from its source location
           let url = '';
           const mType = (file.mimeType || '').toLowerCase().trim();
           if (mType.includes('google-apps.document')) {
-            url = `https://www.googleapis.com/drive/v3/files/${copiedFileId}/export?mimeType=text/plain`;
+            url = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
           } else if (mType.includes('google-apps.spreadsheet')) {
-            url = `https://www.googleapis.com/drive/v3/files/${copiedFileId}/export?mimeType=text/csv`;
+            url = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
           } else if (mType.includes('google-apps.presentation')) {
-            url = `https://www.googleapis.com/drive/v3/files/${copiedFileId}?fields=description,name,mimeType`;
+            url = `https://www.googleapis.com/drive/v3/files/${file.id}?fields=description,name,mimeType`;
           } else {
-            url = `https://www.googleapis.com/drive/v3/files/${copiedFileId}?alt=media`;
+            url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
           }
           
           let content = '';
@@ -2324,7 +2093,7 @@ export default function App() {
             if (contentRes.ok) {
               if (mType === 'application/vnd.google-apps.presentation') {
                 const pMeta = await contentRes.json();
-                content = `# Presentation: ${pMeta.name}\n\nType: Google Slides\nFile ID: ${copiedFileId}`;
+                content = `# Presentation: ${pMeta.name}\n\nType: Google Slides\nFile ID: ${file.id}`;
               } else {
                 content = await contentRes.text();
               }
@@ -2333,7 +2102,7 @@ export default function App() {
             }
           } catch (dlErr) {
             console.error("Failed to download file content:", dlErr);
-            content = `# ${file.name}\n\n[Copied Drive File Content]`;
+            content = `# ${file.name}\n\n[Drive File Content]`;
           }
           
           return {
@@ -2341,64 +2110,36 @@ export default function App() {
               name: file.name,
               type: 'code',
               content: content,
-              driveId: copiedFileId,
+              driveId: file.id,
               mimeType: file.mimeType,
               id: `copied-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 5)}`
             },
             ingestedFile: {
-              id: copiedFileId,
+              id: file.id,
               filename: file.name,
               content: content,
               mimeType: file.mimeType
             }
           };
         } else {
-          // Local/uploaded file, upload it into the folder!
-          const createUploadRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+          // Local/uploaded file
+          return {
+            sandboxFile: {
               name: file.name,
-              parents: [newFolderId]
-            })
-          });
-          
-          if (createUploadRes.ok) {
-            const createdMeta = await createUploadRes.json();
-            const createdFileId = createdMeta.id;
-            
-            // PATCH content
-            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${createdFileId}?uploadType=media`, {
-              method: 'PATCH',
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'text/plain'
-              },
-              body: file.content
-            });
-            
-            return {
-              sandboxFile: {
-                name: file.name,
-                type: 'code',
-                content: file.content,
-                driveId: createdFileId,
-                mimeType: file.mimeType || 'text/plain',
-                id: `copied-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 5)}`
-              },
-              ingestedFile: {
-                id: createdFileId,
-                filename: file.name,
-                content: file.content,
-                mimeType: file.mimeType || 'text/plain'
-              }
-            };
-          }
+              type: 'code',
+              content: file.content,
+              driveId: `local-${Date.now()}-${idx}`,
+              mimeType: file.mimeType || 'text/plain',
+              id: `copied-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 5)}`
+            },
+            ingestedFile: {
+              id: `local-${Date.now()}-${idx}`,
+              filename: file.name,
+              content: file.content,
+              mimeType: file.mimeType || 'text/plain'
+            }
+          };
         }
-        return null;
       });
 
       const taskResults = await Promise.all(fileTasks);
@@ -2420,9 +2161,9 @@ export default function App() {
         lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
       });
 
-      setSelectedDriveFiles([]); // Reset folder checkboxes
+      setSelectedDriveFiles([]); // Reset checkboxes
       
-      // Auto-select the newly added document or non-index file so the user sees it immediately on screen
+      // Select preferred document
       if (newSandboxFiles.length > 0) {
         const preferredDoc = newSandboxFiles.find(f => {
           const mType = (f.mimeType || '').toLowerCase();
@@ -2439,11 +2180,47 @@ export default function App() {
 
       setViewState('files');
       setSyncStatus('synced');
-      return { folderId: newFolderId, files: newSandboxFiles };
+
+      // Save the Space locally to backend
+      let combinedMessages = messages;
+      if (promptText) {
+        combinedMessages = [...messages, { role: 'user', text: promptText }];
+      }
+      setMessages(combinedMessages);
+
+      try {
+        await fetch(`/api/chats/${spaceId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: combinedMessages,
+            envId: null,
+            sandboxUrl: '',
+            projectName: cleanFolderName,
+            sandboxFiles: newSandboxFiles,
+            members: []
+          })
+        });
+      } catch (saveChatErr) {
+        console.warn("Failed to save space:", saveChatErr);
+      }
+
+      // Add to recentTasks list
+      setRecentTasks(prev => {
+        const now = Date.now();
+        const filtered = prev.filter(t => {
+          const id = typeof t === 'string' ? '' : t.id;
+          const name = typeof t === 'string' ? t : t.name;
+          return id !== spaceId && name.toLowerCase() !== cleanFolderName.toLowerCase();
+        });
+        return [{ id: spaceId, name: cleanFolderName, type: 'space', activeSpaceId: spaceId, updatedAt: now }, ...filtered];
+      });
+
+      return { spaceId, files: newSandboxFiles };
     } catch (e) {
-      console.error("Failed to create folder & copy files:", e);
+      console.error("Failed to create space:", e);
       setSyncStatus('failed');
-      alert("Error assembling Drive folder workspace. Check console.");
+      alert("Error assembling space. Check console.");
       return null;
     } finally {
       setIsCreatingSpace(false);
@@ -2957,7 +2734,7 @@ export default function App() {
   const isValidDriveId = (id: any) => {
     if (!id || typeof id !== 'string') return false;
     const lower = id.toLowerCase();
-    if (lower.includes('copied') || lower.includes('sandbox') || lower.includes('suggested') || lower.includes('uploaded') || lower.includes('created-') || lower.includes('ingested-') || lower.includes('local-workspace') || lower.includes('workspace-')) {
+    if (lower.includes('copied') || lower.includes('sandbox') || lower.includes('suggested') || lower.includes('uploaded') || lower.includes('created-') || lower.includes('ingested-') || lower.includes('local-workspace') || lower.includes('workspace-') || lower.includes('space-')) {
       return false;
     }
     return true;
@@ -2965,7 +2742,13 @@ export default function App() {
 
   const autoSaveToDrive = async (files: any[], folderId: string | null) => {
     if (!accessToken) return;
-    const targetFolder = (isValidDriveId(folderId) ? folderId : null) || (isValidDriveId(activeSpaceId) ? activeSpaceId : null) || 'root';
+    const activeId = folderId || activeSpaceId;
+    if (!isValidDriveId(activeId)) {
+      console.log("[Drive Auto-Save] Active space is virtual/local. Skipping Google Drive write sync.");
+      setSyncStatus('synced');
+      return;
+    }
+    const targetFolder = activeId;
 
     // Filter to files that have actually been modified compared to the last successfully saved state
     const changedFiles = files.filter(f => lastSavedContentsRef.current[f.name.toLowerCase()] !== f.content);
