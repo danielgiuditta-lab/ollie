@@ -28,6 +28,8 @@ interface ChatSidebarProps {
   chatDockPosition?: 'side' | 'bottom';
   onChangeChatDockPosition?: (pos: 'side' | 'bottom') => void;
   onFinalizeSpace?: (name: string, selectedPeople: any[]) => Promise<void> | void;
+  chatModel?: 'A' | 'B';
+  onNewChat?: () => void;
 }
 
 export function ChatSidebar({ 
@@ -49,7 +51,9 @@ export function ChatSidebar({
   isOrganizingFiles = false,
   chatDockPosition = 'side',
   onChangeChatDockPosition,
-  onFinalizeSpace
+  onFinalizeSpace,
+  chatModel = 'A',
+  onNewChat
 }: ChatSidebarProps) {
   // Local state for comment stream prototyping
   const [localComments, setLocalComments] = useState<any[]>([]);
@@ -135,6 +139,16 @@ export function ChatSidebar({
         <div className="flex items-center justify-between px-6 w-full h-[64px] shrink-0 border-b border-transparent">
           <h2 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{getTitle()}</h2>
           <div className="flex items-center gap-1.5">
+            {chatModel === 'B' && onNewChat && variant === 'gemini' && (
+              <IconButton 
+                variant="card" 
+                onClick={onNewChat} 
+                title="New Chat"
+                theme={theme}
+              >
+                <span className="material-symbols-rounded text-[18px]">add</span>
+              </IconButton>
+            )}
             {onChangeChatDockPosition && (
               <IconButton 
                 variant="card" 

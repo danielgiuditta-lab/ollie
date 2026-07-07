@@ -3,11 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ContextMenu } from '../Shared/ContextMenu';
 import logoImg from '../../assets/logo.png';
 
-// Configuration switch to toggle between:
-// - Model A (false): 1 canonical chat per space (chevron points right, clicks directly open the space).
-// - Model B (true): Many chats per space (chevron expands inline to show indented chats list).
-const ENABLE_MANY_CHATS_MODEL = false;
-
 interface LeftNavProps {
   theme?: 'light' | 'dark';
   hideControls?: boolean;
@@ -27,6 +22,11 @@ interface LeftNavProps {
   userProfile?: any;
   onCreateSpace?: () => void;
   isChatSide?: boolean;
+  chatModel?: 'A' | 'B';
+  onChangeChatModel?: (model: 'A' | 'B') => void;
+  activeChatId?: string | null;
+  onSelectChat?: (space: any, chat: any) => void;
+  onLogout?: () => void;
 }
 
 // Deterministic emoji helper based on space name hash
@@ -62,11 +62,17 @@ export function LeftNav({
   activeAiSummaryTaskId = null,
   userProfile = null,
   onCreateSpace,
-  isChatSide = false
+  isChatSide = false,
+  chatModel = 'A',
+  onChangeChatModel,
+  activeChatId = null,
+  onSelectChat: onSelectChatProp,
+  onLogout
 }: LeftNavProps) {
   const [localExpanded, setLocalExpanded] = useState(false);
   const [expandedSpaces, setExpandedSpaces] = useState<Record<string, boolean>>({});
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; task: any; isProject?: boolean } | null>(null);
+  const [showSettingsPopover, setShowSettingsPopover] = useState(false);
 
   const isExpandedActive = isExpanded !== undefined ? isExpanded : localExpanded;
 
@@ -84,46 +90,48 @@ export function LeftNav({
 
   // Combine projects (pinned) and recentTasks (recent workspaces) into a single Spaces list
   const spaces = React.useMemo(() => {
-    const list: any[] = [];
-    const seen = new Set<string>();
+    const spacesMap: Record<string, {
+      id: string;
+      name: string;
+      type: string;
+      isProject: boolean;
+      raw: any;
+      chats: Array<{ id: string; name: string; raw: any }>;
+    }> = {};
 
-    projects.forEach((p) => {
-      const id = p.id || p.chatId || p.name;
-      if (id && !seen.has(id)) {
-        seen.add(id);
-        list.push({
-          id,
-          name: p.name || 'Project',
-          type: p.type || 'workspace',
-          raw: p,
-          isProject: true,
-          chats: p.chats || [
-            { id: `${id}-chat-1`, name: 'Chat 1' },
-            { id: `${id}-chat-2`, name: 'Chat 2' }
-          ]
-        });
+    const processChatSession = (c: any, isProject: boolean) => {
+      if (!c) return;
+      const chatIdVal = c.id || c.chatId;
+      const spaceId = c.activeSpaceId || chatIdVal;
+      if (!spaceId) return;
+
+      if (!spacesMap[spaceId]) {
+        spacesMap[spaceId] = {
+          id: spaceId,
+          name: c.name || 'Workspace',
+          type: c.type || 'workspace',
+          isProject,
+          raw: c,
+          chats: []
+        };
       }
-    });
 
-    recentTasks.forEach((t) => {
-      const id = t.id || t.chatId || t.name;
-      if (id && !seen.has(id)) {
-        seen.add(id);
-        list.push({
-          id,
-          name: t.name || 'Task',
-          type: t.type || 'workspace',
-          raw: t,
-          isProject: false,
-          chats: t.chats || [
-            { id: `${id}-chat-1`, name: 'Chat 1' },
-            { id: `${id}-chat-2`, name: 'Chat 2' }
-          ]
-        });
+      if (c.messages && c.messages.length > 0) {
+        const exists = spacesMap[spaceId].chats.some(item => item.id === chatIdVal);
+        if (!exists) {
+          spacesMap[spaceId].chats.push({
+            id: chatIdVal,
+            name: c.chatName || `Chat ${spacesMap[spaceId].chats.length + 1}`,
+            raw: c
+          });
+        }
       }
-    });
+    };
 
-    return list;
+    projects.forEach((p) => processChatSession(p, true));
+    recentTasks.forEach((t) => processChatSession(t, false));
+
+    return Object.values(spacesMap);
   }, [projects, recentTasks]);
 
   const onSelectSpace = (space: any) => {
@@ -134,11 +142,15 @@ export function LeftNav({
     }
   };
 
-  const onSelectChat = (space: any, chat: any) => {
-    if (space.isProject) {
-      if (onSelectProject) onSelectProject({ ...space.raw, chatId: chat.id });
+  const handleSelectChat = (space: any, chat: any) => {
+    if (onSelectChatProp) {
+      onSelectChatProp(space.raw, chat);
     } else {
-      if (onSelectTask) onSelectTask({ ...space.raw, chatId: chat.id });
+      if (space.isProject) {
+        if (onSelectProject) onSelectProject({ ...space.raw, chatId: chat.id });
+      } else {
+        if (onSelectTask) onSelectTask({ ...space.raw, chatId: chat.id });
+      }
     }
   };
 
@@ -260,7 +272,7 @@ export function LeftNav({
                   </div>
                   
                   {isExpandedActive && (
-                    ENABLE_MANY_CHATS_MODEL ? (
+                    chatModel === 'B' ? (
                       <button 
                         onClick={(e) => toggleSpaceExpand(space.id, e)}
                         className="p-1 rounded-full hover:bg-gray-250/50 dark:hover:bg-white/10 cursor-pointer text-slate-500 hover:text-slate-800"
@@ -284,17 +296,24 @@ export function LeftNav({
                 </div>
 
                 {/* Model B chats list */}
-                {ENABLE_MANY_CHATS_MODEL && isSpaceExpanded && isExpandedActive && (
+                {chatModel === 'B' && isSpaceExpanded && isExpandedActive && (
                   <div className="pl-10 pr-2 py-1 space-y-0.5 w-full shrink-0">
-                    {space.chats.map((chat: any) => (
-                      <div 
-                        key={chat.id}
-                        onClick={() => onSelectChat(space, chat)}
-                        className="h-[32px] px-3 rounded-lg flex items-center cursor-pointer text-xs text-slate-600 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/5 font-medium transition-colors"
-                      >
-                        {chat.name}
-                      </div>
-                    ))}
+                    {space.chats.map((chat: any) => {
+                      const isChatActive = chat.id === activeChatId;
+                      return (
+                        <div 
+                          key={chat.id}
+                          onClick={() => handleSelectChat(space, chat)}
+                          className={`h-[32px] px-3 rounded-lg flex items-center cursor-pointer text-xs font-medium transition-colors ${
+                            isChatActive
+                              ? 'bg-blue-50/70 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
+                              : 'text-slate-600 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/5'
+                          }`}
+                        >
+                          {chat.name}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -343,7 +362,10 @@ export function LeftNav({
           </span>
         </button>
         
-        <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 text-blue-650 dark:text-blue-400 shadow-3xs ml-[2px]">
+        <div 
+          onClick={() => setShowSettingsPopover(!showSettingsPopover)}
+          className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 text-blue-650 dark:text-blue-400 shadow-3xs ml-[2px] cursor-pointer hover:opacity-85 transition-opacity"
+        >
           {userProfile?.picture ? (
             <img src={userProfile.picture} alt="user profile" className="w-full h-full object-cover" />
           ) : (
@@ -351,6 +373,63 @@ export function LeftNav({
           )}
         </div>
       </div>
+
+      {showSettingsPopover && (
+        <div 
+          className="absolute bottom-16 left-4 bg-white dark:bg-[#1E1F22] border border-slate-200 dark:border-[#2B2D31] rounded-2xl p-4 shadow-xl z-50 w-56 flex flex-col gap-3"
+        >
+          <div className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
+            Workspace Settings
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                if (onChangeChatModel) onChangeChatModel('A');
+                setShowSettingsPopover(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-colors flex flex-col gap-0.5 ${
+                chatModel === 'A'
+                  ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
+                  : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
+              }`}
+            >
+              <span>Model A: Replies</span>
+              <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
+                Single canonical chat per space.
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                if (onChangeChatModel) onChangeChatModel('B');
+                setShowSettingsPopover(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-colors flex flex-col gap-0.5 ${
+                chatModel === 'B'
+                  ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
+                  : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
+              }`}
+            >
+              <span>Model B: Multi-Chat</span>
+              <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
+                Multiple chats per space.
+              </span>
+            </button>
+          </div>
+          {onLogout && userProfile && (
+            <div className="border-t border-slate-100 dark:border-[#2B2D31] pt-2">
+              <button 
+                className="w-full text-left px-3 py-2 text-xs text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition font-medium border-none outline-none cursor-pointer bg-transparent"
+                onClick={() => {
+                  onLogout();
+                  setShowSettingsPopover(false);
+                }}
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {contextMenu && (
         <ContextMenu

@@ -216,6 +216,7 @@ export default function App() {
             return {
               id: c.chatId,
               name: folderName,
+              chatName: c.chatName || '',
               type: isAiSummary ? 'ai_summary' : 'workspace',
               messages: c.messages || [],
               activeSpaceId: c.activeSpaceId || null,
@@ -591,24 +592,35 @@ export default function App() {
     }
   }, [sandboxFiles, viewState]);
 
-  const saveChatToDb = async (folderId: string, messagesList: any[], activeEnv: string | null, activeSandboxUrl?: string, customProjectName?: string, customFiles?: any[]) => {
-    if (!folderId) return;
+  const saveChatToDb = async (
+    chatIdVal: string,
+    messagesList: any[],
+    activeEnv: string | null,
+    activeSandboxUrl?: string,
+    customProjectName?: string,
+    customFiles?: any[],
+    spaceIdVal?: string,
+    customChatName?: string
+  ) => {
+    if (!chatIdVal || chatIdVal.endsWith('-temp')) return;
     const isPlaceholder = (name?: string) => !name || name === 'New' || name === 'Building project...' || name === 'Workspace Project' || name === 'New Application' || name === 'app';
     
     const activeName = (!isPlaceholder(customProjectName) ? customProjectName : (!isPlaceholder(projectName) ? projectName : (!isPlaceholder(currentTask) ? currentTask : '')));
     const filesToSave = (customFiles && customFiles.length > 0) ? customFiles : sandboxFiles;
+    const resolvedSpaceId = spaceIdVal || activeSpaceId || chatIdVal;
 
     try {
-      await fetch(`/api/chats/${folderId}`, {
+      await fetch(`/api/chats/${chatIdVal}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           projectName: activeName || 'Workspace Project',
+          chatName: customChatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : ''),
           messages: messagesList,
           envId: activeEnv,
-          activeSpaceId: folderId,
+          activeSpaceId: resolvedSpaceId,
           sandboxUrl: activeSandboxUrl || sandboxUrl || '',
           sandboxFiles: filesToSave,
           userEmail: userProfile?.email || '',
@@ -617,21 +629,22 @@ export default function App() {
       });
 
       // Only add to recent tasks in side panel if the app is built and we have a descriptive title
-      if (activeName && !isHomeChatId(folderId)) {
+      if (activeName && !isHomeChatId(resolvedSpaceId)) {
         setRecentTasks(prev => {
           const now = Date.now();
           const newTask = {
-            id: folderId,
+            id: chatIdVal,
             name: activeName,
+            chatName: customChatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : ''),
             type: 'workspace',
             messages: messagesList,
-            activeSpaceId: folderId,
+            activeSpaceId: resolvedSpaceId,
             updatedAt: now
           };
           const filtered = prev.filter(t => {
             const id = typeof t === 'string' ? '' : t.id;
             const name = typeof t === 'string' ? t : t.name;
-            return id !== folderId && name.toLowerCase() !== activeName.toLowerCase() && !isPlaceholder(name);
+            return id !== chatIdVal && name.toLowerCase() !== activeName.toLowerCase() && !isPlaceholder(name);
           });
           return [newTask, ...filtered];
         });
@@ -1521,6 +1534,15 @@ export default function App() {
     let activeSandboxUrl = sandboxUrl;
     let resolvedFolderId = activeSpaceId;
 
+    let targetChatId = activeChatId || resolvedFolderId || activeSpaceId;
+    let inferredChatNameVal: string | undefined = undefined;
+
+    if (chatModel === 'B' && resolvedFolderId && (!targetChatId || targetChatId.endsWith('-temp'))) {
+      targetChatId = `${resolvedFolderId}-chat-${Date.now()}`;
+      inferredChatNameVal = inferChatName(text);
+      setActiveChatId(targetChatId);
+    }
+
     // "when i land on the landing page and oauth in, the files i select should be added to the folder i create and be used as context"
     if (accessToken && isHomeChatId(activeSpaceId) && selectedDriveFiles.length > 0) {
       const initMessage = 'Initializing space and setting up files...';
@@ -1991,11 +2013,22 @@ export default function App() {
       setMessages(prev => [...prev, { role: 'bot', text: 'Failed to connect to backend.' }]);
     } finally {
       setIsLoading(false);
-      const targetFolder = resolvedFolderId;
-      if (targetFolder) {
+      if (targetChatId && !targetChatId.endsWith('-temp')) {
         setMessages(currentMessages => {
           setTimeout(() => {
-            saveChatToDb(targetFolder, currentMessages, activeEnvId || null, activeSandboxUrl || '', projectName, combinedFilesForSync);
+            saveChatToDb(
+              targetChatId,
+              currentMessages,
+              activeEnvId || null,
+              activeSandboxUrl || '',
+              projectName,
+              combinedFilesForSync,
+              resolvedFolderId || activeSpaceId,
+              inferredChatNameVal
+            );
+            if (inferredChatNameVal) {
+              fetchGeminiTasks(accessToken, userProfile?.email);
+            }
           }, 0);
           return currentMessages;
         });
@@ -2065,6 +2098,15 @@ export default function App() {
     setActiveSidebar('gemini');
     setIsAiSummarySnapped(false);
     setActiveAiSummaryTaskId(null);
+  };
+
+  const handleCreateNewChat = () => {
+    if (!activeSpaceId || isHomeChatId(activeSpaceId)) return;
+    const tempChatId = `${activeSpaceId}-chat-temp-${Date.now()}`;
+    setActiveChatId(tempChatId);
+    setMessages([]);
+    setViewState('app');
+    setActiveSidebar('gemini');
   };
 
   const handleFinalizeSpace = async (name: string, selectedPeople: any[]) => {
@@ -3176,7 +3218,7 @@ export default function App() {
     }
   }, [accessToken, currentPath, resetChatForDirectoryItem]);
 
-  const handleFileClick = async (file: any, skipSelect = false, options?: { isFromRecents?: boolean }) => {
+  const handleFileClick = async (file: any, skipSelect = false, options?: { isFromRecents?: boolean, targetChatId?: string }) => {
     console.log("[DEBUG] handleFileClick called with:", {
       fileName: typeof file === 'string' ? file : file?.name || file?.filename || file?.id,
       skipSelect,
@@ -3188,6 +3230,23 @@ export default function App() {
     const isFromRecents = options?.isFromRecents ?? false;
     const folderId = typeof file === 'string' ? file : (file.id || file.activeSpaceId);
     if (!folderId) return;
+
+    // Resolve targetChatId
+    let targetChatId = options?.targetChatId || (typeof file === 'object' && file.chatId);
+    if (!targetChatId && chatModel === 'B') {
+      const matchingChats = recentTasks.filter(t => t && t.activeSpaceId === folderId);
+      if (matchingChats.length > 0) {
+        matchingChats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        targetChatId = matchingChats[0].id;
+      } else {
+        // Fallback: start with a temporary local blank chat session under Model B
+        targetChatId = `${folderId}-chat-temp`;
+      }
+    } else if (!targetChatId) {
+      targetChatId = folderId;
+    }
+
+    setActiveChatId(targetChatId);
 
     if (isHomeChatId(folderId)) {
       activeSpaceIdRef.current = folderId;
@@ -3246,20 +3305,26 @@ export default function App() {
     }
 
     const cached = workspaceCacheRef.current[folderId];
+    const cachedChat = chatSessionsCacheRef.current[targetChatId];
+    
     if (cached) {
       // 1. Restore from cache immediately
       setIngestedFiles(cached.ingestedFiles);
       setSandboxFiles(cached.sandboxFiles);
       setEnvId(cached.envId);
       setSandboxUrl(cached.sandboxUrl);
-      if (isFromRecents) {
+      if (cached.projectName) {
+        setProjectName(cached.projectName);
+      }
+      
+      if (cachedChat) {
+        setMessages(cachedChat.messages);
+      } else if (isFromRecents && !targetChatId.endsWith('-temp')) {
         setMessages(cached.messages);
       } else {
         setMessages([]);
       }
-      if (cached.projectName) {
-        setProjectName(cached.projectName);
-      }
+      
       const autoSelectFile = cached.sandboxFiles?.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || cached.selectedFile || cached.sandboxFiles?.[0];
       if (!skipSelect) {
         setSelectedFile(autoSelectFile);
@@ -3286,101 +3351,107 @@ export default function App() {
       if (!accessToken) return;
 
       // 2. Fetch in background (silent sync) with debouncing to prevent multiple parallel fetches
-      syncTimeoutRef.current = setTimeout(async () => {
-        if (activeSpaceIdRef.current !== folderId) return;
-        try {
-          const chatRes = await fetch(`/api/chats/${folderId}`);
+      if (!targetChatId.endsWith('-temp')) {
+        syncTimeoutRef.current = setTimeout(async () => {
           if (activeSpaceIdRef.current !== folderId) return;
-
-          let latestMessages = cached.messages;
-          let latestEnvId = cached.envId;
-          let latestSandboxUrl = cached.sandboxUrl;
-          
-          if (chatRes.ok) {
-            const chatData = await chatRes.json();
+          try {
+            const chatRes = await fetch(`/api/chats/${targetChatId}`);
             if (activeSpaceIdRef.current !== folderId) return;
-            if (chatData) {
-              setMembers(chatData.members || []);
-              if (chatData.messages) {
-                const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(cached.messages);
-                if (messagesChanged) {
-                  latestMessages = chatData.messages;
-                  setMessages(chatData.messages);
-                }
-                if (chatData.envId) latestEnvId = chatData.envId;
-                if (chatData.sandboxUrl) latestSandboxUrl = chatData.sandboxUrl;
-              }
-            }
-          }
 
-          const res = await fetch('/api/ingest-context', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`
-            },
-            body: JSON.stringify({ folderId })
-          });
-          if (activeSpaceIdRef.current !== folderId) return;
-          
-          let latestIngested = cached.ingestedFiles;
-          if (res.ok) {
-            const data = await res.json();
-            if (activeSpaceIdRef.current !== folderId) return;
-            if (data.files) {
-              latestIngested = data.files;
-              const filesChanged = data.files.length !== cached.ingestedFiles.length ||
-                data.files.some((f: any, idx: number) => {
-                  const cachedF = cached.ingestedFiles[idx];
-                  return !cachedF || cachedF.id !== f.id || cachedF.content !== f.content;
-                });
-
-              if (filesChanged) {
-                setIngestedFiles(data.files);
-                const sandboxMapped = data.files.map((f: any, i: number) => ({
-                   name: f.filename,
-                   type: 'code',
-                   content: f.content,
-                   driveId: f.id,
-                   mimeType: f.mimeType,
-                   id: `ingested-file-${i}`
-                }));
-
-                setSandboxFiles(sandboxMapped);
-                sandboxMapped.forEach((f: any) => {
-                  lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
-                });
-
-                const envIdFile = sandboxMapped.find((f: any) => f.name === '.env_id');
-                if (envIdFile && envIdFile.content) {
-                  latestEnvId = envIdFile.content.trim();
+            let latestMessages = cachedChat ? cachedChat.messages : cached.messages;
+            let latestEnvId = cached.envId;
+            let latestSandboxUrl = cached.sandboxUrl;
+            
+            if (chatRes.ok) {
+              const chatData = await chatRes.json();
+              if (activeSpaceIdRef.current !== folderId) return;
+              if (chatData) {
+                setMembers(chatData.members || []);
+                if (chatData.messages) {
+                  const currentMsgCached = cachedChat ? cachedChat.messages : cached.messages;
+                  const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(currentMsgCached);
+                  if (messagesChanged) {
+                    latestMessages = chatData.messages;
+                    setMessages(chatData.messages);
+                  }
+                  if (chatData.envId) latestEnvId = chatData.envId;
+                  if (chatData.sandboxUrl) latestSandboxUrl = chatData.sandboxUrl;
                 }
               }
             }
-          }
 
-          if (latestEnvId !== cached.envId) {
-            setEnvId(latestEnvId);
-          }
-          if (latestSandboxUrl !== cached.sandboxUrl) {
-            setSandboxUrl(latestSandboxUrl);
-          }
+            const res = await fetch('/api/ingest-context', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`
+              },
+              body: JSON.stringify({ folderId })
+            });
+            if (activeSpaceIdRef.current !== folderId) return;
+            
+            let latestIngested = cached.ingestedFiles;
+            if (res.ok) {
+              const data = await res.json();
+              if (activeSpaceIdRef.current !== folderId) return;
+              if (data.files) {
+                latestIngested = data.files;
+                const filesChanged = data.files.length !== cached.ingestedFiles.length ||
+                  data.files.some((f: any, idx: number) => {
+                    const cachedF = cached.ingestedFiles[idx];
+                    return !cachedF || cachedF.id !== f.id || cachedF.content !== f.content;
+                  });
 
-          // Update the cache item
-          workspaceCacheRef.current[folderId] = {
-            ingestedFiles: latestIngested,
-            sandboxFiles: sandboxFiles,
-            envId: latestEnvId,
-            sandboxUrl: latestSandboxUrl,
-            messages: latestMessages,
-            projectName: fileName || projectName,
-            selectedFile: selectedFile,
-            indexFileSelected: indexFileSelected
-          };
-        } catch (err) {
-          console.error("Failed background update for workspace:", err);
-        }
-      }, 1000);
+                if (filesChanged) {
+                  setIngestedFiles(data.files);
+                  const sandboxMapped = data.files.map((f: any, i: number) => ({
+                     name: f.filename,
+                     type: 'code',
+                     content: f.content,
+                     driveId: f.id,
+                     mimeType: f.mimeType,
+                     id: `ingested-file-${i}`
+                  }));
+
+                  setSandboxFiles(sandboxMapped);
+                  sandboxMapped.forEach((f: any) => {
+                    lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
+                  });
+
+                  const envIdFile = sandboxMapped.find((f: any) => f.name === '.env_id');
+                  if (envIdFile && envIdFile.content) {
+                    latestEnvId = envIdFile.content.trim();
+                  }
+                }
+              }
+            }
+
+            if (latestEnvId !== cached.envId) {
+              setEnvId(latestEnvId);
+            }
+            if (latestSandboxUrl !== cached.sandboxUrl) {
+              setSandboxUrl(latestSandboxUrl);
+            }
+
+            // Update the cache item
+            workspaceCacheRef.current[folderId] = {
+              ingestedFiles: latestIngested,
+              sandboxFiles: sandboxFiles,
+              envId: latestEnvId,
+              sandboxUrl: latestSandboxUrl,
+              messages: latestMessages,
+              projectName: fileName || projectName,
+              selectedFile: selectedFile,
+              indexFileSelected: indexFileSelected
+            };
+            chatSessionsCacheRef.current[targetChatId] = {
+              messages: latestMessages
+            };
+          } catch (err) {
+            console.error("Failed background update for workspace:", err);
+          }
+        }, 1000);
+      }
     } else if (file.filesToLoad && file.filesToLoad.length > 0 && !file.filesToLoad[0]?.content?.includes('Contents will load dynamically')) {
       setSandboxFiles(file.filesToLoad);
       const indexHTML = file.filesToLoad.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || file.filesToLoad[0];
@@ -3397,47 +3468,52 @@ export default function App() {
       return;
     } else {
       // Try restoring from database chat state first
-      try {
-        const chatRes = await fetch(`/api/chats/${folderId}`);
-        if (chatRes.ok) {
-          const chatData = await chatRes.json();
-          if (chatData) {
-            setMembers(chatData.members || []);
-            if (chatData.messages && isFromRecents) setMessages(chatData.messages);
-            if (chatData.envId) setEnvId(chatData.envId);
-            if (chatData.sandboxUrl) setSandboxUrl(chatData.sandboxUrl);
-            if (chatData.projectName) setProjectName(chatData.projectName);
-            
-            if (chatData.sandboxFiles && chatData.sandboxFiles.length > 0) {
-              setSandboxFiles(chatData.sandboxFiles);
-              const indexHTML = chatData.sandboxFiles.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || chatData.sandboxFiles[0];
-              if (!skipSelect) {
-                setSelectedFile(indexHTML);
-                setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
-                setViewState('app');
-              } else {
-                setSelectedFile(null);
-                setIndexFileSelected(false);
-                setViewState('files');
-              }
+      if (!targetChatId.endsWith('-temp')) {
+        try {
+          const chatRes = await fetch(`/api/chats/${targetChatId}`);
+          if (chatRes.ok) {
+            const chatData = await chatRes.json();
+            if (chatData) {
+              setMembers(chatData.members || []);
+              if (chatData.messages && isFromRecents) setMessages(chatData.messages);
+              if (chatData.envId) setEnvId(chatData.envId);
+              if (chatData.sandboxUrl) setSandboxUrl(chatData.sandboxUrl);
+              if (chatData.projectName) setProjectName(chatData.projectName);
               
-              workspaceCacheRef.current[folderId] = {
-                ingestedFiles: ingestedFiles,
-                sandboxFiles: chatData.sandboxFiles,
-                envId: chatData.envId || null,
-                sandboxUrl: chatData.sandboxUrl || '',
-                messages: chatData.messages || [],
-                projectName: chatData.projectName || fileName || projectName,
-                selectedFile: skipSelect ? null : indexHTML,
-                indexFileSelected: skipSelect ? false : (indexHTML?.name?.toLowerCase().includes('index.html') ?? false)
-              };
-              setLoadedFolderId(folderId);
-              return;
+              if (chatData.sandboxFiles && chatData.sandboxFiles.length > 0) {
+                setSandboxFiles(chatData.sandboxFiles);
+                const indexHTML = chatData.sandboxFiles.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || chatData.sandboxFiles[0];
+                if (!skipSelect) {
+                  setSelectedFile(indexHTML);
+                  setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
+                  setViewState('app');
+                } else {
+                  setSelectedFile(null);
+                  setIndexFileSelected(false);
+                  setViewState('files');
+                }
+                
+                workspaceCacheRef.current[folderId] = {
+                  ingestedFiles: ingestedFiles,
+                  sandboxFiles: chatData.sandboxFiles,
+                  envId: chatData.envId || null,
+                  sandboxUrl: chatData.sandboxUrl || '',
+                  messages: chatData.messages || [],
+                  projectName: chatData.projectName || fileName || projectName,
+                  selectedFile: skipSelect ? null : indexHTML,
+                  indexFileSelected: skipSelect ? false : (indexHTML?.name?.toLowerCase().includes('index.html') ?? false)
+                };
+                chatSessionsCacheRef.current[targetChatId] = {
+                  messages: chatData.messages || []
+                };
+                setLoadedFolderId(folderId);
+                return;
+              }
             }
           }
+        } catch (cErr) {
+          console.warn("Failed to fetch chat data on cache miss:", cErr);
         }
-      } catch (cErr) {
-        console.warn("Failed to fetch chat data on cache miss:", cErr);
       }
 
       if (!accessToken) return;
@@ -3508,42 +3584,46 @@ export default function App() {
             setSelectedFile(null);
           }
 
-          let currentMessages = [];
+          let currentMessages: any[] = [];
           let currentSandboxUrl = '';
-          try {
-            const chatRes = await fetch(`/api/chats/${folderId}`);
-            if (activeSpaceIdRef.current !== folderId) return;
-
-            if (chatRes.ok) {
-              const chatData = await chatRes.json();
+          if (!targetChatId.endsWith('-temp')) {
+            try {
+              const chatRes = await fetch(`/api/chats/${targetChatId}`);
               if (activeSpaceIdRef.current !== folderId) return;
 
-              if (chatData) {
-                setMembers(chatData.members || []);
-                if (chatData.messages) {
-                  currentMessages = chatData.messages;
-                  if (isFromRecents) {
-                    setMessages(chatData.messages);
-                  } else {
-                    setMessages([]);
+              if (chatRes.ok) {
+                const chatData = await chatRes.json();
+                if (activeSpaceIdRef.current !== folderId) return;
+
+                if (chatData) {
+                  setMembers(chatData.members || []);
+                  if (chatData.messages) {
+                    currentMessages = chatData.messages;
+                    if (isFromRecents) {
+                      setMessages(chatData.messages);
+                    } else {
+                      setMessages([]);
+                    }
                   }
-                }
-                if (chatData.envId) {
-                  currentEnvId = chatData.envId;
-                  setEnvId(chatData.envId);
-                }
-                if (chatData.sandboxUrl) {
-                  currentSandboxUrl = chatData.sandboxUrl;
-                  setSandboxUrl(chatData.sandboxUrl);
+                  if (chatData.envId) {
+                    currentEnvId = chatData.envId;
+                    setEnvId(chatData.envId);
+                  }
+                  if (chatData.sandboxUrl) {
+                    currentSandboxUrl = chatData.sandboxUrl;
+                    setSandboxUrl(chatData.sandboxUrl);
+                  }
+                } else {
+                  setMessages([]);
                 }
               } else {
                 setMessages([]);
               }
-            } else {
+            } catch (chatErr) {
+              console.error("Failed to fetch chat history for workspace:", chatErr);
               setMessages([]);
             }
-          } catch (chatErr) {
-            console.error("Failed to fetch chat history for workspace:", chatErr);
+          } else {
             setMessages([]);
           }
 
@@ -3557,6 +3637,9 @@ export default function App() {
             projectName: file.name || projectName,
             selectedFile: skipSelect ? null : autoSelected,
             indexFileSelected: skipSelect ? false : isIdx
+          };
+          chatSessionsCacheRef.current[targetChatId] = {
+            messages: currentMessages
           };
 
           setViewState('files');
@@ -3877,6 +3960,16 @@ export default function App() {
         projects={projects}
         onRemoveProject={handleRemoveProject}
         userProfile={userProfile}
+        onLogout={logout}
+        chatModel={chatModel}
+        onChangeChatModel={(model) => {
+          setChatModel(model);
+          localStorage.setItem('chat-model', model);
+        }}
+        activeChatId={activeChatId}
+        onSelectChat={async (space, chat) => {
+          await handleFileClick(space, true, { isFromRecents: true, targetChatId: chat.id });
+        }}
         onSelectProject={async (proj) => {
           if (typeof proj === 'object' && proj !== null) {
             if (proj.type === 'ai_summary') {
@@ -3965,6 +4058,8 @@ export default function App() {
           chatDockPosition={chatDockPosition}
           onChangeChatDockPosition={setChatDockPosition}
           onFinalizeSpace={handleFinalizeSpace}
+          chatModel={chatModel}
+          onNewChat={handleCreateNewChat}
         />
       )}
 
