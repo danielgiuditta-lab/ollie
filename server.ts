@@ -8,6 +8,23 @@ import { WebSocketServer } from "ws";
 
 dotenv.config();
 
+// Helper for fetching with a timeout to prevent slow dependencies from stalling the server node process
+async function fetchWithTimeout(url: string, options: any = {}, timeoutMs = 1500) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
 // Helper to convert simple JavaScript object/value to Firestore REST API value representation
 function toFirestoreValue(val: any): any {
   if (val === null || val === undefined) {
@@ -238,7 +255,7 @@ async function startServer() {
             fields[k] = toFirestoreValue((payload as any)[k]);
           }
           
-          const response = await fetch(url, {
+          const response = await fetchWithTimeout(url, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
@@ -275,7 +292,7 @@ async function startServer() {
       if (firebaseConfig) {
         try {
           const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${firebaseConfig.firestoreDatabaseId}/documents/shards/${slug}?key=${firebaseConfig.apiKey}`;
-          const response = await fetch(url);
+          const response = await fetchWithTimeout(url);
           
           if (response.ok) {
             const docJson = await response.json();
@@ -379,7 +396,7 @@ async function startServer() {
             fields[k] = toFirestoreValue((payload as any)[k]);
           }
           
-          const response = await fetch(url, {
+          const response = await fetchWithTimeout(url, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
@@ -417,7 +434,7 @@ async function startServer() {
       if (firebaseConfig) {
         try {
           const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${firebaseConfig.firestoreDatabaseId}/documents/sync/${docId}?key=${firebaseConfig.apiKey}`;
-          const response = await fetch(url);
+          const response = await fetchWithTimeout(url);
           
           if (response.ok) {
             const docJson = await response.json();
@@ -491,7 +508,7 @@ async function startServer() {
       if (firebaseConfig) {
         try {
           const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${firebaseConfig.firestoreDatabaseId}/documents/chats/${sanitizedId}?key=${firebaseConfig.apiKey}`;
-          const response = await fetch(url);
+          const response = await fetchWithTimeout(url);
           
            if (response.ok) {
             const docJson = await response.json();
@@ -557,7 +574,7 @@ async function startServer() {
             fields[k] = toFirestoreValue((payload as any)[k]);
           }
           
-          const response = await fetch(url, {
+          const response = await fetchWithTimeout(url, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
@@ -596,7 +613,7 @@ async function startServer() {
       if (firebaseConfig) {
         try {
           const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${firebaseConfig.firestoreDatabaseId}/documents/chats/${sanitizedId}?key=${firebaseConfig.apiKey}`;
-          const response = await fetch(url, { method: "DELETE" });
+          const response = await fetchWithTimeout(url, { method: "DELETE" });
           if (response.ok) {
             firestoreWorked = true;
             console.log(`[Firebase] Deleted chat "${sanitizedId}" from Cloud Firestore.`);
@@ -668,7 +685,7 @@ async function startServer() {
             }
           };
 
-          const response = await fetch(url, {
+          const response = await fetchWithTimeout(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(queryBody)

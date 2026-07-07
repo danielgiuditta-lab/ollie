@@ -279,7 +279,7 @@ export default function App() {
 
   // Tracks the folder/workspace ID that is currently loaded in the React state.
   // Helps avoid race conditions when switching folders before all asynchronous updates resolve.
-  const activeLoadedFolderIdRef = useRef<string | null>(null);
+  const [loadedFolderId, setLoadedFolderId] = useState<string | null>(null);
 
   // Keep track of active folder ID to prevent race conditions during async fetches
   const activeSpaceIdRef = useRef<string | null>(null);
@@ -289,7 +289,7 @@ export default function App() {
 
   // Synchronize active workspace state changes back to the in-memory cache
   useEffect(() => {
-    if (activeSpaceId && activeLoadedFolderIdRef.current === activeSpaceId) {
+    if (activeSpaceId && loadedFolderId === activeSpaceId) {
       workspaceCacheRef.current[activeSpaceId] = {
         ingestedFiles,
         sandboxFiles,
@@ -301,7 +301,7 @@ export default function App() {
         indexFileSelected
       };
     }
-  }, [activeSpaceId, messages, sandboxFiles, ingestedFiles, envId, sandboxUrl, projectName, selectedFile, indexFileSelected]);
+  }, [activeSpaceId, loadedFolderId, messages, sandboxFiles, ingestedFiles, envId, sandboxUrl, projectName, selectedFile, indexFileSelected]);
 
   // Ref to track file IDs created from the composer in order to format output of blank docs
   const createdFromComposerFileIdsRef = useRef<Set<string>>(new Set());
@@ -3155,7 +3155,7 @@ export default function App() {
 
     if (isHomeChatId(folderId)) {
       activeSpaceIdRef.current = folderId;
-      activeLoadedFolderIdRef.current = folderId;
+      setLoadedFolderId(folderId);
       setActiveSpaceId(folderId);
       setProjectName('Home Dashboard');
       setIsAiSummarySnapped(false);
@@ -3191,7 +3191,7 @@ export default function App() {
     activeSpaceIdRef.current = folderId;
 
     // Temporarily invalidate activeLoadedFolderIdRef to suspend cache writes during loading
-    activeLoadedFolderIdRef.current = null;
+    setLoadedFolderId(null);
 
     setActiveSpaceId(folderId);
     const fileName = typeof file === 'string' ? file : file.name;
@@ -3241,7 +3241,7 @@ export default function App() {
       setViewState('app');
       
       // Allow cache updates for the newly active folder
-      activeLoadedFolderIdRef.current = folderId;
+      setLoadedFolderId(folderId);
 
       if (!accessToken) return;
 
@@ -3347,7 +3347,7 @@ export default function App() {
       setSelectedFile(indexHTML);
       setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
       setViewState('app');
-      activeLoadedFolderIdRef.current = folderId;
+      setLoadedFolderId(folderId);
       return;
     } else {
       // Try restoring from database chat state first
@@ -3379,7 +3379,7 @@ export default function App() {
                 selectedFile: indexHTML,
                 indexFileSelected: indexHTML?.name?.toLowerCase().includes('index.html') ?? false
               };
-              activeLoadedFolderIdRef.current = folderId;
+              setLoadedFolderId(folderId);
               return;
             }
           }
@@ -3509,7 +3509,7 @@ export default function App() {
         if (activeSpaceIdRef.current === folderId) {
           setIsIngesting(false);
           // Enable cache writes for the active folder
-          activeLoadedFolderIdRef.current = folderId;
+          setLoadedFolderId(folderId);
         }
       }
     }
