@@ -222,7 +222,7 @@ async function startServer() {
       const payload = {
         id: slug,
         envId,
-        workspaceName: workspaceName || "makeFolder Prototype",
+        workspaceName: workspaceName || "Spaces Prototype",
         owner: owner || "Anonymous",
         ownerId: ownerId || "",
         files: files || [],

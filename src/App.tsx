@@ -159,7 +159,7 @@ export default function App() {
     return !id || id.startsWith('home_');
   }, []);
 
-  // makeFolder Workspace States
+  // Spaces Platform States
   const [selectedDriveFiles, setSelectedDriveFiles] = useState<any[]>([]);
   const [activeSpaceId, setActiveSpaceId] = useState<string | null>('home_guest');
   const [isCreatingSpace, setIsCreatingSpace] = useState(false);
@@ -1968,6 +1968,7 @@ export default function App() {
     const tempSpaceId = `space-creation-${Date.now()}`;
     setActiveSpaceId(tempSpaceId);
     setProjectName('New Space');
+    setCurrentTask('app');
     setMessages([
       {
         role: 'bot',
@@ -1984,6 +1985,7 @@ export default function App() {
   };
 
   const handleFinalizeSpace = async (name: string, selectedPeople: any[]) => {
+    setCurrentTask('app');
     const cleanFolderName = name
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))

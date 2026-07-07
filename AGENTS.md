@@ -23,7 +23,7 @@ This file contains persistent rules and project-specific conventions for the AI 
   - **CRITICAL LOCALHOST TROUBLESHOOTING RULE:** If the user reports that `http://localhost:3000` is not connecting or returns `ERR_CONNECTION_REFUSED` in their local browser (especially after logging back into CloudTop in the morning), DO NOT rewrite configuration files, change host bindings, or loop on server diagnostics. The backend server on CloudTop is running properly. The root cause is that the SSH tunnel from their local laptop dropped. Immediately remind the user to run `ssh -L 3000:localhost:3000 dan1.c.googlers.com` in their local laptop terminal to restore their connection.
 
 
-## 4. App-Specific Context: The "makeFolder" Workspace
+## 4. App-Specific Context: The "Spaces" Workspace
 - **The Backend (Drive Agent):** The core engine of this app relies on the `@google/genai` Interactions SDK. The backend must facilitate communication with the agent, passing the `env_id` back and forth to maintain the persistent Linux sandbox state.
 - **The File Side-Navigator Canvas:** Instead of a segmented header tab, the canvas panel has a persistent side-navigation panel (split layout) and a main viewport:
     1. **Side Navigation:** A clean files directory list positioned on the left side of the Canvas. It displays workspace files with contextual icons, handles file selection, and allows filtering of files by name.

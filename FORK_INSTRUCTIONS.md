@@ -1,6 +1,6 @@
-# 📁 How to Fork, Setup, Run, and Collaborate on makeFolder Workspace
+# 📁 How to Fork, Setup, Run, and Collaborate on Spaces Platform
 
-Welcome to **makeFolder Workspace**! This document provides complete instructions for cloning, configuring environment settings/keys, running the application on your local machine, and collaborating with teammates via GitHub.
+Welcome to **Spaces Platform**! This document provides complete instructions for cloning, configuring environment settings/keys, running the application on your local machine, and collaborating with teammates via GitHub.
 
 ---
 

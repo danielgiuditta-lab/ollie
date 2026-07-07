@@ -107,7 +107,7 @@ export function CanvasSidebar({
 
     if (prefix.length === 0) {
       // Root column: combine both files (sandboxFiles) and driveFiles
-      const sourceList = [...(files || []), ...(driveFiles || [])];
+      const sourceList = files || [];
       sourceList.forEach(file => {
         if (!file || !file.name) return;
         if (typeof file.content === 'string' && file.content.includes('Contents will load dynamically')) return;
@@ -142,7 +142,7 @@ export function CanvasSidebar({
       }
 
       if (currentChildrenList.length === 0) {
-        let parentItems: any[] = (driveFiles && driveFiles.length > 0) ? driveFiles : files;
+        let parentItems: any[] = files || [];
         let targetNode: any = null;
 
         for (let i = 0; i < prefix.length; i++) {

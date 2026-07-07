@@ -809,7 +809,7 @@ export function NativeViewer({
 
             {/* Footer */}
             <div className="border-t border-slate-100 pt-1.5 select-none flex justify-between items-center text-[8px] text-slate-400">
-              <span>makeFolder Workspace</span>
+              <span>Spaces Platform</span>
               <span className="text-amber-700 font-semibold uppercase tracking-wider text-[7px]">Confidential draft</span>
             </div>
           </div>
@@ -950,7 +950,7 @@ export function NativeViewer({
 
               {/* Footer */}
               <div className="border-t border-slate-100 dark:border-[#2B2D31] pt-3 select-none flex justify-between items-center text-[9px] text-slate-400 dark:text-slate-300 leading-none">
-                <span>Created with makeFolder</span>
+                <span>Created with Spaces</span>
                 <span className="text-amber-700 dark:text-amber-400 font-semibold tracking-wider text-[8px] uppercase">Confidential Internal Draft</span>
               </div>
             </div>

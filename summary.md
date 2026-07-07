@@ -1,12 +1,12 @@
-# makeFolder Workspace — Technical & Product Architecture
+# Spaces Platform — Technical & Product Architecture
 
-Welcome to the **makeFolder Workspace**, a state-of-the-art, AI-powered developer environment designed to enable seamless, natural-language frontend prototyping directly within Google Drive. By combining standard Google Workspace OAuth authentication with the advanced capabilities of the Google GenAI Interactions SDK, this application converts text descriptions into fully interactive, client-side web applications with dynamic Google Drive context ingestion and round-trip state saving.
+Welcome to the **Spaces Platform**, a state-of-the-art, AI-powered developer environment designed to enable seamless, natural-language frontend prototyping directly within Google Drive. By combining standard Google Workspace OAuth authentication with the advanced capabilities of the Google GenAI Interactions SDK, this application converts text descriptions into fully interactive, client-side web applications with dynamic Google Drive context ingestion and round-trip state saving.
 
 ---
 
 ## 1. Product Vision & UX Design
 
-The **makeFolder Workspace** leverages a professional, polished and clean visual aesthetic modeled after a modern Google Drive extension. It serves as a visual staging playground where non-technical and technical users can collaboratively build individual applications, utilities, and documentation through a streamlined conversational chat panel.
+The **Spaces Platform** leverages a professional, polished and clean visual aesthetic modeled after a modern Google Drive extension. It serves as a visual staging playground where non-technical and technical users can collaboratively build individual applications, utilities, and documentation through a streamlined conversational chat panel.
 
 ### Core Visual Philosophy
 * **Modern Google Drive Aesthetic**: High-contrast light canvas layout featuring gentle off-white surfaces (`#F8FAFD`), customized subtle glowing background gradients, spacious rounded containers (`rounded-[32px]`), and responsive card transitions.
@@ -53,7 +53,7 @@ The workspace connects directly to real APIs to eliminate mock placeholders, gua
   SSE Stream │            │ Ingestion Context
   vibe-code  ▼            │ & User Prompts
   ┌─────────────────────────────┐
-  │     makeFolder Browser      │
+  │     Spaces Browser      │
   │  (React 19 / Vite Frontend) │
   └─────────────────────────────┘
 ```

@@ -1,6 +1,6 @@
-# 📁 makeFolder Workspace — Designer Onboarding Guide
+# 🌌 Spaces Platform — Designer Onboarding Guide
 
-Welcome to **makeFolder Workspace**! This repository is an AI-native workspace and collaborative design environment where users build web apps, generate documents, explore Drive files, and collaborate live with Gemini AI agents and teammates.
+Welcome to **Spaces Platform**! This repository is an AI-native workspace and collaborative design environment where users build web apps, generate documents, explore Drive files, and collaborate live with Gemini AI agents and teammates.
 
 This guide is written specifically for **designers and builders**. It puts our **main user journeys right at the top** in simple, human terms, followed by core architecture terms, component taxonomy, and a vibe-coding cheat sheet.
 
@@ -50,7 +50,7 @@ Here are the core domain terms used throughout the code and design system so you
 
 | Term | What It Is & What It Does | Key Components / Files |
 | :--- | :--- | :--- |
-| **`makeFolder`** | The workspace engine. When a user imports files or starts a prompt, the app dynamically creates a real Google Drive folder titled with an AI summary of the task, copies selected files into it, and keeps them synced. | [`App.tsx`](src/App.tsx), `server.ts` |
+| **`Spaces`** | The workspace engine. When a user imports files or starts a prompt, the app dynamically creates a local virtual Space titled with an AI summary of the task, copies selected files into it, and keeps them synced. | [`App.tsx`](src/App.tsx), `server.ts` |
 | **`CanvasMain`** | The primary workspace panel on the right side of the split screen. It holds the file directory navigation sidebar on its left edge and the main document/preview viewport on the right. | [`CanvasMain.tsx`](src/components/Canvas/CanvasMain.tsx) |
 | **`ChatSidebar`** | The AI assistant panel on the left side of the split screen where users chat with the AI, submit prompts, attach files, and inspect build tasks. | [`ChatSidebar.tsx`](src/components/Chat/ChatSidebar.tsx) |
 | **`AppView`** | The live web app preview viewport. It executes and runs web applications (`index.html`) inside an interactive, responsive iframe. | [`AppView.tsx`](src/components/Canvas/AppView.tsx) |

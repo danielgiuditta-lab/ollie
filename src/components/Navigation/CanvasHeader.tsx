@@ -45,25 +45,40 @@ export function CanvasHeader({
     <div className="flex items-center justify-between px-6 py-4 w-full h-[64px] shrink-0 z-20 relative bg-transparent text-slate-800 dark:text-white select-none">
       <div className="flex items-center gap-2">
         <div className="flex items-center text-slate-700 dark:text-slate-200 text-lg font-normal font-sans">
-          <span 
-            onClick={onHomeClick}
-            className="cursor-pointer hover:text-slate-900 dark:hover:text-white transition font-medium"
-          >
-            Home
-          </span>
-          {!isHome && (
+          {projectName === 'New Space' || projectName === 'New' ? (
+            <div className="flex items-center gap-1.5 bg-[#003BC4]/5 dark:bg-[#2B2D31] px-3 py-1 rounded-xl text-slate-950 dark:text-white font-semibold">
+              <span>{projectName}</span>
+              <button 
+                onClick={onCloseWorkspace}
+                className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center"
+                title="Close Space"
+              >
+                <X size={14} className="text-slate-500 dark:text-slate-400" />
+              </button>
+            </div>
+          ) : (
             <>
-              <ChevronRight size={18} className="mx-2 text-slate-400 dark:text-slate-500 shrink-0" />
-              <div className="flex items-center gap-1.5 bg-[#003BC4]/5 dark:bg-[#2B2D31] px-3 py-1 rounded-xl text-slate-950 dark:text-white font-semibold">
-                <span>{projectName}</span>
-                <button 
-                  onClick={onCloseWorkspace}
-                  className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center"
-                  title="Close Space"
-                >
-                  <X size={14} className="text-slate-500 dark:text-slate-400" />
-                </button>
-              </div>
+              <span 
+                onClick={onHomeClick}
+                className="cursor-pointer hover:text-slate-900 dark:hover:text-white transition font-medium"
+              >
+                Home
+              </span>
+              {!isHome && (
+                <>
+                  <ChevronRight size={18} className="mx-2 text-slate-400 dark:text-slate-500 shrink-0" />
+                  <div className="flex items-center gap-1.5 bg-[#003BC4]/5 dark:bg-[#2B2D31] px-3 py-1 rounded-xl text-slate-950 dark:text-white font-semibold">
+                    <span>{projectName}</span>
+                    <button 
+                      onClick={onCloseWorkspace}
+                      className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center"
+                      title="Close Space"
+                    >
+                      <X size={14} className="text-slate-500 dark:text-slate-400" />
+                    </button>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>

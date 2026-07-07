@@ -273,7 +273,7 @@ export function ChatSidebar({
               )}
               
               {/* Exactly one unified TaskCard representing the lifetime of the user's workspace progress */}
-              {(messages.length > 0 || isLoading) && (() => {
+              {(messages.length > 0 || isLoading) && currentTask !== 'app' && (() => {
                 const allSteps = messages.flatMap(msg => msg.steps || []);
                 const lastBotMessage = [...messages].reverse().find(msg => msg.role === 'bot' || msg.role === 'assistant' || msg.role === 'model');
                 const lastBotText = lastBotMessage ? lastBotMessage.text : '';
