@@ -401,6 +401,43 @@ export function HomeLanding({
   const [isDigestLoading, setIsDigestLoading] = useState(false);
   const [digestError, setDigestError] = useState<string | null>(null);
 
+  const handleAgendaItemClick = (item: any) => {
+    if (!item) return;
+
+    if (item.type === 'email') {
+      const emailFile = {
+        id: `email-${item.id || Date.now()}`,
+        name: item.description || 'Email Thread',
+        type: 'email_thread',
+        subject: item.description,
+        from: item.source || 'Gmail Workspace',
+        snippet: item.action || 'No email body snippet available.',
+        date: 'Today',
+        mimeType: 'application/vnd.google-apps.mail'
+      };
+      setSandboxFiles([emailFile]);
+      setSelectedFile(emailFile);
+      setViewState('files');
+    } 
+    else if (item.type === 'chat') {
+      const chatFile = {
+        id: `chat-${item.id || Date.now()}`,
+        name: item.description || 'Chat Space',
+        type: 'chat_space',
+        spaceName: item.source || 'Google Chat Workspace',
+        content: item.action || 'No message history.',
+        mimeType: 'application/vnd.google-apps.chat'
+      };
+      setSandboxFiles([chatFile]);
+      setSelectedFile(chatFile);
+      setViewState('files');
+    }
+    else if (item.type === 'comment') {
+      // Find comment file if any, otherwise alert
+      alert(`Opening document comments: ${item.description}`);
+    }
+  };
+
   React.useEffect(() => {
     if (!accessToken) {
       setDigestData(null);
@@ -1027,7 +1064,11 @@ export function HomeLanding({
                       </div>
                     ) : (
                       digestData.immediateActions.map((item: any) => (
-                        <div key={item.id} className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-red-200 dark:hover:border-red-900/60 transition-colors duration-150">
+                        <div 
+                          key={item.id} 
+                          onClick={() => handleAgendaItemClick(item)}
+                          className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-red-200 dark:hover:border-red-900/60 hover:bg-slate-105/50 dark:hover:bg-[#2B2D31]/70 transition-colors duration-150 cursor-pointer text-left"
+                        >
                           <div className="flex items-start gap-2.5">
                             <span className="mt-0.5 shrink-0">
                               {item.type === 'email' ? <Mail size={14} className="text-slate-500" /> : item.type === 'comment' ? <MessageSquare size={14} className="text-slate-500" /> : <MessageSquare size={14} className="text-slate-500" />}
@@ -1071,7 +1112,11 @@ export function HomeLanding({
                       </div>
                     ) : (
                       digestData.followUps.map((item: any) => (
-                        <div key={item.id} className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-indigo-200 dark:hover:border-indigo-900/60 transition-colors duration-150">
+                        <div 
+                          key={item.id} 
+                          onClick={() => handleAgendaItemClick(item)}
+                          className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-indigo-200 dark:hover:border-indigo-900/60 hover:bg-slate-100/50 dark:hover:bg-[#2B2D31]/70 transition-colors duration-150 cursor-pointer text-left"
+                        >
                           <div className="flex items-start gap-2.5">
                             <span className="mt-0.5 shrink-0">
                               {item.type === 'email' ? <Mail size={14} className="text-slate-500" /> : item.type === 'comment' ? <MessageSquare size={14} className="text-slate-500" /> : <MessageSquare size={14} className="text-slate-500" />}
@@ -1115,7 +1160,11 @@ export function HomeLanding({
                       </div>
                     ) : (
                       digestData.updates.map((item: any) => (
-                        <div key={item.id} className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-slate-300 dark:hover:border-slate-700 transition-colors duration-150">
+                        <div 
+                          key={item.id} 
+                          onClick={() => handleAgendaItemClick(item)}
+                          className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-slate-350 dark:hover:border-slate-700 hover:bg-slate-100/50 dark:hover:bg-[#2B2D31]/70 transition-colors duration-150 cursor-pointer text-left"
+                        >
                           <div className="flex items-start gap-2.5">
                             <span className="mt-0.5 shrink-0">
                               {item.type === 'email' ? <Mail size={14} className="text-slate-500" /> : item.type === 'comment' ? <MessageSquare size={14} className="text-slate-500" /> : <MessageSquare size={14} className="text-slate-500" />}

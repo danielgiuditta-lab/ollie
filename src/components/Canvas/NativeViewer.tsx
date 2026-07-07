@@ -985,7 +985,151 @@ export function NativeViewer({
     );
   };
 
+  const renderEmailThreadSim = () => {
+    const subject = file.subject || 'No Subject';
+    const from = file.from || 'Unknown Sender';
+    const snippet = file.snippet || '';
+    const date = file.date || 'Recent';
+
+    return (
+      <div className="w-full h-full bg-[#F6F8FC] dark:bg-[#0B0B0C] flex flex-col overflow-hidden text-slate-800 dark:text-white font-sans">
+        <div className="shrink-0 bg-white dark:bg-[#1E1F22] border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-650 dark:text-blue-450 flex items-center justify-center text-lg shadow-3xs shrink-0">
+              ✉️
+            </div>
+            <div>
+              <h2 className="font-semibold text-sm text-slate-900 dark:text-white leading-none mb-1">{subject}</h2>
+              <p className="text-[11px] text-slate-500 dark:text-neutral-400 font-sans">Google Mail Thread</p>
+            </div>
+          </div>
+          <span className="text-[10px] text-blue-800 bg-blue-100/65 dark:bg-blue-950/40 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 font-sans">
+            Inbox
+          </span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="max-w-3xl mx-auto bg-white dark:bg-[#1E1F22] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-3xs text-left">
+            <div className="flex justify-between items-start pb-4 border-b border-slate-100 dark:border-slate-800 mb-4 select-none">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#2B2D31] text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-xs shadow-3xs shrink-0">
+                  {from.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white leading-none mb-1 font-sans">{from}</h3>
+                  <p className="text-[10px] text-slate-400 font-sans">to me</p>
+                </div>
+              </div>
+              <span className="text-[10px] text-slate-400 font-semibold font-sans">{date}</span>
+            </div>
+
+            <div className="text-xs text-slate-750 dark:text-neutral-350 leading-relaxed space-y-4 whitespace-pre-wrap select-text font-normal font-sans">
+              {snippet}
+            </div>
+          </div>
+
+          <div className="max-w-3xl mx-auto bg-white dark:bg-[#1E1F22] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-3xs flex flex-col gap-3 text-left">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-400 uppercase tracking-wider block font-sans">Draft a Quick Reply</span>
+            <textarea 
+              placeholder="Type your reply here..." 
+              className="w-full h-24 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 text-xs leading-normal outline-none focus:border-blue-500/50 bg-transparent text-slate-800 dark:text-white font-sans"
+            />
+            <div className="flex justify-end gap-2.5 shrink-0 select-none">
+              <button 
+                onClick={() => alert("Drafting with AI...")}
+                className="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 dark:bg-[#2B2D31] dark:hover:bg-[#3E4042] dark:border-transparent dark:text-white rounded-xl text-[10px] font-bold cursor-pointer font-sans"
+              >
+                Draft with Gemini
+              </button>
+              <button 
+                onClick={() => { alert("Reply sent!"); if (onClose) onClose(); }}
+                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-bold cursor-pointer font-sans"
+              >
+                Send Reply
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderChatSpaceSim = () => {
+    const spaceName = file.spaceName || file.name || 'Chat Space';
+    const messages = file.messages || [
+      { sender: 'Malik Harold', text: file.content || 'Hi! Let me know if you need help with this layout.', time: 'Recent' }
+    ];
+
+    return (
+      <div className="w-full h-full bg-[#FAF9F5] dark:bg-[#0B0B0C] flex flex-col overflow-hidden text-slate-800 dark:text-white font-sans">
+        <div className="shrink-0 bg-white dark:bg-[#1E1F22] border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-650 dark:text-emerald-450 flex items-center justify-center text-lg shadow-3xs shrink-0">
+              💬
+            </div>
+            <div>
+              <h2 className="font-semibold text-sm text-slate-900 dark:text-white leading-none mb-1">{spaceName}</h2>
+              <p className="text-[11px] text-slate-500 dark:text-neutral-400 font-sans">Google Chat Space</p>
+            </div>
+          </div>
+          <span className="text-[10px] text-emerald-800 bg-emerald-100/60 dark:bg-emerald-950/40 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 font-sans">
+            Active
+          </span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col justify-start">
+          {messages.map((m: any, idx: number) => {
+            const isMe = m.sender === 'me';
+            return (
+              <div key={idx} className={`flex items-start gap-3 max-w-xl text-left ${isMe ? 'self-end flex-row-reverse' : 'self-start'}`}>
+                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-[#2B2D31] text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-[10px] shadow-3xs shrink-0 select-none">
+                  {m.sender.substring(0, 2).toUpperCase()}
+                </div>
+                <div className="space-y-1">
+                  <div className={`flex items-baseline gap-2 select-none ${isMe ? 'justify-end' : ''}`}>
+                    <span className="text-[10px] font-bold text-slate-900 dark:text-white font-sans">{m.sender}</span>
+                    <span className="text-[8px] text-slate-400 font-sans">{m.time}</span>
+                  </div>
+                  <div className={`p-3.5 rounded-[18px] text-xs font-normal leading-relaxed select-text ${
+                    isMe 
+                      ? 'bg-blue-600 text-white rounded-tr-none' 
+                      : 'bg-white dark:bg-[#1E1F22] border border-slate-200 dark:border-slate-800 text-slate-750 dark:text-neutral-300 rounded-tl-none shadow-3xs'
+                  }`}>
+                    {m.text}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="shrink-0 bg-white dark:bg-[#1E1F22] border-t border-slate-200 dark:border-slate-800 p-4">
+          <div className="max-w-3xl mx-auto flex items-center gap-3 bg-slate-50 dark:bg-[#2B2D31] border border-slate-200 dark:border-[#3E4042] rounded-full px-4 py-2">
+            <input 
+              type="text" 
+              placeholder={`Message ${spaceName}...`}
+              className="flex-1 text-xs bg-transparent border-none outline-none text-slate-800 dark:text-white font-sans"
+            />
+            <button 
+              onClick={() => { alert("Message sent!"); if (onClose) onClose(); }}
+              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-[10px] font-bold cursor-pointer font-sans"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderContent = () => {
+    if (file.type === 'email_thread') {
+      return renderEmailThreadSim();
+    }
+    if (file.type === 'chat_space') {
+      return renderChatSpaceSim();
+    }
+
     // Image view support
     if (isImageFile) {
       const isLocalContent = typeof file.content === 'string' && (file.content.startsWith('data:image/') || file.content.startsWith('blob:'));

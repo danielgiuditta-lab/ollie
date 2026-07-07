@@ -10,6 +10,7 @@ interface CanvasTopBarProps {
   onExpand: () => void;
   onOpenInDrive?: (file: any) => void;
   appTheme?: 'light' | 'dark';
+  peers?: Record<string, any>;
 }
 
 export function CanvasTopBar({
@@ -19,13 +20,35 @@ export function CanvasTopBar({
   onClose,
   onExpand,
   onOpenInDrive,
-  appTheme = 'light'
+  appTheme = 'light',
+  peers
 }: CanvasTopBarProps) {
   if (!file) return null;
 
   const nameLower = file.name?.toLowerCase() || '';
   const mimeLower = file.mimeType?.toLowerCase() || '';
   const isDark = appTheme === 'dark';
+
+  const PeerAvatarsList = () => {
+    if (!peers) return null;
+    const list = Object.values(peers);
+    if (list.length === 0) return null;
+
+    return (
+      <div className="flex items-center -space-x-1.5 mr-3 select-none shrink-0">
+        {list.map((peer: any) => (
+          <div
+            key={peer.id}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-3xs ring-2 ring-white dark:ring-[#1E1F22] shrink-0"
+            style={{ backgroundColor: peer.color || '#3B82F6' }}
+            title={`${peer.name} is active in this space`}
+          >
+            {peer.name.substring(0, 1).toUpperCase()}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   // 1. Previewable code: html or markdown
   const isPreviewable = 
@@ -104,7 +127,8 @@ export function CanvasTopBar({
         </div>
 
         {/* Right: Expand (dual arrows pointing outwards) */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <PeerAvatarsList />
           <ExpandButton />
         </div>
       </div>
@@ -146,7 +170,8 @@ export function CanvasTopBar({
         <div className="flex-1" />
 
         {/* Right: Open in Native Editor Pill Button */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <PeerAvatarsList />
           {onOpenInDrive ? (
             <button
               onClick={() => onOpenInDrive(file)}
@@ -182,11 +207,16 @@ export function CanvasTopBar({
         <CloseButton />
       </div>
 
-      {/* Center: Empty */}
-      <div className="flex-1" />
+      {/* Center: File Title */}
+      <div className="flex-1 text-center">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[240px] inline-block font-sans">
+          {file.name}
+        </span>
+      </div>
 
       {/* Right: Expand to projector fullscreen */}
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
+        <PeerAvatarsList />
         <ExpandButton />
       </div>
     </div>

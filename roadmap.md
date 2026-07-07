@@ -29,8 +29,9 @@ This file tracks the development milestones for adding Google Workspace integrat
 
 ### 📍 Phase 5: Personal Spaces & Navigation Refactoring
 - [x] Redesign LeftNav to display Home (Dashboard) and Spaces (using dynamic emojis, inline expand chevrons for nested chats, and bottom avatar controls)
-- [ ] Build sub-tabs and canvas views to list email threads, chat spaces, and docs comments in detail
+- [x] Build sub-tabs and canvas views to list email threads, chat spaces, and docs comments in detail
 
-### 📍 Phase 6: Multiplayer Team Spaces
-- [ ] Link Team Spaces to shared workspace shards (`/api/share`)
-- [ ] Display co-presence cursor tracks, shared task backlog list, and collaborative documents
+### 📍 Phase 6: Project Spaces & Multiplayer Collaboration
+- [x] Implement Private Spaces (Just Me) for isolated document and code authoring
+- [x] Link Shared Spaces (With People) to shared workspace shards (`/api/share`)
+- [x] Display co-presence cursor tracks, shared task backlog list, and collaborative documents

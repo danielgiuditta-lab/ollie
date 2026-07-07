@@ -87,7 +87,7 @@ export function CanvasMain({
               className="flex-1 w-full h-full relative z-0 min-h-0 overflow-hidden transition-all duration-300 pt-0"
             >
               {children}
-              {peers && (viewState === 'projector' || viewState === 'public_projector') && (
+              {peers && viewState !== 'home' && viewState !== 'ai_summary' && (
                 <PeerCursors peers={peers} currentUserId={currentUserId} />
               )}
             </div>

@@ -3631,25 +3631,6 @@ export default function App() {
             setSelectedFile(null);
           }
         }}
-        onPlusClick={() => {
-          setViewState('home');
-          setHomeJourney('create');
-          setSelectedFile(null);
-          setMessages([]);
-          setEnvId(null);
-          setSandboxFiles([]);
-          setDriveFolderId(null);
-          setProjectName('New');
-          setActiveSidebar(null);
-          setIsAiSummarySnapped(false);
-        }}
-        onSearchClick={() => {
-          setViewState('home');
-          setHomeJourney('search');
-          setSelectedFile(null);
-          setActiveSidebar(null);
-          setIsAiSummarySnapped(false);
-        }}
         projectName={projectName}
         driveFolderId={driveFolderId}
       />
@@ -3854,6 +3835,7 @@ export default function App() {
                       }}
                       onOpenInDrive={handleOpenInDrive}
                       appTheme={appTheme}
+                      peers={peers}
                     />
 
                     {(((selectedFile?.name?.toLowerCase().endsWith('.html') || selectedFile?.name?.toLowerCase().endsWith('.htm')) && viewMode === 'preview') || (indexFileSelected && viewMode === 'preview')) ? (
