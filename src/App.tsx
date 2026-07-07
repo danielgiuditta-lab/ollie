@@ -3103,6 +3103,7 @@ export default function App() {
     setCurrentPath(newPath);
     setSelectedFile(null); // Keep main viewport as null inspector placeholder when navigating folders
     setViewState('files');
+    setIsSourcesPanelOpen(false); // Collapse context panel by default
 
     // Reset Gemini chat state to a blank chat for directory navigation
     resetChatForDirectoryItem();
@@ -3825,7 +3826,8 @@ export default function App() {
             } else {
               setIsAiSummarySnapped(false);
               setActiveSidebar('gemini');
-              await handleFileClick(proj, false, { isFromRecents: true });
+              setIsSourcesPanelOpen(false); // Collapse context panel by default
+              await handleFileClick(proj, true, { isFromRecents: true }); // skipSelect = true
             }
           }
         }}
@@ -3844,12 +3846,14 @@ export default function App() {
             } else {
               setIsAiSummarySnapped(false);
               setActiveSidebar('gemini');
-              await handleFileClick(task, false, { isFromRecents: true });
+              setIsSourcesPanelOpen(false); // Collapse context panel by default
+              await handleFileClick(task, true, { isFromRecents: true }); // skipSelect = true
             }
           } else {
             setIsAiSummarySnapped(false);
             setActiveSidebar('gemini');
             setProjectName(task);
+            setIsSourcesPanelOpen(false); // Collapse context panel by default
             if (sandboxFiles.length > 0) {
               setViewState('files');
             } else {

@@ -419,6 +419,7 @@ export function HomeLanding({
       personAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
       status: 'working',
       hasPreview: true,
+      involvesMe: true,
       filesToLoad: [
         {
           name: 'Galaxy Deck.gslides',
@@ -438,7 +439,8 @@ export function HomeLanding({
       personName: "David",
       personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
       status: 'done',
-      hasPreview: false
+      hasPreview: false,
+      involvesMe: true
     },
     {
       id: 'todo-3',
@@ -450,7 +452,21 @@ export function HomeLanding({
       personName: "Juyun & Michael",
       personAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
       status: 'done',
-      hasPreview: false
+      hasPreview: false,
+      involvesMe: true
+    },
+    {
+      id: 'todo-space-external-1',
+      title: "Chandu to update slide 3 diagram layouts",
+      description: "David left feedback for Chandu to fix visuals",
+      workspace: "Galaxy Deck",
+      sourceName: "Galaxy Deck",
+      sourceMimeType: "application/vnd.google-apps.presentation",
+      personName: "David",
+      personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+      status: 'done',
+      hasPreview: false,
+      involvesMe: false // Teammate task (shows in Space view, filters out of Home)
     },
     {
       id: 'todo-4',
@@ -462,7 +478,8 @@ export function HomeLanding({
       personName: "David",
       personAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
       status: 'done',
-      hasPreview: false
+      hasPreview: false,
+      involvesMe: true
     },
     {
       id: 'todo-5',
@@ -474,7 +491,8 @@ export function HomeLanding({
       personName: "Bora & Megan",
       personAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
       status: 'done',
-      hasPreview: false
+      hasPreview: false,
+      involvesMe: true
     }
   ]);
 
@@ -534,6 +552,7 @@ export function HomeLanding({
         personName,
         personAvatar,
         status: isProactive ? 'working' : 'done',
+        involvesMe: idx !== 3,
         hasPreview: isProactive,
         previewContent: item.description || "Consolidated details draft",
         // Mock a draft file edit for this proactive task
@@ -574,15 +593,18 @@ export function HomeLanding({
 
   // Filter todoItems based on the active space/project
   const filteredTodoItems = React.useMemo(() => {
-    if (!activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home') {
-      return todoItems;
+    const isHome = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home';
+    if (isHome) {
+      // Home Dashboard shows ONLY tasks that involve the user (involvesMe !== false)
+      return todoItems.filter(item => item.involvesMe !== false);
     }
 
     const currentProject = (projectName || '').toLowerCase().trim();
     if (!currentProject || currentProject === 'home dashboard') {
-      return todoItems;
+      return todoItems.filter(item => item.involvesMe !== false);
     }
 
+    // Space Dashboard shows ALL tasks for the space, including teammate tasks
     return todoItems.filter(item => {
       const itemWorkspace = (item.workspace || '').toLowerCase().trim();
       const itemSourceName = (item.sourceName || '').toLowerCase().trim();
