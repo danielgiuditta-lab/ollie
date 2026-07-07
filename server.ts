@@ -768,6 +768,213 @@ async function startServer() {
     }
   });
 
+  app.get("/api/workspace-digest", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ error: "No authorization header" });
+      }
+
+      const headers = { Authorization: authHeader };
+      const twoDaysAgoStr = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+      const sevenDaysAgoStr = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      let emails: any[] = [];
+      let chats: any[] = [];
+      let comments: any[] = [];
+
+      // 1. Fetch Gmail threads
+      try {
+        const gmailListUrl = `https://gmail.googleapis.com/gmail/v1/users/me/threads?maxResults=5`;
+        const gmailListRes = await fetch(gmailListUrl, { headers });
+        if (gmailListRes.ok) {
+          const listData = await gmailListRes.json();
+          const threads = listData.threads || [];
+          const detailPromises = threads.map(async (t: any) => {
+            try {
+              const detailUrl = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${t.id}`;
+              const detailRes = await fetch(detailUrl, { headers });
+              if (detailRes.ok) {
+                const detail = await detailRes.json();
+                const lastMsg = detail.messages?.[detail.messages.length - 1];
+                const headersList = lastMsg?.payload?.headers || [];
+                const subject = headersList.find((h: any) => h.name === 'Subject' || h.name === 'subject')?.value || 'No Subject';
+                const from = headersList.find((h: any) => h.name === 'From' || h.name === 'from')?.value || 'Unknown Sender';
+                const date = headersList.find((h: any) => h.name === 'Date' || h.name === 'date')?.value || '';
+                return {
+                  id: t.id,
+                  subject,
+                  from,
+                  date,
+                  snippet: lastMsg?.snippet || t.snippet || ''
+                };
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch gmail thread detail for ${t.id}:`, err);
+            }
+            return null;
+          });
+          const detailsResolved = await Promise.all(detailPromises);
+          emails = detailsResolved.filter(Boolean);
+        } else {
+          console.warn(`Gmail API returned status ${gmailListRes.status} during list`);
+        }
+      } catch (err) {
+        console.warn("Gmail integration fetch failed:", err);
+      }
+
+      // 2. Fetch Google Chat messages
+      try {
+        const chatUrl = `https://chat.googleapis.com/v1/spaces/-/messages:search`;
+        const chatRes = await fetch(chatUrl, {
+          method: "POST",
+          headers: {
+            ...headers,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            filter: `createTime >= "${twoDaysAgoStr}"`
+          })
+        });
+        if (chatRes.ok) {
+          const chatData = await chatRes.json();
+          const messages = chatData.messages || [];
+          chats = messages.slice(0, 15).map((m: any) => ({
+            text: m.text,
+            createTime: m.createTime,
+            sender: m.sender?.displayName || 'Unknown',
+            space: m.space?.displayName || m.space?.name || 'Direct Message'
+          }));
+        } else {
+          console.warn(`Google Chat API returned status ${chatRes.status} during search`);
+        }
+      } catch (err) {
+        console.warn("Google Chat integration fetch failed:", err);
+      }
+
+      // 3. Fetch Drive Comments
+      try {
+        const driveQuery = `modifiedTime > '${sevenDaysAgoStr}' and trashed = false and (mimeType = 'application/vnd.google-apps.document' or mimeType = 'application/vnd.google-apps.spreadsheet' or mimeType = 'application/vnd.google-apps.presentation')`;
+        const driveUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(driveQuery)}&pageSize=8&fields=files(id,name,mimeType,modifiedTime)`;
+        const driveRes = await fetch(driveUrl, { headers });
+        if (driveRes.ok) {
+          const driveData = await driveRes.json();
+          const files = driveData.files || [];
+          const commentPromises = files.map(async (file: any) => {
+            try {
+              const commentsUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/comments?fields=comments(id,content,author(displayName,emailAddress),createdTime,resolved,replies)`;
+              const commentsRes = await fetch(commentsUrl, { headers });
+              if (commentsRes.ok) {
+                const commentData = await commentsRes.json();
+                const unresolved = (commentData.comments || []).filter((c: any) => !c.resolved);
+                if (unresolved.length > 0) {
+                  return {
+                    fileId: file.id,
+                    fileName: file.name,
+                    mimeType: file.mimeType,
+                    comments: unresolved.map((c: any) => ({
+                      content: c.content,
+                      author: c.author?.displayName || 'Unknown',
+                      createdTime: c.createdTime,
+                      replies: (c.replies || []).map((r: any) => ({
+                        content: r.content,
+                        author: r.author?.displayName || 'Unknown'
+                      }))
+                    }))
+                  };
+                }
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch comments for file ${file.name}:`, err);
+            }
+            return null;
+          });
+          const commentsResolved = await Promise.all(commentPromises);
+          comments = commentsResolved.filter(Boolean);
+        } else {
+          console.warn(`Drive API returned status ${driveRes.status} during list`);
+        }
+      } catch (err) {
+        console.warn("Drive Comments integration fetch failed:", err);
+      }
+
+      const hasData = emails.length > 0 || chats.length > 0 || comments.length > 0;
+      if (!hasData) {
+        return res.json({
+          summary: "No recent updates or actionable items found in your Google Workspace.",
+          immediateActions: [],
+          followUps: [],
+          updates: []
+        });
+      }
+
+      const ai = getGenAI();
+      if (!ai) {
+        return res.status(550).json({ error: "Gemini API key is not configured on the server." });
+      }
+
+      const emailsBlock = emails.length > 0
+        ? `--- RECENT EMAILS ---\n` + emails.map(e => `ID: ${e.id}\nFrom: ${e.from}\nSubject: ${e.subject}\nSnippet: ${e.snippet}\nDate: ${e.date}`).join('\n\n')
+        : '';
+      const chatsBlock = chats.length > 0
+        ? `\n--- RECENT CHAT MESSAGES ---\n` + chats.map(c => `Space: ${c.space}\nSender: ${c.sender}\nMessage: ${c.text}\nTime: ${c.createTime}`).join('\n\n')
+        : '';
+      const commentsBlock = comments.length > 0
+        ? `\n--- ACTIVE COMMENTS IN DOCS/SLIDES/SHEETS ---\n` + comments.map(doc => `File: "${doc.fileName}"\n` + doc.comments.map((c: any) => `- Comment by ${c.author}: "${c.content}"\n  Replies:\n` + (c.replies.map((r: any) => `    * Reply by ${r.author}: "${r.content}"`).join('\n') || '    (None)')).join('\n')).join('\n\n')
+        : '';
+
+      const promptText = `You are a helpful assistant. Synthesize a structured 'Today's Agenda & Action Plan' based on the following Google Workspace activity log:
+${emailsBlock}
+${chatsBlock}
+${commentsBlock}
+
+Provide the response as a JSON object matching the following structure:
+{
+  "summary": "1-sentence overview of today's work.",
+  "immediateActions": [
+    {
+      "id": "string",
+      "description": "Short task description (e.g., Reply to comment on 'branding.doc')",
+      "source": "Details about source (e.g., Email from Sarah / Comment in branding.doc)",
+      "action": "Exact recommended action...",
+      "type": "email" | "chat" | "comment"
+    }
+  ],
+  "followUps": [
+    {
+      "id": "string",
+      "description": "Short task description...",
+      "source": "Details about source...",
+      "action": "Exact recommended action...",
+      "type": "email" | "chat" | "comment"
+    }
+  ],
+  "updates": [
+    {
+      "id": "string",
+      "description": "General update info...",
+      "source": "Details about source...",
+      "type": "email" | "chat" | "comment"
+    }
+  ]
+}
+
+Ensure all IDs are unique. Keep tasks concise and actionable. Return ONLY the raw JSON object.`;
+
+      const response = await retryWithBackoff(() => ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: promptText,
+        config: { responseMimeType: "application/json" }
+      }));
+
+      const text = response.text || "{}";
+      res.json(JSON.parse(text));
+    } catch (error) {
+      console.error("Workspace digest synthesis error:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   app.post("/api/ai-summary", async (req, res) => {
     try {
       const { prompt, contextFileIds, history } = req.body;

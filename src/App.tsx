@@ -299,7 +299,7 @@ export default function App() {
       }
     },
     onError: () => console.log('Login Failed'),
-    scope: 'https://www.googleapis.com/auth/drive profile email',
+    scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/chat.messages.readonly profile email',
   });
 
   const logout = () => {
@@ -3583,6 +3583,7 @@ export default function App() {
         onRemoveTask={handleRemoveTask}
         projects={projects}
         onRemoveProject={handleRemoveProject}
+        userProfile={userProfile}
         onSelectProject={async (proj) => {
           if (typeof proj === 'object' && proj !== null) {
             if (proj.type === 'ai_summary') {

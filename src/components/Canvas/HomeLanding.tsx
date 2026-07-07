@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutGrid, Columns3, Plus, Folder, LogIn, ArrowRight } from 'lucide-react';
+import { LayoutGrid, Columns3, Plus, Folder, LogIn, ArrowRight, Mail, MessageSquare, AlertCircle, Clock, Info, CheckCircle2, Sparkles } from 'lucide-react';
 import { LandingInput } from './LandingInput';
 import { CoverSlide, CoverSlideItem } from './CoverSlide';
 import { FilesList } from './FilesList';
@@ -397,6 +397,41 @@ export function HomeLanding({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [bypassAuth, setBypassAuth] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [digestData, setDigestData] = useState<any | null>(null);
+  const [isDigestLoading, setIsDigestLoading] = useState(false);
+  const [digestError, setDigestError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!accessToken) {
+      setDigestData(null);
+      return;
+    }
+
+    const loadDigest = async () => {
+      setIsDigestLoading(true);
+      setDigestError(null);
+      try {
+        const res = await fetch('/api/workspace-digest', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setDigestData(data);
+        } else {
+          const errText = await res.text();
+          console.error("Failed to load digest:", errText);
+          setDigestError("Unable to load daily digest.");
+        }
+      } catch (err) {
+        console.error("Error loading digest:", err);
+        setDigestError("Error connecting to server.");
+      } finally {
+        setIsDigestLoading(false);
+      }
+    };
+
+    loadDigest();
+  }, [accessToken]);
 
   // Fallback check to support bypassing authentication or showing login CTA
   const isLoggedIn = accessToken !== null || bypassAuth;
@@ -918,6 +953,192 @@ export function HomeLanding({
           }}
           theme={theme}
         />
+      )}
+
+      {/* Workspace Agenda Dashboard */}
+      {isLoggedIn && (
+        <div className="w-full max-w-7xl mt-10 text-left select-none animate-in fade-in duration-300">
+          <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <span 
+              className="text-[24px] font-sans text-slate-800 dark:text-[#E3E3E3] font-normal tracking-tight"
+              style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
+            >
+              Today's Agenda
+            </span>
+            {isDigestLoading && (
+              <span className="text-xs text-slate-400 animate-pulse flex items-center gap-1.5 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></span>
+                Syncing workspace...
+              </span>
+            )}
+          </div>
+
+          {isDigestLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white dark:bg-[#1E1F22] border border-[#E9EEF6] dark:border-[#2B2D31] rounded-3xl p-6 h-64 animate-pulse flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="h-4 bg-slate-200 dark:bg-[#2B2D31] rounded-full w-2/3"></div>
+                    <div className="h-3 bg-slate-100 dark:bg-[#2B2D31] rounded-full w-5/6"></div>
+                    <div className="h-3 bg-slate-100 dark:bg-[#2B2D31] rounded-full w-1/2"></div>
+                  </div>
+                  <div className="h-3 bg-slate-100 dark:bg-[#2B2D31] rounded-full w-1/3"></div>
+                </div>
+              ))}
+            </div>
+          ) : digestError ? (
+            <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900 p-6 rounded-3xl text-center text-sm text-red-655 dark:text-red-400">
+              {digestError}
+            </div>
+          ) : digestData ? (
+            <div className="space-y-6">
+              {/* Daily Summary banner */}
+              <div className="bg-blue-50/40 dark:bg-blue-950/10 border border-blue-100/50 dark:border-blue-900/30 p-5 rounded-3xl flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-blue-100/60 dark:bg-blue-900/30 text-blue-650 dark:text-blue-400 flex items-center justify-center shrink-0">
+                  <Sparkles size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-1">Morning Overview</h4>
+                  <p className="text-sm text-slate-650 dark:text-neutral-350 leading-relaxed font-medium">
+                    {digestData.summary || "Your daily workspace activity summary."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Three-column Dashboard Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Column 1: Immediate Action */}
+                <div className="bg-white dark:bg-[#1E1F22] border border-[#E9EEF6] dark:border-[#2B2D31] rounded-[24px] overflow-hidden flex flex-col h-[340px]">
+                  <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-[#FCF8F7] dark:bg-[#2E201B] flex items-center justify-between shrink-0">
+                    <span className="font-semibold text-sm text-red-800 dark:text-red-400 flex items-center gap-2">
+                      <AlertCircle size={16} className="text-red-600 dark:text-red-400" />
+                      Immediate Attention
+                    </span>
+                    <span className="text-[10px] bg-red-100/60 dark:bg-red-950/40 text-red-800 dark:text-red-400 font-bold px-2 py-0.5 rounded-full">
+                      {digestData.immediateActions?.length || 0}
+                    </span>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+                    {(!digestData.immediateActions || digestData.immediateActions.length === 0) ? (
+                      <div className="h-full flex items-center justify-center text-xs text-slate-400 italic">
+                        All caught up!
+                      </div>
+                    ) : (
+                      digestData.immediateActions.map((item: any) => (
+                        <div key={item.id} className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-red-200 dark:hover:border-red-900/60 transition-colors duration-150">
+                          <div className="flex items-start gap-2.5">
+                            <span className="mt-0.5 shrink-0">
+                              {item.type === 'email' ? <Mail size={14} className="text-slate-500" /> : item.type === 'comment' ? <MessageSquare size={14} className="text-slate-500" /> : <MessageSquare size={14} className="text-slate-500" />}
+                            </span>
+                            <div className="space-y-1 min-w-0">
+                              <p className="text-xs font-semibold text-slate-800 dark:text-[#E3E3E3] leading-snug">
+                                {item.description}
+                              </p>
+                              <p className="text-[10px] text-slate-400 truncate">
+                                {item.source}
+                              </p>
+                            </div>
+                          </div>
+                          {item.action && (
+                            <div className="text-[10px] text-red-855 dark:text-red-400 bg-red-50/40 dark:bg-red-950/20 px-2.5 py-1 rounded-lg border border-red-100/40 dark:border-red-900/20 font-medium">
+                              Action: {item.action}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Column 2: Follow-ups */}
+                <div className="bg-white dark:bg-[#1E1F22] border border-[#E9EEF6] dark:border-[#2B2D31] rounded-[24px] overflow-hidden flex flex-col h-[340px]">
+                  <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-[#F3F6FC] dark:bg-[#1D253A] flex items-center justify-between shrink-0">
+                    <span className="font-semibold text-sm text-indigo-800 dark:text-indigo-400 flex items-center gap-2">
+                      <Clock size={16} className="text-indigo-600 dark:text-indigo-400" />
+                      Follow-ups
+                    </span>
+                    <span className="text-[10px] bg-indigo-100/60 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-400 font-bold px-2 py-0.5 rounded-full">
+                      {digestData.followUps?.length || 0}
+                    </span>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+                    {(!digestData.followUps || digestData.followUps.length === 0) ? (
+                      <div className="h-full flex items-center justify-center text-xs text-slate-400 italic">
+                        No pending follow-ups.
+                      </div>
+                    ) : (
+                      digestData.followUps.map((item: any) => (
+                        <div key={item.id} className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-indigo-200 dark:hover:border-indigo-900/60 transition-colors duration-150">
+                          <div className="flex items-start gap-2.5">
+                            <span className="mt-0.5 shrink-0">
+                              {item.type === 'email' ? <Mail size={14} className="text-slate-500" /> : item.type === 'comment' ? <MessageSquare size={14} className="text-slate-500" /> : <MessageSquare size={14} className="text-slate-500" />}
+                            </span>
+                            <div className="space-y-1 min-w-0">
+                              <p className="text-xs font-semibold text-slate-800 dark:text-[#E3E3E3] leading-snug">
+                                {item.description}
+                              </p>
+                              <p className="text-[10px] text-slate-400 truncate">
+                                {item.source}
+                              </p>
+                            </div>
+                          </div>
+                          {item.action && (
+                            <div className="text-[10px] text-indigo-855 dark:text-indigo-400 bg-indigo-50/40 dark:bg-indigo-950/20 px-2.5 py-1 rounded-lg border border-indigo-100/40 dark:border-indigo-900/20 font-medium">
+                              Action: {item.action}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Column 3: Important Updates */}
+                <div className="bg-white dark:bg-[#1E1F22] border border-[#E9EEF6] dark:border-[#2B2D31] rounded-[24px] overflow-hidden flex flex-col h-[340px]">
+                  <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-[#F4F4F5] dark:bg-[#252528] flex items-center justify-between shrink-0">
+                    <span className="font-semibold text-sm text-slate-700 dark:text-slate-350 flex items-center gap-2">
+                      <Info size={16} className="text-slate-500 dark:text-slate-400" />
+                      Important Updates
+                    </span>
+                    <span className="text-[10px] bg-slate-200/60 dark:bg-neutral-850/60 text-slate-700 dark:text-slate-350 font-bold px-2 py-0.5 rounded-full">
+                      {digestData.updates?.length || 0}
+                    </span>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+                    {(!digestData.updates || digestData.updates.length === 0) ? (
+                      <div className="h-full flex items-center justify-center text-xs text-slate-400 italic">
+                        No general updates.
+                      </div>
+                    ) : (
+                      digestData.updates.map((item: any) => (
+                        <div key={item.id} className="p-3.5 bg-slate-50/50 dark:bg-[#2B2D31]/40 border border-slate-100 dark:border-[#2B2D31] rounded-2xl space-y-2 hover:border-slate-300 dark:hover:border-slate-700 transition-colors duration-150">
+                          <div className="flex items-start gap-2.5">
+                            <span className="mt-0.5 shrink-0">
+                              {item.type === 'email' ? <Mail size={14} className="text-slate-500" /> : item.type === 'comment' ? <MessageSquare size={14} className="text-slate-500" /> : <MessageSquare size={14} className="text-slate-500" />}
+                            </span>
+                            <div className="space-y-1 min-w-0">
+                              <p className="text-xs font-semibold text-slate-800 dark:text-[#E3E3E3] leading-snug">
+                                {item.description}
+                              </p>
+                              <p className="text-[10px] text-slate-400 truncate">
+                                {item.source}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          ) : null}
+        </div>
       )}
 
       {/* Suggested Folders & Files Main Header Section */}
