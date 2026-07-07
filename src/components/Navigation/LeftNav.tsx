@@ -152,13 +152,12 @@ export function LeftNav({
 
   const isSpaceActive = (space: any) => {
     const spaceId = space.id;
-    const spaceName = space.name.toLowerCase();
     
     if (activeView === 'ai_summary') {
-      return activeAiSummaryTaskId === spaceId || projectName.toLowerCase() === spaceName;
+      return activeAiSummaryTaskId === spaceId;
     }
     if (activeView !== 'home') {
-      return activeSpaceId === spaceId || projectName.toLowerCase() === spaceName;
+      return activeSpaceId === spaceId;
     }
     return false;
   };
@@ -170,13 +169,13 @@ export function LeftNav({
         width: isExpandedActive ? 256 : 72,
       }}
       transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-      className={`h-full py-6 flex flex-col gap-6 shrink-0 z-10 select-none border-t-0 border-b-0 border-l-0 ${
+      className={`h-full pt-0 pb-6 flex flex-col gap-6 shrink-0 z-10 select-none border-t-0 border-b-0 border-l-0 ${
         isChatSide ? 'border-r-0' : 'border-r border-slate-200 dark:border-[#2B2D31]'
       } outline-none overflow-hidden relative bg-white dark:bg-[#0B0B0C] text-slate-800 dark:text-white`}
       id={isExpandedActive ? 'left-nav-expanded' : 'left-nav-collapsed'}
     >
       {/* 1. Brand Logo Header */}
-      <div className={`flex items-center shrink-0 w-full relative h-[48px] ${isExpandedActive ? 'pl-[28px] justify-start' : 'justify-center'}`}>
+      <div className={`flex items-center shrink-0 w-full relative h-[64px] ${isExpandedActive ? 'pl-[28px] justify-start' : 'justify-center'}`}>
         <div 
           onClick={() => onViewChange && onViewChange('home')}
           className={`cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center ${

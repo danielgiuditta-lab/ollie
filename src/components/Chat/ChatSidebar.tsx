@@ -132,8 +132,8 @@ export function ChatSidebar({
         } rounded-none relative overflow-hidden z-10 spring-transition shadow-none`}
       >
         {/* Header Panel */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-4">
-          <h2 className={`font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>{getTitle()}</h2>
+        <div className="flex items-center justify-between px-6 w-full h-[64px] shrink-0 border-b border-transparent">
+          <h2 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{getTitle()}</h2>
           <div className="flex items-center gap-1.5">
             {onChangeChatDockPosition && (
               <IconButton 
