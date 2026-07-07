@@ -38,6 +38,7 @@ interface HomeLandingProps {
   onResetChat?: () => void;
   activeSpaceId?: string | null;
   projectName?: string;
+  sandboxFiles?: any[];
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -397,7 +398,8 @@ export function HomeLanding({
   onCreateArtifact: onCreateArtifactProp,
   onResetChat,
   activeSpaceId,
-  projectName
+  projectName,
+  sandboxFiles = []
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [bypassAuth, setBypassAuth] = useState(false);
@@ -608,12 +610,27 @@ export function HomeLanding({
     return todoItems.filter(item => {
       const itemWorkspace = (item.workspace || '').toLowerCase().trim();
       const itemSourceName = (item.sourceName || '').toLowerCase().trim();
+      const itemTitle = (item.title || '').toLowerCase().trim();
+      const itemDesc = (item.description || '').toLowerCase().trim();
       
-      // Match if the task workspace matches the project name (e.g. "Galaxy Deck")
-      return itemWorkspace.includes(currentProject) || currentProject.includes(itemWorkspace) ||
-             itemSourceName.includes(currentProject) || currentProject.includes(itemSourceName);
+      const isProjectMatch = itemWorkspace.includes(currentProject) || currentProject.includes(itemWorkspace) ||
+                             itemSourceName.includes(currentProject) || currentProject.includes(itemSourceName);
+                             
+      if (isProjectMatch) return true;
+
+      // Scan sandboxFiles list inside the space context for matching titles or source references
+      return (sandboxFiles || []).some(file => {
+        if (!file || !file.name) return false;
+        const cleanFileName = file.name.split('/').pop().toLowerCase().replace(/\.[^/.]+$/, "").trim();
+        if (cleanFileName.length < 3) return false;
+
+        return itemWorkspace.includes(cleanFileName) || 
+               itemSourceName.includes(cleanFileName) ||
+               itemTitle.includes(cleanFileName) ||
+               itemDesc.includes(cleanFileName);
+      });
     });
-  }, [todoItems, activeSpaceId, projectName]);
+  }, [todoItems, activeSpaceId, projectName, sandboxFiles]);
 
   const handleAgendaItemClick = (item: any) => {
     if (!item) return;

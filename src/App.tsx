@@ -290,6 +290,7 @@ export default function App() {
     projectName: string;
     selectedFile: any;
     indexFileSelected: boolean;
+    viewState?: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary';
   }>>({});
 
   const chatSessionsCacheRef = useRef<Record<string, {
@@ -317,10 +318,11 @@ export default function App() {
         messages,
         projectName,
         selectedFile,
-        indexFileSelected
+        indexFileSelected,
+        viewState
       };
     }
-  }, [activeSpaceId, loadedFolderId, messages, sandboxFiles, ingestedFiles, envId, sandboxUrl, projectName, selectedFile, indexFileSelected]);
+  }, [activeSpaceId, loadedFolderId, messages, sandboxFiles, ingestedFiles, envId, sandboxUrl, projectName, selectedFile, indexFileSelected, viewState]);
 
   // Synchronize active chat messages back to the in-memory cache
   useEffect(() => {
@@ -1221,17 +1223,35 @@ export default function App() {
     setIsLoading(true);
     setCurrentTask(activeAiMode ? 'AI Search Summary' : 'app');
 
+    let resolvedFolderId = activeSpaceId;
+    let targetChatId = activeChatId || resolvedFolderId || activeSpaceId;
+    let inferredChatNameVal: string | undefined = undefined;
+
+    if (chatModel === 'B' && resolvedFolderId && (!targetChatId || targetChatId.endsWith('-temp') || targetChatId.includes('-chat-temp'))) {
+      targetChatId = `${resolvedFolderId}-chat-${Date.now()}`;
+      inferredChatNameVal = inferChatName(text);
+      setActiveChatId(targetChatId);
+    }
+
     // Move current task/conversation to the top when a new turn starts (only for vibe coding)
     if (!activeAiMode) {
-      if (activeSpaceId && projectName) {
+      const activeIdForTask = targetChatId || activeSpaceId;
+      if (activeIdForTask && projectName) {
         setRecentTasks(prev => {
           const now = Date.now();
           const filtered = prev.filter(t => {
             const id = typeof t === 'string' ? '' : t.id;
             const name = typeof t === 'string' ? t : t.name;
-            return id !== activeSpaceId && name.toLowerCase() !== projectName.toLowerCase();
+            return id !== activeIdForTask && name.toLowerCase() !== projectName.toLowerCase();
           });
-          return [{ id: activeSpaceId, name: projectName, type: 'workspace', activeSpaceId, updatedAt: now }, ...filtered];
+          return [{
+            id: activeIdForTask,
+            name: projectName,
+            chatName: inferredChatNameVal || (activeIdForTask.includes('-chat-') ? 'Chat' : ''),
+            type: 'workspace',
+            activeSpaceId: resolvedFolderId || activeSpaceId,
+            updatedAt: now
+          }, ...filtered];
         });
       }
     }
@@ -1532,17 +1552,6 @@ export default function App() {
     let contextToUse = sandboxFiles;
     let activeEnvId = envId;
     let activeSandboxUrl = sandboxUrl;
-    let resolvedFolderId = activeSpaceId;
-
-    let targetChatId = activeChatId || resolvedFolderId || activeSpaceId;
-    let inferredChatNameVal: string | undefined = undefined;
-
-    if (chatModel === 'B' && resolvedFolderId && (!targetChatId || targetChatId.endsWith('-temp'))) {
-      targetChatId = `${resolvedFolderId}-chat-${Date.now()}`;
-      inferredChatNameVal = inferChatName(text);
-      setActiveChatId(targetChatId);
-    }
-
     // "when i land on the landing page and oauth in, the files i select should be added to the folder i create and be used as context"
     if (accessToken && isHomeChatId(activeSpaceId) && selectedDriveFiles.length > 0) {
       const initMessage = 'Initializing space and setting up files...';
@@ -3325,25 +3334,29 @@ export default function App() {
         setMessages([]);
       }
       
-      const autoSelectFile = cached.sandboxFiles?.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || cached.selectedFile || cached.sandboxFiles?.[0];
-      if (!skipSelect) {
-        setSelectedFile(autoSelectFile);
-      } else {
-        setSelectedFile(null);
+      const isSameSpace = activeSpaceId === folderId;
+      if (!isSameSpace) {
+        const autoSelectFile = cached.sandboxFiles?.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || cached.selectedFile || cached.sandboxFiles?.[0];
+        if (!skipSelect) {
+          setSelectedFile(cached.selectedFile || autoSelectFile);
+        } else {
+          setSelectedFile(cached.selectedFile || null);
+        }
+        setIndexFileSelected((cached.selectedFile || autoSelectFile)?.name?.toLowerCase().includes('index.html') ?? false);
+
+        if (cached.viewState) {
+          setViewState(cached.viewState);
+        } else {
+          if (!skipSelect) {
+            setViewState('app');
+          } else {
+            setViewState('files');
+          }
+        }
       }
-      setIndexFileSelected(autoSelectFile?.name?.toLowerCase().includes('index.html') ?? false);
-      
-      // Update lastSavedContents from cached content
       cached.sandboxFiles.forEach((f: any) => {
         lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
       });
-
-      // Show the view immediately!
-      if (!skipSelect) {
-        setViewState('app');
-      } else {
-        setViewState('files');
-      }
       
       // Allow cache updates for the newly active folder
       setLoadedFolderId(folderId);
@@ -3442,7 +3455,8 @@ export default function App() {
               messages: latestMessages,
               projectName: fileName || projectName,
               selectedFile: selectedFile,
-              indexFileSelected: indexFileSelected
+              indexFileSelected: indexFileSelected,
+              viewState: cached.viewState || viewState
             };
             chatSessionsCacheRef.current[targetChatId] = {
               messages: latestMessages
@@ -3501,7 +3515,8 @@ export default function App() {
                   messages: chatData.messages || [],
                   projectName: chatData.projectName || fileName || projectName,
                   selectedFile: skipSelect ? null : indexHTML,
-                  indexFileSelected: skipSelect ? false : (indexHTML?.name?.toLowerCase().includes('index.html') ?? false)
+                  indexFileSelected: skipSelect ? false : (indexHTML?.name?.toLowerCase().includes('index.html') ?? false),
+                  viewState: skipSelect ? 'files' : 'app'
                 };
                 chatSessionsCacheRef.current[targetChatId] = {
                   messages: chatData.messages || []
@@ -3636,13 +3651,18 @@ export default function App() {
             messages: currentMessages,
             projectName: file.name || projectName,
             selectedFile: skipSelect ? null : autoSelected,
-            indexFileSelected: skipSelect ? false : isIdx
+            indexFileSelected: skipSelect ? false : isIdx,
+            viewState: skipSelect ? 'files' : 'app'
           };
           chatSessionsCacheRef.current[targetChatId] = {
             messages: currentMessages
           };
 
-          setViewState('files');
+          if (!skipSelect) {
+            setViewState('app');
+          } else {
+            setViewState('files');
+          }
         }
       } catch (err) {
         console.error('Failed to ingest workspace:', err);
@@ -4137,6 +4157,7 @@ export default function App() {
                       onResetChat={resetChatForDirectoryItem}
                       activeSpaceId={activeSpaceId}
                       projectName={projectName}
+                      sandboxFiles={sandboxFiles}
                     />
                   </div>
                   {viewState === 'null' && (
