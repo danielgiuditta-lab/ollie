@@ -20,6 +20,7 @@ import { FileIcon } from './components/Shared/FileIcon';
 
 export default function App() {
   const [activeSidebar, setActiveSidebar] = useState<'gemini' | 'comments' | 'history' | null>(null);
+  const [chatDockPosition, setChatDockPosition] = useState<'side' | 'bottom'>('side');
   const [currentPath, setCurrentPath] = useState<string[]>([]);
   const [viewState, setViewState] = useState<'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary'>('home');
   const [homeJourney, setHomeJourney] = useState<'search' | 'create'>('search');
@@ -3634,7 +3635,50 @@ export default function App() {
         projectName={projectName}
         driveFolderId={driveFolderId}
       />
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
+      {/* 2. Chat Sidebar (Docked to Side) */}
+      {activeSidebar && (viewState !== 'home' || isAiSummarySnapped) && viewState !== 'ai_summary' && chatDockPosition === 'side' && (
+        <ChatSidebar 
+          messages={isAiSummarySnapped ? aiSummaryMessages : messages} 
+          onSendMessage={handleSendMessage} 
+          isLoading={isLoading} 
+          variant={activeSidebar}
+          onClose={() => {
+            setActiveSidebar(null);
+            if (isAiSummarySnapped) {
+              setIsAiSummarySnapped(false);
+              setViewState('ai_summary');
+            }
+          }}
+          onCreateArtifact={handleCreateArtifactApp}
+          currentTask={currentTask}
+          theme={appTheme}
+          isAiSummarySnapped={isAiSummarySnapped}
+          onUnsnapAiSummary={() => {
+            setIsAiSummarySnapped(false);
+            setViewState('ai_summary');
+            setActiveSidebar(null);
+          }}
+          onSourceClick={(fileId) => {
+            const matched = aiSummarySources.find(s => s.id === fileId || s.driveId === fileId);
+            if (matched) {
+              setSelectedFile(matched);
+              setViewMode('preview');
+              setViewState('files');
+              resetChatForDirectoryItem();
+            }
+          }}
+          sources={aiSummarySources}
+          fileCount={sandboxFiles.length > 0 ? sandboxFiles.length : (selectedDriveFiles.length > 0 ? selectedDriveFiles.length : driveFiles.length)}
+          onApplyMoves={handleApplyOrganizeMoves}
+          onDoDifferently={handleDoDifferentlyOrganize}
+          isOrganizingFiles={isOrganizingFiles}
+          chatDockPosition={chatDockPosition}
+          onChangeChatDockPosition={setChatDockPosition}
+        />
+      )}
+
+      {/* 3. Canvas Container (Everything else) */}
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative pr-4 pl-4 pt-1 pb-4 gap-4">
         <TopBar 
           onLogin={() => login()} 
           onLogout={logout} 
@@ -3657,7 +3701,7 @@ export default function App() {
           theme={appTheme}
           onToggleTheme={toggleAppTheme}
         />
-        <div className="flex-1 flex overflow-hidden pb-4 pr-4 pt-1 z-10 relative pr-4 pl-4 gap-4">
+        <div className="flex-1 flex overflow-hidden gap-4 relative">
           {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
             <CanvasSidebar 
               files={sandboxFiles}
@@ -3691,230 +3735,237 @@ export default function App() {
             />
           )}
 
-          {(viewState === 'home' || viewState === 'null' || viewState === 'ai_summary' || viewState === 'projector' || selectedFile) && (
-            <CanvasMain 
-              viewState={viewState} 
-              setViewState={setViewState} 
-              isLoading={isLoading} 
-              currentTask={currentTask} 
-              appTheme={appTheme} 
-              onExpand={() => setViewState('public_projector')}
-              peers={peers}
-              currentUserId={localUser?.id}
-              selectedFile={selectedFile}
-            >
-              <div className={viewState === 'home' ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
-                <HomeLanding 
-                  accessToken={accessToken} 
-                  userProfile={userProfile} 
-                  onLogin={() => login()} 
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative gap-4">
+            <div className="flex-1 min-h-0 relative">
+              {(viewState === 'home' || viewState === 'null' || viewState === 'ai_summary' || viewState === 'projector' || selectedFile) && (
+                <CanvasMain 
+                  viewState={viewState} 
                   setViewState={setViewState} 
-                  setSandboxFiles={setSandboxFiles} 
-                  setSelectedFile={setSelectedFile} 
-                  setProjectName={setProjectName}
-                  handleSendMessage={handleSendMessage}
-                  setDriveFolderId={setDriveFolderId}
-                  handleFolderIngest={handleFolderNavigate}
-                  suggestedList={suggestedListCache}
-                  setSuggestedList={setSuggestedListCache}
-                  isLoadingDrive={isDriveSuggestLoading}
-                  setIsLoadingDrive={setIsDriveSuggestLoading}
-                  sandboxUrl={sandboxUrl}
-                  setActiveSidebar={setActiveSidebar}
-                  theme={appTheme}
-                  journey={homeJourney}
-                  onFileRemove={handleRemoveFile}
-                  onCreateArtifact={handleCreateArtifactApp}
-                  onResetChat={resetChatForDirectoryItem}
-                />
-              </div>
-              {viewState === 'null' && (
-                isIngesting ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-[#1E1F22] rounded-[32px]">
-                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mb-4"></div>
-                     <p className="text-gray-600 dark:text-[#E3E3E3] font-medium text-lg">Ingesting Workspace...</p>
+                  isLoading={isLoading} 
+                  currentTask={currentTask} 
+                  appTheme={appTheme} 
+                  onExpand={() => setViewState('public_projector')}
+                  peers={peers}
+                  currentUserId={localUser?.id}
+                  selectedFile={selectedFile}
+                >
+                  <div className={viewState === 'home' ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                    <HomeLanding 
+                      accessToken={accessToken} 
+                      userProfile={userProfile} 
+                      onLogin={() => login()} 
+                      setViewState={setViewState} 
+                      setSandboxFiles={setSandboxFiles} 
+                      setSelectedFile={setSelectedFile} 
+                      setProjectName={setProjectName}
+                      handleSendMessage={handleSendMessage}
+                      setDriveFolderId={setDriveFolderId}
+                      handleFolderIngest={handleFolderNavigate}
+                      suggestedList={suggestedListCache}
+                      setSuggestedList={setSuggestedListCache}
+                      isLoadingDrive={isDriveSuggestLoading}
+                      setIsLoadingDrive={setIsDriveSuggestLoading}
+                      sandboxUrl={sandboxUrl}
+                      setActiveSidebar={setActiveSidebar}
+                      theme={appTheme}
+                      journey={homeJourney}
+                      onFileRemove={handleRemoveFile}
+                      onCreateArtifact={handleCreateArtifactApp}
+                      onResetChat={resetChatForDirectoryItem}
+                    />
                   </div>
-                ) : (
-                  <NullState 
-                    accessToken={accessToken} 
-                    driveFiles={driveFiles}
-                    onFileClick={handleFileClick} 
-                    selectedDriveFiles={selectedDriveFiles}
-                    onToggleDriveFile={handleToggleDriveFile}
-                    onCreateFolderWithSelected={() => createFolderAndCopyFiles()}
-                    isCreatingFolder={isCreatingFolder}
-                    onLogin={() => login()}
-                    isDriveLoading={isDriveLoading}
-                    onFileRemove={handleRemoveFile}
-                    onAddSuggestedFile={(file) => {
-                      const newFile = {
-                        name: file.name,
-                        type: 'code',
-                        content: file.content,
-                        driveId: file.driveId,
-                        mimeType: file.mimeType,
-                        id: `suggested-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
-                      };
-                      setSandboxFiles(prev => {
-                        const existsIdx = prev.findIndex(f => f.name === file.name);
-                        if (existsIdx !== -1) {
-                          const copy = [...prev];
-                          copy[existsIdx] = newFile;
-                          return copy;
-                        }
-                        return [...prev, newFile];
-                      });
-                      setSelectedFile(newFile);
-                      setIndexFileSelected(newFile.name.toLowerCase() === 'index.html' || newFile.name.toLowerCase().endsWith('/index.html'));
-                      setViewState('files');
-                    }}
-                    onUploadFile={(file) => {
-                      const reader = new FileReader();
-                      reader.onload = (e) => {
-                        const content = e.target?.result as string || '';
-                        setSandboxFiles(prev => {
-                          const existsIdx = prev.findIndex(f => f.name === file.name);
+                  {viewState === 'null' && (
+                    isIngesting ? (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-[#1E1F22] rounded-[32px]">
+                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mb-4"></div>
+                         <p className="text-gray-600 dark:text-[#E3E3E3] font-medium text-lg">Ingesting Workspace...</p>
+                      </div>
+                    ) : (
+                      <NullState 
+                        accessToken={accessToken} 
+                        driveFiles={driveFiles}
+                        onFileClick={handleFileClick} 
+                        selectedDriveFiles={selectedDriveFiles}
+                        onToggleDriveFile={handleToggleDriveFile}
+                        onCreateFolderWithSelected={() => createFolderAndCopyFiles()}
+                        isCreatingFolder={isCreatingFolder}
+                        onLogin={() => login()}
+                        isDriveLoading={isDriveLoading}
+                        onFileRemove={handleRemoveFile}
+                        onAddSuggestedFile={(file) => {
                           const newFile = {
                             name: file.name,
                             type: 'code',
-                            content: content,
-                            mimeType: file.type,
-                            id: `uploaded-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
+                            content: file.content,
+                            driveId: file.driveId,
+                            mimeType: file.mimeType,
+                            id: `suggested-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
                           };
-                          if (existsIdx !== -1) {
-                            const copy = [...prev];
-                            copy[existsIdx] = newFile;
-                            return copy;
-                          }
-                          return [...prev, newFile];
-                        });
-                        setViewState('files');
-                      };
-                      reader.readAsText(file);
-                    }}
-                  />
-                )
-              )}
-              {viewState === 'ai_summary' && (
-                <AISummaryView 
-                  sources={aiSummarySources}
-                  messages={aiSummaryMessages}
-                  onSendMessage={handleSendMessage}
-                  isLoading={isLoading}
-                  theme={appTheme}
-                  onSnap={() => {
-                    setIsAiSummarySnapped(true);
-                    setViewState('home');
-                    setActiveSidebar('gemini');
-                  }}
-                  onAddToProject={handleAddToProject}
-                  isProject={projects.some(p => typeof p === 'object' && p !== null && p.id === activeAiSummaryTaskId)}
-                  onShareProject={handleShareProject}
-                  onAddSource={handleAddSourceToSummary}
-                  recentFiles={driveFiles}
-                  accessToken={accessToken}
-                />
-              )}
-              {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && (
-                <div 
-                  className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300" 
-                  id="canvas-unified-workspace"
-                  style={{ backgroundColor: appTheme === 'dark' ? '#1E1F22' : '#ffffff' }}
-                >
-                  <div className="w-full h-full relative pt-[72px]">
-                    {/* Reusable Canvas Top Bar */}
-                    <CanvasTopBar
-                      file={selectedFile}
-                      viewMode={viewMode}
-                      onViewModeChange={setViewMode}
-                      onClose={() => {
-                        setSelectedFile(null);
-                      }}
-                      onExpand={() => {
-                        setViewState('projector');
-                      }}
-                      onOpenInDrive={handleOpenInDrive}
-                      appTheme={appTheme}
-                      peers={peers}
-                    />
-
-                    {(((selectedFile?.name?.toLowerCase().endsWith('.html') || selectedFile?.name?.toLowerCase().endsWith('.htm')) && viewMode === 'preview') || (indexFileSelected && viewMode === 'preview')) ? (
-                      <AppView 
-                        sandboxUrl={sandboxUrl} 
-                        files={sandboxFiles} 
-                        envId={envId} 
-                        projectName={projectName} 
-                        onIframeRef={registerIframe}
-                        selectedFile={selectedFile}
-                      />
-                    ) : (
-                      <NativeViewer 
-                        file={selectedFile} 
-                        onSave={handleSaveToDrive} 
-                        sandboxUrl={sandboxUrl}
-                        hideHeader={true}
-                        mode={viewMode}
-                        onClose={() => {
-                          setSelectedFile(null);
+                          setSandboxFiles(prev => {
+                            const existsIdx = prev.findIndex(f => f.name === file.name);
+                            if (existsIdx !== -1) {
+                              const copy = [...prev];
+                              copy[existsIdx] = newFile;
+                              return copy;
+                            }
+                            return [...prev, newFile];
+                          });
+                          setSelectedFile(newFile);
+                          setIndexFileSelected(newFile.name.toLowerCase() === 'index.html' || newFile.name.toLowerCase().endsWith('/index.html'));
+                          setViewState('files');
                         }}
-                        theme={appTheme}
+                        onUploadFile={(file) => {
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            const content = e.target?.result as string || '';
+                            setSandboxFiles(prev => {
+                              const existsIdx = prev.findIndex(f => f.name === file.name);
+                              const newFile = {
+                                name: file.name,
+                                type: 'code',
+                                content: content,
+                                mimeType: file.type,
+                                id: `uploaded-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
+                              };
+                              if (existsIdx !== -1) {
+                                const copy = [...prev];
+                                copy[existsIdx] = newFile;
+                                return copy;
+                              }
+                              return [...prev, newFile];
+                            });
+                            setViewState('files');
+                          };
+                          reader.readAsText(file);
+                        }}
                       />
-                    )}
-                  </div>
-                </div>
-              )}
-              {viewState === 'projector' && (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-[#1E1F22] rounded-[32px] p-6 text-center">
-                   <p className="text-gray-500 dark:text-neutral-400 mb-4">Workspace is in presentation view. Open projector overlay to interact.</p>
-                   <button 
-                     onClick={() => setViewState('app')}
-                     className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold cursor-pointer transition-colors duration-250 border-none outline-none"
-                   >
-                     Open Edit Panel
-                   </button>
-                </div>
-              )}
-            </CanvasMain>
-          )}
+                    )
+                  )}
+                  {viewState === 'ai_summary' && (
+                    <AISummaryView 
+                      sources={aiSummarySources}
+                      messages={aiSummaryMessages}
+                      onSendMessage={handleSendMessage}
+                      isLoading={isLoading}
+                      theme={appTheme}
+                      onSnap={() => {
+                        setIsAiSummarySnapped(true);
+                        setViewState('home');
+                        setActiveSidebar('gemini');
+                      }}
+                      onAddToProject={handleAddToProject}
+                      isProject={projects.some(p => typeof p === 'object' && p !== null && p.id === activeAiSummaryTaskId)}
+                      onShareProject={handleShareProject}
+                      onAddSource={handleAddSourceToSummary}
+                      recentFiles={driveFiles}
+                      accessToken={accessToken}
+                    />
+                  )}
+                  {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && (
+                    <div 
+                      className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 rounded-[32px]" 
+                      id="canvas-unified-workspace"
+                      style={{ backgroundColor: appTheme === 'dark' ? '#1E1F22' : '#ffffff' }}
+                    >
+                      <div className="w-full h-full relative pt-[72px]">
+                        <CanvasTopBar
+                          file={selectedFile}
+                          viewMode={viewMode}
+                          onViewModeChange={setViewMode}
+                          onClose={() => {
+                            setSelectedFile(null);
+                          }}
+                          onExpand={() => {
+                            setViewState('projector');
+                          }}
+                          onOpenInDrive={handleOpenInDrive}
+                          appTheme={appTheme}
+                          peers={peers}
+                        />
 
-          {activeSidebar && (viewState !== 'home' || isAiSummarySnapped) && viewState !== 'ai_summary' && (
-            <ChatSidebar 
-              messages={isAiSummarySnapped ? aiSummaryMessages : messages} 
-              onSendMessage={handleSendMessage} 
-              isLoading={isLoading} 
-              variant={activeSidebar}
-              onClose={() => {
-                setActiveSidebar(null);
-                if (isAiSummarySnapped) {
-                  setIsAiSummarySnapped(false);
-                  setViewState('ai_summary');
-                }
-              }}
-              onCreateArtifact={handleCreateArtifactApp}
-              currentTask={currentTask}
-              theme={appTheme}
-              isAiSummarySnapped={isAiSummarySnapped}
-              onUnsnapAiSummary={() => {
-                setIsAiSummarySnapped(false);
-                setViewState('ai_summary');
-                setActiveSidebar(null);
-              }}
-              onSourceClick={(fileId) => {
-                const matched = aiSummarySources.find(s => s.id === fileId || s.driveId === fileId);
-                if (matched) {
-                  setSelectedFile(matched);
-                  setViewMode('preview');
-                  setViewState('files');
-                  resetChatForDirectoryItem();
-                }
-              }}
-              sources={aiSummarySources}
-              fileCount={sandboxFiles.length > 0 ? sandboxFiles.length : (selectedDriveFiles.length > 0 ? selectedDriveFiles.length : driveFiles.length)}
-              onApplyMoves={handleApplyOrganizeMoves}
-              onDoDifferently={handleDoDifferentlyOrganize}
-              isOrganizingFiles={isOrganizingFiles}
-            />
-          )}
+                        {(((selectedFile?.name?.toLowerCase().endsWith('.html') || selectedFile?.name?.toLowerCase().endsWith('.htm')) && viewMode === 'preview') || (indexFileSelected && viewMode === 'preview')) ? (
+                          <AppView 
+                            sandboxUrl={sandboxUrl} 
+                            files={sandboxFiles} 
+                            envId={envId} 
+                            projectName={projectName} 
+                            onIframeRef={registerIframe}
+                            selectedFile={selectedFile}
+                          />
+                        ) : (
+                          <NativeViewer 
+                            file={selectedFile} 
+                            onSave={handleSaveToDrive} 
+                            sandboxUrl={sandboxUrl}
+                            hideHeader={true}
+                            mode={viewMode}
+                            onClose={() => {
+                              setSelectedFile(null);
+                            }}
+                            theme={appTheme}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {viewState === 'projector' && (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-[#1E1F22] rounded-[32px] p-6 text-center">
+                       <p className="text-gray-500 dark:text-neutral-400 mb-4">Workspace is in presentation view. Open projector overlay to interact.</p>
+                       <button 
+                         onClick={() => setViewState('app')}
+                         className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold cursor-pointer transition-colors duration-250 border-none outline-none"
+                       >
+                         Open Edit Panel
+                       </button>
+                    </div>
+                  )}
+                </CanvasMain>
+              )}
+            </div>
+
+            {activeSidebar && (viewState !== 'home' || isAiSummarySnapped) && viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
+              <div className="h-[360px] w-full shrink-0 flex flex-col min-h-0 relative">
+                <ChatSidebar 
+                  messages={isAiSummarySnapped ? aiSummaryMessages : messages} 
+                  onSendMessage={handleSendMessage} 
+                  isLoading={isLoading} 
+                  variant={activeSidebar}
+                  onClose={() => {
+                    setActiveSidebar(null);
+                    if (isAiSummarySnapped) {
+                      setIsAiSummarySnapped(false);
+                      setViewState('ai_summary');
+                    }
+                  }}
+                  onCreateArtifact={handleCreateArtifactApp}
+                  currentTask={currentTask}
+                  theme={appTheme}
+                  isAiSummarySnapped={isAiSummarySnapped}
+                  onUnsnapAiSummary={() => {
+                    setIsAiSummarySnapped(false);
+                    setViewState('ai_summary');
+                    setActiveSidebar(null);
+                  }}
+                  onSourceClick={(fileId) => {
+                    const matched = aiSummarySources.find(s => s.id === fileId || s.driveId === fileId);
+                    if (matched) {
+                      setSelectedFile(matched);
+                      setViewMode('preview');
+                      setViewState('files');
+                      resetChatForDirectoryItem();
+                    }
+                  }}
+                  sources={aiSummarySources}
+                  fileCount={sandboxFiles.length > 0 ? sandboxFiles.length : (selectedDriveFiles.length > 0 ? selectedDriveFiles.length : driveFiles.length)}
+                  onApplyMoves={handleApplyOrganizeMoves}
+                  onDoDifferently={handleDoDifferentlyOrganize}
+                  isOrganizingFiles={isOrganizingFiles}
+                  chatDockPosition={chatDockPosition}
+                  onChangeChatDockPosition={setChatDockPosition}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

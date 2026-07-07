@@ -313,7 +313,7 @@ Bio Dish,12.00,450`
             <div className="flex flex-col rounded-2xl bg-white dark:bg-[#1E1F22] shadow-xs p-5 max-w-full">
               <span className="text-xxs font-mono font-bold text-purple-600 uppercase tracking-wider mb-3 block">LeftNav</span>
               <div className="bg-slate-50 dark:bg-[#2B2D31] rounded-xl p-4 overflow-hidden w-[90px] h-[180px] flex items-center justify-center">
-                <LeftNav onPlusClick={() => alert('Plus clicked')} />
+                <LeftNav />
               </div>
             </div>
 

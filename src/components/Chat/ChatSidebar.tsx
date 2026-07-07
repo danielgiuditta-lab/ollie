@@ -25,6 +25,8 @@ interface ChatSidebarProps {
   onApplyMoves?: (msgIndex: number) => void;
   onDoDifferently?: (msgIndex: number) => void;
   isOrganizingFiles?: boolean;
+  chatDockPosition?: 'side' | 'bottom';
+  onChangeChatDockPosition?: (pos: 'side' | 'bottom') => void;
 }
 
 export function ChatSidebar({ 
@@ -43,7 +45,9 @@ export function ChatSidebar({
   fileCount = 0,
   onApplyMoves,
   onDoDifferently,
-  isOrganizingFiles = false
+  isOrganizingFiles = false,
+  chatDockPosition = 'side',
+  onChangeChatDockPosition
 }: ChatSidebarProps) {
   // Local state for comment stream prototyping
   const [localComments, setLocalComments] = useState<any[]>([]);
@@ -106,16 +110,20 @@ export function ChatSidebar({
     }
   };
 
+  const isBottom = chatDockPosition === 'bottom';
+
   return (
-    <div className="flex items-center h-full shrink-0 relative z-20">
+    <div className={`flex ${isBottom ? 'flex-col w-full h-full' : 'items-center h-full shrink-0'} relative z-20`}>
+      {!isBottom && (
+        <div 
+          className="sidebar-resizer-grabber -ml-4" 
+          onMouseDown={startResize} 
+          title="Drag to resize chat panel"
+        />
+      )}
       <div 
-        className="sidebar-resizer-grabber -ml-4" 
-        onMouseDown={startResize} 
-        title="Drag to resize chat panel"
-      />
-      <div 
-        style={{ width: `${width}px` }}
-        className={`h-full flex flex-col pt-0 shrink-0 ${
+        style={isBottom ? undefined : { width: `${width}px` }}
+        className={`h-full w-full flex flex-col pt-0 shrink-0 ${
           theme === 'dark' 
             ? 'bg-[#1E1F22]' 
             : 'bg-white'
@@ -125,6 +133,18 @@ export function ChatSidebar({
         <div className="flex items-center justify-between px-4 pt-4 pb-4">
           <h2 className={`font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>{getTitle()}</h2>
           <div className="flex items-center gap-1.5">
+            {onChangeChatDockPosition && (
+              <IconButton 
+                variant="card" 
+                onClick={() => onChangeChatDockPosition(isBottom ? 'side' : 'bottom')} 
+                title={isBottom ? "Dock to side" : "Dock to bottom"}
+                theme={theme}
+              >
+                <span className="material-symbols-rounded text-[18px]">
+                  {isBottom ? 'grid_layout_side' : 'dock_to_bottom'}
+                </span>
+              </IconButton>
+            )}
             {isAiSummarySnapped && onUnsnapAiSummary && (
               <IconButton 
                 variant="card" 
