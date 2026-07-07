@@ -115,7 +115,7 @@ export function ChatSidebar({
   const isBottom = chatDockPosition === 'bottom';
 
   return (
-    <div className={`flex ${isBottom ? 'flex-col w-full h-full' : 'items-center h-full shrink-0'} relative z-20`}>
+    <div className={`flex ${isBottom ? 'flex-col w-full h-full' : 'items-center h-full shrink-0'} relative z-10`}>
       {!isBottom && (
         <div 
           className="sidebar-resizer-grabber -ml-4" 
@@ -129,7 +129,7 @@ export function ChatSidebar({
           theme === 'dark' 
             ? 'bg-[#1E1F22] border-r border-[#2B2D31]' 
             : 'bg-white border-r border-slate-200'
-        } rounded-none relative overflow-hidden z-20 spring-transition shadow-none`}
+        } rounded-none relative overflow-hidden z-10 spring-transition shadow-none`}
       >
         {/* Header Panel */}
         <div className="flex items-center justify-between px-4 pt-4 pb-4">
@@ -356,7 +356,7 @@ export function ChatSidebar({
 
         {/* Footer/Composer State */}
         {variant !== 'history' && (
-          <div className={`p-4 relative z-20 shrink-0 ${
+          <div className={`p-4 relative z-10 shrink-0 ${
             theme === 'dark' ? 'bg-[#1E1F22]' : 'bg-white'
           }`}>
             <Composer 

@@ -150,71 +150,76 @@ export function Composer({
 
       {layout === 'bottom' ? (
         /* BOTTOM STATE VISUALS (Horizontal pill design matching the image) */
-        <div className={`w-full ${
-          theme === 'dark' 
-            ? 'bg-[#1E1F22] border-neutral-800 shadow-lg' 
-            : 'bg-white border-slate-100 shadow-md'
-        } rounded-full py-1.5 px-2.5 border flex items-center gap-2 transition-all duration-300`}>
-          {/* Left Plus Button */}
-          <button 
-            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none bg-transparent shrink-0 ${
-              theme === 'dark' 
-                ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' 
-                : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'
-            }`}
-            title={isDrawerOpen ? "Close drawer" : "Add or Create Options"}
-          >
-            {isDrawerOpen ? (
-              <X size={18} className="stroke-[2.5]" />
-            ) : (
-              <Plus size={18} className="stroke-[2.5]" />
-            )}
-          </button>
+        <div className="relative w-full">
+          {/* Subtle bluish-purple glow background */}
+          <div className="absolute -inset-3 bg-gradient-to-r from-[#8B5CF6]/15 via-[#6366F1]/15 to-[#3B82F6]/15 rounded-full blur-2xl -z-10 pointer-events-none" />
 
-          {/* Input text area */}
-          <div className="flex-1 min-w-0 flex items-center">
-            <textarea
-              placeholder={placeholder || "Search, add files or tell me what you want to build..."}
-              rows={1}
-              className={`w-full bg-transparent resize-none outline-none text-[14px] ${
-                theme === 'dark' ? 'text-[#E3E3E3] placeholder-[#9E9E9E]' : 'text-gray-850 placeholder-gray-400'
-              } py-1.5 max-h-24 min-h-[32px] border-none ring-0 focus:ring-0 focus:border-none focus:outline-none overflow-y-auto align-middle`}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={disabled}
-              style={{ scrollbarWidth: 'none' }}
-            />
-          </div>
-
-          {/* Action buttons (Dock to side & Send) */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {onDockToSide && (
-              <button
-                onClick={onDockToSide}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none bg-transparent ${
-                  theme === 'dark' 
-                    ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' 
-                    : 'hover:bg-gray-100 text-slate-500 hover:text-slate-800'
-                }`}
-                title="Dock to side"
-              >
-                <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
-              </button>
-            )}
-
+          <div className={`w-full h-[72px] ${
+            theme === 'dark' 
+              ? 'bg-[#1E1F22]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' 
+              : 'bg-white/95 border-slate-100/80 shadow-[0_8px_30px_rgba(220,225,235,0.45)]'
+          } rounded-full px-5 border flex items-center gap-3.5 backdrop-blur-md transition-all duration-300`}>
+            {/* Left Plus Button */}
             <button 
-              onClick={handleSend}
-              disabled={!text.trim() || disabled}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
-                text.trim() && !disabled 
-                  ? (theme === 'dark' ? 'bg-[#0B57D0] text-white hover:bg-blue-750 cursor-pointer' : 'bg-[#E8F0FE] text-[#0B57D0] hover:bg-[#D2E3FC] cursor-pointer') 
-                  : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
+              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none bg-transparent shrink-0 ${
+                theme === 'dark' 
+                  ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' 
+                  : 'hover:bg-slate-50 text-slate-500 hover:text-slate-800'
               }`}
+              title={isDrawerOpen ? "Close drawer" : "Add or Create Options"}
             >
-              <ArrowUp size={16} />
+              {isDrawerOpen ? (
+                <X size={20} className="stroke-[2.5]" />
+              ) : (
+                <Plus size={20} className="stroke-[2.5]" />
+              )}
             </button>
+
+            {/* Input text area */}
+            <div className="flex-1 min-w-0 h-full flex items-center">
+              <textarea
+                placeholder={placeholder || "Search, add files or tell me what you want to build..."}
+                rows={1}
+                className={`w-full bg-transparent resize-none outline-none text-[15px] ${
+                  theme === 'dark' ? 'text-[#E3E3E3] placeholder-[#9E9E9E]' : 'text-slate-800 placeholder-slate-400'
+                } py-1.5 max-h-[48px] min-h-[30px] border-none ring-0 focus:ring-0 focus:border-none focus:outline-none overflow-y-auto align-middle`}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={disabled}
+                style={{ scrollbarWidth: 'none' }}
+              />
+            </div>
+
+            {/* Action buttons (Dock to side & Send) */}
+            <div className="flex items-center gap-2 shrink-0">
+              {onDockToSide && (
+                <button
+                  onClick={onDockToSide}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none bg-transparent ${
+                    theme === 'dark' 
+                      ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' 
+                      : 'hover:bg-slate-50 text-slate-500 hover:text-slate-850'
+                  }`}
+                  title="Dock to side"
+                >
+                  <span className="material-symbols-rounded text-[22px] select-none">dock_to_right</span>
+                </button>
+              )}
+
+              <button 
+                onClick={handleSend}
+                disabled={!text.trim() || disabled}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition border-none outline-none ${
+                  text.trim() && !disabled 
+                    ? (theme === 'dark' ? 'bg-[#0B57D0] text-white hover:bg-blue-750 cursor-pointer' : 'bg-[#E8F0FE] text-[#0B57D0] hover:bg-[#D2E3FC] cursor-pointer') 
+                    : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
+                }`}
+              >
+                <ArrowUp size={18} />
+              </button>
+            </div>
           </div>
         </div>
       ) : (

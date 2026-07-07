@@ -3872,7 +3872,7 @@ export default function App() {
       )}
 
       {/* 3. Canvas Container (Everything else) */}
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-white dark:bg-[#1E1F22] border-t-0 border-r-0 border-b-0 border-l border-slate-200 dark:border-[#2B2D31] rounded-none p-0">
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-white dark:bg-[#1E1F22] border-t-0 border-r-0 border-b-0 border-l border-slate-200 dark:border-[#2B2D31] rounded-none p-0 z-20 shadow-[0_0_8px_4px_#F8FAFD] dark:shadow-[0_0_15px_5px_rgba(0,0,0,0.5)]">
         <CanvasHeader 
           projectName={projectName}
           viewState={viewState}
