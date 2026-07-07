@@ -21,9 +21,10 @@ interface LeftNavProps {
   onSelectTask?: (task: any) => void;
   onRemoveTask?: (task: any) => void;
   projectName?: string;
-  driveFolderId?: string | null;
+  activeSpaceId?: string | null;
   activeAiSummaryTaskId?: string | null;
   userProfile?: any;
+  onCreateSpace?: () => void;
 }
 
 // Deterministic emoji helper based on space name hash
@@ -55,9 +56,10 @@ export function LeftNav({
   onSelectTask,
   onRemoveTask,
   projectName = '',
-  driveFolderId = null,
+  activeSpaceId = null,
   activeAiSummaryTaskId = null,
-  userProfile = null
+  userProfile = null,
+  onCreateSpace
 }: LeftNavProps) {
   const [localExpanded, setLocalExpanded] = useState(false);
   const [expandedSpaces, setExpandedSpaces] = useState<Record<string, boolean>>({});
@@ -153,7 +155,7 @@ export function LeftNav({
       return activeAiSummaryTaskId === spaceId || projectName.toLowerCase() === spaceName;
     }
     if (activeView !== 'home') {
-      return driveFolderId === spaceId || projectName.toLowerCase() === spaceName;
+      return activeSpaceId === spaceId || projectName.toLowerCase() === spaceName;
     }
     return false;
   };
@@ -185,49 +187,76 @@ export function LeftNav({
         
         {/* Home Row (Dashboard) */}
         {isExpandedActive ? (
-          <div 
-            onClick={() => onViewChange && onViewChange('home')}
-            className={`h-[40px] px-3 rounded-[20px] flex items-center justify-between cursor-pointer transition-colors duration-200 shrink-0 ${
-              activeView === 'home' 
-                ? 'bg-f0f4f9 dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold'
-                : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10'
-            }`}
-          >
-            <div className="flex items-center gap-3.5 min-w-0">
+          <div className="flex flex-col gap-1 w-full shrink-0">
+            <div 
+              onClick={() => onViewChange && onViewChange('home')}
+              className={`h-[40px] px-3 rounded-[20px] flex items-center justify-between cursor-pointer transition-colors duration-200 shrink-0 ${
+                activeView === 'home' 
+                  ? 'bg-f0f4f9 dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold'
+                  : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10'
+              }`}
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <span 
+                  className="material-symbols-rounded shrink-0" 
+                  style={{ 
+                    fontSize: '24px', 
+                    fontVariationSettings: activeView === 'home' ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 360" 
+                  }}
+                >
+                  home
+                </span>
+                <span className="text-[14px] leading-none font-medium">Home</span>
+              </div>
+              <span className="material-symbols-rounded text-slate-400 text-sm shrink-0">
+                chevron_right
+              </span>
+            </div>
+            
+            <div 
+              onClick={onCreateSpace}
+              className="h-[40px] px-3 rounded-[20px] flex items-center justify-between cursor-pointer transition-colors duration-200 shrink-0 text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 mt-1"
+              title="Create New Space"
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <span className="material-symbols-rounded shrink-0 text-blue-500 font-semibold" style={{ fontSize: '24px' }}>
+                  add
+                </span>
+                <span className="text-[14px] leading-none font-semibold text-blue-600 dark:text-blue-400">New Space</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 w-full shrink-0 items-center">
+            <div 
+              onClick={() => onViewChange && onViewChange('home')}
+              className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 mx-auto ${
+                activeView === 'home' 
+                  ? 'bg-f0f4f9 dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold' 
+                  : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10'
+              }`}
+              title="Home"
+            >
               <span 
-                className="material-symbols-rounded shrink-0" 
+                className="material-symbols-rounded" 
                 style={{ 
                   fontSize: '24px', 
-                  fontVariationSettings: activeView === 'home' ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 360" 
+                  fontVariationSettings: activeView === 'home' ? "'FILL' 1" : "'FILL' 0" 
                 }}
               >
                 home
               </span>
-              <span className="text-[14px] leading-none font-medium">Home</span>
             </div>
-            <span className="material-symbols-rounded text-slate-400 text-sm shrink-0">
-              chevron_right
-            </span>
-          </div>
-        ) : (
-          <div 
-            onClick={() => onViewChange && onViewChange('home')}
-            className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 mx-auto ${
-              activeView === 'home' 
-                ? 'bg-f0f4f9 dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold' 
-                : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10'
-            }`}
-            title="Home"
-          >
-            <span 
-              className="material-symbols-rounded" 
-              style={{ 
-                fontSize: '24px', 
-                fontVariationSettings: activeView === 'home' ? "'FILL' 1" : "'FILL' 0" 
-              }}
+            
+            <div 
+              onClick={onCreateSpace}
+              className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 mx-auto text-slate-705 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 mt-1 border border-dashed border-slate-300 dark:border-slate-700"
+              title="Create New Space"
             >
-              home
-            </span>
+              <span className="material-symbols-rounded text-blue-500 font-semibold" style={{ fontSize: '24px' }}>
+                add
+              </span>
+            </div>
           </div>
         )}
 

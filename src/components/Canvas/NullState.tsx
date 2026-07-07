@@ -34,8 +34,8 @@ interface NullStateProps {
   onUploadFile?: (file: File) => void;
   selectedDriveFiles?: any[];
   onToggleDriveFile?: (file: any) => void;
-  onCreateFolderWithSelected?: () => void;
-  isCreatingFolder?: boolean;
+  onCreateSpaceWithSelected?: () => void;
+  isCreatingSpace?: boolean;
   onLogin?: () => void;
   isDriveLoading?: boolean;
   onFileRemove?: (file: any) => void;
@@ -49,8 +49,8 @@ export function NullState({
   onUploadFile,
   selectedDriveFiles = [],
   onToggleDriveFile,
-  onCreateFolderWithSelected,
-  isCreatingFolder = false,
+  onCreateSpaceWithSelected,
+  isCreatingSpace = false,
   onLogin,
   isDriveLoading = false,
   onFileRemove
@@ -209,8 +209,8 @@ export function NullState({
   const handleBottomAddFilesClick = () => {
     if (selectedDriveFiles.length === 0) return;
     if (accessToken) {
-      if (onCreateFolderWithSelected) {
-        onCreateFolderWithSelected();
+      if (onCreateSpaceWithSelected) {
+        onCreateSpaceWithSelected();
       }
     } else {
       selectedDriveFiles.forEach(file => {
@@ -366,12 +366,12 @@ export function NullState({
         <Button
           variant="primary"
           onClick={handleBottomAddFilesClick}
-          disabled={selectedDriveFiles.length === 0 || isCreatingFolder}
+          disabled={selectedDriveFiles.length === 0 || isCreatingSpace}
         >
-          {isCreatingFolder ? (
+          {isCreatingSpace ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Creating Folder...
+              Creating Space...
             </>
           ) : (
             "Add files"

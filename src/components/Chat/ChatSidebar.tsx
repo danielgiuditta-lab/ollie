@@ -27,6 +27,7 @@ interface ChatSidebarProps {
   isOrganizingFiles?: boolean;
   chatDockPosition?: 'side' | 'bottom';
   onChangeChatDockPosition?: (pos: 'side' | 'bottom') => void;
+  onFinalizeSpace?: (name: string, selectedPeople: any[]) => Promise<void> | void;
 }
 
 export function ChatSidebar({ 
@@ -47,7 +48,8 @@ export function ChatSidebar({
   onDoDifferently,
   isOrganizingFiles = false,
   chatDockPosition = 'side',
-  onChangeChatDockPosition
+  onChangeChatDockPosition,
+  onFinalizeSpace
 }: ChatSidebarProps) {
   // Local state for comment stream prototyping
   const [localComments, setLocalComments] = useState<any[]>([]);
@@ -259,6 +261,11 @@ export function ChatSidebar({
                         isOrganizing={isOrganizingFiles}
                         onApplyMoves={() => onApplyMoves && onApplyMoves(index)}
                         onDoDifferently={() => onDoDifferently ? onDoDifferently(index) : onSendMessage("I'd like to organize these files differently: ")}
+                        isSpacePeopleSelector={msg.isSpacePeopleSelector}
+                        suggestedPeople={msg.suggestedPeople}
+                        teamMembers={msg.teamMembers}
+                        targetSpaceName={msg.targetSpaceName}
+                        onFinalizeSpace={onFinalizeSpace}
                       />
                     );
                   })}

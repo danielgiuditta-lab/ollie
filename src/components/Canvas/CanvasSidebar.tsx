@@ -17,10 +17,10 @@ interface CanvasSidebarProps {
   currentPath: string[];
   setCurrentPath: React.Dispatch<React.SetStateAction<string[]>>;
   theme?: 'light' | 'dark';
-  folderContentsMap?: Record<string, any[]>;
-  onFolderNavigate?: (folderItem: any, targetPath: string[]) => void;
-  loadingFolders?: Record<string, boolean>;
-  impactFolderId?: string | null;
+  directoryContentsMap?: Record<string, any[]>;
+  onDirectoryNavigate?: (folderItem: any, targetPath: string[]) => void;
+  loadingDirectories?: Record<string, boolean>;
+  impactSpaceId?: string | null;
   animatingFileIds?: string[];
 }
 
@@ -42,10 +42,10 @@ export function CanvasSidebar({
   currentPath,
   setCurrentPath,
   theme = 'light',
-  folderContentsMap,
-  onFolderNavigate,
-  loadingFolders,
-  impactFolderId,
+  directoryContentsMap,
+  onDirectoryNavigate,
+  loadingDirectories,
+  impactSpaceId,
   animatingFileIds = []
 }: CanvasSidebarProps) {
 
@@ -133,11 +133,11 @@ export function CanvasSidebar({
 
       let currentChildrenList: any[] = [];
 
-      if (folderContentsMap) {
-        if (folderContentsMap[pathKey]) {
-          currentChildrenList = folderContentsMap[pathKey];
-        } else if (folderContentsMap[currentFolderName]) {
-          currentChildrenList = folderContentsMap[currentFolderName];
+      if (directoryContentsMap) {
+        if (directoryContentsMap[pathKey]) {
+          currentChildrenList = directoryContentsMap[pathKey];
+        } else if (directoryContentsMap[currentFolderName]) {
+          currentChildrenList = directoryContentsMap[currentFolderName];
         }
       }
 
@@ -155,7 +155,7 @@ export function CanvasSidebar({
           if (found) {
             targetNode = found;
             const nodeKey = found.id || found.name;
-            parentItems = (folderContentsMap && folderContentsMap[nodeKey]) || found.realChildren || found.children || found.filesToLoad || [];
+            parentItems = (directoryContentsMap && directoryContentsMap[nodeKey]) || found.realChildren || found.children || found.filesToLoad || [];
           } else {
             parentItems = [];
           }
@@ -234,8 +234,8 @@ export function CanvasSidebar({
     const newPath = [...currentPath.slice(0, colIdx), folderName];
     setCurrentPath(newPath);
     onFileSelect(null);
-    if (onFolderNavigate) {
-      onFolderNavigate(itemRef || { name: folderName }, newPath);
+    if (onDirectoryNavigate) {
+      onDirectoryNavigate(itemRef || { name: folderName }, newPath);
     }
   };
 
@@ -308,7 +308,7 @@ export function CanvasSidebar({
                       name={item.name}
                       dataId={item.fileRef?.id || item.name}
                       isSelected={isSelected}
-                      isImpacted={impactFolderId === item.name}
+                      isImpacted={impactSpaceId === item.name}
                       isAnimating={isAnimating}
                       theme={theme}
                       onClick={() => handleFolderClick(currentPath.length, item.name, item.fileRef)}
@@ -408,7 +408,7 @@ export function CanvasSidebar({
 
                 {/* Column Items */}
                 <div className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5">
-                  {loadingFolders && loadingFolders[prefixPath.join('/')] ? (
+                  {loadingDirectories && loadingDirectories[prefixPath.join('/')] ? (
                     <div className="py-8 text-center text-xs text-gray-400 font-medium whitespace-nowrap flex items-center justify-center gap-2">
                       <div className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                       <span>Loading...</span>
@@ -439,7 +439,7 @@ export function CanvasSidebar({
                               name={item.name}
                               dataId={item.fileRef?.id || item.name}
                               isSelected={isSelected}
-                              isImpacted={impactFolderId === item.name}
+                              isImpacted={impactSpaceId === item.name}
                               isAnimating={isAnimating}
                               theme={theme}
                               onClick={() => handleFolderClick(colIdx, item.name, item.fileRef)}

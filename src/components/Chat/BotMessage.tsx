@@ -25,6 +25,11 @@ interface BotMessageProps {
   isOrganizing?: boolean;
   onApplyMoves?: () => void;
   onDoDifferently?: () => void;
+  isSpacePeopleSelector?: boolean;
+  suggestedPeople?: any[];
+  teamMembers?: any[];
+  targetSpaceName?: string;
+  onFinalizeSpace?: (name: string, selectedPeople: any[]) => Promise<void> | void;
 }
 
 // Utility to extract 2-3 high-level lines tops describing the action
@@ -74,10 +79,201 @@ export function BotMessage({
   isApplied = false,
   isOrganizing = false,
   onApplyMoves,
-  onDoDifferently
+  onDoDifferently,
+  isSpacePeopleSelector = false,
+  suggestedPeople = [],
+  teamMembers = [],
+  targetSpaceName = '',
+  onFinalizeSpace
 }: BotMessageProps) {
   const isDark = theme === 'dark';
   
+  if (isSpacePeopleSelector) {
+    const [selectedEmails, setSelectedEmails] = React.useState<string[]>(
+      (suggestedPeople || []).map(p => p.email).filter(Boolean)
+    );
+    const [showPicker, setShowPicker] = React.useState(false);
+    const [pickerSearch, setPickerSearch] = React.useState('');
+    const [isCreating, setIsCreating] = React.useState(false);
+    const [createdStatus, setCreatedStatus] = React.useState<string | null>(null);
+
+    const togglePerson = (email: string) => {
+      setSelectedEmails(prev =>
+        prev.includes(email) ? prev.filter(e => e !== email) : [...prev, email]
+      );
+    };
+
+    const handleCreate = async () => {
+      if (onFinalizeSpace) {
+        setIsCreating(true);
+        const selectedList = (teamMembers || []).filter(p => selectedEmails.includes(p.email));
+        setCreatedStatus("Creating Drive folder...");
+        
+        try {
+          await onFinalizeSpace(targetSpaceName || "New Space", selectedList);
+          setCreatedStatus("Space created successfully!");
+        } catch (err) {
+          console.error(err);
+          setCreatedStatus("Failed to create space");
+        } finally {
+          setIsCreating(false);
+        }
+      }
+    };
+
+    const filteredTeam = (teamMembers || []).filter(p => 
+      p.name.toLowerCase().includes(pickerSearch.toLowerCase()) || 
+      p.email.toLowerCase().includes(pickerSearch.toLowerCase())
+    );
+
+    return (
+      <div className="flex flex-col gap-3 w-full animate-fade-in-up">
+        <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
+          isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
+        }`} style={{ fontFamily: '"Inter", sans-serif' }}>
+          {text}
+        </div>
+
+        <div className={`flex flex-col border rounded-3xl p-5 w-full shadow-xs ${
+          isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-slate-200/80'
+        }`}>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="material-symbols-rounded text-blue-500 shrink-0" style={{ fontSize: '22px' }}>groups</span>
+            <span 
+              className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
+              style={{ fontFamily: '"Product Sans", "Google Sans", sans-serif' }}
+            >
+              Add Members to {targetSpaceName}
+            </span>
+          </div>
+
+          {/* Suggested list */}
+          <div className="flex flex-col gap-2 mb-4">
+            <span className="text-[11px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
+              Suggested Additions
+            </span>
+            {(suggestedPeople || []).map((person, idx) => {
+              const isChecked = selectedEmails.includes(person.email);
+              return (
+                <div 
+                  key={idx} 
+                  onClick={() => togglePerson(person.email)}
+                  className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-colors ${
+                    isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {person.avatar ? (
+                      <img src={person.avatar} className="w-8 h-8 rounded-full" alt={person.name} />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
+                        {person.name.substring(0, 1)}
+                      </div>
+                    )}
+                    <div className="flex flex-col">
+                      <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                        {person.name}
+                      </span>
+                      <span className="text-[10px] text-slate-400 dark:text-neutral-500">{person.email}</span>
+                    </div>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={isChecked} 
+                    onChange={() => {}} 
+                    className="rounded text-blue-500 focus:ring-blue-500 h-4 w-4 cursor-pointer"
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Picker Toggle Button */}
+          <div className="mb-4">
+            <button 
+              onClick={() => setShowPicker(!showPicker)}
+              className="text-xs font-semibold text-blue-550 hover:text-blue-650 flex items-center gap-0.5 cursor-pointer border-none bg-transparent p-0 outline-none"
+            >
+              <span className="material-symbols-rounded text-base">{showPicker ? 'expand_less' : 'expand_more'}</span>
+              <span>{showPicker ? 'Hide team list' : 'Show team picker...'}</span>
+            </button>
+
+            {showPicker && (
+              <div className={`mt-3 border rounded-2xl p-3 flex flex-col gap-2.5 ${
+                isDark ? 'bg-[#2B2D31] border-[#3B3D42]' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <input 
+                  type="text"
+                  placeholder="Search team members..."
+                  value={pickerSearch}
+                  onChange={(e) => setPickerSearch(e.target.value)}
+                  className={`w-full text-xs px-3 py-2 rounded-xl outline-none border focus:border-blue-500 ${
+                    isDark ? 'bg-[#1E1F22] border-[#3B3D42] text-white' : 'bg-white border-slate-250 text-slate-800'
+                  }`}
+                />
+                <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
+                  {filteredTeam.map((person, idx) => {
+                    const isChecked = selectedEmails.includes(person.email);
+                    return (
+                      <div 
+                        key={idx}
+                        onClick={() => togglePerson(person.email)}
+                        className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${
+                          isDark ? 'hover:bg-white/5' : 'hover:bg-white/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          {person.avatar ? (
+                            <img src={person.avatar} className="w-6 h-6 rounded-full" alt={person.name} />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-750 text-slate-600 dark:text-slate-350 flex items-center justify-center font-bold text-[10px]">
+                              {person.name.substring(0, 1)}
+                            </div>
+                          )}
+                          <div className="flex flex-col">
+                            <span className={`text-[11px] font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                              {person.name}
+                            </span>
+                            <span className="text-[9px] text-slate-450">{person.email}</span>
+                          </div>
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          checked={isChecked} 
+                          onChange={() => {}} 
+                          className="rounded text-blue-500 h-3.5 w-3.5 cursor-pointer"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className={`h-px w-full my-1 ${isDark ? 'bg-[#3B3D42]' : 'bg-slate-100'}`} />
+
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-3">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              {createdStatus || `${selectedEmails.length} selected`}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="primary" 
+                theme={theme} 
+                onClick={handleCreate}
+                disabled={isCreating || createdStatus?.includes("successfully")}
+              >
+                {isCreating ? 'Creating...' : 'Create Space'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isOrganizationProposal) {
     return (
       <div className="flex flex-col gap-3 w-full">

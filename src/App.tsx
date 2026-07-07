@@ -36,8 +36,8 @@ export default function App() {
   const lastSelectedFileRef = useRef<string | null>(null);
 
   // Unified filesystem mapping states
-  const [folderContentsMap, setFolderContentsMap] = useState<Record<string, any[]>>({});
-  const [loadingFolders, setLoadingFolders] = useState<Record<string, boolean>>({});
+  const [directoryContentsMap, setFolderContentsMap] = useState<Record<string, any[]>>({});
+  const [loadingDirectories, setLoadingFolders] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (selectedFile && selectedFile.name) {
@@ -77,7 +77,7 @@ export default function App() {
   }>>([]);
 
   const [particleBursts, setParticleBursts] = useState<Array<{ id: string; x: number; y: number }>>([]);
-  const [impactFolderId, setImpactFolderId] = useState<string | null>(null);
+  const [impactSpaceId, setImpactFolderId] = useState<string | null>(null);
   const [animatingFileIds, setAnimatingFileIds] = useState<string[]>([]);
   const [isOrganizingFiles, setIsOrganizingFiles] = useState<boolean>(false);
   const [currentTask, setCurrentTask] = useState<string>('app');
@@ -161,8 +161,8 @@ export default function App() {
 
   // makeFolder Workspace States
   const [selectedDriveFiles, setSelectedDriveFiles] = useState<any[]>([]);
-  const [driveFolderId, setDriveFolderId] = useState<string | null>('home_guest');
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [activeSpaceId, setActiveSpaceId] = useState<string | null>('home_guest');
+  const [isCreatingSpace, setIsCreatingSpace] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'failed'>('idle');
 
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -194,7 +194,7 @@ export default function App() {
           firestoreTasks = list.map((c: any) => {
             const isAiSummary = c.chatId && c.chatId.startsWith('ai-summary-');
             const time = c.updatedAt ? new Date(c.updatedAt).getTime() : 0;
-            const folderId = c.driveFolderId || c.chatId;
+            const folderId = c.activeSpaceId || c.chatId;
             const validProjectName = c.projectName && c.projectName !== 'Workspace' && c.projectName !== 'Workspace Project' && c.projectName !== 'New Workspace' && c.projectName !== 'Web App Project';
             const folderName = validProjectName ? c.projectName : (driveTasksMap.get(folderId) || c.projectName || "Workspace");
             return {
@@ -202,7 +202,7 @@ export default function App() {
               name: folderName,
               type: isAiSummary ? 'ai_summary' : 'workspace',
               messages: c.messages || [],
-              driveFolderId: c.driveFolderId || null,
+              activeSpaceId: c.activeSpaceId || null,
               updatedAt: time
             };
           });
@@ -246,8 +246,8 @@ export default function App() {
       }
     };
 
-    if (isHomeChatId(driveFolderId)) {
-      setDriveFolderId(homeId);
+    if (isHomeChatId(activeSpaceId)) {
+      setActiveSpaceId(homeId);
       setProjectName('Home Dashboard');
       loadHomeChat();
     }
@@ -280,12 +280,12 @@ export default function App() {
   const activeLoadedFolderIdRef = useRef<string | null>(null);
 
   // Keep track of active folder ID to prevent race conditions during async fetches
-  const driveFolderIdRef = useRef<string | null>(null);
+  const activeSpaceIdRef = useRef<string | null>(null);
 
   // Synchronize active workspace state changes back to the in-memory cache
   useEffect(() => {
-    if (driveFolderId && activeLoadedFolderIdRef.current === driveFolderId) {
-      workspaceCacheRef.current[driveFolderId] = {
+    if (activeSpaceId && activeLoadedFolderIdRef.current === activeSpaceId) {
+      workspaceCacheRef.current[activeSpaceId] = {
         ingestedFiles,
         sandboxFiles,
         envId,
@@ -296,7 +296,7 @@ export default function App() {
         indexFileSelected
       };
     }
-  }, [driveFolderId, messages, sandboxFiles, ingestedFiles, envId, sandboxUrl, projectName, selectedFile, indexFileSelected]);
+  }, [activeSpaceId, messages, sandboxFiles, ingestedFiles, envId, sandboxUrl, projectName, selectedFile, indexFileSelected]);
 
   // Ref to track file IDs created from the composer in order to format output of blank docs
   const createdFromComposerFileIdsRef = useRef<Set<string>>(new Set());
@@ -454,7 +454,7 @@ export default function App() {
       if (!t) return false;
       if (typeof t === 'string') return t.toLowerCase() === fileName;
       const tId = t.id || t.chatId;
-      const tFolderId = t.driveFolderId;
+      const tFolderId = t.activeSpaceId;
       const tName = (t.name || '').toLowerCase();
       if (fileId && (tId === fileId || tFolderId === fileId)) return true;
       if (fileName && tName === fileName) return true;
@@ -573,7 +573,7 @@ export default function App() {
           projectName: activeName || 'Workspace Project',
           messages: messagesList,
           envId: activeEnv,
-          driveFolderId: folderId,
+          activeSpaceId: folderId,
           sandboxUrl: activeSandboxUrl || sandboxUrl || '',
           sandboxFiles: filesToSave,
           userEmail: userProfile?.email || ''
@@ -589,7 +589,7 @@ export default function App() {
             name: activeName,
             type: 'workspace',
             messages: messagesList,
-            driveFolderId: folderId,
+            activeSpaceId: folderId,
             updatedAt: now
           };
           const filtered = prev.filter(t => {
@@ -730,7 +730,7 @@ export default function App() {
         y: targetY
       }]);
 
-      // Update workspace file state: move this file into its target folder across sandboxFiles, driveFiles, and folderContentsMap
+      // Update workspace file state: move this file into its target folder across sandboxFiles, driveFiles, and directoryContentsMap
       const updateFileList = (curr: any[]) => {
         if (!curr || curr.length === 0) return [];
         const newName = `${targetFolderName}/${rawBaseName}`;
@@ -849,6 +849,42 @@ export default function App() {
   };
 
   const handleSendMessage = async (text: string, aiMode?: boolean, contextFiles?: any[]) => {
+    if (activeSpaceId && activeSpaceId.startsWith('space-creation-')) {
+      setMessages(prev => [...prev, { role: 'user', text }]);
+      setIsLoading(true);
+
+      let detectedName = '';
+      const nameMatch = text.match(/(?:name\s+the\s+space\s+|project\s+|for\s+|^)(Project\s+[A-Za-z0-9]+|[A-Z][a-zA-Z0-9\s_]+)/i);
+      if (nameMatch && nameMatch[1]) {
+        detectedName = nameMatch[1].trim();
+      } else {
+        detectedName = text.trim();
+      }
+      if (detectedName.length > 40) {
+        detectedName = detectedName.substring(0, 40) + '...';
+      }
+      setProjectName(detectedName);
+
+      const allMembers = getTeamMembers();
+      const suggestions = allMembers.slice(0, 2);
+
+      setTimeout(() => {
+        setMessages(prev => [
+          ...prev,
+          {
+            role: 'bot',
+            text: `I've named the space **${detectedName}**. Here are some team members I suggest adding based on your workspace context:`,
+            isSpacePeopleSelector: true,
+            suggestedPeople: suggestions,
+            teamMembers: allMembers,
+            targetSpaceName: detectedName
+          }
+        ]);
+        setIsLoading(false);
+      }, 1000);
+      return;
+    }
+
     const isOrganizeJourney = text.toLowerCase().includes('organize files') || text.toLowerCase().includes('organize the') || currentTask === 'organize';
 
     if (isOrganizeJourney) {
@@ -866,7 +902,7 @@ export default function App() {
       if (currentPath.length > 0) {
         const pathKey = currentPath.join('/');
         const currentFolderName = currentPath[currentPath.length - 1];
-        const rawContents = folderContentsMap[pathKey] || folderContentsMap[currentFolderName] || [];
+        const rawContents = directoryContentsMap[pathKey] || directoryContentsMap[currentFolderName] || [];
         
         if (rawContents.length > 0) {
           activeFilesToOrganize = rawContents.filter((f: any) => f && f.type !== 'folder' && (!f.mimeType || !f.mimeType.includes('folder')));
@@ -927,10 +963,10 @@ export default function App() {
       setViewState('files');
       setActiveSidebar('gemini');
 
-      let activeFolderId = driveFolderId;
+      let activeFolderId = activeSpaceId;
       if (!activeFolderId) {
         activeFolderId = `local-workspace-${Date.now()}`;
-        setDriveFolderId(activeFolderId);
+        setActiveSpaceId(activeFolderId);
       }
 
       const activeDoc = selectedFile || sandboxFiles.find(f => f.isDocJourney || f.name === 'document.doc') || { name: 'document.doc', content: '' };
@@ -1094,15 +1130,15 @@ export default function App() {
 
     // Move current task/conversation to the top when a new turn starts (only for vibe coding)
     if (!activeAiMode) {
-      if (driveFolderId && projectName) {
+      if (activeSpaceId && projectName) {
         setRecentTasks(prev => {
           const now = Date.now();
           const filtered = prev.filter(t => {
             const id = typeof t === 'string' ? '' : t.id;
             const name = typeof t === 'string' ? t : t.name;
-            return id !== driveFolderId && name.toLowerCase() !== projectName.toLowerCase();
+            return id !== activeSpaceId && name.toLowerCase() !== projectName.toLowerCase();
           });
-          return [{ id: driveFolderId, name: projectName, type: 'workspace', driveFolderId, updatedAt: now }, ...filtered];
+          return [{ id: activeSpaceId, name: projectName, type: 'workspace', activeSpaceId, updatedAt: now }, ...filtered];
         });
       }
     }
@@ -1353,7 +1389,7 @@ export default function App() {
               projectName: isNewSearch ? text : projectName,
               messages: finalMessages,
               envId: null,
-              driveFolderId: null,
+              activeSpaceId: null,
               sandboxUrl: '',
               userEmail: userProfile?.email || ''
             })
@@ -1381,7 +1417,7 @@ export default function App() {
       return;
     }
 
-    let activeFolderId = driveFolderId;
+    let activeFolderId = activeSpaceId;
     let combinedFilesForSync: any[] = [];
 
     // Summarize the prompt
@@ -1403,13 +1439,13 @@ export default function App() {
     let contextToUse = sandboxFiles;
     let activeEnvId = envId;
     let activeSandboxUrl = sandboxUrl;
-    let resolvedFolderId = driveFolderId;
+    let resolvedFolderId = activeSpaceId;
 
     // "when i land on the landing page and oauth in, the files i select should be added to the folder i create and be used as context"
-    if (accessToken && isHomeChatId(driveFolderId) && selectedDriveFiles.length > 0) {
+    if (accessToken && isHomeChatId(activeSpaceId) && selectedDriveFiles.length > 0) {
       const initMessage = 'Initializing Google Drive folder and setting up workspace files...';
       setMessages(prev => [...prev, { role: 'bot', text: initMessage }]);
-      const resVal = await createFolderAndCopyFiles(text);
+      const resVal = await createSpace(text);
       if (resVal) {
         activeFolderId = resVal.folderId;
         resolvedFolderId = resVal.folderId;
@@ -1790,12 +1826,12 @@ export default function App() {
                   setSandboxUrl('');
 
                   if (combinedFilesForSync.length > 0) {
-                    const activeFolder = (isHomeChatId(driveFolderId) || !driveFolderId)
+                    const activeFolder = (isHomeChatId(activeSpaceId) || !activeSpaceId)
                       ? (activeFolderId || `workspace-${Date.now()}`)
-                      : driveFolderId;
+                      : activeSpaceId;
                     resolvedFolderId = activeFolder;
-                    if (isHomeChatId(driveFolderId) || !driveFolderId) {
-                      setDriveFolderId(activeFolder);
+                    if (isHomeChatId(activeSpaceId) || !activeSpaceId) {
+                      setActiveSpaceId(activeFolder);
                     }
 
                     let resolvedName = (projectName && projectName !== 'New' && projectName !== 'Building project...' && projectName !== 'Workspace Project') 
@@ -1843,7 +1879,7 @@ export default function App() {
                         id: activeFolder,
                         name: activeName,
                         type: 'workspace',
-                        driveFolderId: activeFolder,
+                        activeSpaceId: activeFolder,
                         updatedAt: now
                       };
                       const filtered = prev.filter(t => {
@@ -1902,12 +1938,153 @@ export default function App() {
     });
   };
 
-  const createFolderAndCopyFiles = async (promptText?: string) => {
+  const getTeamMembers = () => {
+    const membersMap = new Map();
+    driveFiles.forEach(file => {
+      if (file.owners && Array.isArray(file.owners)) {
+        file.owners.forEach((owner: any) => {
+          if (owner.displayName) {
+            membersMap.set(owner.emailAddress || owner.displayName, {
+              name: owner.displayName,
+              email: owner.emailAddress || '',
+              avatar: owner.photoLink || ''
+            });
+          }
+        });
+      }
+    });
+
+    const fallbacks = [
+      { name: "Sakura Okoro", email: "sakura@example.com", avatar: "" },
+      { name: "Malik Harold", email: "malik@example.com", avatar: "" },
+      { name: "Adam Lee", email: "adam@example.com", avatar: "" }
+    ];
+    fallbacks.forEach(f => {
+      if (!membersMap.has(f.email)) {
+        membersMap.set(f.email, f);
+      }
+    });
+
+    return Array.from(membersMap.values());
+  };
+
+  const handleCreateSpace = () => {
+    const tempSpaceId = `space-creation-${Date.now()}`;
+    setActiveSpaceId(tempSpaceId);
+    setProjectName('New Space');
+    setMessages([
+      {
+        role: 'bot',
+        text: 'What is the topic of the space and who do you want to add?',
+        isCreationPrompt: true
+      }
+    ]);
+    setSandboxFiles([]);
+    setSelectedFile(null);
+    setViewState('app');
+    setActiveSidebar('gemini');
+    setIsAiSummarySnapped(false);
+    setActiveAiSummaryTaskId(null);
+  };
+
+  const handleFinalizeSpace = async (name: string, selectedPeople: any[]) => {
+    if (!accessToken) {
+      alert("Please log in first!");
+      return;
+    }
+    
+    const cleanFolderName = name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    const folderMeta = {
+      name: cleanFolderName,
+      mimeType: 'application/vnd.google-apps.folder',
+      properties: {
+        makeFolderWorkspace: "true"
+      }
+    };
+    
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(folderMeta)
+    });
+    
+    if (!createRes.ok) {
+      throw new Error(`Failed to create Google Drive folder: ${createRes.status}`);
+    }
+    
+    const createdFolder = await createRes.json();
+    const folderId = createdFolder.id;
+
+    for (const person of selectedPeople) {
+      if (person.email) {
+        try {
+          await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}/permissions`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              role: 'writer',
+              type: 'user',
+              emailAddress: person.email
+            })
+          });
+        } catch (shareErr) {
+          console.warn(`Failed to share folder with ${person.email}:`, shareErr);
+        }
+      }
+    }
+
+    setActiveSpaceId(folderId);
+    setProjectName(cleanFolderName);
+    setSandboxFiles([]);
+    setSelectedFile(null);
+    setViewState('files');
+    
+    setRecentTasks(prev => {
+      const now = Date.now();
+      const filtered = prev.filter(t => {
+        const id = typeof t === 'string' ? '' : t.id;
+        const name = typeof t === 'string' ? t : t.name;
+        return id !== folderId && name.toLowerCase() !== cleanFolderName.toLowerCase();
+      });
+      return [{ id: folderId, name: cleanFolderName, type: 'space', activeSpaceId: folderId, updatedAt: now }, ...filtered];
+    });
+
+    const welcomeText = `Welcome to **${cleanFolderName}**! This is a blank space shared with ${selectedPeople.map(p => p.name).join(', ') || 'no one else yet'}. Ask me to start building files, like 'make an interactive dashboard'.`;
+    const initMessages = [{ role: 'bot', text: welcomeText }];
+    setMessages(initMessages);
+
+    try {
+      await fetch(`/api/chats/${folderId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: initMessages,
+          envId: null,
+          sandboxUrl: '',
+          projectName: cleanFolderName
+        })
+      });
+    } catch (saveChatErr) {
+      console.warn("Failed to save welcome chat:", saveChatErr);
+    }
+  };
+
+  const createSpace = async (promptText?: string) => {
     if (!accessToken) {
       alert("Please log in first!");
       return null;
     }
-    setIsCreatingFolder(true);
+    setIsCreatingSpace(true);
     setSyncStatus('syncing');
     try {
       const fileIdsSignature = selectedDriveFiles
@@ -1985,7 +2162,7 @@ export default function App() {
 
       // 4. If found via either method, reuse and restore the session in place
       if (targetFolderId) {
-        setDriveFolderId(targetFolderId);
+        setActiveSpaceId(targetFolderId);
         setProjectName(targetFolderName);
 
         const ingestRes = await fetch('/api/ingest-context', {
@@ -2046,7 +2223,7 @@ export default function App() {
 
         setSelectedDriveFiles([]);
         setViewState('files');
-        setIsCreatingFolder(false);
+        setIsCreatingSpace(false);
         setSyncStatus('synced');
 
         if (sandboxMapped.length > 0) {
@@ -2100,7 +2277,7 @@ export default function App() {
       
       const folderData = await createRes.json();
       const newFolderId = folderData.id;
-      setDriveFolderId(newFolderId);
+      setActiveSpaceId(newFolderId);
 
       // 3. Copy/Upload selected files into the newly created folder in parallel
       const fileTasks = selectedDriveFiles.map(async (file, idx) => {
@@ -2269,7 +2446,7 @@ export default function App() {
       alert("Error assembling Drive folder workspace. Check console.");
       return null;
     } finally {
-      setIsCreatingFolder(false);
+      setIsCreatingSpace(false);
     }
   };
 
@@ -2788,7 +2965,7 @@ export default function App() {
 
   const autoSaveToDrive = async (files: any[], folderId: string | null) => {
     if (!accessToken) return;
-    const targetFolder = (isValidDriveId(folderId) ? folderId : null) || (isValidDriveId(driveFolderId) ? driveFolderId : null) || 'root';
+    const targetFolder = (isValidDriveId(folderId) ? folderId : null) || (isValidDriveId(activeSpaceId) ? activeSpaceId : null) || 'root';
 
     // Filter to files that have actually been modified compared to the last successfully saved state
     const changedFiles = files.filter(f => lastSavedContentsRef.current[f.name.toLowerCase()] !== f.content);
@@ -2956,7 +3133,7 @@ export default function App() {
     setActiveSidebar('gemini');
   }, []);
 
-  const handleFolderNavigate = useCallback(async (folderItem: any, targetPath?: string[]) => {
+  const handleDirectoryNavigate = useCallback(async (folderItem: any, targetPath?: string[]) => {
     if (!folderItem) return;
     const folderName = folderItem.name || (typeof folderItem === 'string' ? folderItem : '');
     const newPath = targetPath || (folderName ? [folderName] : currentPath);
@@ -2968,7 +3145,7 @@ export default function App() {
     // Reset Gemini chat state to a blank chat for directory navigation
     resetChatForDirectoryItem();
 
-    const folderId = folderItem.id || folderItem.driveId || folderItem.driveFolderId;
+    const folderId = folderItem.id || folderItem.driveId || folderItem.activeSpaceId;
     const pathKey = newPath.join('/');
 
     if (folderItem.realChildren || folderItem.children || folderItem.filesToLoad) {
@@ -3009,13 +3186,13 @@ export default function App() {
 
   const handleFileClick = async (file: any, skipSelect = false, options?: { isFromRecents?: boolean }) => {
     const isFromRecents = options?.isFromRecents ?? false;
-    const folderId = typeof file === 'string' ? file : (file.id || file.driveFolderId);
+    const folderId = typeof file === 'string' ? file : (file.id || file.activeSpaceId);
     if (!folderId) return;
 
     if (isHomeChatId(folderId)) {
-      driveFolderIdRef.current = folderId;
+      activeSpaceIdRef.current = folderId;
       activeLoadedFolderIdRef.current = folderId;
-      setDriveFolderId(folderId);
+      setActiveSpaceId(folderId);
       setProjectName('Home Dashboard');
       setIsAiSummarySnapped(false);
       setActiveAiSummaryTaskId(null);
@@ -3045,12 +3222,12 @@ export default function App() {
     }
 
     // Track active folder ID to prevent race conditions from delayed network responses
-    driveFolderIdRef.current = folderId;
+    activeSpaceIdRef.current = folderId;
 
     // Temporarily invalidate activeLoadedFolderIdRef to suspend cache writes during loading
     activeLoadedFolderIdRef.current = null;
 
-    setDriveFolderId(folderId);
+    setActiveSpaceId(folderId);
     const fileName = typeof file === 'string' ? file : file.name;
     if (fileName) {
       setProjectName(fileName);
@@ -3105,7 +3282,7 @@ export default function App() {
       // 2. Fetch in background (silent sync) to check if anything changed on Drive
       try {
         const chatRes = await fetch(`/api/chats/${folderId}`);
-        if (driveFolderIdRef.current !== folderId) return;
+        if (activeSpaceIdRef.current !== folderId) return;
 
         let latestMessages = cached.messages;
         let latestEnvId = cached.envId;
@@ -3113,7 +3290,7 @@ export default function App() {
         
         if (chatRes.ok) {
           const chatData = await chatRes.json();
-          if (driveFolderIdRef.current !== folderId) return;
+          if (activeSpaceIdRef.current !== folderId) return;
           if (chatData && chatData.messages) {
             const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(cached.messages);
             if (messagesChanged) {
@@ -3133,11 +3310,11 @@ export default function App() {
           },
           body: JSON.stringify({ folderId })
         });
-        if (driveFolderIdRef.current !== folderId) return;
+        if (activeSpaceIdRef.current !== folderId) return;
         
         if (res.ok) {
           const data = await res.json();
-          if (driveFolderIdRef.current !== folderId) return;
+          if (activeSpaceIdRef.current !== folderId) return;
           if (data.files) {
             const filesChanged = data.files.length !== cached.ingestedFiles.length ||
               data.files.some((f: any, idx: number) => {
@@ -3248,10 +3425,10 @@ export default function App() {
           },
           body: JSON.stringify({ folderId })
         });
-        if (driveFolderIdRef.current !== folderId) return;
+        if (activeSpaceIdRef.current !== folderId) return;
 
         const data = await res.json();
-        if (driveFolderIdRef.current !== folderId) return;
+        if (activeSpaceIdRef.current !== folderId) return;
 
         if (data.files) {
           setIngestedFiles(data.files);
@@ -3302,11 +3479,11 @@ export default function App() {
           let currentSandboxUrl = '';
           try {
             const chatRes = await fetch(`/api/chats/${folderId}`);
-            if (driveFolderIdRef.current !== folderId) return;
+            if (activeSpaceIdRef.current !== folderId) return;
 
             if (chatRes.ok) {
               const chatData = await chatRes.json();
-              if (driveFolderIdRef.current !== folderId) return;
+              if (activeSpaceIdRef.current !== folderId) return;
 
               if (chatData && chatData.messages) {
                 currentMessages = chatData.messages;
@@ -3351,7 +3528,7 @@ export default function App() {
       } catch (err) {
         console.error('Failed to ingest workspace:', err);
       } finally {
-        if (driveFolderIdRef.current === folderId) {
+        if (activeSpaceIdRef.current === folderId) {
           setIsIngesting(false);
           // Enable cache writes for the active folder
           activeLoadedFolderIdRef.current = folderId;
@@ -3428,7 +3605,7 @@ export default function App() {
 
     if (accessToken) {
       try {
-        const targetFolder = isValidDriveId(driveFolderId) ? driveFolderId : 'root';
+        const targetFolder = isValidDriveId(activeSpaceId) ? activeSpaceId : 'root';
         console.log(`[Open in Drive] Syncing latest content of ${file.name} to Drive (folder: ${targetFolder}) prior to opening...`);
         delete lastSavedContentsRef.current[file.name.toLowerCase()];
         await autoSaveToDrive([file], targetFolder);
@@ -3466,7 +3643,7 @@ export default function App() {
           reader.onload = async (event) => {
             const content = event.target?.result as string || '';
             let createdDriveId = undefined;
-            if (accessToken && driveFolderId) {
+            if (accessToken && activeSpaceId) {
               try {
                 const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
                   method: 'POST',
@@ -3476,7 +3653,7 @@ export default function App() {
                   },
                   body: JSON.stringify({
                     name: file.name,
-                    parents: [driveFolderId],
+                    parents: [activeSpaceId],
                     mimeType: file.type || 'text/plain'
                   })
                 });
@@ -3499,8 +3676,8 @@ export default function App() {
             setSandboxFiles(prev => {
               const filter = prev.filter(f => f.name !== file.name);
               const combined = [...filter, newFile];
-              if (accessToken && driveFolderId) {
-                autoSaveToDrive(combined, driveFolderId);
+              if (accessToken && activeSpaceId) {
+                autoSaveToDrive(combined, activeSpaceId);
               }
               return combined;
             });
@@ -3562,7 +3739,7 @@ export default function App() {
     }
 
     let createdDriveId = undefined;
-    const targetFolder = driveFolderId || 'root';
+    const targetFolder = activeSpaceId || 'root';
     if (accessToken) {
       try {
         const bodyMeta: any = {
@@ -3703,7 +3880,8 @@ export default function App() {
           }
         }}
         projectName={projectName}
-        driveFolderId={driveFolderId}
+        activeSpaceId={activeSpaceId}
+        onCreateSpace={handleCreateSpace}
       />
       {/* 2. Chat Sidebar (Docked to Side) */}
       {viewState !== 'ai_summary' && chatDockPosition === 'side' && (
@@ -3737,6 +3915,7 @@ export default function App() {
           isOrganizingFiles={isOrganizingFiles}
           chatDockPosition={chatDockPosition}
           onChangeChatDockPosition={setChatDockPosition}
+          onFinalizeSpace={handleFinalizeSpace}
         />
       )}
 
@@ -3771,7 +3950,7 @@ export default function App() {
                 if (file.type === 'folder' || (file.mimeType && file.mimeType.includes('folder'))) {
                   const folderName = file.name || file.filename || '';
                   const parts = folderName ? [folderName] : currentPath;
-                  handleFolderNavigate(file, parts);
+                  handleDirectoryNavigate(file, parts);
                 } else {
                   setSelectedFile(file);
                   setIndexFileSelected(file.name.toLowerCase() === 'index.html' || file.name.toLowerCase().endsWith('/index.html'));
@@ -3782,17 +3961,17 @@ export default function App() {
               currentPath={currentPath}
               setCurrentPath={setCurrentPath}
               theme={appTheme}
-              folderContentsMap={folderContentsMap}
-              onFolderNavigate={handleFolderNavigate}
-              loadingFolders={loadingFolders}
-              impactFolderId={impactFolderId}
+              directoryContentsMap={directoryContentsMap}
+              onDirectoryNavigate={handleDirectoryNavigate}
+              loadingDirectories={loadingDirectories}
+              impactSpaceId={impactSpaceId}
               animatingFileIds={animatingFileIds}
             />
           )}
 
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative gap-4">
             <div className="flex-1 min-h-0 relative">
-              {(viewState === 'home' || viewState === 'null' || viewState === 'ai_summary' || viewState === 'projector' || selectedFile) && (
+              {(viewState === 'home' || viewState === 'null' || viewState === 'ai_summary' || viewState === 'projector' || viewState === 'app' || viewState === 'files' || selectedFile) && (
                 <CanvasMain 
                   viewState={viewState} 
                   setViewState={setViewState} 
@@ -3814,8 +3993,8 @@ export default function App() {
                       setSelectedFile={setSelectedFile} 
                       setProjectName={setProjectName}
                       handleSendMessage={handleSendMessage}
-                      setDriveFolderId={setDriveFolderId}
-                      handleFolderIngest={handleFolderNavigate}
+                      setActiveSpaceId={setActiveSpaceId}
+                      handleSpaceIngest={handleDirectoryNavigate}
                       suggestedList={suggestedListCache}
                       setSuggestedList={setSuggestedListCache}
                       isLoadingDrive={isDriveSuggestLoading}
@@ -3833,7 +4012,7 @@ export default function App() {
                     isIngesting ? (
                       <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-[#1E1F22] rounded-[32px]">
                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mb-4"></div>
-                         <p className="text-gray-600 dark:text-[#E3E3E3] font-medium text-lg">Ingesting Workspace...</p>
+                         <p className="text-gray-600 dark:text-[#E3E3E3] font-medium text-lg">Ingesting Space...</p>
                       </div>
                     ) : (
                       <NullState 
@@ -3842,8 +4021,8 @@ export default function App() {
                         onFileClick={handleFileClick} 
                         selectedDriveFiles={selectedDriveFiles}
                         onToggleDriveFile={handleToggleDriveFile}
-                        onCreateFolderWithSelected={() => createFolderAndCopyFiles()}
-                        isCreatingFolder={isCreatingFolder}
+                        onCreateSpaceWithSelected={() => createSpace()}
+                        isCreatingSpace={isCreatingSpace}
                         onLogin={() => login()}
                         isDriveLoading={isDriveLoading}
                         onFileRemove={handleRemoveFile}
@@ -4061,6 +4240,7 @@ export default function App() {
                 onApplyMoves={handleApplyOrganizeMoves}
                 onDoDifferently={handleDoDifferentlyOrganize}
                 isOrganizingFiles={isOrganizingFiles}
+                onFinalizeSpace={handleFinalizeSpace}
               />
             )}
           </div>

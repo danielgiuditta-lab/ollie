@@ -493,13 +493,14 @@ async function startServer() {
           const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${firebaseConfig.firestoreDatabaseId}/documents/chats/${sanitizedId}?key=${firebaseConfig.apiKey}`;
           const response = await fetch(url);
           
-          if (response.ok) {
+           if (response.ok) {
             const docJson = await response.json();
             const fields = docJson.fields || {};
             const chat: any = {};
             for (const key of Object.keys(fields)) {
               chat[key] = fromFirestoreValue(fields[key]);
             }
+            chat.activeSpaceId = chat.activeSpaceId || chat.driveFolderId;
             console.log(`[Firebase] Successfully retrieved chat "${sanitizedId}" from Firestore.`);
             return res.json(chat);
           } else if (response.status === 404) {
@@ -516,6 +517,7 @@ async function startServer() {
       // Local fallback
       const chat = await getChatAsync(sanitizedId);
       if (chat) {
+        chat.activeSpaceId = chat.activeSpaceId || chat.driveFolderId;
         console.log(`[Local] Successfully retrieved chat "${sanitizedId}" from local JSON fallback.`);
         return res.json(chat);
       }
@@ -531,14 +533,14 @@ async function startServer() {
     try {
       const { chatId } = req.params;
       const sanitizedId = chatId.replace(/[^a-zA-Z0-9_\-]/g, "_");
-      const { projectName, messages, envId, driveFolderId, sandboxUrl, userEmail, sandboxFiles } = req.body;
+      const { projectName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles } = req.body;
 
       const payload = {
         chatId: sanitizedId,
         projectName: projectName || "New Workspace",
         messages: messages || [],
         envId: envId || null,
-        driveFolderId: driveFolderId || null,
+        activeSpaceId: activeSpaceId || null,
         sandboxUrl: sandboxUrl || "",
         sandboxFiles: sandboxFiles || [],
         userEmail: userEmail || "",
@@ -710,7 +712,7 @@ async function startServer() {
 
   app.post("/api/ingest-context", async (req, res) => {
     try {
-      const { folderId } = req.body;
+      const folderId = req.body.activeSpaceId || req.body.spaceId || req.body.folderId;
       const authHeader = req.headers.authorization;
       if (!authHeader) {
         return res.status(401).json({ error: "No authorization header" });

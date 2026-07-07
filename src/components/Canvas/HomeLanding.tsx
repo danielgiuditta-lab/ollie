@@ -22,8 +22,8 @@ interface HomeLandingProps {
   setSelectedFile: (file: any) => void;
   setProjectName: (name: string) => void;
   handleSendMessage: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
-  setDriveFolderId?: (id: string | null) => void;
-  handleFolderIngest?: (file: any) => Promise<void>;
+  setActiveSpaceId?: (id: string | null) => void;
+  handleSpaceIngest?: (file: any) => Promise<void>;
   suggestedList: CoverSlideItem[];
   setSuggestedList: React.Dispatch<React.SetStateAction<CoverSlideItem[]>>;
   isLoadingDrive: boolean;
@@ -380,8 +380,8 @@ export function HomeLanding({
   setSelectedFile,
   setProjectName,
   handleSendMessage,
-  setDriveFolderId,
-  handleFolderIngest,
+  setActiveSpaceId,
+  handleSpaceIngest,
   suggestedList,
   setSuggestedList,
   isLoadingDrive,
@@ -734,12 +734,12 @@ export function HomeLanding({
     const isRealFile = item.isReal || !!item.mimeType || !!item.driveId || item.type === 'file';
     if (isRealFile) {
       if (item.type === 'folder') {
-        if (setDriveFolderId) {
-          setDriveFolderId(item.id);
+        if (setActiveSpaceId) {
+          setActiveSpaceId(item.id);
         }
         setProjectName(item.name);
-        if (handleFolderIngest) {
-          await handleFolderIngest(item);
+        if (handleSpaceIngest) {
+          await handleSpaceIngest(item);
         }
         setViewState('files');
       } else {
@@ -942,7 +942,7 @@ export function HomeLanding({
             Sign In with Google
           </h2>
           <p className="text-sm text-slate-500 dark:text-neutral-400 leading-relaxed max-w-sm mb-4">
-            Connect your workspace to access real-time cloud data, fetch suggested folders, and run live interactive sandboxes.
+            Connect your workspace to access real-time cloud data, fetch suggested spaces, and run live interactive sandboxes.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
