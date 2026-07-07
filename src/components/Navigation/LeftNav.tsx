@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ContextMenu } from '../Shared/ContextMenu';
+import logoImg from '../../assets/logo.png';
 
 // Configuration switch to toggle between:
 // - Model A (false): 1 canonical chat per space (chevron points right, clicks directly open the space).
@@ -175,14 +176,14 @@ export function LeftNav({
       id={isExpandedActive ? 'left-nav-expanded' : 'left-nav-collapsed'}
     >
       {/* 1. Brand Logo Header */}
-      <div className={`flex items-center shrink-0 w-full px-4 relative h-[48px] ${isExpandedActive ? 'justify-start' : 'justify-center'}`}>
+      <div className={`flex items-center shrink-0 w-full relative h-[48px] ${isExpandedActive ? 'pl-[28px] justify-start' : 'justify-center'}`}>
         <div 
           onClick={() => onViewChange && onViewChange('home')}
-          className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#3186FF] via-[#E03B8B] to-[#00C676] p-[2.5px] flex items-center justify-center shadow-3xs cursor-pointer hover:scale-102 active:scale-98 transition-transform duration-150"
+          className={`cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center ${
+            isExpandedActive ? 'w-6 h-6' : 'w-10 h-10'
+          }`}
         >
-          <div className="w-full h-full bg-white dark:bg-[#1E1F22] rounded-[9px] flex items-center justify-center">
-            <div className="w-[12px] h-[12px] bg-gradient-to-tr from-[#3186FF] via-[#E03B8B] to-[#00C676] rounded-[3px]"></div>
-          </div>
+          <img src={logoImg} alt="Logo" className="w-6 h-6 object-contain" />
         </div>
       </div>
 
@@ -332,28 +333,29 @@ export function LeftNav({
           })}
 
           {/* New Space Button below the last space */}
-          {isExpandedActive ? (
+          {isExpandedActive && (
             <div 
               onClick={onCreateSpace}
-              className="h-[40px] px-3 rounded-[20px] flex items-center justify-between cursor-pointer transition-colors duration-200 shrink-0 text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 mt-2"
-              title="Create New Space"
+              className="h-[40px] px-3 rounded-[20px] flex items-center cursor-pointer transition-colors duration-200 shrink-0 text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white mt-2"
+              title="Create space"
             >
               <div className="flex items-center gap-3.5 min-w-0">
-                <span className="material-symbols-rounded shrink-0 text-blue-500 font-semibold" style={{ fontSize: '24px' }}>
+                <span 
+                  className="material-symbols-rounded shrink-0" 
+                  style={{ 
+                    fontSize: '24px', 
+                    fontVariationSettings: "'FILL' 0, 'wght' 360"
+                  }}
+                >
                   add
                 </span>
-                <span className="text-[14px] leading-none font-semibold text-blue-600 dark:text-blue-400">New Space</span>
+                <span 
+                  className="text-[14px] leading-none font-medium"
+                  style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
+                >
+                  Create space
+                </span>
               </div>
-            </div>
-          ) : (
-            <div 
-              onClick={onCreateSpace}
-              className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 mx-auto text-slate-705 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 mt-2 border border-dashed border-slate-300 dark:border-slate-700"
-              title="Create New Space"
-            >
-              <span className="material-symbols-rounded text-blue-500 font-semibold" style={{ fontSize: '24px' }}>
-                add
-              </span>
             </div>
           )}
         </div>
