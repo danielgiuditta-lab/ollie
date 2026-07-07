@@ -1,4 +1,5 @@
 import React from 'react';
+import { themeTokens } from '../../utils/themeTokens';
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
@@ -14,10 +15,10 @@ export function IconButton({ children, variant = 'header', theme = 'light', clas
   const baseClasses = "w-[40px] h-[40px] rounded-full flex items-center justify-center cursor-pointer transition select-none outline-none shrink-0";
   const isDark = theme === 'dark';
   const variantClasses = variant === 'header' 
-    ? "bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-slate-800 dark:text-white"
+    ? `bg-transparent ${themeTokens.hoverBg} text-slate-800 dark:text-white`
     : variant === 'borderless'
-      ? "bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white border-0"
-      : "bg-[#003BC4]/5 dark:bg-[#282A2D] hover:bg-[#003BC4]/10 dark:hover:bg-[#35373A] text-slate-700 dark:text-white hover:text-slate-900 dark:hover:text-white border-0";
+      ? `bg-transparent ${themeTokens.hoverBg} ${themeTokens.text.idle} border-0`
+      : `${themeTokens.filledBg} ${themeTokens.filledHoverBg} ${themeTokens.text.idle} border-0`;
 
   return (
     <button 

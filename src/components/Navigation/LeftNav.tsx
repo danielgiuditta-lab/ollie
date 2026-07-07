@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ContextMenu } from '../Shared/ContextMenu';
 import logoImg from '../../assets/logo.png';
+import { themeTokens } from '../../utils/themeTokens';
 
 interface LeftNavProps {
   theme?: 'light' | 'dark';
@@ -205,8 +206,8 @@ export function LeftNav({
             onClick={() => onViewChange && onViewChange('home')}
             className={`h-[40px] px-2 rounded-[20px] flex items-center justify-between cursor-pointer transition-colors duration-200 shrink-0 ${
               activeView === 'home' 
-                ? 'bg-[#f0f4f9] dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold'
-                : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10'
+                ? `${themeTokens.selectedBg} ${themeTokens.text.selected}`
+                : `${themeTokens.text.idle} ${themeTokens.hoverBg}`
             }`}
             title={isExpandedActive ? undefined : "Home"}
           >
@@ -255,8 +256,8 @@ export function LeftNav({
                   }}
                   className={`h-[40px] px-2 rounded-[20px] flex items-center justify-between group cursor-pointer transition-colors duration-200 shrink-0 ${
                     isActive 
-                      ? 'bg-[#f0f4f9] dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold'
-                      : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'
+                      ? `${themeTokens.selectedBg} ${themeTokens.text.selected}`
+                      : `${themeTokens.text.idle} ${themeTokens.hoverBg}`
                   }`}
                   title={isExpandedActive ? undefined : space.name}
                 >
@@ -309,8 +310,8 @@ export function LeftNav({
                           onClick={() => handleSelectChat(space, chat)}
                           className={`h-[32px] px-3 rounded-[20px] flex items-center cursor-pointer text-[14px] transition-colors duration-200 ${
                             isChatActive
-                              ? 'bg-[#f0f4f9] dark:bg-[#2B2D31] text-slate-900 dark:text-white font-semibold'
-                              : 'text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white font-medium'
+                              ? `${themeTokens.selectedBg} ${themeTokens.text.selected}`
+                              : `${themeTokens.text.idle} ${themeTokens.hoverBg} font-medium`
                           }`}
                           style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
                         >
@@ -327,7 +328,7 @@ export function LeftNav({
           {/* New Space Button below the last space */}
           <div 
             onClick={onCreateSpace}
-            className="h-[40px] px-2 rounded-[20px] flex items-center cursor-pointer transition-colors duration-200 shrink-0 text-slate-700 dark:text-[#E3E3E3] hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white mt-2"
+            className={`h-[40px] px-2 rounded-[20px] flex items-center cursor-pointer transition-colors duration-200 shrink-0 mt-2 ${themeTokens.text.idle} ${themeTokens.hoverBg}`}
             title="Create space"
           >
             <div className="flex items-center gap-3.5 min-w-0">
@@ -358,7 +359,7 @@ export function LeftNav({
       <div className="mt-auto flex flex-col items-start gap-4 pl-[16px] w-full select-none pb-2 shrink-0">
         <button 
           onClick={() => toggleExpand(!isExpandedActive)}
-          className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition border-none outline-none hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+          className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition border-none outline-none text-slate-500 dark:text-slate-400 ${themeTokens.hoverBg} hover:text-slate-850 dark:hover:text-white`}
           title={isExpandedActive ? "Collapse Panel" : "Expand Panel"}
         >
           <span className="material-symbols-rounded" style={{ fontSize: '24px' }}>

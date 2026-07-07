@@ -3,6 +3,7 @@ import { ChevronRight, ChevronDown, Users, Copy, Check, X, Shield, Globe, Histor
 import driveLogo from '../../assets/driveLogo.png';
 import { IconButton } from '../Shared/IconButton';
 import { HeaderTabButton } from './HeaderTabButton';
+import { themeTokens } from '../../utils/themeTokens';
 
 export function TopBar({ 
   onLogin, 
@@ -243,7 +244,9 @@ export function TopBar({
         />
         <button 
           className={`w-12 h-12 flex items-center justify-center cursor-pointer transition-all duration-300 rounded-full shrink-0 select-none ${
-            theme === 'dark' ? 'bg-[#282A2D] hover:bg-[#35373A]' : 'bg-[#003BC4]/5 hover:bg-[#003BC4]/10'
+            theme === 'dark' 
+              ? `${themeTokens.dark.filledBg} ${themeTokens.dark.filledHoverBg}` 
+              : `${themeTokens.light.filledBg} ${themeTokens.light.filledHoverBg}`
           } text-[#11151A] dark:text-[#E3E3E3] outline-none border-none`}
           onClick={() => {
             if (userProfile) {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { themeTokens } from '../../utils/themeTokens';
 
 export type TabType = 'gemini' | 'comments' | 'history';
 
@@ -82,8 +83,8 @@ export function HeaderTabButton({ tabType, isSelected, onClick, icon, id, theme 
             exit={{ opacity: 0 }}
             className={`absolute inset-0 w-full h-full rounded-full ${
               theme === 'dark' 
-                ? 'bg-[#282A2D] hover:bg-[#35373A]' 
-                : 'bg-[#003BC4]/5 hover:bg-[#003BC4]/10'
+                ? `${themeTokens.dark.filledBg} ${themeTokens.dark.filledHoverBg}` 
+                : `${themeTokens.light.filledBg} ${themeTokens.light.filledHoverBg}`
             } transition-colors duration-200`}
           />
         )}
@@ -93,7 +94,7 @@ export function HeaderTabButton({ tabType, isSelected, onClick, icon, id, theme 
       <div className={`relative z-10 select-none pointer-events-none transition-colors duration-200 ${
         isSelected 
           ? 'text-white font-semibold' 
-          : 'text-slate-700 dark:text-[#E3E3E3] hover:text-slate-900 dark:hover:text-white'
+          : themeTokens.text.idle
       }`}>
         {icon}
       </div>

@@ -1,4 +1,5 @@
 import { ChevronRight, X } from 'lucide-react';
+import { themeTokens } from '../../utils/themeTokens';
 
 interface CanvasHeaderProps {
   projectName?: string;
@@ -141,7 +142,7 @@ export function CanvasHeader({
         {!isHome && onToggleSourcesPanel && (
           <button
             onClick={onToggleSourcesPanel}
-            className="h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 bg-[#003BC4]/5 dark:bg-[#282A2D] hover:bg-[#003BC4]/10 dark:hover:bg-[#35373A] text-slate-700 dark:text-white"
+            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
             title="Toggle space context panel"
           >
             {isSourcesPanelOpen ? (
