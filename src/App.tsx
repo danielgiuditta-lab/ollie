@@ -3346,9 +3346,15 @@ export default function App() {
     } else if (file.filesToLoad && file.filesToLoad.length > 0 && !file.filesToLoad[0]?.content?.includes('Contents will load dynamically')) {
       setSandboxFiles(file.filesToLoad);
       const indexHTML = file.filesToLoad.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || file.filesToLoad[0];
-      setSelectedFile(indexHTML);
-      setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
-      setViewState('app');
+      if (!skipSelect) {
+        setSelectedFile(indexHTML);
+        setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
+        setViewState('app');
+      } else {
+        setSelectedFile(null);
+        setIndexFileSelected(false);
+        setViewState('files');
+      }
       setLoadedFolderId(folderId);
       return;
     } else {
@@ -3367,9 +3373,15 @@ export default function App() {
             if (chatData.sandboxFiles && chatData.sandboxFiles.length > 0) {
               setSandboxFiles(chatData.sandboxFiles);
               const indexHTML = chatData.sandboxFiles.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || chatData.sandboxFiles[0];
-              setSelectedFile(indexHTML);
-              setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
-              setViewState('app');
+              if (!skipSelect) {
+                setSelectedFile(indexHTML);
+                setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
+                setViewState('app');
+              } else {
+                setSelectedFile(null);
+                setIndexFileSelected(false);
+                setViewState('files');
+              }
               
               workspaceCacheRef.current[folderId] = {
                 ingestedFiles: ingestedFiles,
@@ -3378,8 +3390,8 @@ export default function App() {
                 sandboxUrl: chatData.sandboxUrl || '',
                 messages: chatData.messages || [],
                 projectName: chatData.projectName || fileName || projectName,
-                selectedFile: indexHTML,
-                indexFileSelected: indexHTML?.name?.toLowerCase().includes('index.html') ?? false
+                selectedFile: skipSelect ? null : indexHTML,
+                indexFileSelected: skipSelect ? false : (indexHTML?.name?.toLowerCase().includes('index.html') ?? false)
               };
               setLoadedFolderId(folderId);
               return;
@@ -3444,10 +3456,16 @@ export default function App() {
                      f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase().endsWith('.md');
             });
             autoSelected = indexHTML || preferredDoc || sandboxMapped[0];
-            setSelectedFile(autoSelected);
-            isIdx = autoSelected.name.toLowerCase().includes('index.html');
-            setIndexFileSelected(isIdx);
-            setViewState('app');
+            if (!skipSelect) {
+              setSelectedFile(autoSelected);
+              isIdx = autoSelected.name.toLowerCase().includes('index.html');
+              setIndexFileSelected(isIdx);
+              setViewState('app');
+            } else {
+              setSelectedFile(null);
+              setIndexFileSelected(false);
+              setViewState('files');
+            }
           } else {
             setSelectedFile(null);
           }
@@ -3499,8 +3517,8 @@ export default function App() {
             sandboxUrl: currentSandboxUrl,
             messages: currentMessages,
             projectName: file.name || projectName,
-            selectedFile: autoSelected,
-            indexFileSelected: isIdx
+            selectedFile: skipSelect ? null : autoSelected,
+            indexFileSelected: skipSelect ? false : isIdx
           };
 
           setViewState('files');
