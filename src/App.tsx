@@ -2253,19 +2253,16 @@ export default function App() {
         setSelectedFile(null);
       }
       
-      setViewState(newSandboxFiles.length > 0 ? 'files' : 'null');
+      setViewState('home');
       setSyncStatus('synced');
-
-      const welcomeText = `Welcome to **${cleanFolderName}**! This is a workspace contextually initialized with matching files and shared with ${selectedPeople.map(p => p.name).join(', ') || 'no one else yet'}. Ask me to start building files, like 'make an interactive dashboard'.`;
-      const initMessages = [{ role: 'bot', text: welcomeText }];
-      setMessages(initMessages);
+      setMessages([]);
 
       try {
         await fetch(`/api/chats/${spaceId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: initMessages,
+            messages: [],
             envId: null,
             sandboxUrl: '',
             projectName: cleanFolderName,
@@ -3352,19 +3349,14 @@ export default function App() {
         }
         setIndexFileSelected((cached.selectedFile || autoSelectFile)?.name?.toLowerCase().includes('index.html') ?? false);
 
-        if (cached.viewState) {
-          if (cached.viewState === 'files' && cached.sandboxFiles.length === 0 && !isHomeChatId(folderId)) {
-            setViewState('null');
-          } else {
-            setViewState(cached.viewState);
-          }
+        if (skipSelect) {
+          setViewState('home');
+          setSelectedFile(null);
         } else {
-          if (cached.sandboxFiles.length === 0 && !isHomeChatId(folderId)) {
-            setViewState('null');
-          } else if (!skipSelect) {
-            setViewState('app');
+          if (cached.viewState) {
+            setViewState(cached.viewState);
           } else {
-            setViewState('files');
+            setViewState('app');
           }
         }
       }
@@ -3518,7 +3510,7 @@ export default function App() {
                 } else {
                   setSelectedFile(null);
                   setIndexFileSelected(false);
-                  setViewState('files');
+                  setViewState('home');
                 }
                 
                 workspaceCacheRef.current[folderId] = {
@@ -3607,12 +3599,12 @@ export default function App() {
             } else {
               setSelectedFile(null);
               setIndexFileSelected(false);
-              setViewState('files');
+              setViewState('home');
             }
           } else {
             setSelectedFile(null);
             setIndexFileSelected(false);
-            setViewState(isHomeChatId(folderId) ? 'home' : 'null');
+            setViewState('home');
           }
 
           let currentMessages: any[] = [];
@@ -4153,7 +4145,7 @@ export default function App() {
                   currentUserId={localUser?.id}
                   selectedFile={selectedFile}
                 >
-                  <div className={((viewState === 'home' || (viewState === 'files' && !selectedFile)) && isHomeChatId(activeSpaceId)) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                  <div className={(viewState === 'home' || (viewState === 'files' && !selectedFile && isHomeChatId(activeSpaceId))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
                     <HomeLanding 
                       accessToken={accessToken} 
                       userProfile={userProfile} 

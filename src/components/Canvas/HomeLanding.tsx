@@ -584,10 +584,65 @@ export function HomeLanding({
       };
     });
 
-    setTodoItems(mappedTodos);
+    let finalTodos = [...mappedTodos];
+    const isHome = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
+    if (!isHome && projectName) {
+      const spaceName = projectName.trim();
+      const hasSpaceTasks = mappedTodos.some(t => 
+        (t.workspace || '').toLowerCase().includes(spaceName.toLowerCase()) ||
+        spaceName.toLowerCase().includes((t.workspace || '').toLowerCase())
+      );
+      
+      if (!hasSpaceTasks) {
+        const generatedTasks = [
+          {
+            id: `todo-gen-${activeSpaceId}-1`,
+            title: `Review and structure ${spaceName} index layout`,
+            description: `Consolidate components and resources in ${spaceName}. Working on task...`,
+            descriptionDone: `Consolidate components and resources in ${spaceName}. I did, please review.`,
+            workspace: spaceName,
+            sourceName: `${spaceName} Files`,
+            sourceMimeType: 'application/vnd.google-apps.document',
+            personName: 'Emily',
+            personAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
+            status: 'working',
+            involvesMe: true,
+            hasPreview: true,
+            previewContent: `Proposed index structure for ${spaceName}`,
+            filesToLoad: [
+              {
+                name: 'index.html',
+                type: 'code',
+                content: `<!-- ${spaceName} Dashboard -->\n<!DOCTYPE html>\n<html>\n<head>\n<title>${spaceName}</title>\n</head>\n<body>\n<h1>Welcome to ${spaceName}</h1>\n</body>\n</html>`,
+                mimeType: 'text/html'
+              }
+            ]
+          },
+          {
+            id: `todo-gen-${activeSpaceId}-2`,
+            title: `Draft presentation deck for ${spaceName} goals`,
+            description: `Reviewing team feedback on ${spaceName} roadmap presentation.`,
+            descriptionDone: `Draft presentation deck for ${spaceName} goals. I did, please review.`,
+            workspace: spaceName,
+            sourceName: 'Goals Deck',
+            sourceMimeType: 'application/vnd.google-apps.presentation',
+            personName: 'David',
+            personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+            status: 'done',
+            involvesMe: true,
+            hasPreview: false,
+            previewContent: '',
+            filesToLoad: []
+          }
+        ];
+        finalTodos = [...generatedTasks, ...finalTodos];
+      }
+    }
+
+    setTodoItems(finalTodos);
     const spaceKey = activeSpaceId || 'home';
-    todoCacheRef.current[spaceKey] = mappedTodos;
-  }, [digestData, activeSpaceId]);
+    todoCacheRef.current[spaceKey] = finalTodos;
+  }, [digestData, activeSpaceId, projectName]);
 
   // 40 seconds simulation timer when loading active proactive tasks
   useEffect(() => {
@@ -705,7 +760,8 @@ export function HomeLanding({
   };
 
   React.useEffect(() => {
-    if (!accessToken) {
+    const isMock = localBypassAuth || isLoggedInProp;
+    if (!accessToken && !isMock) {
       setDigestData(null);
       setTodoItems([]);
       return;
@@ -720,6 +776,48 @@ export function HomeLanding({
     }
 
     setTodoItems([]); // Clear mock tasks immediately when accessToken or space changes
+
+    if (!accessToken && isMock) {
+      const mockDigest = {
+        immediateActions: [
+          {
+            id: 'todo-proactive-1',
+            description: "Review Brand Guidelines & updates based on Emily's comments",
+            action: "Emily commented to consolidate the Brand Kit layout. Please review and update.",
+            source: "Branding"
+          },
+          {
+            id: 'todo-2',
+            description: 'Add the design strategy to Marketing campaign brief',
+            action: "Teammate suggested adding key design guidelines to the Marketing brief.",
+            source: 'Marketing'
+          },
+          {
+            id: 'todo-3',
+            description: 'Craft the strategy on Pricing Proposal doc',
+            action: "Update pricing tiers and structure on the pricing doc.",
+            source: 'Pricing Proposal'
+          }
+        ],
+        followUps: [
+          {
+            id: 'todo-4',
+            description: 'Update the sales performance tracker (annual_sales.csv)',
+            action: "Verify monthly figures against actual performance data.",
+            source: 'Sales'
+          },
+          {
+            id: 'todo-5',
+            description: 'Have an update on Operations for leads',
+            action: "Review leads pipeline and compile operations status summary.",
+            source: 'Operations'
+          }
+        ]
+      };
+      setDigestData(mockDigest);
+      return;
+    }
+
     const loadDigest = async () => {
       setIsDigestLoading(true);
       setDigestError(null);
