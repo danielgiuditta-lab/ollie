@@ -5,7 +5,6 @@ import { LeftNav } from './components/Navigation/LeftNav';
 import { TopBar } from './components/Navigation/TopBar';
 import { CanvasHeader } from './components/Navigation/CanvasHeader';
 import { CanvasMain } from './components/Canvas/CanvasMain';
-import { NullState } from './components/Canvas/NullState';
 import { AppView } from './components/Canvas/AppView';
 import { FilesList } from './components/Canvas/FilesList';
 import { FileViewer } from './components/Canvas/FileViewer';
@@ -2024,7 +2023,7 @@ export default function App() {
                 if (viewState !== 'app') {
                   setViewState('app');
                 }
-              } else if (viewState === 'null') {
+              } else if (viewState === 'null' || viewState === 'files') {
                 setViewState('app');
               }
             }
@@ -3492,7 +3491,7 @@ export default function App() {
                 } else {
                   setSelectedFile(null);
                   setIndexFileSelected(false);
-                  setViewState(chatData.sandboxFiles?.length > 0 ? 'files' : 'null');
+                  setViewState('files');
                 }
                 
                 workspaceCacheRef.current[folderId] = {
@@ -3581,12 +3580,12 @@ export default function App() {
             } else {
               setSelectedFile(null);
               setIndexFileSelected(false);
-              setViewState(sandboxMapped.length > 0 ? 'files' : 'null');
+              setViewState('files');
             }
           } else {
             setSelectedFile(null);
             setIndexFileSelected(false);
-            setViewState('null');
+            setViewState('files');
           }
 
           let currentMessages: any[] = [];
@@ -4022,11 +4021,7 @@ export default function App() {
             setActiveSidebar('gemini');
             setProjectName(task);
             setIsSourcesPanelOpen(false); // Collapse context panel by default
-            if (sandboxFiles.length > 0) {
-              setViewState('files');
-            } else {
-              setViewState('null');
-            }
+            setViewState('files');
             setSelectedFile(null);
           }
         }}
@@ -4115,7 +4110,7 @@ export default function App() {
           {/* Main Viewport Content first (on the LEFT) */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative gap-4">
             <div className="flex-1 min-h-0 relative">
-              {(viewState === 'home' || viewState === 'null' || viewState === 'ai_summary' || viewState === 'projector' || viewState === 'app' || viewState === 'files' || selectedFile) && (
+              {(viewState === 'home' || viewState === 'ai_summary' || viewState === 'projector' || viewState === 'app' || viewState === 'files' || selectedFile) && (
                 <CanvasMain 
                   viewState={viewState} 
                   setViewState={setViewState} 
@@ -4127,7 +4122,7 @@ export default function App() {
                   currentUserId={localUser?.id}
                   selectedFile={selectedFile}
                 >
-                  <div className={(viewState === 'home' || ((viewState === 'files' || viewState === 'app') && !selectedFile)) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                  <div className={(!isIngesting && (viewState === 'home' || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
                     <HomeLanding 
                       accessToken={accessToken} 
                       userProfile={userProfile} 
@@ -4159,72 +4154,11 @@ export default function App() {
                       onBypassAuth={() => setBypassAuth(true)}
                     />
                   </div>
-                  {viewState === 'null' && (
-                    isIngesting ? (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-[#1E1F22] rounded-[32px]">
-                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mb-4"></div>
-                         <p className="text-gray-600 dark:text-[#E3E3E3] font-medium text-lg">Ingesting Space...</p>
-                      </div>
-                    ) : (
-                      <NullState 
-                        accessToken={accessToken} 
-                        driveFiles={driveFiles}
-                        onFileClick={handleFileClick} 
-                        selectedDriveFiles={selectedDriveFiles}
-                        onToggleDriveFile={handleToggleDriveFile}
-                        onCreateSpaceWithSelected={() => createSpace()}
-                        isCreatingSpace={isCreatingSpace}
-                        onLogin={() => login()}
-                        isDriveLoading={isDriveLoading}
-                        onFileRemove={handleRemoveFile}
-                        onAddSuggestedFile={(file) => {
-                          const newFile = {
-                            name: file.name,
-                            type: 'code',
-                            content: file.content,
-                            driveId: file.driveId,
-                            mimeType: file.mimeType,
-                            id: `suggested-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
-                          };
-                          setSandboxFiles(prev => {
-                            const existsIdx = prev.findIndex(f => f.name === file.name);
-                            if (existsIdx !== -1) {
-                              const copy = [...prev];
-                              copy[existsIdx] = newFile;
-                              return copy;
-                            }
-                            return [...prev, newFile];
-                          });
-                          setSelectedFile(newFile);
-                          setIndexFileSelected(newFile.name.toLowerCase() === 'index.html' || newFile.name.toLowerCase().endsWith('/index.html'));
-                          setViewState('files');
-                        }}
-                        onUploadFile={(file) => {
-                          const reader = new FileReader();
-                          reader.onload = (e) => {
-                            const content = e.target?.result as string || '';
-                            setSandboxFiles(prev => {
-                              const existsIdx = prev.findIndex(f => f.name === file.name);
-                              const newFile = {
-                                name: file.name,
-                                type: 'code',
-                                content: content,
-                                mimeType: file.type,
-                                id: `uploaded-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
-                              };
-                              if (existsIdx !== -1) {
-                                const copy = [...prev];
-                                copy[existsIdx] = newFile;
-                                return copy;
-                              }
-                              return [...prev, newFile];
-                            });
-                            setViewState('files');
-                          };
-                          reader.readAsText(file);
-                        }}
-                      />
-                    )
+                  {isIngesting && (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-[#1E1F22] rounded-[32px]">
+                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mb-4"></div>
+                       <p className="text-gray-600 dark:text-[#E3E3E3] font-medium text-lg">Ingesting Space...</p>
+                    </div>
                   )}
                   {viewState === 'ai_summary' && (
                     <AISummaryView 
