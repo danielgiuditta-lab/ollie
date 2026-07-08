@@ -2273,6 +2273,22 @@ export default function App() {
       viewState: 'files'
     };
 
+    const spaceIdToUse = matchingSpace ? (typeof matchingSpace === 'string' ? matchingSpace : (matchingSpace.id || matchingSpace.activeSpaceId)) : 'home';
+    setRecentTasks(prev => {
+      const exists = prev.some(item => item && (item.id === tempChatId || item.chatId === tempChatId));
+      if (!exists) {
+        return [{
+          id: tempChatId,
+          chatId: tempChatId,
+          chatName: (task.titleDone || task.title || task.description || 'Task').substring(0, 28),
+          activeSpaceId: spaceIdToUse,
+          name: spaceName,
+          messages: proactiveMsgs
+        }, ...prev];
+      }
+      return prev;
+    });
+
     setActiveChatId(tempChatId);
     setMessages(proactiveMsgs);
     setActiveSidebar('gemini');
