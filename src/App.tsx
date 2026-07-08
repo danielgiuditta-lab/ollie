@@ -2166,15 +2166,7 @@ export default function App() {
 
   const handleProactiveTaskClick = (task: any) => {
     const spaceName = cleanWorkspaceName(task.workspace || task.sourceName || 'Workspace');
-    
     setProjectName(spaceName);
-    if (task.filesToLoad && task.filesToLoad.length > 0) {
-      setSandboxFiles(task.filesToLoad);
-      setSelectedFile(task.filesToLoad[0]);
-    } else {
-      setSandboxFiles([]);
-      setSelectedFile(null);
-    }
     setViewState('files');
     setActiveProactiveTask(task);
 
@@ -2189,12 +2181,60 @@ export default function App() {
     const resolvedSpaceName = matchingSpace ? matchingSpace.name : spaceName;
     setActiveSpaceId(resolvedSpaceId);
 
-    const matchedInDrive = driveFiles.find(f => 
-      f.name.toLowerCase() === spaceName.toLowerCase() ||
-      f.name.toLowerCase().replace(/\.[^/.]+$/, "") === spaceName.toLowerCase() ||
-      (task.filesToLoad?.[0]?.name && f.name.toLowerCase() === task.filesToLoad[0].name.toLowerCase())
-    );
-    const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || matchedInDrive?.id;
+    const allKnownDriveFiles = [...driveFiles, ...suggestedListCache];
+    const searchString = [
+      spaceName,
+      task.sourceName,
+      task.source,
+      task.title,
+      task.description,
+      task.workspace,
+      task.filesToLoad?.[0]?.name
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    const matchedInDrive = allKnownDriveFiles.find(f => {
+      if (!f || !f.name) return false;
+      const fNameLower = f.name.toLowerCase();
+      const fNameClean = fNameLower.replace(/\.[^/.]+$/, "").trim();
+      if (!fNameClean || fNameClean.length < 2) return false;
+      return fNameLower === (task.filesToLoad?.[0]?.name || '').toLowerCase() ||
+             fNameClean === spaceName.toLowerCase() ||
+             searchString.includes(fNameClean);
+    });
+    const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id;
+    const targetMime = task.filesToLoad?.[0]?.mimeType || task.sourceMimeType || matchedInDrive?.mimeType || 'application/vnd.google-apps.document';
+    const targetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || `${spaceName}.gdoc`;
+
+    if (task.filesToLoad && task.filesToLoad.length > 0) {
+      const updatedFiles = task.filesToLoad.map((f: any, idx: number) => {
+        if (idx === 0 && targetId) {
+          return {
+            ...f,
+            name: matchedInDrive?.name || f.name,
+            driveId: targetId,
+            id: `real-file-${targetId}`,
+            mimeType: matchedInDrive?.mimeType || f.mimeType || targetMime
+          };
+        }
+        return f;
+      });
+      setSandboxFiles(updatedFiles);
+      setSelectedFile(updatedFiles[0]);
+    } else if (targetId) {
+      const newFileObj = {
+        name: targetName,
+        type: 'code',
+        content: '',
+        driveId: targetId,
+        id: `real-file-${targetId}`,
+        mimeType: targetMime
+      };
+      setSandboxFiles([newFileObj]);
+      setSelectedFile(newFileObj);
+    } else {
+      setSandboxFiles([]);
+      setSelectedFile(null);
+    }
 
     if (targetId && accessToken) {
       (async () => {

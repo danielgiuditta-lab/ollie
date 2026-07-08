@@ -20,13 +20,23 @@ import imageIcon from '../../assets/image.png';
 export function cleanWorkspaceName(raw: string): string {
   if (!raw) return 'Workspace';
   let cleaned = raw;
-  const commentMatch = cleaned.match(/Comment\s+(?:by\s+.*?\s+)?(?:in|on)\s+['"]?([^'"]+)['"]?/i);
-  if (commentMatch && commentMatch[1]) {
-    cleaned = commentMatch[1];
-  } else if (cleaned.startsWith("Email from ")) {
-    cleaned = cleaned.replace("Email from ", "");
-  } else if (cleaned.startsWith("Chat in ")) {
-    cleaned = cleaned.replace("Chat in ", "");
+  const commentOnMatch = cleaned.match(/(?:commented|tagged|mentioned|replied|comment)\s+(?:you\s+|by\s+.*?\s+)?(?:in|on|at)\s+['"]?([^'".]+?)['"]?(?:\s+regarding|\s+to|\s+for|\s+with|\s*\.\s*|$)/i);
+  if (commentOnMatch && commentOnMatch[1]) {
+    cleaned = commentOnMatch[1];
+  } else {
+    const commentMatch = cleaned.match(/Comment\s+(?:by\s+.*?\s+)?(?:in|on)\s+['"]?([^'"]+)['"]?/i);
+    if (commentMatch && commentMatch[1]) {
+      cleaned = commentMatch[1];
+    } else if (cleaned.startsWith("Email from ")) {
+      cleaned = cleaned.replace("Email from ", "");
+    } else if (cleaned.startsWith("Chat in ")) {
+      cleaned = cleaned.replace("Chat in ", "");
+    } else {
+      const quoteMatch = cleaned.match(/(?:in|on|to|for|regarding)\s+['"]([^'"]+)['"]/i);
+      if (quoteMatch && quoteMatch[1]) {
+        cleaned = quoteMatch[1];
+      }
+    }
   }
   cleaned = cleaned.split(' · ')[0].split(' / ')[0].replace(/\s*\/\s*Calendar Invite.*$/i, '').replace(/(?:from|by|at)\s+.*$/i, '').trim();
   cleaned = cleaned.replace(/^['"]|['"]$/g, '').trim();

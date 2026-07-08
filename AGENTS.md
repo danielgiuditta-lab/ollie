@@ -8,6 +8,7 @@ This file contains persistent rules and project-specific conventions for the AI 
 - **Language Consistency:** Stick strictly to React JSX (`.jsx`) and standard JavaScript unless instructed otherwise. Avoid strict TypeScript configurations to ensure smooth browser preview compilation.
 - **State Management:** Keep React states localized where possible. For app-wide UI states (like toggling sidebars or canvas views), lift state clearly to `App.jsx` or use lightweight context.
 - **Always Use Existing UI Components:** Do not improvise custom font styles, headers, or ad-hoc tags when rendering titles or standard UI elements. Always reuse existing shared design components (such as `<NullTitle>`, `<Button>`, or `<IconButton>`) when possible to maintain visual consistency across the platform.
+- **Simplicity First (Output & Code Generation):** Keep all generated code, tools, and UI outputs as simple and minimal as possible. Do not over-engineer or add unnecessary complexity, even when generating custom applications like a Kanban board. Aim for clear, straightforward, and lean implementations without extra bells and whistles.
 
 ## 2. Styling & Design
 - **Tailwind First:** Rely exclusively on Tailwind CSS utility classes. Avoid creating custom CSS files or inline styles.

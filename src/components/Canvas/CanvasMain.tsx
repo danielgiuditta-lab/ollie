@@ -57,12 +57,7 @@ export function CanvasMain({
               )}
             </div>
           ) : (
-            <div className="flex-1 w-full h-full relative flex items-center justify-center overflow-hidden bg-slate-50/50 dark:bg-slate-900/10">
-              {/* Agent Building Indicator (Animated Undulating Glow) */}
-              <div className="absolute top-20 -left-10 w-96 h-96 bg-blue-300/20 dark:bg-blue-900/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob pointer-events-none"></div>
-              <div className="absolute top-20 -right-10 w-96 h-96 bg-indigo-300/20 dark:bg-indigo-900/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob pointer-events-none" style={{ animationDelay: '2s' }}></div>
-              <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-300/20 dark:bg-purple-900/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob pointer-events-none" style={{ animationDelay: '4s' }}></div>
-              
+            <div className="flex-1 w-full h-full relative flex items-center justify-center overflow-hidden bg-transparent">
               <div className="relative z-10 flex items-center justify-center">
                 <ShapeLoader size={180} />
               </div>
