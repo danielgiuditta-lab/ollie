@@ -3420,23 +3420,28 @@ export default function App() {
       setIngestedFiles([]);
       setSelectedFile(null);
       
-      try {
-        const chatRes = await fetch(`/api/chats/${folderId}`);
-        if (chatRes.ok) {
-          const chatData = await chatRes.json();
-          if (chatData && chatData.messages) {
-            setMessages(chatData.messages);
+      const cachedChat = chatSessionsCacheRef.current[folderId];
+      if (cachedChat && cachedChat.messages && !cachedChat.messages.some((m: any) => m.isProactiveReview)) {
+        setMessages(cachedChat.messages);
+      } else {
+        try {
+          const chatRes = await fetch(`/api/chats/${folderId}`);
+          if (chatRes.ok) {
+            const chatData = await chatRes.json();
+            if (chatData && chatData.messages && !chatData.messages.some((m: any) => m.isProactiveReview)) {
+              setMessages(chatData.messages);
+              chatSessionsCacheRef.current[folderId] = { messages: chatData.messages };
+            } else {
+              setMessages([]);
+              chatSessionsCacheRef.current[folderId] = { messages: [] };
+            }
           } else {
             setMessages([]);
           }
-          setMembers(chatData.members || []);
-        } else {
+        } catch (err) {
+          console.error("Failed to load home chat:", err);
           setMessages([]);
-          setMembers([]);
         }
-      } catch (err) {
-        console.error("Failed to load home chat:", err);
-        setMessages([]);
       }
       setViewState('home');
       return;
@@ -4260,7 +4265,7 @@ export default function App() {
               const spaceObj = recentTasks.find(t => (t.id || t.activeSpaceId) === activeSpaceId) || projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
               handleFileClick(spaceObj, true, { isFromRecents: true, targetChatId: activeSpaceId });
             } else {
-              handleFileClick(getHomeChatId(), true);
+              handleFileClick(getHomeChatId(), true, { isFromRecents: true, targetChatId: getHomeChatId() });
               setHomeJourney('search');
             }
           }}
@@ -4273,7 +4278,7 @@ export default function App() {
               const spaceObj = recentTasks.find(t => (t.id || t.activeSpaceId) === activeSpaceId) || projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
               handleFileClick(spaceObj, true, { isFromRecents: true, targetChatId: activeSpaceId });
             } else {
-              handleFileClick(getHomeChatId(), true);
+              handleFileClick(getHomeChatId(), true, { isFromRecents: true, targetChatId: getHomeChatId() });
               setHomeJourney('search');
             }
           }}
@@ -4286,7 +4291,7 @@ export default function App() {
               const spaceObj = recentTasks.find(t => (t.id || t.activeSpaceId) === activeSpaceId) || projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
               handleFileClick(spaceObj, true, { isFromRecents: true, targetChatId: activeSpaceId });
             } else {
-              handleFileClick(getHomeChatId(), true);
+              handleFileClick(getHomeChatId(), true, { isFromRecents: true, targetChatId: getHomeChatId() });
             }
           }}
           selectedFile={selectedFile}
