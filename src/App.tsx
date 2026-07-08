@@ -3406,10 +3406,6 @@ export default function App() {
       targetChatId = folderId;
     }
 
-    if (typeof targetChatId === 'string' && targetChatId.includes('-proactive-')) {
-      return;
-    }
-
     setActiveChatId(targetChatId);
 
     if (isHomeChatId(folderId)) {
@@ -3468,35 +3464,36 @@ export default function App() {
       setMessages([]);
     }
 
-    const cached = workspaceCacheRef.current[folderId];
+    const cached = workspaceCacheRef.current[targetChatId] || workspaceCacheRef.current[folderId];
     const cachedChat = chatSessionsCacheRef.current[targetChatId];
     
     if (cached) {
       // 1. Restore from cache immediately
-      setIngestedFiles(cached.ingestedFiles);
-      setSandboxFiles(cached.sandboxFiles);
-      setEnvId(cached.envId);
-      setSandboxUrl(cached.sandboxUrl);
+      setIngestedFiles(cached.ingestedFiles || []);
+      setSandboxFiles(cached.sandboxFiles || []);
+      setEnvId(cached.envId || null);
+      setSandboxUrl(cached.sandboxUrl || '');
       if (cached.projectName) {
         setProjectName(cached.projectName);
       }
       
       if (cachedChat) {
-        setMessages(cachedChat.messages);
+        setMessages(cachedChat.messages || []);
       } else if (isFromRecents && !targetChatId.endsWith('-temp')) {
-        setMessages(cached.messages);
+        setMessages(cached.messages || []);
       } else {
         setMessages([]);
       }
       
       const isSameSpace = activeSpaceId === folderId;
-      if (skipSelect) {
+      const shouldSkipSelect = skipSelect && targetChatId === folderId;
+      if (shouldSkipSelect) {
         setSelectedFile(null);
         setIndexFileSelected(false);
         setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'null');
-      } else if (!isSameSpace) {
+      } else if (!isSameSpace || targetChatId !== folderId) {
         const autoSelectFile = cached.sandboxFiles?.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || cached.selectedFile || cached.sandboxFiles?.[0];
-        setSelectedFile(cached.selectedFile || autoSelectFile);
+        setSelectedFile(cached.selectedFile || autoSelectFile || null);
         setIndexFileSelected((cached.selectedFile || autoSelectFile)?.name?.toLowerCase().includes('index.html') ?? false);
         if (cached.viewState) {
           setViewState(cached.viewState);
@@ -4261,7 +4258,7 @@ export default function App() {
               setSelectedFile(null);
               setViewState('files');
               const spaceObj = recentTasks.find(t => (t.id || t.activeSpaceId) === activeSpaceId) || projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
-              handleFileClick(spaceObj, true, { isFromRecents: true });
+              handleFileClick(spaceObj, true, { isFromRecents: true, targetChatId: activeSpaceId });
             } else {
               handleFileClick(getHomeChatId(), true);
               setHomeJourney('search');
@@ -4274,7 +4271,7 @@ export default function App() {
               setSelectedFile(null);
               setViewState('files');
               const spaceObj = recentTasks.find(t => (t.id || t.activeSpaceId) === activeSpaceId) || projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
-              handleFileClick(spaceObj, true, { isFromRecents: true });
+              handleFileClick(spaceObj, true, { isFromRecents: true, targetChatId: activeSpaceId });
             } else {
               handleFileClick(getHomeChatId(), true);
               setHomeJourney('search');
@@ -4287,7 +4284,7 @@ export default function App() {
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setViewState('files');
               const spaceObj = recentTasks.find(t => (t.id || t.activeSpaceId) === activeSpaceId) || projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
-              handleFileClick(spaceObj, true, { isFromRecents: true });
+              handleFileClick(spaceObj, true, { isFromRecents: true, targetChatId: activeSpaceId });
             } else {
               handleFileClick(getHomeChatId(), true);
             }

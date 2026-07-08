@@ -552,6 +552,7 @@ export function HomeLanding({
 
   const localTodoCacheRef = React.useRef<Record<string, any[]>>({});
   const todoCacheRef = todoCacheRefProp || localTodoCacheRef;
+  const globalDigestCacheRef = React.useRef<{ token: string | null, data: any } | null>(null);
 
   // Bind live Workspace Digest data to Tasks when loaded
   useEffect(() => {
@@ -843,6 +844,13 @@ export function HomeLanding({
       return;
     }
 
+    if (globalDigestCacheRef.current && globalDigestCacheRef.current.token === accessToken && accessToken) {
+      setDigestData({ ...globalDigestCacheRef.current.data, spaceId: activeSpaceId });
+      setIsDigestLoading(false);
+      setDigestError(null);
+      return;
+    }
+
     setDigestData(null);
 
     const isMock = localBypassAuth || isLoggedInProp;
@@ -867,7 +875,7 @@ export function HomeLanding({
             id: 'todo-2',
             description: 'Add the design strategy to Marketing campaign brief',
             action: "Teammate suggested adding key design guidelines to the Marketing brief.",
-            source: 'Marketing'
+            source: "Marketing"
           },
           {
             id: 'todo-3',
@@ -904,6 +912,7 @@ export function HomeLanding({
         });
         if (res.ok) {
           const data = await res.json();
+          globalDigestCacheRef.current = { token: accessToken, data };
           setDigestData({ ...data, spaceId: activeSpaceId });
         } else {
           const errText = await res.text();

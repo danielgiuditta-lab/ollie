@@ -833,120 +833,128 @@ async function startServer() {
       let chats: any[] = [];
       let comments: any[] = [];
 
-      // 1. Fetch Gmail threads
-      try {
-        const gmailListUrl = `https://gmail.googleapis.com/gmail/v1/users/me/threads?maxResults=5`;
-        const gmailListRes = await fetch(gmailListUrl, { headers });
-        if (gmailListRes.ok) {
-          const listData = await gmailListRes.json();
-          const threads = listData.threads || [];
-          const detailPromises = threads.map(async (t: any) => {
-            try {
-              const detailUrl = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${t.id}`;
-              const detailRes = await fetch(detailUrl, { headers });
-              if (detailRes.ok) {
-                const detail = await detailRes.json();
-                const lastMsg = detail.messages?.[detail.messages.length - 1];
-                const headersList = lastMsg?.payload?.headers || [];
-                const subject = headersList.find((h: any) => h.name === 'Subject' || h.name === 'subject')?.value || 'No Subject';
-                const from = headersList.find((h: any) => h.name === 'From' || h.name === 'from')?.value || 'Unknown Sender';
-                const date = headersList.find((h: any) => h.name === 'Date' || h.name === 'date')?.value || '';
-                return {
-                  id: t.id,
-                  subject,
-                  from,
-                  date,
-                  snippet: lastMsg?.snippet || t.snippet || ''
-                };
-              }
-            } catch (err) {
-              console.warn(`Failed to fetch gmail thread detail for ${t.id}:`, err);
-            }
-            return null;
-          });
-          const detailsResolved = await Promise.all(detailPromises);
-          emails = detailsResolved.filter(Boolean);
-        } else {
-          console.warn(`Gmail API returned status ${gmailListRes.status} during list`);
-        }
-      } catch (err) {
-        console.warn("Gmail integration fetch failed:", err);
-      }
-
-      // 2. Fetch Google Chat messages
-      try {
-        const chatUrl = `https://chat.googleapis.com/v1/spaces/-/messages:search`;
-        const chatRes = await fetch(chatUrl, {
-          method: "POST",
-          headers: {
-            ...headers,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            filter: `createTime >= "${twoDaysAgoStr}"`
-          })
-        });
-        if (chatRes.ok) {
-          const chatData = await chatRes.json();
-          const messages = chatData.messages || [];
-          chats = messages.slice(0, 15).map((m: any) => ({
-            text: m.text,
-            createTime: m.createTime,
-            sender: m.sender?.displayName || 'Unknown',
-            space: m.space?.displayName || m.space?.name || 'Direct Message'
-          }));
-        } else {
-          console.warn(`Google Chat API returned status ${chatRes.status} during search`);
-        }
-      } catch (err) {
-        console.warn("Google Chat integration fetch failed:", err);
-      }
-
-      // 3. Fetch Drive Comments
-      try {
-        const driveQuery = `modifiedTime > '${sevenDaysAgoStr}' and trashed = false and (mimeType = 'application/vnd.google-apps.document' or mimeType = 'application/vnd.google-apps.spreadsheet' or mimeType = 'application/vnd.google-apps.presentation')`;
-        const driveUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(driveQuery)}&pageSize=8&fields=files(id,name,mimeType,modifiedTime)`;
-        const driveRes = await fetch(driveUrl, { headers });
-        if (driveRes.ok) {
-          const driveData = await driveRes.json();
-          const files = driveData.files || [];
-          const commentPromises = files.map(async (file: any) => {
-            try {
-              const commentsUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/comments?fields=comments(id,content,author(displayName,emailAddress),createdTime,resolved,replies)`;
-              const commentsRes = await fetch(commentsUrl, { headers });
-              if (commentsRes.ok) {
-                const commentData = await commentsRes.json();
-                const unresolved = (commentData.comments || []).filter((c: any) => !c.resolved);
-                if (unresolved.length > 0) {
+      const fetchEmails = async () => {
+        try {
+          const gmailListUrl = `https://gmail.googleapis.com/gmail/v1/users/me/threads?maxResults=5`;
+          const gmailListRes = await fetchWithTimeout(gmailListUrl, { headers }, 2500);
+          if (gmailListRes.ok) {
+            const listData = await gmailListRes.json();
+            const threads = listData.threads || [];
+            const detailPromises = threads.map(async (t: any) => {
+              try {
+                const detailUrl = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${t.id}`;
+                const detailRes = await fetchWithTimeout(detailUrl, { headers }, 2500);
+                if (detailRes.ok) {
+                  const detail = await detailRes.json();
+                  const lastMsg = detail.messages?.[detail.messages.length - 1];
+                  const headersList = lastMsg?.payload?.headers || [];
+                  const subject = headersList.find((h: any) => h.name === 'Subject' || h.name === 'subject')?.value || 'No Subject';
+                  const from = headersList.find((h: any) => h.name === 'From' || h.name === 'from')?.value || 'Unknown Sender';
+                  const date = headersList.find((h: any) => h.name === 'Date' || h.name === 'date')?.value || '';
                   return {
-                    fileId: file.id,
-                    fileName: file.name,
-                    mimeType: file.mimeType,
-                    comments: unresolved.map((c: any) => ({
-                      content: c.content,
-                      author: c.author?.displayName || 'Unknown',
-                      createdTime: c.createdTime,
-                      replies: (c.replies || []).map((r: any) => ({
-                        content: r.content,
-                        author: r.author?.displayName || 'Unknown'
-                      }))
-                    }))
+                    id: t.id,
+                    subject,
+                    from,
+                    date,
+                    snippet: lastMsg?.snippet || t.snippet || ''
                   };
                 }
+              } catch (err) {
+                console.warn(`Failed to fetch gmail thread detail for ${t.id}:`, err);
               }
-            } catch (err) {
-              console.warn(`Failed to fetch comments for file ${file.name}:`, err);
-            }
-            return null;
-          });
-          const commentsResolved = await Promise.all(commentPromises);
-          comments = commentsResolved.filter(Boolean);
-        } else {
-          console.warn(`Drive API returned status ${driveRes.status} during list`);
+              return null;
+            });
+            const detailsResolved = await Promise.all(detailPromises);
+            return detailsResolved.filter(Boolean);
+          } else {
+            console.warn(`Gmail API returned status ${gmailListRes.status} during list`);
+          }
+        } catch (err) {
+          console.warn("Gmail integration fetch failed:", err);
         }
-      } catch (err) {
-        console.warn("Drive Comments integration fetch failed:", err);
-      }
+        return [];
+      };
+
+      const fetchChats = async () => {
+        try {
+          const chatUrl = `https://chat.googleapis.com/v1/spaces/-/messages:search`;
+          const chatRes = await fetchWithTimeout(chatUrl, {
+            method: "POST",
+            headers: {
+              ...headers,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              filter: `createTime >= "${twoDaysAgoStr}"`
+            })
+          }, 2500);
+          if (chatRes.ok) {
+            const chatData = await chatRes.json();
+            const messages = chatData.messages || [];
+            return messages.slice(0, 15).map((m: any) => ({
+              text: m.text,
+              createTime: m.createTime,
+              sender: m.sender?.displayName || 'Unknown',
+              space: m.space?.displayName || m.space?.name || 'Direct Message'
+            }));
+          } else {
+            console.warn(`Google Chat API returned status ${chatRes.status} during search`);
+          }
+        } catch (err) {
+          console.warn("Google Chat integration fetch failed:", err);
+        }
+        return [];
+      };
+
+      const fetchComments = async () => {
+        try {
+          const driveQuery = `modifiedTime > '${sevenDaysAgoStr}' and trashed = false and (mimeType = 'application/vnd.google-apps.document' or mimeType = 'application/vnd.google-apps.spreadsheet' or mimeType = 'application/vnd.google-apps.presentation')`;
+          const driveUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(driveQuery)}&pageSize=8&fields=files(id,name,mimeType,modifiedTime)`;
+          const driveRes = await fetchWithTimeout(driveUrl, { headers }, 2500);
+          if (driveRes.ok) {
+            const driveData = await driveRes.json();
+            const files = driveData.files || [];
+            const commentPromises = files.map(async (file: any) => {
+              try {
+                const commentsUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/comments?fields=comments(id,content,author(displayName,emailAddress),createdTime,resolved,replies)`;
+                const commentsRes = await fetchWithTimeout(commentsUrl, { headers }, 2500);
+                if (commentsRes.ok) {
+                  const commentData = await commentsRes.json();
+                  const unresolved = (commentData.comments || []).filter((c: any) => !c.resolved);
+                  if (unresolved.length > 0) {
+                    return {
+                      fileId: file.id,
+                      fileName: file.name,
+                      mimeType: file.mimeType,
+                      comments: unresolved.map((c: any) => ({
+                        content: c.content,
+                        author: c.author?.displayName || 'Unknown',
+                        createdTime: c.createdTime,
+                        replies: (c.replies || []).map((r: any) => ({
+                          content: r.content,
+                          author: r.author?.displayName || 'Unknown'
+                        }))
+                      }))
+                    };
+                  }
+                }
+              } catch (err) {
+                console.warn(`Failed to fetch comments for file ${file.name}:`, err);
+              }
+              return null;
+            });
+            const commentsResolved = await Promise.all(commentPromises);
+            return commentsResolved.filter(Boolean);
+          } else {
+            console.warn(`Drive API returned status ${driveRes.status} during list`);
+          }
+        } catch (err) {
+          console.warn("Drive Comments integration fetch failed:", err);
+        }
+        return [];
+      };
+
+      [emails, chats, comments] = await Promise.all([fetchEmails(), fetchChats(), fetchComments()]);
 
       const hasData = emails.length > 0 || chats.length > 0 || comments.length > 0;
       if (!hasData) {
