@@ -168,7 +168,7 @@ export default function App() {
   }, [userProfile?.email]);
 
   const isHomeChatId = useCallback((id: string | null) => {
-    return !id || id.startsWith('home_');
+    return !id || id === 'home' || id === 'home_guest' || id.startsWith('home_');
   }, []);
 
   // Spaces Platform States
