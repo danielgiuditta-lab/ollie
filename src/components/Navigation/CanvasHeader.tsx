@@ -121,8 +121,19 @@ export function CanvasHeader({
 
     let artifactName = selectedFile ? selectedFile.name : (viewState === 'ai_summary' ? 'Search Summary' : '');
     if (activeProactiveTask) {
-      const isDone = activeProactiveTask.status === 'done' || activeProactiveTask.status === 'approved';
-      artifactName = isDone ? (activeProactiveTask.titleDone || activeProactiveTask.title) : (activeProactiveTask.title || artifactName);
+      let rawTaskName = activeProactiveTask.source || activeProactiveTask.sourceName || activeProactiveTask.description || activeProactiveTask.title || '';
+      let cleanedTaskName = cleanWorkspaceName(rawTaskName);
+      if (cleanedTaskName.toLowerCase() === spaceName.toLowerCase() || !cleanedTaskName) {
+        if (activeProactiveTask.personName && activeProactiveTask.personName !== 'Collaborator') {
+          cleanedTaskName = `Comment by ${activeProactiveTask.personName}`;
+        } else {
+          cleanedTaskName = activeProactiveTask.title || 'Proposal';
+        }
+      }
+      if (cleanedTaskName.length > 32) {
+        cleanedTaskName = cleanedTaskName.substring(0, 30).trim() + '...';
+      }
+      artifactName = cleanedTaskName;
     }
 
     return (

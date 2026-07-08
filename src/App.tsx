@@ -2163,6 +2163,56 @@ export default function App() {
     setViewState('files');
     setActiveProactiveTask(task);
 
+    const matchedInDrive = driveFiles.find(f => 
+      f.name.toLowerCase() === spaceName.toLowerCase() ||
+      f.name.toLowerCase().replace(/\.[^/.]+$/, "") === spaceName.toLowerCase() ||
+      (task.filesToLoad?.[0]?.name && f.name.toLowerCase() === task.filesToLoad[0].name.toLowerCase())
+    );
+    const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || matchedInDrive?.id;
+
+    if (targetId && accessToken) {
+      (async () => {
+        try {
+          const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${targetId}?fields=id,name,mimeType`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
+          if (metaRes.ok) {
+            const meta = await metaRes.json();
+            const mType = (meta.mimeType || '').toLowerCase();
+            let expUrl = '';
+            if (mType.includes('document')) {
+              expUrl = `https://www.googleapis.com/drive/v3/files/${targetId}/export?mimeType=text/plain`;
+            } else if (mType.includes('spreadsheet')) {
+              expUrl = `https://www.googleapis.com/drive/v3/files/${targetId}/export?mimeType=text/csv`;
+            } else if (mType.includes('presentation') || mType.includes('slide')) {
+              expUrl = `https://www.googleapis.com/drive/v3/files/${targetId}/export?mimeType=text/plain`;
+            } else {
+              expUrl = `https://www.googleapis.com/drive/v3/files/${targetId}?alt=media`;
+            }
+            
+            const contentRes = await fetch(expUrl, {
+              headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            if (contentRes.ok) {
+              const textOrDataUrl = await contentRes.text();
+              const realFileObj = {
+                name: meta.name || spaceName,
+                type: 'code',
+                content: textOrDataUrl,
+                driveId: targetId,
+                mimeType: meta.mimeType,
+                id: `real-file-${targetId}`
+              };
+              setSandboxFiles([realFileObj]);
+              setSelectedFile(realFileObj);
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching live Drive content in handleProactiveTaskClick:", err);
+        }
+      })();
+    }
+
     const tempChatId = `${spaceName}-proactive-${task.id || Date.now()}`;
     
     const handleApproveProactive = () => {
