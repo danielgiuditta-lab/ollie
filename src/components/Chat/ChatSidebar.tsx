@@ -305,10 +305,21 @@ export function ChatSidebar({
             ) : (
               <>
                 {/* Centered Title top block matching canvas h-[33.33%] */}
-                <div className="w-full h-[33.33%] flex items-center justify-center shrink-0">
-                  <NullTitle theme={theme}>
-                    {isHome ? 'How can I help' : `How can I help on ${projectName || 'this space'}`}
-                  </NullTitle>
+                <div className="w-full h-[33.33%] flex flex-col items-center justify-center shrink-0 gap-2 text-center">
+                  {activeSpaceId && activeSpaceId.startsWith('space-creation-') ? (
+                    <>
+                      <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400 font-sans">
+                        What's this Space about?
+                      </h2>
+                      <p className="text-sm text-slate-500 dark:text-neutral-400">
+                        Tell me the what your trying to accomplish in this Space
+                      </p>
+                    </>
+                  ) : (
+                    <NullTitle theme={theme}>
+                      {isHome ? 'How can I help?' : `How can I help on ${projectName || 'this space'}?`}
+                    </NullTitle>
+                  )}
                 </div>
 
                 {/* Suggestions list */}

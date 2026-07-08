@@ -88,3 +88,14 @@ A major part of the experience is showing a proactive agent drafting updates in 
     *   `done`: Status indicator switches to a green checkmark circle. The preview card displays a small visual outline of the document/slide outline with a zoom-on-hover effect.
 *   **Timer**: When a task has status `working`, a client-side timer triggers for $40$ seconds. Upon expiration, the status switches to `done` and updates the task descriptions with the synthesized outcome.
 *   **Staging Access**: Clicking the draft preview thumbnail loads the sandbox files (e.g. `Galaxy Deck.gslides`) and redirects the user to the files workspace canvas.
+
+---
+
+## 5. New Space Onboarding Choice Flow
+
+When a user creates a new space, instead of immediately generating and jumping into inferred tasks, the application presents a structured choice lifecycle:
+1. **Initial Creation State**: In the chat sidebar null state, the blue headline displays `What's this Space about?` with metaline `Tell me the what your trying to accomplish in this Space`, with no initial suggestion pills and context drawer collapsed. The canvas viewport remains completely blank (`bg-transparent`).
+2. **Onboarding Choice Pills**: Once the topic and team members are finalized (`handleFinalizeSpace`), the newly created space presents two onboarding choice pills in the chat null state:
+   - 🛡️ **Let Ollie track your work**: Sets space mode to `'tracking'`, activating the inferred task list (`To Do:`) in the space canvas.
+   - ⚡ **Build a custom tool with Ollie**: Sets space mode to `'tool'`, initiating a conversational prompt from Ollie to vibe code a custom collaborative app for the space.
+3. **Canonical Tool Launching**: When navigating back to any space where a custom tool (`index.html`) has been built, the canvas auto-selects that tool and mounts it in `<AppView>`, making the canvas itself function as that canonical tool.

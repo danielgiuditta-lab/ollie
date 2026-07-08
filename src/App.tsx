@@ -2141,7 +2141,7 @@ export default function App() {
     setSpaceCreationSources([]);
     setSelectedFile(null);
     setMembers([]);
-    setIsSourcesPanelOpen(true);
+    setIsSourcesPanelOpen(false);
     setViewState('app');
     setActiveSidebar('gemini');
     setIsAiSummarySnapped(false);
