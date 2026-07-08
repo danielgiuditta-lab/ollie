@@ -121,19 +121,17 @@ export function CanvasHeader({
 
     let artifactName = selectedFile ? selectedFile.name : (viewState === 'ai_summary' ? 'Search Summary' : '');
     if (activeProactiveTask) {
-      let rawTaskName = activeProactiveTask.source || activeProactiveTask.sourceName || activeProactiveTask.description || activeProactiveTask.title || '';
-      let cleanedTaskName = cleanWorkspaceName(rawTaskName);
-      if (cleanedTaskName.toLowerCase() === spaceName.toLowerCase() || !cleanedTaskName) {
-        if (activeProactiveTask.personName && activeProactiveTask.personName !== 'Collaborator') {
-          cleanedTaskName = `Comment by ${activeProactiveTask.personName}`;
-        } else {
-          cleanedTaskName = activeProactiveTask.title || 'Proposal';
-        }
-      }
-      if (cleanedTaskName.length > 32) {
-        cleanedTaskName = cleanedTaskName.substring(0, 30).trim() + '...';
+      let rawTaskName = selectedFile?.name || activeProactiveTask.sourceName || activeProactiveTask.source || 'Proposal';
+      let cleanedTaskName = cleanWorkspaceName(rawTaskName).replace(/\.(gdoc|gslides|gsheet|docx|pptx|xlsx|pdf|md|csv)$/i, '');
+      if (cleanedTaskName.length > 28) {
+        cleanedTaskName = cleanedTaskName.substring(0, 26).trim() + '...';
       }
       artifactName = cleanedTaskName;
+    } else if (artifactName && typeof artifactName === 'string') {
+      artifactName = artifactName.replace(/\.(gdoc|gslides|gsheet|docx|pptx|xlsx|pdf|md|csv)$/i, '');
+      if (artifactName.length > 28) {
+        artifactName = artifactName.substring(0, 26).trim() + '...';
+      }
     }
 
     return (
