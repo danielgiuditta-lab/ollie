@@ -302,6 +302,8 @@ export default function App() {
     messages: any[];
   }>>({});
 
+  const todoCacheRef = useRef<Record<string, any[]>>({});
+
   // Tracks the folder/workspace ID that is currently loaded in the React state.
   // Helps avoid race conditions when switching folders before all asynchronous updates resolve.
   const [loadedFolderId, setLoadedFolderId] = useState<string | null>(null);
@@ -4152,6 +4154,7 @@ export default function App() {
                       setTodoItems={setTodoItems}
                       isLoggedIn={isLoggedIn}
                       onBypassAuth={() => setBypassAuth(true)}
+                      todoCacheRef={todoCacheRef}
                     />
                   </div>
                   {isIngesting && (

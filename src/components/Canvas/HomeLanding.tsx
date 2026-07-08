@@ -136,6 +136,7 @@ interface HomeLandingProps {
   setTodoItems: React.Dispatch<React.SetStateAction<any[]>>;
   isLoggedIn?: boolean;
   onBypassAuth?: () => void;
+  todoCacheRef?: React.MutableRefObject<Record<string, any[]>>;
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -500,7 +501,8 @@ export function HomeLanding({
   todoItems,
   setTodoItems,
   isLoggedIn: isLoggedInProp,
-  onBypassAuth
+  onBypassAuth,
+  todoCacheRef: todoCacheRefProp
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localBypassAuth, setLocalBypassAuth] = useState(false);
@@ -509,7 +511,8 @@ export function HomeLanding({
   const [isDigestLoading, setIsDigestLoading] = useState(false);
   const [digestError, setDigestError] = useState<string | null>(null);
 
-  const todoCacheRef = React.useRef<Record<string, any[]>>({});
+  const localTodoCacheRef = React.useRef<Record<string, any[]>>({});
+  const todoCacheRef = todoCacheRefProp || localTodoCacheRef;
 
   // Bind live Workspace Digest data to Tasks when loaded
   useEffect(() => {
@@ -761,9 +764,11 @@ export function HomeLanding({
   };
 
   React.useEffect(() => {
+    // Clear digest data immediately on space/token change to avoid stale state mapping
+    setDigestData(null);
+
     const isMock = localBypassAuth || isLoggedInProp;
     if (!accessToken && !isMock) {
-      setDigestData(null);
       setTodoItems([]);
       return;
     }
@@ -773,6 +778,7 @@ export function HomeLanding({
     if (cached) {
       setTodoItems(cached);
       setIsDigestLoading(false);
+      setDigestError(null);
       return;
     }
 
