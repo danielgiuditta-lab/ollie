@@ -332,6 +332,12 @@ export default function App() {
     }
   }, [activeSpaceId, loadedFolderId, messages, sandboxFiles, ingestedFiles, envId, sandboxUrl, projectName, selectedFile, indexFileSelected, viewState]);
 
+  useEffect(() => {
+    if (!activeChatId?.includes('-proactive-')) {
+      setActiveProactiveTask(null);
+    }
+  }, [activeSpaceId]);
+
   // Synchronize active chat messages back to the in-memory cache
   useEffect(() => {
     if (activeChatId) {
@@ -3301,6 +3307,7 @@ export default function App() {
   }, [accessToken, currentPath, resetChatForDirectoryItem]);
 
   const handleFileClick = async (file: any, skipSelect = false, options?: { isFromRecents?: boolean, targetChatId?: string }) => {
+    setActiveProactiveTask(null);
     console.log("[DEBUG] handleFileClick called with:", {
       fileName: typeof file === 'string' ? file : file?.name || file?.filename || file?.id,
       skipSelect,
@@ -3326,6 +3333,10 @@ export default function App() {
       }
     } else if (!targetChatId) {
       targetChatId = folderId;
+    }
+
+    if (typeof targetChatId === 'string' && targetChatId.includes('-proactive-')) {
+      return;
     }
 
     setActiveChatId(targetChatId);
