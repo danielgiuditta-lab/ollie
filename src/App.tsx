@@ -231,8 +231,11 @@ export default function App() {
         console.error("Error fetching user chats from Firestore:", fErr);
       }
 
-      // Filter to only items with active messages/LLM interactions and exclude home chats
-      const mergedTasks = firestoreTasks.filter(ft => ft.messages && ft.messages.length > 0 && !isHomeChatId(ft.id));
+      // Filter to only items with active messages/LLM interactions or workspaces/spaces, and exclude home chats
+      const mergedTasks = firestoreTasks.filter(ft => 
+        !isHomeChatId(ft.id) && 
+        (ft.type === 'workspace' || (ft.messages && ft.messages.length > 0))
+      );
       
       // Sort reverse-chronologically by timestamp
       mergedTasks.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
