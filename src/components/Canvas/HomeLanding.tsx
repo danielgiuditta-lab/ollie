@@ -1337,6 +1337,38 @@ export function HomeLanding({
     todoCount: filteredTodoItems.length
   });
 
+  const isSpaceCreation = activeSpaceId && activeSpaceId.startsWith('space-creation-');
+
+  if (isSpaceCreation) {
+    return (
+      <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-center px-10 pb-16 animate-in fade-in duration-300 bg-transparent select-text text-center">
+        <div className="max-w-[480px] space-y-6">
+          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center mx-auto shadow-2xs">
+            <Sparkles className="w-8 h-8 text-blue-500 dark:text-blue-400 animate-pulse" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white font-sans">
+              Create a new Space
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              Describe the topic and context for your new space in the chat (e.g. <em>"EcoPaws Brand Kit"</em>) and choose who to add.
+            </p>
+          </div>
+          <div className="p-4 bg-slate-50 dark:bg-[#1E1F22] rounded-2xl border border-slate-100 dark:border-[#2B2D31] text-xs text-slate-500 dark:text-slate-400 text-left space-y-2.5">
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-500">•</span>
+              <span><strong>Topic & Files</strong>: Ollie scans workspace documents and chats to find inferred action items.</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-500">•</span>
+              <span><strong>Teammates</strong>: Get suggested colleagues to invite based on who collaborated on the topic.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-y-auto pt-16 px-10 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
       <div className="w-full max-w-[640px] mt-8 text-left space-y-6">
