@@ -38,6 +38,7 @@ interface ChatSidebarProps {
   isNewSpaceCreation?: boolean;
   spaceMode?: 'choice' | 'tracking' | 'tool';
   onSelectSpaceMode?: (mode: 'tracking' | 'tool') => void;
+  activeSpaceId?: string | null;
 }
 
 export function ChatSidebar({ 
@@ -69,11 +70,16 @@ export function ChatSidebar({
   todoItems = [],
   isNewSpaceCreation = false,
   spaceMode,
-  onSelectSpaceMode
+  onSelectSpaceMode,
+  activeSpaceId
 }: ChatSidebarProps) {
   const isHome = !projectName || projectName === 'Home Dashboard' || projectName === 'Home';
 
   const getSuggestions = () => {
+    if (activeSpaceId && activeSpaceId.startsWith('space-creation-')) {
+      return [];
+    }
+
     if (!isHome && isNewSpaceCreation && (!spaceMode || spaceMode === 'choice')) {
       return [
         { label: "Let Ollie track your work", prompt: "Let Ollie track your work", mode: 'tracking' as const },

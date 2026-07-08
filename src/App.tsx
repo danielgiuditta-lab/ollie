@@ -2136,13 +2136,7 @@ export default function App() {
     setActiveSpaceId(tempSpaceId);
     setProjectName('New Space');
     setCurrentTask('app');
-    setMessages([
-      {
-        role: 'bot',
-        text: 'What is the topic of the space and who do you want to add?',
-        isCreationPrompt: true
-      }
-    ]);
+    setMessages([]);
     setSandboxFiles([]);
     setSpaceCreationSources([]);
     setSelectedFile(null);
@@ -4277,6 +4271,7 @@ export default function App() {
           onLogin={login}
           onBypassAuth={() => setBypassAuth(true)}
           projectName={projectName}
+          activeSpaceId={activeSpaceId}
           todoItems={todoItems}
           isNewSpaceCreation={activeSpaceId ? newlyCreatedSpaceIds.has(activeSpaceId) : false}
           spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}

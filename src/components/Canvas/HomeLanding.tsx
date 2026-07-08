@@ -1437,14 +1437,12 @@ export function HomeLanding({
   const isSpaceCreation = activeSpaceId && activeSpaceId.startsWith('space-creation-');
 
   if (isSpaceCreation) {
-    return (
-      <NullChat 
-        headline="Create a new space"
-        metaline="Describe the topic of your new space"
-        icon={<Sparkles className="w-8 h-8 text-blue-500 dark:text-blue-400 animate-pulse" />}
-        theme={theme}
-      />
-    );
+    return <div className="w-full h-full bg-transparent" />;
+  }
+
+  const isHome = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
+  if (!isHome && spaceMode !== 'tracking') {
+    return <div className="w-full h-full bg-transparent" />;
   }
 
   return (
