@@ -4103,6 +4103,20 @@ export default function App() {
       return;
     }
 
+    let targetFolder = activeSpaceId || 'root';
+    let currentSpaceName = projectName || 'New Space';
+    if (activeSpaceId && activeSpaceId.startsWith('space-creation-')) {
+      const newSpaceId = `space-${Date.now()}`;
+      targetFolder = newSpaceId;
+      setNewlyCreatedSpaceIds(prev => new Set(prev).add(newSpaceId));
+      setActiveSpaceId(newSpaceId);
+      setRecentTasks(prev => {
+        const now = Date.now();
+        const filtered = prev.filter(t => (t.id || '') !== activeSpaceId);
+        return [{ id: newSpaceId, name: currentSpaceName, type: 'space', activeSpaceId: newSpaceId, updatedAt: now }, ...filtered];
+      });
+    }
+
     let name = '';
     let content = '';
     let mimeType = '';
@@ -4150,7 +4164,6 @@ export default function App() {
     }
 
     let createdDriveId = undefined;
-    const targetFolder = activeSpaceId || 'root';
     if (accessToken) {
       try {
         const bodyMeta: any = {
@@ -4220,14 +4233,8 @@ export default function App() {
       const initialMsg = [{ role: 'bot', text: type === 'doc' ? "How can I help with your doc?" : "How can I help with your presentation?" }];
       setMessages(initialMsg);
 
-      let targetChatId = activeChatId;
-      if (chatModel === 'B' && activeSpaceId && (!targetChatId || targetChatId.endsWith('-temp') || targetChatId.includes('-chat-temp'))) {
-        targetChatId = `${activeSpaceId}-chat-${Date.now()}`;
-        setActiveChatId(targetChatId);
-      } else if (!targetChatId) {
-        targetChatId = activeSpaceId || `local-chat-${Date.now()}`;
-        setActiveChatId(targetChatId);
-      }
+      const targetChatId = `${targetFolder}-chat-${Date.now()}`;
+      setActiveChatId(targetChatId);
 
       const chatTitle = type === 'doc' ? "New Document" : (type === 'slide' ? "New Slide Deck" : "New Artifact");
 
@@ -4239,23 +4246,23 @@ export default function App() {
         });
         return [{
           id: targetChatId,
-          name: projectName || chatTitle,
+          name: currentSpaceName,
           chatName: chatTitle,
           type: 'workspace',
-          activeSpaceId: activeSpaceId,
+          activeSpaceId: targetFolder,
           messages: initialMsg,
           updatedAt: now
         }, ...filtered];
       });
 
       saveChatToDb(
-        targetChatId!,
+        targetChatId,
         initialMsg,
         envId,
         sandboxUrl,
-        projectName || chatTitle,
+        currentSpaceName,
         [newArtifact],
-        activeSpaceId,
+        targetFolder,
         chatTitle
       );
     }

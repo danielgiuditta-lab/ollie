@@ -78,6 +78,12 @@ export function LeftNav({
 
   const isExpandedActive = isExpanded !== undefined ? isExpanded : localExpanded;
 
+  React.useEffect(() => {
+    if (activeSpaceId) {
+      setExpandedSpaces(prev => ({ ...prev, [activeSpaceId]: true }));
+    }
+  }, [activeSpaceId]);
+
   const toggleExpand = (val: boolean) => {
     if (onToggleExpand) {
       onToggleExpand(val);
@@ -331,7 +337,7 @@ export function LeftNav({
                   </div>
                   
                   {isExpandedActive && (
-                    chatModel === 'B' ? (
+                    (space.chats.length > 0 || chatModel === 'B') ? (
                       <button 
                         onClick={(e) => toggleSpaceExpand(space.id, e)}
                         className="p-1 rounded-full hover:bg-gray-250/50 dark:hover:bg-white/10 cursor-pointer text-slate-500 hover:text-slate-800"
@@ -354,8 +360,8 @@ export function LeftNav({
                   )}
                 </div>
 
-                {/* Model B chats list */}
-                {chatModel === 'B' && isSpaceExpanded && isExpandedActive && (
+                {/* Chats list */}
+                {(space.chats.length > 0 || chatModel === 'B') && isSpaceExpanded && isExpandedActive && (
                   <div className="pl-10 pr-2 py-1 space-y-0.5 w-full shrink-0 min-w-0">
                     {space.chats.map((chat: any) => {
                       const isChatActive = chat.id === activeChatId;
