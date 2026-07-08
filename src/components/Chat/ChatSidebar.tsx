@@ -292,11 +292,11 @@ export function ChatSidebar({
                     <button 
                       key={idx}
                       onClick={() => onSendMessage(pill.prompt)}
-                      className="w-fit flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto bg-f8fafd hover:bg-f0f4f9"
+                      className="w-fit max-w-full flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto bg-f8fafd hover:bg-f0f4f9"
                     >
                       {getTaskIcon(pill.prompt)}
                       <span 
-                        className="text-sm font-medium text-slate-800 dark:text-neutral-200"
+                        className="text-sm font-medium text-slate-800 dark:text-neutral-200 truncate"
                         style={{ fontFamily: '"Google Sans Flex", "Google Sans", "Product Sans", "Inter", sans-serif' }}
                       >
                         {pill.label}
