@@ -2249,24 +2249,9 @@ export default function App() {
         lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
       });
 
-      let defaultSelect: any = null;
-      if (newSandboxFiles.length > 0) {
-        const preferredDoc = newSandboxFiles.find(f => {
-          const mType = (f.mimeType || '').toLowerCase();
-          return mType.includes('document') || mType.includes('spreadsheet') || mType.includes('presentation') || 
-                 f.name.toLowerCase().endsWith('.md') || f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx');
-        });
-        const firstNonIndex = newSandboxFiles.find(f => f.name.toLowerCase() !== 'index.html');
-        defaultSelect = preferredDoc || firstNonIndex || newSandboxFiles[0];
-        if (defaultSelect) {
-          setSelectedFile(defaultSelect);
-          setIndexFileSelected(defaultSelect.name.toLowerCase() === 'index.html');
-        }
-      } else {
-        setSelectedFile(null);
-      }
-      
-      setViewState(defaultSelect ? 'app' : (newSandboxFiles.length > 0 ? 'files' : 'null'));
+      setSelectedFile(null);
+      setIndexFileSelected(false);
+      setViewState(newSandboxFiles.length > 0 ? 'files' : 'null');
       setSyncStatus('synced');
       setMessages([]);
 
@@ -2438,22 +2423,9 @@ export default function App() {
 
       setSelectedDriveFiles([]); // Reset checkboxes
       
-      // Select preferred document
-      if (newSandboxFiles.length > 0) {
-        const preferredDoc = newSandboxFiles.find(f => {
-          const mType = (f.mimeType || '').toLowerCase();
-          return mType.includes('document') || mType.includes('spreadsheet') || mType.includes('presentation') || 
-                 f.name.toLowerCase().endsWith('.md') || f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx');
-        });
-        const firstNonIndex = newSandboxFiles.find(f => f.name.toLowerCase() !== 'index.html');
-        const defaultSelect = preferredDoc || firstNonIndex || newSandboxFiles[0];
-        if (defaultSelect) {
-          setSelectedFile(defaultSelect);
-          setIndexFileSelected(defaultSelect.name.toLowerCase() === 'index.html');
-        }
-      }
-
-      setViewState('files');
+      setSelectedFile(null);
+      setIndexFileSelected(false);
+      setViewState(newSandboxFiles.length > 0 ? 'files' : 'null');
       setSyncStatus('synced');
 
       // Save the Space locally to backend
@@ -3353,24 +3325,18 @@ export default function App() {
       }
       
       const isSameSpace = activeSpaceId === folderId;
-      if (!isSameSpace) {
+      if (skipSelect) {
+        setSelectedFile(null);
+        setIndexFileSelected(false);
+        setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'null');
+      } else if (!isSameSpace) {
         const autoSelectFile = cached.sandboxFiles?.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || cached.selectedFile || cached.sandboxFiles?.[0];
-        if (!skipSelect) {
-          setSelectedFile(cached.selectedFile || autoSelectFile);
-        } else {
-          setSelectedFile(cached.selectedFile || null);
-        }
+        setSelectedFile(cached.selectedFile || autoSelectFile);
         setIndexFileSelected((cached.selectedFile || autoSelectFile)?.name?.toLowerCase().includes('index.html') ?? false);
-
-        if (skipSelect) {
-          setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'null');
-          setSelectedFile(null);
+        if (cached.viewState) {
+          setViewState(cached.viewState);
         } else {
-          if (cached.viewState) {
-            setViewState(cached.viewState);
-          } else {
-            setViewState('app');
-          }
+          setViewState('app');
         }
       }
       cached.sandboxFiles.forEach((f: any) => {
