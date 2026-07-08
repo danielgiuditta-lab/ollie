@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ChevronRight, X } from 'lucide-react';
 import { themeTokens } from '../../utils/themeTokens';
 
+import { cleanWorkspaceName } from '../Canvas/HomeLanding';
+
 const AvatarCircle = ({ member }: { member: any }) => {
   const [error, setError] = useState(false);
 
@@ -107,7 +109,7 @@ export function CanvasHeader({
       );
     }
 
-    const spaceName = projectName === 'New Space' ? 'New Space' : projectName;
+    const spaceName = projectName === 'New Space' ? 'New Space' : cleanWorkspaceName(projectName);
 
     if (!selectedFile && viewState !== 'ai_summary' && !activeProactiveTask) {
       return (

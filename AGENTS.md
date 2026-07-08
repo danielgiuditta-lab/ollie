@@ -35,6 +35,10 @@ This file contains persistent rules and project-specific conventions for the AI 
         - Other development/code files (like `.css`, `.js`, `.json`) are rendered in a structured syntax-highlight-styled monospace code container.
 - **The Null State (Recent Files):** Before the agent builds anything, the Canvas must display a list of the user's "Recent Files" dynamically fetched from their actual Google Drive, alongside the upload dropzone.
 - **Drive Write Restrictions:** The prototype (and its embedded agent) is securely constrained by the OAuth scope limits. It must ONLY modify or create new files in the specific folder that the user has explicitly selected/opened into the prototype. It must never attempt to write, modify, or delete folders elsewhere in the user's Google Drive.
+- **Inferred Proactive Task Information Architecture (`Space > task`):** When navigating into a proactive task journey (e.g. from an inferred to-do item), the canvas header breadcrumb MUST strictly follow the `Space > task` structure. Never display `task > proactive output`.
+    - The Space name MUST be cleanly extracted from backend source descriptors (using the `cleanWorkspaceName` utility to strip `"Comment by <Author> in..."` wrappers).
+    - The right-hand breadcrumb item MUST be the task title (`task.titleDone || task.title`).
+- **Simulated Artifact Renders in Proactive Tasks:** When generating draft previews or sandbox file states for proactive tasks, do NOT generate placeholder status reports (e.g. `"## Proactive Agent Execution..."`). You MUST generate realistic, high-fidelity document or spreadsheet contents (such as CSV grid tables for spreadsheets or structured markdown with author metadata for docs) that represent the referenced document WITH the agent's proposed modifications integrated, so that `<NativeViewer>` renders the actual updated document in the Canvas.
 
 ## 5. Feature Specifications & Roadmap Tracking
 - **The Core Roadmap:** All master features, upcoming components, and backend database mappings are listed and completed according to the live [Roadmap milestones](./roadmap.md). Refer to it before starting new increments.

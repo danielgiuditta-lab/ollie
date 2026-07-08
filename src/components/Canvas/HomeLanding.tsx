@@ -17,6 +17,22 @@ import formsIcon from '../../assets/forms.png';
 import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
 
+export function cleanWorkspaceName(raw: string): string {
+  if (!raw) return 'Workspace';
+  let cleaned = raw;
+  const commentMatch = cleaned.match(/Comment\s+(?:by\s+.*?\s+)?(?:in|on)\s+['"]?([^'"]+)['"]?/i);
+  if (commentMatch && commentMatch[1]) {
+    cleaned = commentMatch[1];
+  } else if (cleaned.startsWith("Email from ")) {
+    cleaned = cleaned.replace("Email from ", "");
+  } else if (cleaned.startsWith("Chat in ")) {
+    cleaned = cleaned.replace("Chat in ", "");
+  }
+  cleaned = cleaned.split(' · ')[0].split(' / ')[0].replace(/\s*\/\s*Calendar Invite.*$/i, '').replace(/(?:from|by|at)\s+.*$/i, '').trim();
+  cleaned = cleaned.replace(/^['"]|['"]$/g, '').trim();
+  return cleaned || 'Workspace';
+}
+
 export const DEFAULT_TODO_ITEMS = [
   {
     id: 'todo-proactive-1',
@@ -551,19 +567,20 @@ export function HomeLanding({
     }
 
     const mappedTodos = combined.map((item: any, idx: number) => {
-      // Determine source details & MimeTypes
+      const cleanSpace = cleanWorkspaceName(item.source || item.workspace || 'Workspace Document');
+      const textForMime = `${item.source || ''} ${item.description || ''} ${item.action || ''}`.toLowerCase();
+      
       let mimeType = 'application/vnd.google-apps.document';
       if (item.type === 'email') {
         mimeType = 'application/vnd.google-apps.mail';
       } else if (item.type === 'chat') {
         mimeType = 'application/vnd.google-apps.chat';
-      } else if (item.source && (item.source.toLowerCase().includes('slide') || item.source.toLowerCase().includes('presentation') || item.source.toLowerCase().includes('deck'))) {
+      } else if (textForMime.includes('slide') || textForMime.includes('presentation') || textForMime.includes('deck')) {
         mimeType = 'application/vnd.google-apps.presentation';
-      } else if (item.source && (item.source.toLowerCase().includes('sheet') || item.source.toLowerCase().includes('spreadsheet') || item.source.toLowerCase().includes('csv') || item.source.toLowerCase().includes('tracker'))) {
+      } else if (textForMime.includes('sheet') || textForMime.includes('spreadsheet') || textForMime.includes('csv') || textForMime.includes('tracker') || textForMime.includes('ranking') || textForMime.includes('estimates') || textForMime.includes('sizing') || textForMime.includes('table')) {
         mimeType = 'application/vnd.google-apps.spreadsheet';
       }
 
-      // Try to parse person name from source context
       let personName = 'Collaborator';
       if (item.source) {
         const matches = item.source.match(/(?:from|by|at)\s+([A-Z][a-z]+)/i);
@@ -572,51 +589,42 @@ export function HomeLanding({
         }
       }
 
-      // Dynamic avatars mapping
       const avatars = [
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80', // Chandu
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80', // David
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80', // Juyun
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80', // David 2
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80'  // Bora
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
+        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80'
       ];
       const personAvatar = avatars[idx % avatars.length];
-
-      // Proactively draft the very first item index!
       const isProactive = idx === 0;
 
-      // Smart artifact name and content generation based on task source and type
-      let fileName = 'Workspace Document.gdoc';
-      let contentVal = `# Proposed Action Draft\n\nTask: ${item.description}\n\nRecommended Fix:\n- ${item.action || 'Review and consolidate files'}\n\n*Agent proactively completed draft in sandbox.*`;
-      
-      if (item.source) {
-        let cleanSource = item.source;
-        if (cleanSource.startsWith("Comment in '") || cleanSource.startsWith('Comment in "')) {
-          const m = cleanSource.match(/Comment in ['"](.*?)['"]/i);
-          if (m && m[1]) cleanSource = m[1];
-        }
-        cleanSource = cleanSource.replace(/\s*\/\s*Calendar Invite.*$/i, '').trim();
-        cleanSource = cleanSource.replace(/(?:from|by|at)\s+.*$/i, '').trim();
-        if (cleanSource.length > 2) {
-          fileName = cleanSource;
-        }
-      }
+      let fileName = cleanSpace;
+      let contentVal = '';
 
       if (mimeType === 'application/vnd.google-apps.presentation') {
         if (!fileName.toLowerCase().endsWith('.gslides') && !fileName.toLowerCase().endsWith('.pptx')) {
           fileName = `${fileName.replace(/\.[^/.]+$/, "")}.gslides`;
         }
-        contentVal = `# Presentation Draft: ${fileName.replace(/\.gslides$/i, '')}\n\n## Updated Slides & Visuals\n- Applied design improvements per feedback: ${item.action || 'Updated layout and colors'}\n- Synchronized slide formatting across all cards\n\n## Next Steps\n- Share updated presentation deck with team\n- Ready for stakeholder review`;
+        contentVal = `# Presentation Draft: ${cleanSpace}\n\n## Updated Slides & Visuals\n- Applied design improvements per feedback: ${item.action || item.description || 'Updated layout and colors'}\n- Synchronized slide formatting across all cards\n\n## Next Steps\n- Share updated presentation deck with team\n- Ready for stakeholder review`;
       } else if (mimeType === 'application/vnd.google-apps.spreadsheet') {
         if (!fileName.toLowerCase().endsWith('.gsheet') && !fileName.toLowerCase().endsWith('.csv')) {
           fileName = `${fileName.replace(/\.[^/.]+$/, "")}.gsheet`;
         }
-        contentVal = `ID,Metric,Status,Value\n1,${item.description || 'Task Target'},Updated,100%\n2,Sandbox Execution,Verified,Completed`;
+        if (cleanSpace.toLowerCase().includes('ranking') || textForMime.includes('sizing') || textForMime.includes('estimates')) {
+          contentVal = `Project ID,Project Name,Priority,DI Engineering Months,Status,Owner\nPRJ-101,AI Threat Defense Platform,P0,12.5 Mo,Drafted,Laurence F.\nPRJ-102,Data Intelligence (DI) Sizing Pipeline,P0,8.0 Mo,Updated (Per Li Fang),Li Fang\nPRJ-103,Cloud Infrastructure Refactor,P1,4.5 Mo,In Review,@clsimon\nPRJ-104,Security Threat Modeling,P1,6.0 Mo,Drafted,@connorsimmons\nPRJ-105,UI/UX Workspace Refresh,P2,3.0 Mo,Planned,@adamws`;
+        } else {
+          contentVal = `ID,Metric Item,Target Value,Current Status,Collaborator\n1,${item.description || 'Primary Task Target'},100%,Updated (Per Feedback),${personName}\n2,Sandbox Execution Stage,Complete,Verified,Gemini Agent\n3,Q3 Target Review,On Track,In Progress,Team Lead`;
+        }
       } else {
         if (!fileName.toLowerCase().includes('.')) {
           fileName = `${fileName}.gdoc`;
         }
-        contentVal = `# ${fileName.replace(/\.gdoc$/i, '')}\n\n## Proactive Agent Execution\n**Task**: ${item.description || 'Review feedback and update document'}\n\n## Completed Output\n- Successfully implemented requested modifications: ${item.action || 'Consolidated sections and refined text'}\n- All changes have been drafted in this isolated sandbox environment for your review.\n\n*Status: Ready for approval.*`;
+        if (cleanSpace.toLowerCase().includes('threat defense') || textForMime.includes('mapping')) {
+          contentVal = `# ${cleanSpace}\n\nAuthor: Laurence Fahey\nContributors: Gemini Agent, Threat Defense Team\n\n## Project ID Mapping (First Pass Review)\n- **PRJ-101 (Core AI Threat Defense Engine)**: Mapped to enterprise security telemetry pipeline.\n- **PRJ-102 (Seller Guidance Ruleset)**: Integrated automated threat detection heuristics and seller playbook triggers.\n- **PRJ-108 (Threat Defense Monitoring)**: Aligned with cloud threat feeds per Laurence Fahey's request.\n\n## Review Feedback & Recommendations\n- **Completed Modification**: ${item.action || item.description || 'Reviewed Project ID mapping section and added comprehensive feedback notes.'}\n- All mappings verified against current project taxonomy and security guidelines.\n- Ready for Laurence Fahey's final review and approval.`;
+        } else {
+          contentVal = `# ${cleanSpace}\n\nAuthor: Workspace Operations\nContributors: ${personName}, Gemini Agent\n\n## Overview\nThis document defines the core guidelines, technical requirements, and action items for **${cleanSpace}**. All sections reflect recent team feedback and automated intelligence adjustments.\n\n## Updated Guidance (Consolidated)\n- **Action Taken**: ${item.action || item.description || 'Consolidated layout and updated wording per collaborator comments.'}\n- Aligned documentation structure with active workspace standards and guidelines.\n- Verified changes in isolated staging sandbox environment.\n\n## Next Steps\n- Ready for final stakeholder review and merge into production folder.`;
+        }
       }
 
       return {
@@ -624,8 +632,8 @@ export function HomeLanding({
         title: item.description || 'Workspace Action Item',
         description: isProactive ? `${item.action || 'Analyzing details'}. Working on task...` : (item.action || 'Please review this workspace task.'),
         descriptionDone: `${item.action || 'Please review this workspace task.'} I did, please review.`,
-        workspace: item.source || 'Google Workspace',
-        sourceName: item.source || 'Google Workspace',
+        workspace: cleanSpace,
+        sourceName: cleanSpace,
         sourceMimeType: mimeType,
         personName,
         personAvatar,

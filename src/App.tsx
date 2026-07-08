@@ -13,7 +13,7 @@ import { usePresence } from './hooks/usePresence';
 import { PeerCursors } from './components/Canvas/PeerCursors';
 import { CanvasSidebar } from './components/Canvas/CanvasSidebar';
 import { NativeViewer } from './components/Canvas/NativeViewer';
-import { HomeLanding, SUGGESTED_ITEMS, DEFAULT_TODO_ITEMS } from './components/Canvas/HomeLanding';
+import { HomeLanding, SUGGESTED_ITEMS, DEFAULT_TODO_ITEMS, cleanWorkspaceName } from './components/Canvas/HomeLanding';
 import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
@@ -2150,16 +2150,7 @@ export default function App() {
   };
 
   const handleProactiveTaskClick = (task: any) => {
-    let rawSpace = task.workspace || task.sourceName || 'Workspace';
-    if (rawSpace.startsWith("Comment in '") || rawSpace.startsWith('Comment in "')) {
-      const match = rawSpace.match(/Comment in ['"](.*?)['"]/i);
-      if (match && match[1]) rawSpace = match[1];
-    } else if (rawSpace.startsWith("Email from ")) {
-      rawSpace = rawSpace.replace("Email from ", "");
-    } else if (rawSpace.startsWith("Chat in ")) {
-      rawSpace = rawSpace.replace("Chat in ", "");
-    }
-    const spaceName = rawSpace.split(' · ')[0].split(' / ')[0].trim() || 'Workspace';
+    const spaceName = cleanWorkspaceName(task.workspace || task.sourceName || 'Workspace');
     
     setProjectName(spaceName);
     if (task.filesToLoad && task.filesToLoad.length > 0) {
