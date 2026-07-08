@@ -273,6 +273,28 @@ export function CanvasSidebar({
         >
           {/* Left hairline divider, inset 16px from top/bottom */}
           <div className="absolute left-0 top-4 bottom-4 w-[1px] bg-slate-200/60 dark:bg-slate-800" />
+          
+          {/* Header Panel */}
+          <div className="px-4 pt-4 pb-2 flex items-center justify-between shrink-0 select-none">
+            <h2 className="font-semibold tracking-tight text-gray-800 dark:text-white text-[16px]">
+              Library
+            </h2>
+          </div>
+
+          {/* Add Library Input Field */}
+          <div className="px-3 py-2 shrink-0 select-none">
+            <div className="w-full h-9 px-3 rounded-full bg-[#EEF2FA] dark:bg-[#282A2D] flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors">
+              <span className="material-symbols-rounded select-none text-slate-500 dark:text-slate-400 shrink-0" style={{ fontSize: '18px' }}>
+                search
+              </span>
+              <input
+                type="text"
+                placeholder="Add files to library"
+                className="w-full bg-transparent border-none outline-none font-sans text-slate-700 dark:text-[#E3E3E3] placeholder-slate-500 dark:placeholder-slate-400 text-xs font-medium"
+              />
+            </div>
+          </div>
+
           {/* Scrollable contents */}
           <div className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5">
             {currentPath.length > 0 && (

@@ -34,7 +34,7 @@ export function CanvasMain({
   const isDocTask = currentTask === 'doc' || !!selectedFile?.isDocJourney || selectedFile?.name === 'document.doc' || selectedFile?.name?.endsWith('.doc') || (selectedFile?.mimeType && selectedFile.mimeType.includes('document'));
   const isTransparentContainer = isHome || viewState === 'ai_summary';
 
-  const showRainbowRim = isDocTask && isLoading && !isTransparentContainer;
+  const showRainbowRim = false;
 
   return (
     <div className="flex-1 flex flex-col min-w-0 min-h-0 relative h-full overflow-hidden">
@@ -46,7 +46,7 @@ export function CanvasMain({
         
         {/* Inner Container with rounded corners and overflow-hidden */}
         <div className="flex flex-col flex-1 h-full min-h-0 overflow-hidden relative z-10 bg-transparent border-transparent shadow-none">
-          {!(isLoading && !isDocTask && viewState !== 'ai_summary') ? (
+          {!(isLoading && viewState !== 'ai_summary') ? (
             <div 
               id="canvas-main-viewport"
               className="flex-1 w-full h-full relative z-0 min-h-0 overflow-hidden transition-all duration-300 pt-0"

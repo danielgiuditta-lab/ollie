@@ -523,6 +523,12 @@ We aim to harness micro-influencers and pet channels to demonstrate eco-consciou
   },
 ];
 
+const isHomeId = (id: string | null | undefined) => {
+  if (!id) return true;
+  const lower = String(id).toLowerCase().trim();
+  return lower === 'home' || lower === 'home_guest' || lower.startsWith('home_') || lower.startsWith('home-') || lower === 'home dashboard';
+};
+
 export function HomeLanding({
   accessToken,
   userProfile,
@@ -644,7 +650,7 @@ export function HomeLanding({
 
       let derivedWorkspace = item.workspace;
       if (!derivedWorkspace || derivedWorkspace === 'Google Workspace' || derivedWorkspace === 'Workspace') {
-        const isHomeView = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
+        const isHomeView = isHomeId(activeSpaceId);
         derivedWorkspace = !isHomeView && projectName ? projectName : 'Home';
       }
 
@@ -674,7 +680,7 @@ export function HomeLanding({
     });
 
     let finalTodos = [...mappedTodos];
-    const isHome = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
+    const isHome = isHomeId(activeSpaceId);
     if (!isHome && projectName) {
       const spaceName = projectName.trim();
       const hasSpaceTasks = mappedTodos.some(t => 
@@ -761,7 +767,7 @@ export function HomeLanding({
 
   // Filter todoItems based on the active space/project
   const filteredTodoItems = React.useMemo(() => {
-    const isHome = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
+    const isHome = isHomeId(activeSpaceId);
     if (isHome) {
       // Home Dashboard shows ONLY tasks that involve the user (involvesMe !== false)
       return todoItems.filter(item => item.involvesMe !== false);
@@ -850,7 +856,7 @@ export function HomeLanding({
 
   React.useEffect(() => {
     const spaceKey = activeSpaceId || 'home';
-    const isHomeViewForDigest = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
+    const isHomeViewForDigest = isHomeId(activeSpaceId);
     if (!isHomeViewForDigest && spaceMode !== 'tracking') {
       setTodoItems([]);
       setIsDigestLoading(false);
@@ -1450,9 +1456,19 @@ export function HomeLanding({
     return <div className="w-full h-full bg-transparent" />;
   }
 
-  const isHome = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
+  const isHome = isHomeId(activeSpaceId);
   if (!isHome && spaceMode !== 'tracking') {
     return <div className="w-full h-full bg-transparent" />;
+  }
+
+  if (isDigestLoading) {
+    return (
+      <div className="w-full h-full relative flex items-center justify-center overflow-hidden bg-transparent">
+        <div className="relative z-10 flex items-center justify-center -translate-y-12">
+          <ShapeLoader size={324} />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -1461,39 +1477,33 @@ export function HomeLanding({
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-[#E3E3E3] font-sans pl-1">
           To Do:
         </h2>
-        {isDigestLoading ? (
-          <div className="w-full py-16 flex items-center justify-center">
-            <ShapeLoader size={160} />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3.5 w-full">
-            {filteredTodoItems.map((item) => (
-              <InferredTaskCard 
-                key={item.id}
-                item={item}
-                getFileIcon={getFileIcon}
-                onClick={() => {
-                  if (onProactiveTaskClick) {
-                    onProactiveTaskClick(item);
+        <div className="flex flex-col gap-3.5 w-full">
+          {filteredTodoItems.map((item) => (
+            <InferredTaskCard 
+              key={item.id}
+              item={item}
+              getFileIcon={getFileIcon}
+              onClick={() => {
+                if (onProactiveTaskClick) {
+                  onProactiveTaskClick(item);
+                } else {
+                  if (item.filesToLoad) {
+                    setSandboxFiles(item.filesToLoad);
+                    setSelectedFile(item.filesToLoad[0]);
                   } else {
-                    if (item.filesToLoad) {
-                      setSandboxFiles(item.filesToLoad);
-                      setSelectedFile(item.filesToLoad[0]);
-                    } else {
-                      setSandboxFiles([]);
-                      setSelectedFile(null);
-                    }
-                    setProjectName(item.workspace.split(' · ')[0]);
-                    setViewState('files');
-                    if (setActiveSidebar) {
-                      setActiveSidebar('gemini');
-                    }
+                    setSandboxFiles([]);
+                    setSelectedFile(null);
                   }
-                }}
-              />
-            ))}
-          </div>
-        )}
+                  setProjectName(item.workspace.split(' · ')[0]);
+                  setViewState('files');
+                  if (setActiveSidebar) {
+                    setActiveSidebar('gemini');
+                  }
+                }
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

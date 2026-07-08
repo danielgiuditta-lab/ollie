@@ -1,0 +1,49 @@
+{
+  "chatId": "space-1783551308514",
+  "projectName": "Ollie",
+  "messages": [
+    {
+      "role": "bot",
+      "text": "How can I help with your doc?"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space-1783551308514",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "document.doc",
+      "type": "code",
+      "content": "# New document\n\n## Tell me what you want to write",
+      "mimeType": "application/vnd.google-apps.document",
+      "createdFromComposer": true,
+      "fontFamily": "Google Sans",
+      "isDocJourney": true,
+      "id": "created-artifact-1783551312034"
+    }
+  ],
+  "userEmail": "danielgiuditta@google.com",
+  "members": [
+    {
+      "name": "Mirjam van Esch",
+      "email": "mirjamvanesch@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjXTBbC9f6t0nk1AnwJs5rlbhjpfVQxK2sM8PqQXbNVAx3YKh4LMVA=s64"
+    },
+    {
+      "name": "Belinda Preno",
+      "email": "belindapreno@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjW8kkayF4FN3ib50ZpJsNFIMcSF9CLOgEcXNjlG9yhQ2xy1dL2q=s64"
+    },
+    {
+      "name": "Simon Sok",
+      "email": "simonsok@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjUJwa8yeHprZ88_pXXGVlN6TT1mDyU1T8GUcNOixdQ46wyCNDlcGA=s64"
+    },
+    {
+      "name": "Ian Mendiola",
+      "email": "ianmendiola@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjUP0nZZSsC7tRQg_3si0rRn-TJyMoD8j0kfQm3I-HdLEIVQYBsG=s64"
+    }
+  ],
+  "updatedAt": "2026-07-08T22:55:12.077Z"
+}

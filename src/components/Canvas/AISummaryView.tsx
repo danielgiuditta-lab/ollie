@@ -229,11 +229,11 @@ export function AISummaryView({
         {/* Header Panel */}
         <div className="px-4 pt-4 pb-2 flex items-center justify-between shrink-0 select-none">
           <h2 className="font-semibold tracking-tight text-gray-800 dark:text-white text-[16px]">
-            Sources
+            Library
           </h2>
         </div>
 
-        {/* Add Sources Input Field with TypeAhead */}
+        {/* Add Library Input Field with TypeAhead */}
         <div ref={typeAheadRef} className="px-4 py-2 shrink-0 select-none">
           <div className="relative z-30 w-full h-10 px-3 rounded-full bg-[#EEF2FA] dark:bg-[#282A2D] flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors">
             <span 
@@ -250,7 +250,7 @@ export function AISummaryView({
                 setIsTypeAheadOpen(true);
               }}
               onFocus={() => setIsTypeAheadOpen(true)}
-              placeholder="Add sources"
+              placeholder="Add files to library"
               className="w-full bg-transparent border-none outline-none font-sans text-slate-700 dark:text-[#E3E3E3] placeholder-slate-500 dark:placeholder-slate-400 text-xs font-medium"
             />
 

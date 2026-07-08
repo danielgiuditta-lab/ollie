@@ -18,6 +18,7 @@ import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
+import { ShapeLoader } from './components/Shared/ShapeLoader';
 const inferChatName = (text: string): string => {
   const clean = text.replace(/[#*`_\[\]]/g, '').trim();
   const words = clean.split(/\s+/).filter(Boolean);
@@ -144,7 +145,19 @@ export default function App() {
     const saved = localStorage.getItem('drive_recent_tasks');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.map(t => {
+            if (t && typeof t === 'object') {
+              const lowerName = (t.name || '').toLowerCase().trim();
+              const lowerSpaceId = String(t.activeSpaceId || t.id || '').toLowerCase().trim();
+              if (lowerName === 'home' || lowerSpaceId === 'home' || lowerSpaceId === 'home_guest' || lowerSpaceId.startsWith('home_') || lowerSpaceId.startsWith('home-')) {
+                return { ...t, activeSpaceId: 'home', name: 'Home' };
+              }
+            }
+            return t;
+          });
+        }
       } catch (e) {
         // ignore
       }
@@ -188,8 +201,8 @@ export default function App() {
 
   const isHomeChatId = useCallback((id: string | null) => {
     if (!id) return true;
-    const lower = String(id).toLowerCase();
-    return lower === 'home' || lower === 'home_guest' || lower.startsWith('home_');
+    const lower = String(id).toLowerCase().trim();
+    return lower === 'home' || lower === 'home_guest' || lower.startsWith('home_') || lower.startsWith('home-') || lower === 'home dashboard';
   }, []);
 
   // Spaces Platform States
@@ -1170,6 +1183,7 @@ export default function App() {
                 continue;
               }
               if (event.text) {
+                setIsLoading(false);
                 fullRawOutput += event.text;
                 console.log(`[DocJourney Client] Received text event (${event.text.length} chars). Total raw len: ${fullRawOutput.length}`);
 
@@ -2187,15 +2201,21 @@ export default function App() {
     setViewState('files');
     setActiveProactiveTask(task);
 
-    let matchingSpace: any = null;
-    if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
-      matchingSpace = projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || recentTasks.find(s => (s.id || s.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: spaceName };
-    } else {
-      matchingSpace = projects.find(p => p.name && p.name.toLowerCase() === spaceName.toLowerCase()) ||
-                      recentTasks.find(s => s.name && s.name.toLowerCase() === spaceName.toLowerCase());
+    let resolvedSpaceId = 'home';
+    let resolvedSpaceName = spaceName;
+    const isHomeTask = spaceName.toLowerCase() === 'home' || spaceName.toLowerCase() === 'home dashboard' || isHomeChatId(spaceName);
+
+    if (!isHomeTask) {
+      let matchingSpace: any = null;
+      if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
+        matchingSpace = projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || recentTasks.find(s => (s.id || s.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: spaceName };
+      } else {
+        matchingSpace = projects.find(p => p.name && p.name.toLowerCase() === spaceName.toLowerCase()) ||
+                        recentTasks.find(s => s.name && s.name.toLowerCase() === spaceName.toLowerCase() && !isHomeChatId(s.activeSpaceId || s.id));
+      }
+      resolvedSpaceId = matchingSpace ? (matchingSpace.activeSpaceId || matchingSpace.id) : 'home';
+      resolvedSpaceName = matchingSpace ? matchingSpace.name : spaceName;
     }
-    const resolvedSpaceId = matchingSpace ? (matchingSpace.id || matchingSpace.activeSpaceId) : 'home';
-    const resolvedSpaceName = matchingSpace ? matchingSpace.name : spaceName;
     setActiveSpaceId(resolvedSpaceId);
     setActiveChatId(resolvedSpaceId);
 
@@ -4191,12 +4211,53 @@ export default function App() {
       return combined;
     });
 
-    if (fromPill) {
-      if (type === 'doc') {
-        setMessages([{ role: 'bot', text: "How can I help with your doc?" }]);
-      } else if (type === 'slide') {
-        setMessages([{ role: 'bot', text: "How can I help with your presentation?" }]);
+    setDriveFiles(prev => {
+      const filter = prev.filter(f => f.name !== name && (f.id || f.driveId) !== newArtifact.id);
+      return [newArtifact, ...filter];
+    });
+
+    if (fromPill || type === 'doc' || type === 'slide') {
+      const initialMsg = [{ role: 'bot', text: type === 'doc' ? "How can I help with your doc?" : "How can I help with your presentation?" }];
+      setMessages(initialMsg);
+
+      let targetChatId = activeChatId;
+      if (chatModel === 'B' && activeSpaceId && (!targetChatId || targetChatId.endsWith('-temp') || targetChatId.includes('-chat-temp'))) {
+        targetChatId = `${activeSpaceId}-chat-${Date.now()}`;
+        setActiveChatId(targetChatId);
+      } else if (!targetChatId) {
+        targetChatId = activeSpaceId || `local-chat-${Date.now()}`;
+        setActiveChatId(targetChatId);
       }
+
+      const chatTitle = type === 'doc' ? "New Document" : (type === 'slide' ? "New Slide Deck" : "New Artifact");
+
+      setRecentTasks(prev => {
+        const now = Date.now();
+        const filtered = prev.filter(t => {
+          const id = typeof t === 'string' ? '' : t.id;
+          return id !== targetChatId;
+        });
+        return [{
+          id: targetChatId,
+          name: projectName || chatTitle,
+          chatName: chatTitle,
+          type: 'workspace',
+          activeSpaceId: activeSpaceId,
+          messages: initialMsg,
+          updatedAt: now
+        }, ...filtered];
+      });
+
+      saveChatToDb(
+        targetChatId!,
+        initialMsg,
+        envId,
+        sandboxUrl,
+        projectName || chatTitle,
+        [newArtifact],
+        activeSpaceId,
+        chatTitle
+      );
     }
 
     setSelectedFile(newArtifact);
@@ -4454,9 +4515,10 @@ export default function App() {
                     />
                   </div>
                   {isIngesting && (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-[#1E1F22] rounded-[32px]">
-                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mb-4"></div>
-                       <p className="text-gray-600 dark:text-[#E3E3E3] font-medium text-lg">Ingesting Space...</p>
+                    <div className="w-full h-full relative flex items-center justify-center overflow-hidden bg-white dark:bg-[#1E1F22] rounded-[32px]">
+                      <div className="relative z-10 flex items-center justify-center -translate-y-12">
+                        <ShapeLoader size={324} />
+                      </div>
                     </div>
                   )}
                   {viewState === 'ai_summary' && (
@@ -4697,9 +4759,10 @@ export default function App() {
 
       {/* Shared link hydration spinner */}
       {sharedLoading && (
-        <div className="fixed inset-0 z-50 bg-f8fafd flex flex-col items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-          <p className="text-slate-600 font-medium text-base">Loading Shared Workspace...</p>
+        <div className="fixed inset-0 z-50 bg-f8fafd flex items-center justify-center overflow-hidden">
+          <div className="relative z-10 flex items-center justify-center -translate-y-12">
+            <ShapeLoader size={324} />
+          </div>
         </div>
       )}
 

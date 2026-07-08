@@ -106,8 +106,9 @@ export function LeftNav({
       const chatIdVal = c.id || c.chatId;
       const spaceId = c.activeSpaceId || chatIdVal;
       if (!spaceId) return;
-      const lowerId = String(spaceId).toLowerCase();
-      if (lowerId === 'home' || lowerId === 'home_guest' || lowerId.startsWith('home_')) return;
+      const lowerId = String(spaceId).toLowerCase().trim();
+      const isHomeSpace = lowerId === 'home' || lowerId === 'home_guest' || lowerId.startsWith('home_') || lowerId.startsWith('home-') || (c.name && String(c.name).trim().toLowerCase() === 'home');
+      if (isHomeSpace) return;
 
       if (!spacesMap[spaceId]) {
         spacesMap[spaceId] = {
@@ -140,9 +141,12 @@ export function LeftNav({
 
   const homeChats = React.useMemo(() => {
     return recentTasks.filter(t => {
-      if (!t || !t.activeSpaceId) return false;
-      const lowerId = String(t.activeSpaceId).toLowerCase();
-      return (lowerId === 'home' || lowerId === 'home_guest' || lowerId.startsWith('home_')) && (t.messages?.length > 0);
+      if (!t) return false;
+      const spaceId = t.activeSpaceId || t.id || t.chatId;
+      if (!spaceId) return false;
+      const lowerId = String(spaceId).toLowerCase().trim();
+      const isHome = lowerId === 'home' || lowerId === 'home_guest' || lowerId.startsWith('home_') || lowerId.startsWith('home-') || (t.name && String(t.name).trim().toLowerCase() === 'home');
+      return isHome && (t.messages?.length > 0);
     });
   }, [recentTasks]);
 

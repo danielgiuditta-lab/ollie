@@ -168,19 +168,19 @@ export function CanvasHeader({
         {/* Actual people avatars shared with */}
         {!isHome && <SharedMembersAvatars />}
 
-        {/* Sources side panel toggle button (Context) */}
+        {/* Library side panel toggle button */}
         {!isHome && onToggleSourcesPanel && (
           <button
             onClick={onToggleSourcesPanel}
             className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
-            title="Toggle space context panel"
+            title="Toggle space library panel"
           >
             {isSourcesPanelOpen ? (
               <span className="material-symbols-rounded text-[20px] select-none text-slate-500 dark:text-slate-400">chevron_right</span>
             ) : (
               <span className="material-symbols-rounded text-[20px] select-none text-slate-500 dark:text-slate-400">chevron_left</span>
             )}
-            <span>Context</span>
+            <span>Library</span>
           </button>
         )}
       </div>
