@@ -40,4 +40,6 @@ This file contains persistent rules and project-specific conventions for the AI 
 - **The Core Roadmap:** All master features, upcoming components, and backend database mappings are listed and completed according to the live [Roadmap milestones](./roadmap.md). Refer to it before starting new increments.
 - **Projector Mode Specification:** Refer to [/features/projector.md](./features/projector.md) for UX and design standards for the immersive, distraction-free viewer.
 - **Sharing Architecture Specification:** Refer to [/features/sharing.md](./features/sharing.md) for how the Google OAuth and collaborative sandbox routing pipeline operates under an asynchronous model.
+- **Inferred Tasks Specification:** Refer to [/features/inferred_tasks.md](./features/inferred_tasks.md) for context synthesis prompts, client-side caching mechanisms, and background agent simulation views.
+
 
