@@ -45,6 +45,24 @@ export default function App() {
     return (localStorage.getItem('chat-model') as 'A' | 'B') || 'A';
   });
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [spaceModes, setSpaceModes] = useState<Record<string, 'choice' | 'tracking' | 'tool'>>({});
+
+  const handleSelectSpaceMode = (spaceId: string, mode: 'tracking' | 'tool') => {
+    setSpaceModes(prev => ({ ...prev, [spaceId]: mode }));
+    if (mode === 'tool') {
+      const botMsg = {
+        role: 'bot',
+        text: `What custom tool would you like to build for this space? (e.g., Kanban board, project dashboard, asset tracker)`
+      };
+      setMessages(prev => [...prev, botMsg]);
+      setActiveSidebar('gemini');
+      if (activeChatId) {
+        chatSessionsCacheRef.current[activeChatId] = {
+          messages: [...(chatSessionsCacheRef.current[activeChatId]?.messages || messages), botMsg]
+        };
+      }
+    }
+  };
 
 
   // Unified filesystem mapping states
@@ -3492,9 +3510,14 @@ export default function App() {
         setMessages([]);
       }
       
+      const canonicalTool = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
       const isSameSpace = activeSpaceId === folderId;
       const shouldSkipSelect = skipSelect && targetChatId === folderId;
-      if (shouldSkipSelect) {
+      if (canonicalTool) {
+        setSelectedFile(canonicalTool);
+        setIndexFileSelected(canonicalTool.name.toLowerCase().includes('index.html'));
+        setViewState('app');
+      } else if (shouldSkipSelect) {
         setSelectedFile(null);
         setIndexFileSelected(false);
         setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'null');
@@ -3663,8 +3686,9 @@ export default function App() {
               
               if (chatData.sandboxFiles && chatData.sandboxFiles.length > 0) {
                 setSandboxFiles(chatData.sandboxFiles);
-                const indexHTML = chatData.sandboxFiles.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || chatData.sandboxFiles[0];
-                if (!skipSelect) {
+                const canonicalTool = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
+                const indexHTML = canonicalTool || chatData.sandboxFiles[0];
+                if (!skipSelect || canonicalTool) {
                   setSelectedFile(indexHTML);
                   setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
                   setViewState('app');
@@ -3681,9 +3705,9 @@ export default function App() {
                   sandboxUrl: chatData.sandboxUrl || '',
                   messages: chatData.messages || [],
                   projectName: chatData.projectName || fileName || projectName,
-                  selectedFile: skipSelect ? null : indexHTML,
-                  indexFileSelected: skipSelect ? false : (indexHTML?.name?.toLowerCase().includes('index.html') ?? false),
-                  viewState: skipSelect ? 'files' : 'app'
+                  selectedFile: (skipSelect && !canonicalTool) ? null : indexHTML,
+                  indexFileSelected: (skipSelect && !canonicalTool) ? false : (indexHTML?.name?.toLowerCase().includes('index.html') ?? false),
+                  viewState: (skipSelect && !canonicalTool) ? 'files' : 'app'
                 };
                 chatSessionsCacheRef.current[targetChatId] = {
                   messages: chatData.messages || []
@@ -3751,8 +3775,9 @@ export default function App() {
               return mType.includes('document') || mType.includes('spreadsheet') || mType.includes('presentation') || 
                      f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase().endsWith('.md');
             });
-            autoSelected = indexHTML || preferredDoc || sandboxMapped[0];
-            if (!skipSelect) {
+            const canonicalTool = sandboxMapped.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
+            autoSelected = canonicalTool || indexHTML || preferredDoc || sandboxMapped[0];
+            if (!skipSelect || canonicalTool) {
               setSelectedFile(autoSelected);
               isIdx = autoSelected.name.toLowerCase().includes('index.html');
               setIndexFileSelected(isIdx);
@@ -3811,6 +3836,7 @@ export default function App() {
             setMessages([]);
           }
 
+          const canonicalTool = sandboxMapped.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
           // Save to memory cache
           workspaceCacheRef.current[folderId] = {
             ingestedFiles: data.files,
@@ -3819,15 +3845,15 @@ export default function App() {
             sandboxUrl: currentSandboxUrl,
             messages: currentMessages,
             projectName: file.name || projectName,
-            selectedFile: skipSelect ? null : autoSelected,
-            indexFileSelected: skipSelect ? false : isIdx,
-            viewState: skipSelect ? 'files' : 'app'
+            selectedFile: (skipSelect && !canonicalTool) ? null : autoSelected,
+            indexFileSelected: (skipSelect && !canonicalTool) ? false : isIdx,
+            viewState: (skipSelect && !canonicalTool) ? 'files' : 'app'
           };
           chatSessionsCacheRef.current[targetChatId] = {
             messages: currentMessages
           };
 
-          if (!skipSelect) {
+          if (!skipSelect || canonicalTool) {
             setViewState('app');
           } else {
             setViewState('files');
@@ -4354,6 +4380,8 @@ export default function App() {
                       onBypassAuth={() => setBypassAuth(true)}
                       todoCacheRef={todoCacheRef}
                       onProactiveTaskClick={handleProactiveTaskClick}
+                      spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
+                      onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
                     />
                   </div>
                   {isIngesting && (
