@@ -58,8 +58,8 @@ export function CanvasMain({
             </div>
           ) : (
             <div className="flex-1 w-full h-full relative flex items-center justify-center overflow-hidden bg-transparent">
-              <div className="relative z-10 flex items-center justify-center">
-                <ShapeLoader size={180} />
+              <div className="relative z-10 flex items-center justify-center -translate-y-12">
+                <ShapeLoader size={324} />
               </div>
             </div>
           )}

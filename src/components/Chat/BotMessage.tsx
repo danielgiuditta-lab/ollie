@@ -248,8 +248,7 @@ export function BotMessage({
         <div className={`flex flex-col border rounded-3xl p-5 w-full shadow-xs ${
           isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-slate-200/80'
         }`}>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="material-symbols-rounded text-blue-500 shrink-0" style={{ fontSize: '22px' }}>groups</span>
+          <div className="mb-4">
             <span 
               className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
               style={{ fontFamily: '"Product Sans", "Google Sans", sans-serif' }}
@@ -260,9 +259,6 @@ export function BotMessage({
 
           {/* Suggested list */}
           <div className="flex flex-col gap-2 mb-4">
-            <span className="text-[11px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
-              Suggested Additions
-            </span>
             {(suggestedPeople || []).map((person, idx) => {
               const isChecked = selectedEmails.includes(person.email);
               return (
@@ -276,10 +272,10 @@ export function BotMessage({
                   <div className="flex items-center gap-3">
                     <TeamAvatar avatar={person.avatar} name={person.name} size="md" />
                     <div className="flex flex-col">
-                      <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                      <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
                         {person.name}
                       </span>
-                      <span className="text-[10px] text-slate-400 dark:text-neutral-500">{person.email}</span>
+                      <span className="text-xs text-slate-400 dark:text-neutral-500">{person.email}</span>
                     </div>
                   </div>
                   <input 
@@ -327,13 +323,13 @@ export function BotMessage({
                           isDark ? 'hover:bg-white/5' : 'hover:bg-white/50'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5">
-                          <TeamAvatar avatar={person.avatar} name={person.name} size="sm" />
+                        <div className="flex items-center gap-3">
+                          <TeamAvatar avatar={person.avatar} name={person.name} size="md" />
                           <div className="flex flex-col">
-                            <span className={`text-[11px] font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                            <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
                               {person.name}
                             </span>
-                            <span className="text-[9px] text-slate-450">{person.email}</span>
+                            <span className="text-xs text-slate-450">{person.email}</span>
                           </div>
                         </div>
                         <input 
