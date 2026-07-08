@@ -168,7 +168,9 @@ export default function App() {
   }, [userProfile?.email]);
 
   const isHomeChatId = useCallback((id: string | null) => {
-    return !id || id === 'home' || id === 'home_guest' || id.startsWith('home_');
+    if (!id) return true;
+    const lower = String(id).toLowerCase();
+    return lower === 'home' || lower === 'home_guest' || lower.startsWith('home_');
   }, []);
 
   // Spaces Platform States
@@ -4262,7 +4264,7 @@ export default function App() {
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setSelectedFile(null);
               setViewState('files');
-              const projObj = projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
+              const projObj = projects.find(p => (p.id || p.activeSpaceId)?.toLowerCase() === activeSpaceId.toLowerCase()) || { id: activeSpaceId, name: projectName };
               handleFileClick(projObj, true, { isFromRecents: true, targetChatId: activeSpaceId });
             } else {
               handleFileClick(getHomeChatId(), true, { isFromRecents: true, targetChatId: getHomeChatId() });
@@ -4275,7 +4277,7 @@ export default function App() {
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setSelectedFile(null);
               setViewState('files');
-              const projObj = projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
+              const projObj = projects.find(p => (p.id || p.activeSpaceId)?.toLowerCase() === activeSpaceId.toLowerCase()) || { id: activeSpaceId, name: projectName };
               handleFileClick(projObj, true, { isFromRecents: true, targetChatId: activeSpaceId });
             } else {
               handleFileClick(getHomeChatId(), true, { isFromRecents: true, targetChatId: getHomeChatId() });
@@ -4288,7 +4290,7 @@ export default function App() {
             setIsSourcesPanelOpen(false);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setViewState('files');
-              const projObj = projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
+              const projObj = projects.find(p => (p.id || p.activeSpaceId)?.toLowerCase() === activeSpaceId.toLowerCase()) || { id: activeSpaceId, name: projectName };
               handleFileClick(projObj, true, { isFromRecents: true, targetChatId: activeSpaceId });
             } else {
               handleFileClick(getHomeChatId(), true, { isFromRecents: true, targetChatId: getHomeChatId() });
