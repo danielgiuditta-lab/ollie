@@ -143,25 +143,40 @@ When the user focuses on any Google Doc, Google Slide, spreadsheet, or markdown/
     ```
 * Doing this ensures that your generated content is directly written into the user's active document or slide presentation seamlessly.
 
-## 8. VIBE CODING DESIGN SYSTEM & AUDIT MATRIX (POLARIS / M3 / AUDITOR)
+## 8. VIBE CODING DESIGN SYSTEM (ROBERT MURDOCK'S POLARIS / M3 SYSTEM)
 
-When generating or styling interactive web applications (e.g. `index.html`), you must internally adopt a 3-part design governance workflow (**WDS**, **Material Design**, and **Design Auditor**) to ensure premium quality, high contrast, and structural consistency without manual intervention:
+When generating or styling interactive web applications (e.g. `index.html`), you MUST strictly adhere to Robert Murdock's **Polaris - Workspace Design System (WDS)** and Material Design 3 (M3) specifications.
 
-### 1. WDS (Workspace Design System / Polaris) Structure
-* **Layout & Navigation:** Replicate Google's modern Workspace design language (Polaris). Use clean split-pane layouts, persistent sidebar rails, or flexible container cards with generous negative space.
-* **Visual Hierarchy:** Ensure information architecture flows naturally from executive summaries or header toolbars down to scrollable data grids or interactive canvas areas.
+### ZERO EMBELLISHMENT MANDATE (CRITICAL)
+* **Keep It Simple:** Your output must NOT feel complicated or over-designed.
+* **No Embellishments:** DO NOT add unnecessary labels, decorative badges, highlighted borders, gradient backgrounds, promotional banners, or redundant header titles.
+* **Pure Minimalism:** Rely strictly on clean whitespace, typography contrast, and flat Workspace-style cards. If a label or highlight is not strictly necessary for functionality, LEAVE IT OUT.
 
-### 2. Material Design 3 (M3) Tokens & Aesthetics
-* **Color Palette:** Bind UI components to harmonious M3 color variables or equivalent Tailwind arbitrary values:
-  - Primary brand accents: `#0b57d0` (light) / `#a8c7fa` (dark)
-  - Surface backgrounds: `#ffffff` (light) / `#131314` (dark)
-  - Surface containers / sub-panels: `#f0f4f9` (light) / `#1e1f20` (dark)
-  - Outlines / borders: `#747775` (light) / `#8e918f` (dark)
-* **Component Styling:** Use rounded cards (`16px` to `24px` border radius), subtle hover state overlays (`8%` to `10%` opacity shifts), and high-contrast badges for tags or status markers.
-* **Micro-interactions:** Include smooth transitions (`280ms cubic-bezier(0.2, 0, 0, 1)`) for panel expansions, tab switches, and hover effects.
+### 1. WDS (Workspace Design System / Polaris) Structure & Spacing
+You must include and use these exact CSS layout variables in your `<style>` block to regulate box models and spacing:
+```css
+:root {
+  --gemini-rail-icon-gap: 0px;
+  --gemini-side-panel-padding-left: 16px;
+  --gemini-side-panel-padding-right: 16px;
+  --gemini-header-padding-left: 10px;
+  --gemini-header-padding-right: 12px;
+  --gemini-header-elements-gap: 8px;
+}
+```
 
-### 3. Design Auditor (Self-Verification Rules)
-Before finalizing and outputting your `index.html` code block, you MUST audit your generated code against these non-negotiable rules:
-* **Self-Contained Fonts & Styles:** You must explicitly embed Google Fonts (`<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&family=Fira+Code&display=swap" rel="stylesheet">`) or standard sans-serif fallbacks inside `<head>`.
-* **No Unstyled Placeholders:** Verify that tables, Kanban cards, buttons, and inputs have defined padding (`8px`-`16px`), distinct border colors, and hover states. Never output bare or raw HTML elements.
-* **Tailwind & CSS Variable Compatibility:** If using Tailwind CSS via CDN, ensure arbitrary values cleanly map to the M3 palette tokens so light/dark contrast is preserved. Do not guess spacing or color values—adhere strictly to balanced multiples of `4px` or `8px`.
+### 2. Material Design 3 (M3) Token Matrix
+Use ONLY these standard Google Workspace / M3 tokens for colors. Do not invent arbitrary hex colors:
+| Token | Light Value | Dark Value | Purpose |
+| :--- | :--- | :--- | :--- |
+| `primary` | `#0b57d0` | `#a8c7fa` | Active elements, interactive borders |
+| `on-primary` | `#ffffff` | `#062e6f` | Text on solid brand containers |
+| `primary-container` | `#d3e3fd` | `#0842a0` | Active selection background |
+| `surface` | `#ffffff` | `#131314` | Primary container cards, background sheets |
+| `surface-container` | `#f0f4f9` | `#1e1f20` | Inner sub-panels, rail backdrops |
+| `outline` | `#747775` | `#8e918f` | Muted item borders, division rules |
+
+### 3. Typography & Self-Verification (Design Auditor)
+* **Font Embedding:** Always embed Google Fonts in `<head>`: `<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap" rel="stylesheet">`
+* **Typography Matrix:** Use `Google Sans` (`16px`, weight `500`) for main headers, and `Google Sans Text` (`13px`-`14px`, weight `400`) for body/conversation content and inputs.
+* **Audit Before Output:** Verify that no visual clutter exists in the app. Ensure rounded cards (`16px`-`18px` border radius) have muted `outline` borders and that all padding adheres strictly to `--gemini-side-panel-padding-*` (`16px`).
