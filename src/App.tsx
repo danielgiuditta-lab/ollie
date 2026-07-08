@@ -586,14 +586,24 @@ export default function App() {
         const currentSelected = sandboxFiles.find(f => f.name === selectedFile.name);
         if (currentSelected) {
           setSelectedFile(currentSelected);
-        } else if (indexFile) {
-          setSelectedFile(indexFile);
-          setIndexFileSelected(true);
         } else {
-          setSelectedFile(sandboxFiles[0]);
-          setIndexFileSelected(sandboxFiles[0].name.toLowerCase() === 'index.html');
+          if (viewState === 'app') {
+            if (indexFile) {
+              setSelectedFile(indexFile);
+              setIndexFileSelected(true);
+            } else {
+              setSelectedFile(sandboxFiles[0]);
+              setIndexFileSelected(sandboxFiles[0].name.toLowerCase() === 'index.html');
+            }
+          } else {
+            setSelectedFile(null);
+            setIndexFileSelected(false);
+          }
         }
       }
+    } else {
+      setSelectedFile(null);
+      setIndexFileSelected(false);
     }
   }, [sandboxFiles, viewState]);
 
