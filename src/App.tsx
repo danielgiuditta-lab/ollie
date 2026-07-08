@@ -292,6 +292,7 @@ export default function App() {
 
     if (isHomeChatId(activeSpaceId)) {
       setActiveSpaceId(homeId);
+      setActiveChatId(homeId);
       setProjectName('Home Dashboard');
       loadHomeChat();
     }
@@ -655,6 +656,10 @@ export default function App() {
     const activeName = (!isPlaceholder(customProjectName) ? customProjectName : (!isPlaceholder(projectName) ? projectName : (!isPlaceholder(currentTask) ? currentTask : '')));
     const filesToSave = (customFiles && customFiles.length > 0) ? customFiles : sandboxFiles;
     const resolvedSpaceId = spaceIdVal || activeSpaceId || chatIdVal;
+    if (isHomeChatId(chatIdVal) && !isHomeChatId(resolvedSpaceId)) {
+      console.warn("Prevented saving workspace project chat into home chat ID:", { chatIdVal, resolvedSpaceId });
+      return;
+    }
 
     try {
       await fetch(`/api/chats/${chatIdVal}`, {
@@ -1107,6 +1112,7 @@ export default function App() {
       if (!activeFolderId) {
         activeFolderId = `local-workspace-${Date.now()}`;
         setActiveSpaceId(activeFolderId);
+        setActiveChatId(activeFolderId);
       }
 
       const activeDoc = selectedFile || sandboxFiles.find(f => f.isDocJourney || f.name === 'document.doc') || { name: 'document.doc', content: '' };
@@ -1269,13 +1275,20 @@ export default function App() {
     setCurrentTask(activeAiMode ? 'AI Search Summary' : 'app');
 
     let resolvedFolderId = activeSpaceId;
-    let targetChatId = activeChatId || resolvedFolderId || activeSpaceId;
+    let targetChatId = activeChatId;
+    if (isHomeChatId(resolvedFolderId)) {
+      targetChatId = getHomeChatId();
+    } else if (!targetChatId || isHomeChatId(targetChatId)) {
+      targetChatId = resolvedFolderId;
+    }
     let inferredChatNameVal: string | undefined = undefined;
 
     if (chatModel === 'B' && resolvedFolderId && (!targetChatId || targetChatId.endsWith('-temp') || targetChatId.includes('-chat-temp'))) {
       targetChatId = `${resolvedFolderId}-chat-${Date.now()}`;
       inferredChatNameVal = inferChatName(text);
       setActiveChatId(targetChatId);
+    } else if (targetChatId !== activeChatId) {
+      setActiveChatId(targetChatId || null);
     }
 
     // Move current task/conversation to the top when a new turn starts (only for vibe coding)
@@ -1984,6 +1997,7 @@ export default function App() {
                     resolvedFolderId = activeFolder;
                     if (isHomeChatId(activeSpaceId) || !activeSpaceId) {
                       setActiveSpaceId(activeFolder);
+                      setActiveChatId(activeFolder);
                     }
 
                     let resolvedName = (projectName && projectName !== 'New' && projectName !== 'Building project...' && projectName !== 'Workspace Project') 
@@ -2134,6 +2148,7 @@ export default function App() {
   const handleCreateSpace = () => {
     const tempSpaceId = `space-creation-${Date.now()}`;
     setActiveSpaceId(tempSpaceId);
+    setActiveChatId(tempSpaceId);
     setProjectName('New Space');
     setCurrentTask('app');
     setMessages([]);
@@ -2180,6 +2195,7 @@ export default function App() {
     const resolvedSpaceId = matchingSpace ? (matchingSpace.id || matchingSpace.activeSpaceId) : 'home';
     const resolvedSpaceName = matchingSpace ? matchingSpace.name : spaceName;
     setActiveSpaceId(resolvedSpaceId);
+    setActiveChatId(resolvedSpaceId);
 
     const allKnownDriveFiles = [...driveFiles, ...suggestedListCache];
     const searchString = [
@@ -2364,6 +2380,7 @@ export default function App() {
     setNewlyCreatedSpaceIds(prev => new Set(prev).add(spaceId));
 
     setActiveSpaceId(spaceId);
+    setActiveChatId(spaceId);
     setProjectName(cleanFolderName);
     setMembers(selectedPeople);
     
@@ -2543,6 +2560,7 @@ export default function App() {
 
       setProjectName(cleanFolderName);
       setActiveSpaceId(spaceId);
+      setActiveChatId(spaceId);
       setMembers([]);
 
       // Ingest/download contents of selected files in parallel directly from their source Drive location

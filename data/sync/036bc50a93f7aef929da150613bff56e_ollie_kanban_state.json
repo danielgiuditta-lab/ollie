@@ -1,0 +1,99 @@
+{
+  "envId": "036bc50a93f7aef929da150613bff56e",
+  "key": "ollie_kanban_state",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-1",
+        "title": "Coding Agent Refinements",
+        "description": "Perform final refinements to the coding agent. Target completion for Thursday.",
+        "status": "in-progress",
+        "assignee": "Mike Carcasole",
+        "priority": "High",
+        "dueDate": "2026-07-09"
+      },
+      {
+        "id": "task-2",
+        "title": "Improvements to scheduled jobs",
+        "description": "Address scheduling issues and optimize job execution times.",
+        "status": "todo",
+        "assignee": "Cowboy Lynk",
+        "priority": "Medium",
+        "dueDate": "2026-07-16"
+      },
+      {
+        "id": "task-3",
+        "title": "Chat streaming bugs",
+        "description": "Fix bugs related to live streaming of agent chat outputs.",
+        "status": "in-progress",
+        "assignee": "Cowboy Lynk",
+        "priority": "High",
+        "dueDate": "2026-07-10"
+      },
+      {
+        "id": "task-4",
+        "title": "Cowboy/Ian bug bash and quality list",
+        "description": "Execute bug bash and compile high-priority quality improvements.",
+        "status": "todo",
+        "assignee": "Cowboy Lynk",
+        "priority": "Medium",
+        "dueDate": "2026-07-12"
+      },
+      {
+        "id": "task-5",
+        "title": "UX/UI Refinements (Ollie)",
+        "description": "Address bugs and apply aesthetic improvements to the Ollie user interface.",
+        "status": "in-progress",
+        "assignee": "Simon Sok",
+        "priority": "High",
+        "dueDate": "2026-07-14"
+      },
+      {
+        "id": "task-6",
+        "title": "Data privacy audit",
+        "description": "Audit data privacy before opening teamfood outside XI. Follow up with Zhengrong Ji to see if full s/c is needed.",
+        "status": "in-review",
+        "assignee": "Ian Mendiola",
+        "priority": "Critical",
+        "dueDate": "2026-07-15"
+      },
+      {
+        "id": "task-7",
+        "title": "UXR Track Codesign Sessions",
+        "description": "Conduct in-person codesign with Workspace Customers to map data trails and context habits.",
+        "status": "in-progress",
+        "assignee": "Daniel Giuditta",
+        "priority": "High",
+        "dueDate": "2026-07-24"
+      },
+      {
+        "id": "task-8",
+        "title": "Prototype testing process setup",
+        "description": "Design process for testing prototype. Can we get users to try GCP prototype with their WS account?",
+        "status": "todo",
+        "assignee": "Mirjam van Esch",
+        "priority": "Medium",
+        "dueDate": "2026-07-18"
+      },
+      {
+        "id": "task-9",
+        "title": "Production building blocks",
+        "description": "Prepare and deploy internal components useful for Ollie core features.",
+        "status": "done",
+        "assignee": "Michelle Haq",
+        "priority": "Medium",
+        "dueDate": "2026-06-24"
+      },
+      {
+        "id": "task-10",
+        "title": "Decks for Zhengrong/CT",
+        "description": "Create and share overview decks detailing sprint progress.",
+        "status": "done",
+        "assignee": "Sascha Negele",
+        "priority": "High",
+        "dueDate": "2026-06-23"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-08T19:13:20.172Z"
+}
