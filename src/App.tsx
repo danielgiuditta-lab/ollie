@@ -2163,15 +2163,16 @@ export default function App() {
     setViewState('files');
     setActiveProactiveTask(task);
 
-    const matchingSpace = recentTasks.find((s: any) => {
-      const sName = typeof s === 'string' ? s : s.name;
-      return sName && sName.toLowerCase() === spaceName.toLowerCase();
-    });
-    if (matchingSpace) {
-      setActiveSpaceId(typeof matchingSpace === 'string' ? matchingSpace : (matchingSpace.id || matchingSpace.activeSpaceId));
+    let matchingSpace: any = null;
+    if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
+      matchingSpace = projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || recentTasks.find(s => (s.id || s.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: spaceName };
     } else {
-      setActiveSpaceId('home');
+      matchingSpace = projects.find(p => p.name && p.name.toLowerCase() === spaceName.toLowerCase()) ||
+                      recentTasks.find(s => s.name && s.name.toLowerCase() === spaceName.toLowerCase());
     }
+    const resolvedSpaceId = matchingSpace ? (matchingSpace.id || matchingSpace.activeSpaceId) : 'home';
+    const resolvedSpaceName = matchingSpace ? matchingSpace.name : spaceName;
+    setActiveSpaceId(resolvedSpaceId);
 
     const matchedInDrive = driveFiles.find(f => 
       f.name.toLowerCase() === spaceName.toLowerCase() ||
@@ -2273,16 +2274,19 @@ export default function App() {
       viewState: 'files'
     };
 
-    const spaceIdToUse = matchingSpace ? (typeof matchingSpace === 'string' ? matchingSpace : (matchingSpace.id || matchingSpace.activeSpaceId)) : 'home';
     setRecentTasks(prev => {
       const exists = prev.some(item => item && (item.id === tempChatId || item.chatId === tempChatId));
       if (!exists) {
+        let cName = task.titleDone || task.title || task.description || 'Task';
+        if (cName.length > 22) {
+          cName = cName.substring(0, 20).trim() + '...';
+        }
         return [{
           id: tempChatId,
           chatId: tempChatId,
-          chatName: (task.titleDone || task.title || task.description || 'Task').substring(0, 28),
-          activeSpaceId: spaceIdToUse,
-          name: spaceName,
+          chatName: cName,
+          activeSpaceId: resolvedSpaceId,
+          name: resolvedSpaceName,
           messages: proactiveMsgs
         }, ...prev];
       }

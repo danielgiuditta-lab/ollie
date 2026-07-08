@@ -72,6 +72,7 @@ export function LeftNav({
 }: LeftNavProps) {
   const [localExpanded, setLocalExpanded] = useState(false);
   const [expandedSpaces, setExpandedSpaces] = useState<Record<string, boolean>>({});
+  const [isHomeExpanded, setIsHomeExpanded] = useState(true);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; task: any; isProject?: boolean } | null>(null);
   const [showSettingsPopover, setShowSettingsPopover] = useState(false);
 
@@ -104,7 +105,7 @@ export function LeftNav({
       if (!c) return;
       const chatIdVal = c.id || c.chatId;
       const spaceId = c.activeSpaceId || chatIdVal;
-      if (!spaceId) return;
+      if (!spaceId || spaceId === 'home' || spaceId === 'home_guest' || spaceId.startsWith('home_')) return;
 
       if (!spacesMap[spaceId]) {
         spacesMap[spaceId] = {
@@ -134,6 +135,10 @@ export function LeftNav({
 
     return Object.values(spacesMap);
   }, [projects, recentTasks]);
+
+  const homeChats = React.useMemo(() => {
+    return recentTasks.filter(t => t && (t.activeSpaceId === 'home' || t.activeSpaceId === 'home_guest' || t.activeSpaceId?.startsWith('home_')) && t.messages?.length > 0);
+  }, [recentTasks]);
 
   const onSelectSpace = (space: any) => {
     if (space.isProject) {
@@ -228,11 +233,51 @@ export function LeftNav({
               </span>
             </div>
             {isExpandedActive && (
-              <span className="material-symbols-rounded text-slate-400 text-sm shrink-0">
-                chevron_right
-              </span>
+              chatModel === 'B' && homeChats.length > 0 ? (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setIsHomeExpanded(!isHomeExpanded); }}
+                  className="p-1 rounded-full hover:bg-gray-250/50 dark:hover:bg-white/10 cursor-pointer text-slate-500 hover:text-slate-800"
+                >
+                  <span 
+                    className="material-symbols-rounded flex items-center justify-center transition-transform duration-205" 
+                    style={{ 
+                      fontSize: '18px',
+                      transform: isHomeExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'
+                    }}
+                  >
+                    expand_more
+                  </span>
+                </button>
+              ) : (
+                <span className="material-symbols-rounded text-slate-400 text-sm shrink-0">
+                  chevron_right
+                </span>
+              )
             )}
           </div>
+
+          {chatModel === 'B' && isHomeExpanded && isExpandedActive && homeChats.length > 0 && (
+            <div className="pl-10 pr-2 py-1 space-y-0.5 w-full shrink-0 min-w-0">
+              {homeChats.map((chat: any) => {
+                const isChatActive = chat.id === activeChatId;
+                return (
+                  <div 
+                    key={chat.id}
+                    onClick={() => handleSelectChat({ id: 'home', name: 'Home', raw: 'home', isProject: false }, chat)}
+                    className={`h-[32px] px-3 rounded-[20px] flex items-center cursor-pointer text-[14px] transition-colors duration-200 truncate min-w-0 ${
+                      isChatActive
+                        ? `${themeTokens.selectedBg} ${themeTokens.text.selected}`
+                        : `${themeTokens.text.idle} ${themeTokens.hoverBg} font-medium`
+                    }`}
+                    style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
+                    title={chat.chatName || chat.name}
+                  >
+                    {chat.chatName || chat.name}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Spaces items */}
@@ -301,19 +346,20 @@ export function LeftNav({
 
                 {/* Model B chats list */}
                 {chatModel === 'B' && isSpaceExpanded && isExpandedActive && (
-                  <div className="pl-10 pr-2 py-1 space-y-0.5 w-full shrink-0">
+                  <div className="pl-10 pr-2 py-1 space-y-0.5 w-full shrink-0 min-w-0">
                     {space.chats.map((chat: any) => {
                       const isChatActive = chat.id === activeChatId;
                       return (
                         <div 
                           key={chat.id}
                           onClick={() => handleSelectChat(space, chat)}
-                          className={`h-[32px] px-3 rounded-[20px] flex items-center cursor-pointer text-[14px] transition-colors duration-200 ${
+                          className={`h-[32px] px-3 rounded-[20px] flex items-center cursor-pointer text-[14px] transition-colors duration-200 truncate min-w-0 ${
                             isChatActive
                               ? `${themeTokens.selectedBg} ${themeTokens.text.selected}`
                               : `${themeTokens.text.idle} ${themeTokens.hoverBg} font-medium`
                           }`}
                           style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
+                          title={chat.name}
                         >
                           {chat.name}
                         </div>
