@@ -1559,9 +1559,15 @@ Guidelines:
         historyText = "Past conversation history:\n" + history.map((h: any) => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.text}`).join("\n") + "\n\n";
       }
 
-      const systemPrompt = `You are an expert AI document authoring assistant working in a collaborative workspace.
-The user is writing a document titled "${activeFileName || 'document.doc'}".
-Current document content:
+      const isSlide = (activeFileName || '').toLowerCase().includes('slide') || (activeFileName || '').toLowerCase().endsWith('.ppt') || (activeFileName || '').toLowerCase().endsWith('.pptx');
+      const docTypeLabel = isSlide ? "slideshow presentation" : "document";
+      const docFormatInstruction = isSlide
+        ? "2. <doc>...</doc>: The COMPLETE updated Markdown content for the presentation slides. Each slide MUST begin with a level 1 markdown heading ('# Slide Title'), followed by bullet points ('- Point 1', '- Point 2') for the content of that slide. Do NOT write standard paragraphs; organize all content into distinct slide pages with titles and bullets. DO NOT use horizontal rules or dividers (---, ***, <hr>)."
+        : "2. <doc>...</doc>: The COMPLETE updated Markdown content for the document. This section will be rendered live inside their document canvas editor. Ensure it is formatted cleanly with clear Markdown headings (#, ##), bullet points, and paragraphs. DO NOT use horizontal rules or dividers (---, ***, <hr>) in the document content.";
+
+      const systemPrompt = `You are an expert AI authoring assistant working in a collaborative workspace.
+The user is writing a ${docTypeLabel} titled "${activeFileName || 'document.doc'}".
+Current content:
 ---
 ${activeFileContent || ''}
 ---
@@ -1570,14 +1576,14 @@ ${contextText ? `\nReference files from Google Drive provided by user:\n${contex
 CRITICAL INSTRUCTIONS FOR RESPONSE FORMATTING:
 You MUST structure your response into two distinct sections using XML tags <chat> and <doc>:
 
-1. <chat>...</chat>: Conversational text directed to the user in their chat sidebar. Explain what you are doing, summarize the changes or content added, and ask any clarifying questions to help guide the document creation. DO NOT put the document body/article text inside <chat>.
-2. <doc>...</doc>: The COMPLETE updated Markdown content for the document. This section will be rendered live inside their document canvas editor. Ensure it is formatted cleanly with clear Markdown headings (#, ##), bullet points, and paragraphs. DO NOT use horizontal rules or dividers (---, ***, <hr>) in the document content.
+1. <chat>...</chat>: Conversational text directed to the user in their chat sidebar. Explain what you are doing, summarize the changes or content added, and ask any clarifying questions to help guide the creation. DO NOT put the body text inside <chat>.
+${docFormatInstruction}
 
 Example output format:
-<chat>I have drafted a marketing section based on your Q3 drive files. What specific goals would you like to add next?</chat>
-<doc># New document
-## Marketing Overview
-Here is the detailed marketing strategy...
+<chat>I have drafted a section based on your drive files. What specific goals would you like to add next?</chat>
+<doc># Overview
+- Key goal 1
+- Key goal 2
 </doc>`;
 
       res.setHeader('Content-Type', 'text/event-stream');

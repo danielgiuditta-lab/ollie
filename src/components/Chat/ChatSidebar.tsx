@@ -15,7 +15,7 @@ interface ChatSidebarProps {
   variant?: 'gemini' | 'comments' | 'history';
   onClose?: () => void;
   theme?: 'light' | 'dark';
-  onCreateArtifact?: (type: 'doc' | 'slide' | 'sheet' | 'pix' | 'site' | 'upload') => void;
+  onCreateArtifact?: (type: 'doc' | 'slide' | 'sheet' | 'pix' | 'site' | 'upload', fromPill?: boolean) => void;
   currentTask?: string;
   isAiSummarySnapped?: boolean;
   onUnsnapAiSummary?: () => void;
@@ -83,7 +83,9 @@ export function ChatSidebar({
     if (!isHome && isNewSpaceCreation && (!spaceMode || spaceMode === 'choice')) {
       return [
         { label: "Let Ollie track your work", prompt: "Let Ollie track your work", mode: 'tracking' as const },
-        { label: "Build a custom tool with Ollie", prompt: "Build a custom tool with Ollie", mode: 'tool' as const }
+        { label: "Build a custom tool with Ollie", prompt: "Build a custom tool with Ollie", mode: 'tool' as const },
+        { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
+        { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const }
       ];
     }
 
@@ -111,19 +113,35 @@ export function ChatSidebar({
     }
 
     if (filtered.length > 0) {
-      return filtered.map(item => ({
+      const base = filtered.map(item => ({
         label: getPillLabel(item.title),
         prompt: `Help me with: ${item.title}`
       }));
+      if (!isHome) {
+        return [
+          ...base,
+          { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
+          { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const }
+        ];
+      }
+      return base;
     }
 
     // Fallback default suggestions
-    return [
+    const fallback = [
       { label: "Make an interactive dashboard", prompt: "Make an interactive dashboard" },
       { label: "Make a project tracker", prompt: "Make a project tracker" },
       { label: "Make an interactive presentation", prompt: "Make an interactive presentation" },
       ...(fileCount > 3 ? [{ label: "Organize files", prompt: "Organize files" }] : [])
     ];
+    if (!isHome) {
+      return [
+        { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
+        { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const },
+        ...fallback
+      ];
+    }
+    return fallback;
   };
 
   const suggestions = getSuggestions();
@@ -134,6 +152,12 @@ export function ChatSidebar({
     }
     if (title === "Build a custom tool with Ollie") {
       return <span className="text-lg shrink-0 select-none">⚡</span>;
+    }
+    if (title === "Create a Doc") {
+      return <FileText size={20} className="shrink-0 text-blue-600 dark:text-blue-400" />;
+    }
+    if (title === "Create a Slideshow") {
+      return <Presentation size={20} className="shrink-0 text-amber-600 dark:text-amber-400" />;
     }
     const lower = title.toLowerCase();
     if (lower.includes('dashboard') || lower.includes('visual')) {
@@ -319,6 +343,10 @@ export function ChatSidebar({
                       onClick={() => {
                         if ((pill as any).mode && onSelectSpaceMode) {
                           onSelectSpaceMode((pill as any).mode);
+                        } else if ((pill as any).action === 'create_doc' && onCreateArtifact) {
+                          onCreateArtifact('doc', true);
+                        } else if ((pill as any).action === 'create_slide' && onCreateArtifact) {
+                          onCreateArtifact('slide', true);
                         } else {
                           onSendMessage(pill.prompt);
                         }

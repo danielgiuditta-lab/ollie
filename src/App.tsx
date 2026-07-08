@@ -1099,12 +1099,12 @@ export default function App() {
       return;
     }
 
-    const isDocJourneyMode = currentTask === 'doc' || !!selectedFile?.isDocJourney || (sandboxFiles.length > 0 && sandboxFiles.some(f => f.isDocJourney || f.name === 'document.doc'));
+    const isDocJourneyMode = currentTask === 'doc' || currentTask === 'slide' || !!selectedFile?.isDocJourney || (sandboxFiles.length > 0 && sandboxFiles.some(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides'));
 
     if (isDocJourneyMode) {
       setMessages(prev => [...prev, { role: 'user', text }, { role: 'bot', text: '' }]);
       setIsLoading(true);
-      setCurrentTask('doc');
+      setCurrentTask(currentTask === 'slide' ? 'slide' : 'doc');
       setViewState('files');
       setActiveSidebar('gemini');
 
@@ -1115,7 +1115,7 @@ export default function App() {
         setActiveChatId(activeFolderId);
       }
 
-      const activeDoc = selectedFile || sandboxFiles.find(f => f.isDocJourney || f.name === 'document.doc') || { name: 'document.doc', content: '' };
+      const activeDoc = selectedFile || sandboxFiles.find(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides') || { name: currentTask === 'slide' ? 'presentation.gslides' : 'document.doc', content: '' };
 
       try {
         console.log("[DocJourney Client] Sending POST /api/doc-journey with prompt:", text);
@@ -1203,7 +1203,7 @@ export default function App() {
                   console.log(`[DocJourney Client] Extracted docText (${docText.length} chars)`);
                   setSandboxFiles(prev => {
                     return prev.map(f => {
-                      if (f.id === activeDoc.id || f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc') {
+                      if (f.id === activeDoc.id || f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides') {
                         return { ...f, content: docText };
                       }
                       return f;
@@ -1220,7 +1220,7 @@ export default function App() {
 
         setSandboxFiles(latestFiles => {
           let updatedFiles = latestFiles;
-          const currentDoc = latestFiles.find(f => f.id === activeDoc.id || f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc');
+          const currentDoc = latestFiles.find(f => f.id === activeDoc.id || f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides');
           if (currentDoc) {
             let smartTitle = "";
             const h1Match = (currentDoc.content || "").match(/^#\s+(.+)$/m);
@@ -1241,7 +1241,9 @@ export default function App() {
             }
             if (smartTitle) {
               if (smartTitle.length > 50) smartTitle = smartTitle.substring(0, 47) + "...";
-              const newDocName = smartTitle.toLowerCase().endsWith('.doc') ? smartTitle : `${smartTitle}.doc`;
+              const isSlideFile = currentDoc.name.endsWith('.gslides') || currentDoc.mimeType === 'application/vnd.google-apps.presentation';
+              const ext = isSlideFile ? '.gslides' : '.doc';
+              const newDocName = smartTitle.toLowerCase().endsWith(ext) ? smartTitle : `${smartTitle}${ext}`;
               console.log(`[DocJourney Client] Updating doc title from generic to: ${newDocName}`);
               updatedFiles = latestFiles.map(f => {
                 if (f.id === currentDoc.id || f.name === currentDoc.name) {
@@ -4020,7 +4022,7 @@ export default function App() {
     }
   };
 
-  const handleCreateArtifactApp = async (type: 'doc' | 'slide' | 'sheet' | 'pix' | 'site' | 'upload') => {
+  const handleCreateArtifactApp = async (type: 'doc' | 'slide' | 'sheet' | 'pix' | 'site' | 'upload', fromPill?: boolean) => {
     if (type === 'upload') {
       const fileInput = document.createElement('input');
       fileInput.type = 'file';
@@ -4096,6 +4098,7 @@ export default function App() {
       content = '# Slide 1\n\n- ';
       mimeType = 'application/vnd.google-apps.presentation';
       setProjectName('New Slide Deck');
+      setCurrentTask('slide');
     } else if (type === 'sheet') {
       name = 'spreadsheet.gsheet';
       content = 'A,B,C,D,E';
@@ -4167,7 +4170,7 @@ export default function App() {
       mimeType,
       createdFromComposer: true,
       fontFamily: type === 'doc' ? 'Google Sans' : undefined,
-      isDocJourney: type === 'doc',
+      isDocJourney: type === 'doc' || type === 'slide',
       id: createdDriveId || `created-artifact-${Date.now()}`
     };
     if (createdDriveId) {
@@ -4175,7 +4178,7 @@ export default function App() {
       createdFromComposerFileIdsRef.current.add(createdDriveId);
     }
 
-    if (type === 'doc' || type === 'sheet') {
+    if (type === 'doc' || type === 'slide' || type === 'sheet') {
       lastSavedContentsRef.current[name.toLowerCase()] = content;
     }
 
@@ -4187,6 +4190,14 @@ export default function App() {
       }
       return combined;
     });
+
+    if (fromPill) {
+      if (type === 'doc') {
+        setMessages([{ role: 'bot', text: "How can I help with your doc?" }]);
+      } else if (type === 'slide') {
+        setMessages([{ role: 'bot', text: "How can I help with your presentation?" }]);
+      }
+    }
 
     setSelectedFile(newArtifact);
     setIndexFileSelected(name.toLowerCase() === 'index.html');
