@@ -3464,13 +3464,13 @@ export default function App() {
     setActiveAiSummaryTaskId(null);
     setActiveSidebar('gemini');
 
-    if (!isFromRecents) {
-      // Opening from directory/search navigation starts a fresh blank chat with Gemini
-      setMessages([]);
-    }
-
     const cached = workspaceCacheRef.current[targetChatId] || workspaceCacheRef.current[folderId];
     const cachedChat = chatSessionsCacheRef.current[targetChatId];
+
+    if (!isFromRecents || (!cached && !cachedChat)) {
+      // Opening from directory/search navigation or cache miss starts a fresh blank chat with Gemini
+      setMessages([]);
+    }
     
     if (cached) {
       // 1. Restore from cache immediately
