@@ -121,12 +121,12 @@ export function CanvasHeader({
 
     let artifactName = selectedFile ? selectedFile.name : (viewState === 'ai_summary' ? 'Search Summary' : '');
     if (activeProactiveTask) {
-      let rawTaskName = selectedFile?.name || activeProactiveTask.sourceName || activeProactiveTask.source || 'Proposal';
-      let cleanedTaskName = cleanWorkspaceName(rawTaskName).replace(/\.(gdoc|gslides|gsheet|docx|pptx|xlsx|pdf|md|csv)$/i, '');
-      if (cleanedTaskName.length > 28) {
-        cleanedTaskName = cleanedTaskName.substring(0, 26).trim() + '...';
+      const isDone = activeProactiveTask.status === 'done' || activeProactiveTask.status === 'approved';
+      let rawTaskTitle = isDone ? (activeProactiveTask.titleDone || activeProactiveTask.title) : (activeProactiveTask.title || activeProactiveTask.description || 'Task');
+      if (rawTaskTitle.length > 38) {
+        rawTaskTitle = rawTaskTitle.substring(0, 36).trim() + '...';
       }
-      artifactName = cleanedTaskName;
+      artifactName = rawTaskTitle;
     } else if (artifactName && typeof artifactName === 'string') {
       artifactName = artifactName.replace(/\.(gdoc|gslides|gsheet|docx|pptx|xlsx|pdf|md|csv)$/i, '');
       if (artifactName.length > 28) {

@@ -2163,6 +2163,16 @@ export default function App() {
     setViewState('files');
     setActiveProactiveTask(task);
 
+    const matchingSpace = recentTasks.find((s: any) => {
+      const sName = typeof s === 'string' ? s : s.name;
+      return sName && sName.toLowerCase() === spaceName.toLowerCase();
+    });
+    if (matchingSpace) {
+      setActiveSpaceId(typeof matchingSpace === 'string' ? matchingSpace : (matchingSpace.id || matchingSpace.activeSpaceId));
+    } else {
+      setActiveSpaceId('home');
+    }
+
     const matchedInDrive = driveFiles.find(f => 
       f.name.toLowerCase() === spaceName.toLowerCase() ||
       f.name.toLowerCase().replace(/\.[^/.]+$/, "") === spaceName.toLowerCase() ||

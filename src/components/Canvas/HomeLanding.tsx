@@ -627,17 +627,10 @@ export function HomeLanding({
         }
       }
 
-      let derivedWorkspace = 'General Projects';
-      if (textForMime.includes('threat') || textForMime.includes('defense') || textForMime.includes('security') || textForMime.includes('rso') || textForMime.includes('seller')) {
-        derivedWorkspace = 'Security & Defense';
-      } else if (textForMime.includes('prototyping') || textForMime.includes('ux') || textForMime.includes('design')) {
-        derivedWorkspace = 'UX Design';
-      } else if (textForMime.includes('ranking') || textForMime.includes('stack') || textForMime.includes('sizing') || textForMime.includes('estimates') || textForMime.includes('di')) {
-        derivedWorkspace = 'Project Operations';
-      } else if (textForMime.includes('brand') || textForMime.includes('guidelines') || textForMime.includes('logo') || textForMime.includes('color')) {
-        derivedWorkspace = 'Branding';
-      } else if (textForMime.includes('sales') || textForMime.includes('annual') || textForMime.includes('performance')) {
-        derivedWorkspace = 'Sales';
+      let derivedWorkspace = item.workspace;
+      if (!derivedWorkspace || derivedWorkspace === 'Google Workspace' || derivedWorkspace === 'Workspace') {
+        const isHomeView = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
+        derivedWorkspace = !isHomeView && projectName ? projectName : 'Home';
       }
 
       return {
