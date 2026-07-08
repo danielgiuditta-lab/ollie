@@ -516,7 +516,7 @@ export function HomeLanding({
 
   // Bind live Workspace Digest data to Tasks when loaded
   useEffect(() => {
-    if (!digestData) return;
+    if (!digestData || digestData.spaceId !== activeSpaceId) return;
 
     const actions = digestData.immediateActions || [];
     const followUps = digestData.followUps || [];
@@ -786,6 +786,7 @@ export function HomeLanding({
 
     if (!accessToken && isMock) {
       const mockDigest = {
+        spaceId: activeSpaceId,
         immediateActions: [
           {
             id: 'todo-proactive-1',
@@ -834,7 +835,7 @@ export function HomeLanding({
         });
         if (res.ok) {
           const data = await res.json();
-          setDigestData(data);
+          setDigestData({ ...data, spaceId: activeSpaceId });
         } else {
           const errText = await res.text();
           console.error("Failed to load digest:", errText);

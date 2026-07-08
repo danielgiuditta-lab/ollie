@@ -3231,11 +3231,11 @@ export default function App() {
       clearTimeout(syncTimeoutRef.current);
     }
     const isFromRecents = options?.isFromRecents ?? false;
-    const folderId = typeof file === 'string' ? file : (file.id || file.activeSpaceId);
+    const folderId = typeof file === 'string' ? file : (file.activeSpaceId || file.id);
     if (!folderId) return;
 
     // Resolve targetChatId
-    let targetChatId = options?.targetChatId || (typeof file === 'object' && file.chatId);
+    let targetChatId = options?.targetChatId || (typeof file === 'object' ? (file.chatId || file.id) : file);
     if (!targetChatId && chatModel === 'B') {
       const matchingChats = recentTasks.filter(t => t && t.activeSpaceId === folderId);
       if (matchingChats.length > 0) {
@@ -3357,12 +3357,25 @@ export default function App() {
         syncTimeoutRef.current = setTimeout(async () => {
           if (activeSpaceIdRef.current !== folderId) return;
           try {
+            const currentCache = workspaceCacheRef.current[folderId] || cached || {
+              ingestedFiles: [],
+              sandboxFiles: [],
+              envId: null,
+              sandboxUrl: '',
+              messages: [],
+              projectName: '',
+              selectedFile: null,
+              indexFileSelected: false,
+              viewState: 'app' as const
+            };
+            const currentCacheChat = chatSessionsCacheRef.current[targetChatId] || cachedChat || { messages: [] };
+
             const chatRes = await fetch(`/api/chats/${targetChatId}`);
             if (activeSpaceIdRef.current !== folderId) return;
 
-            let latestMessages = cachedChat ? cachedChat.messages : cached.messages;
-            let latestEnvId = cached.envId;
-            let latestSandboxUrl = cached.sandboxUrl;
+            let latestMessages = currentCacheChat.messages || currentCache.messages || [];
+            let latestEnvId = currentCache.envId;
+            let latestSandboxUrl = currentCache.sandboxUrl;
             
             if (chatRes.ok) {
               const chatData = await chatRes.json();
@@ -3370,8 +3383,7 @@ export default function App() {
               if (chatData) {
                 setMembers(chatData.members || []);
                 if (chatData.messages) {
-                  const currentMsgCached = cachedChat ? cachedChat.messages : cached.messages;
-                  const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(currentMsgCached);
+                  const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(latestMessages);
                   if (messagesChanged) {
                     latestMessages = chatData.messages;
                     setMessages(chatData.messages);
@@ -3392,21 +3404,22 @@ export default function App() {
             });
             if (activeSpaceIdRef.current !== folderId) return;
             
-            let latestIngested = cached.ingestedFiles;
+            let latestIngested = currentCache.ingestedFiles || [];
+            let latestSandboxFiles = currentCache.sandboxFiles || [];
+
             if (res.ok) {
               const data = await res.json();
               if (activeSpaceIdRef.current !== folderId) return;
               if (data.files) {
                 latestIngested = data.files;
-                const filesChanged = data.files.length !== cached.ingestedFiles.length ||
+                const filesChanged = data.files.length !== (currentCache.ingestedFiles || []).length ||
                   data.files.some((f: any, idx: number) => {
-                    const cachedF = cached.ingestedFiles[idx];
+                    const cachedF = (currentCache.ingestedFiles || [])[idx];
                     return !cachedF || cachedF.id !== f.id || cachedF.content !== f.content;
                   });
 
                 if (filesChanged) {
-                  setIngestedFiles(data.files);
-                  const sandboxMapped = data.files.map((f: any, i: number) => ({
+                  latestSandboxFiles = data.files.map((f: any, i: number) => ({
                      name: f.filename,
                      type: 'code',
                      content: f.content,
@@ -3415,12 +3428,12 @@ export default function App() {
                      id: `ingested-file-${i}`
                   }));
 
-                  setSandboxFiles(sandboxMapped);
-                  sandboxMapped.forEach((f: any) => {
+                  setSandboxFiles(latestSandboxFiles);
+                  latestSandboxFiles.forEach((f: any) => {
                     lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
                   });
 
-                  const envIdFile = sandboxMapped.find((f: any) => f.name === '.env_id');
+                  const envIdFile = latestSandboxFiles.find((f: any) => f.name === '.env_id');
                   if (envIdFile && envIdFile.content) {
                     latestEnvId = envIdFile.content.trim();
                   }
@@ -3428,24 +3441,24 @@ export default function App() {
               }
             }
 
-            if (latestEnvId !== cached.envId) {
+            if (latestEnvId !== currentCache.envId) {
               setEnvId(latestEnvId);
             }
-            if (latestSandboxUrl !== cached.sandboxUrl) {
+            if (latestSandboxUrl !== currentCache.sandboxUrl) {
               setSandboxUrl(latestSandboxUrl);
             }
 
             // Update the cache item
             workspaceCacheRef.current[folderId] = {
               ingestedFiles: latestIngested,
-              sandboxFiles: sandboxFiles,
+              sandboxFiles: latestSandboxFiles,
               envId: latestEnvId,
               sandboxUrl: latestSandboxUrl,
               messages: latestMessages,
-              projectName: fileName || projectName,
-              selectedFile: selectedFile,
-              indexFileSelected: indexFileSelected,
-              viewState: cached.viewState || viewState
+              projectName: currentCache.projectName || fileName,
+              selectedFile: currentCache.selectedFile || null,
+              indexFileSelected: currentCache.indexFileSelected || false,
+              viewState: currentCache.viewState || 'app'
             };
             chatSessionsCacheRef.current[targetChatId] = {
               messages: latestMessages
@@ -3497,7 +3510,7 @@ export default function App() {
                 }
                 
                 workspaceCacheRef.current[folderId] = {
-                  ingestedFiles: ingestedFiles,
+                  ingestedFiles: chatData.ingestedFiles || [],
                   sandboxFiles: chatData.sandboxFiles,
                   envId: chatData.envId || null,
                   sandboxUrl: chatData.sandboxUrl || '',
