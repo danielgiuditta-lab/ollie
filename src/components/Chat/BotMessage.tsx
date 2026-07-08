@@ -30,6 +30,10 @@ interface BotMessageProps {
   teamMembers?: any[];
   targetSpaceName?: string;
   onFinalizeSpace?: (name: string, selectedPeople: any[]) => Promise<void> | void;
+  isProactiveReview?: boolean;
+  proactiveTask?: any;
+  onApproveProactive?: () => void;
+  onFeedbackProactive?: () => void;
 }
 
 const TeamAvatar = ({ avatar, name, size = 'md' }: { avatar: string; name: string; size?: 'sm' | 'md' }) => {
@@ -109,10 +113,92 @@ export function BotMessage({
   suggestedPeople = [],
   teamMembers = [],
   targetSpaceName = '',
-  onFinalizeSpace
+  onFinalizeSpace,
+  isProactiveReview = false,
+  proactiveTask,
+  onApproveProactive,
+  onFeedbackProactive
 }: BotMessageProps) {
   const isDark = theme === 'dark';
-  
+
+  if (isProactiveReview && proactiveTask) {
+    const isApproved = proactiveTask.status === 'done' || proactiveTask.status === 'approved';
+    const sourceName = proactiveTask.sourceName || proactiveTask.workspace || 'Google Workspace';
+    const proposalTitle = proactiveTask.titleDone || proactiveTask.title || 'proposed changes';
+    
+    return (
+      <div className="flex flex-col gap-3 w-full animate-fade-in-up">
+        <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
+          isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
+        }`} style={{ fontFamily: '"Inter", sans-serif' }}>
+          Based on <strong>{sourceName}</strong> I've done <strong>{proposalTitle}</strong>, let me know what you think.
+        </div>
+
+        <div className={`flex flex-col border rounded-3xl p-5 w-full shadow-sm ${
+          isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-slate-200/80'
+        }`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <FileText className="w-5 h-5 text-blue-500 shrink-0" />
+              <span 
+                className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                style={{ fontFamily: '"Product Sans", "Google Sans", sans-serif' }}
+              >
+                Proactive Agent Draft
+              </span>
+            </div>
+            {isApproved ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-xs font-semibold border border-emerald-200 dark:border-emerald-800">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Approved</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-xs font-semibold border border-amber-200 dark:border-amber-800 animate-pulse">
+                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>Waiting for review</span>
+              </div>
+            )}
+          </div>
+
+          <div className={`p-3.5 rounded-2xl mb-4 text-xs sm:text-sm leading-relaxed border ${
+            isDark ? 'bg-[#121314] border-[#2B2D31] text-gray-300' : 'bg-slate-50 border-slate-150 text-slate-700'
+          }`}>
+            <p className="font-semibold mb-1">Action Summary:</p>
+            <p>{proactiveTask.descriptionDone || proactiveTask.description}</p>
+          </div>
+
+          <div className={`h-px w-full my-1 ${isDark ? 'bg-[#3B3D42]' : 'bg-slate-100'}`} />
+
+          <div className="flex items-center justify-end gap-3 pt-3">
+            {isApproved ? (
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-xs font-semibold border border-emerald-200 dark:border-emerald-800">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Approved & Merged to {sourceName}</span>
+              </div>
+            ) : (
+              <>
+                <Button 
+                  variant="secondary" 
+                  theme={theme} 
+                  onClick={onFeedbackProactive}
+                >
+                  Give feedback
+                </Button>
+                <Button 
+                  variant="primary" 
+                  theme={theme} 
+                  onClick={onApproveProactive}
+                >
+                  Approve
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isSpacePeopleSelector) {
     const [selectedEmails, setSelectedEmails] = React.useState<string[]>(
       (suggestedPeople || []).map(p => p.email).filter(Boolean)

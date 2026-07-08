@@ -14,6 +14,8 @@ interface SlotConfig {
   duration: number;
   startColors: [string, string];
   targetColors: [string, string];
+  morphProgress: number;
+  morphVelocity: number;
 }
 
 const interpolateColor = (
@@ -88,7 +90,12 @@ const getBoundingBox = (points: Point[]) => {
     if (p.x > maxX) maxX = p.x;
     if (p.y > maxY) maxY = p.y;
   });
-  return { width: maxX - minX, height: maxY - minY };
+  return {
+    width: maxX - minX,
+    height: maxY - minY,
+    centerX: (minX + maxX) / 2,
+    centerY: (minY + maxY) / 2,
+  };
 };
 
 const gradientPool: [string, string][] = [
@@ -113,11 +120,15 @@ const fallbackPaths = {
 
 interface ShapeLoaderProps {
   size?: number;
+  onClick?: () => void;
 }
 
-export const ShapeLoader: React.FC<ShapeLoaderProps> = ({ size = 120 }) => {
+export const ShapeLoader: React.FC<ShapeLoaderProps> = ({
+  size = 120,
+  onClick,
+}) => {
   const center = { x: size / 2, y: size / 2 };
-  const shapeSize = size - 10;
+  const shapeSize = Math.round(size * 0.65);
   const viewBoxSize = size;
 
   const shapes = useMemo(() => {
@@ -126,21 +137,33 @@ export const ShapeLoader: React.FC<ShapeLoaderProps> = ({ size = 120 }) => {
       const rawPoints = samplePath((fallbackPaths as any)[name], POINT_COUNT);
       const bbox = getBoundingBox(rawPoints);
       const maxDim = Math.max(bbox.width, bbox.height);
-      const scale = shapeSize / maxDim;
-      obj[name] = rawPoints.map((p) => ({ x: p.x * scale, y: p.y * scale }));
+      const scale = maxDim > 0 ? shapeSize / maxDim : 1;
+      obj[name] = rawPoints.map((p) => ({
+        x: (p.x - bbox.centerX) * scale,
+        y: (p.y - bbox.centerY) * scale,
+      }));
     }
     return obj;
   }, [shapeSize]);
 
-  const shapeNames = useMemo(() => Object.keys(shapes), [shapes]);
+  const shapeNames = useMemo(
+    () => Object.keys(shapes).filter((n) => n !== "circle" && n !== "Circle"),
+    [shapes],
+  );
 
   const [slotConfig, setSlotConfig] = useState<SlotConfig | null>(null);
   const currentPointsRef = useRef<Point[]>([]);
   const currentColorsRef = useRef<[string, string]>(gradientPool[0]);
   const [, setRenderTrigger] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
   const rotationRef = useRef(0);
   const shuffleBagRef = useRef<string[]>([]);
-  const lastStateChangeRef = useRef<number>(0);
+
+  // Spring physics parameters
+  const stiffness = 20;
+  const damping = 10;
+  const mass = 1.2;
 
   const getNextShape = () => {
     if (shuffleBagRef.current.length === 0) {
@@ -155,31 +178,68 @@ export const ShapeLoader: React.FC<ShapeLoaderProps> = ({ size = 120 }) => {
   };
 
   useEffect(() => {
-    if (shapeNames.length === 0) return;
+    if (shapeNames.length === 0 || isInitialized) return;
 
-    const startShape = getNextShape();
-    const targetShape = getNextShape();
+    const randomShape = getNextShape();
+    const randomTarget = getNextShape();
 
     setSlotConfig({
-      currentShape: startShape,
-      targetShape: targetShape,
+      currentShape: randomShape,
+      targetShape: randomTarget,
       startTime: performance.now(),
-      duration: 1500, // Duration of one bounce/morph step
+      duration: 2000,
       startColors: gradientPool[0],
       targetColors: gradientPool[1],
+      morphProgress: 0,
+      morphVelocity: 0,
     });
 
-    const base = shapes[startShape] || shapes[shapeNames[0]];
+    const base = shapes[randomShape] || shapes[shapeNames[0]];
     currentPointsRef.current = base.map((p) => ({
       x: p.x + center.x,
       y: p.y + center.y,
     }));
     currentColorsRef.current = gradientPool[0];
-    lastStateChangeRef.current = performance.now();
-  }, [shapes, shapeNames]);
+    setIsInitialized(true);
+  }, [shapes, shapeNames, isInitialized]);
 
   useEffect(() => {
-    if (shapeNames.length === 0 || !slotConfig) return;
+    if (shapeNames.length === 0 || !isInitialized) return;
+
+    const interval = setInterval(() => {
+      const now = performance.now();
+      setSlotConfig((current) => {
+        if (!current) return null;
+
+        let nextTarget = getNextShape();
+        if (nextTarget === current.targetShape && shapeNames.length > 1) {
+          shuffleBagRef.current.unshift(nextTarget);
+          nextTarget = getNextShape();
+        }
+
+        const availableGrads = gradientPool.filter(
+          (g) => g !== current.targetColors,
+        );
+        const nextGrad =
+          availableGrads[Math.floor(Math.random() * availableGrads.length)];
+
+        return {
+          currentShape: current.targetShape,
+          targetShape: nextTarget,
+          startTime: now,
+          duration: 2000,
+          startColors: current.targetColors,
+          targetColors: nextGrad,
+          morphProgress: 0,
+          morphVelocity: 0,
+        };
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [shapeNames, isInitialized]);
+
+  useEffect(() => {
+    if (!isInitialized || !slotConfig) return;
     let animationFrameId: number;
     let lastTimestamp = 0;
 
@@ -187,71 +247,43 @@ export const ShapeLoader: React.FC<ShapeLoaderProps> = ({ size = 120 }) => {
       if (!lastTimestamp) lastTimestamp = timestamp;
       const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
 
-      const elapsed = timestamp - slotConfig.startTime;
-      let progress = elapsed / slotConfig.duration;
-
-      // Handle loop and trigger new morph target
-      if (progress >= 1) {
-        progress = 0;
-        const now = performance.now();
-        setSlotConfig((current) => {
-          if (!current) return null;
-          let nextTarget = getNextShape();
-          if (nextTarget === current.targetShape && shapeNames.length > 1) {
-            shuffleBagRef.current.unshift(nextTarget);
-            nextTarget = getNextShape();
-          }
-          const availableGrads = gradientPool.filter(
-            (g) => g !== current.targetColors,
-          );
-          const nextGrad =
-            availableGrads[Math.floor(Math.random() * availableGrads.length)];
-
-          return {
-            currentShape: current.targetShape,
-            targetShape: nextTarget,
-            startTime: now,
-            duration: 1500,
-            startColors: current.targetColors,
-            targetColors: nextGrad,
-          };
-        });
-        lastTimestamp = timestamp;
-        animationFrameId = requestAnimationFrame(animate);
-        return;
-      }
-
-      const progressClamped = Math.min(Math.max(progress, 0), 1);
-
       const startArr = shapes[slotConfig.currentShape] || shapes[shapeNames[0]];
       const targetArr = shapes[slotConfig.targetShape] || shapes[shapeNames[0]];
 
-      // Bouncing basketball trajectory formula: Parabolic curve
-      const bounceY = 4 * progressClamped * (1 - progressClamped);
-      const bounceHeight = size * 0.25;
-      const offsetY = bounceY * bounceHeight - bounceHeight / 2;
+      const targetSpeed = 1.5;
+      rotationRef.current += targetSpeed * dt;
 
-      // Squash and stretch simulation
-      const impact = Math.sin(progressClamped * Math.PI);
-      const scaleX = 1 + (1 - impact) * 0.06;
-      const scaleY = 1 - (1 - impact) * 0.06;
+      const rad = rotationRef.current + Math.sin(timestamp * 0.001) * 0.5;
 
-      // Rotate slightly back and forth
-      rotationRef.current = Math.sin(timestamp * 0.002) * 0.05;
-      const rad = rotationRef.current;
+      const force =
+        -stiffness * (slotConfig.morphProgress - 1) -
+        damping * slotConfig.morphVelocity;
+      const acceleration = force / mass;
+      slotConfig.morphVelocity += acceleration * dt;
+      slotConfig.morphProgress += slotConfig.morphVelocity * dt;
+
+      const progressClamped = Math.min(
+        Math.max(slotConfig.morphProgress, 0),
+        1,
+      );
+      const swirlAngle = Math.sin(progressClamped * Math.PI) * 0.3;
+      const scale = 1 + Math.abs(slotConfig.morphVelocity) * 0.02;
+
+      const floatOffset = Math.sin(timestamp * 0.002) * (size / 20);
 
       currentPointsRef.current = startArr.map((p, i) => {
         const target = targetArr[i];
         let x = p.x + (target.x - p.x) * progressClamped;
         let y = p.y + (target.y - p.y) * progressClamped;
 
-        x *= scaleX;
-        y *= scaleY;
+        x *= scale;
+        y *= scale;
 
-        const rx = x * Math.cos(rad) - y * Math.sin(rad);
-        const ry = x * Math.sin(rad) + y * Math.cos(rad);
+        const totalRad = rad + swirlAngle;
+        const rx = x * Math.cos(totalRad) - y * Math.sin(totalRad);
+        const ry = x * Math.sin(totalRad) + y * Math.cos(totalRad);
 
-        return { x: center.x + rx, y: center.y + ry - offsetY };
+        return { x: center.x + rx, y: center.y + ry + floatOffset };
       });
 
       currentColorsRef.current = [
@@ -274,15 +306,53 @@ export const ShapeLoader: React.FC<ShapeLoaderProps> = ({ size = 120 }) => {
 
     animationFrameId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [slotConfig, shapeNames, shapes, size]);
+  }, [isInitialized, shapes, shapeNames, slotConfig, size]);
 
-  if (!slotConfig || currentPointsRef.current.length === 0) return null;
+  const handleShapeClick = () => {
+    setIsClicked(true);
+    onClick?.();
+
+    setSlotConfig((current) => {
+      if (!current) return null;
+
+      let nextTarget = getNextShape();
+      if (nextTarget === current.targetShape && shapeNames.length > 1) {
+        shuffleBagRef.current.unshift(nextTarget);
+        nextTarget = getNextShape();
+      }
+
+      const nextGrad =
+        gradientPool[Math.floor(Math.random() * gradientPool.length)];
+      return {
+        ...current,
+        targetShape: nextTarget,
+        startTime: performance.now(),
+        targetColors: nextGrad,
+        morphProgress: 0,
+        morphVelocity: 0,
+      };
+    });
+  };
+
+  if (!isInitialized || !slotConfig || currentPointsRef.current.length === 0)
+    return null;
 
   return (
     <div
       style={{ width: size, height: size }}
       className="relative flex items-center justify-center select-none"
     >
+      <style>{`
+        @keyframes clickReaction {
+          0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px rgba(255,255,255,0)); }
+          50% { transform: scale(1.2); filter: brightness(1.3) drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+          100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px rgba(255,255,255,0)); }
+        }
+        .animate-click {
+          animation: clickReaction 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+          transform-origin: center;
+        }
+      `}</style>
       <svg
         viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
         className="w-full h-full"
@@ -294,20 +364,27 @@ export const ShapeLoader: React.FC<ShapeLoaderProps> = ({ size = 120 }) => {
             <stop offset="100%" stopColor={currentColorsRef.current[1]} />
           </linearGradient>
         </defs>
-        <path
-          d={
-            `M ${currentPointsRef.current[0].x} ${currentPointsRef.current[0].y} ` +
-            currentPointsRef.current
-              .slice(1)
-              .map((p) => `L ${p.x} ${p.y}`)
-              .join(" ") +
-            " Z"
-          }
-          fill="url(#shapeGrad)"
-          stroke="url(#shapeGrad)"
-          strokeWidth="0.5"
-          strokeLinejoin="round"
-        />
+        <g
+          className={isClicked ? "animate-click" : ""}
+          onAnimationEnd={() => setIsClicked(false)}
+        >
+          <path
+            d={
+              `M ${currentPointsRef.current[0].x} ${currentPointsRef.current[0].y} ` +
+              currentPointsRef.current
+                .slice(1)
+                .map((p) => `L ${p.x} ${p.y}`)
+                .join(" ") +
+              " Z"
+            }
+            fill="url(#shapeGrad)"
+            stroke="url(#shapeGrad)"
+            strokeWidth="0.5"
+            strokeLinejoin="round"
+            onClick={handleShapeClick}
+            className="cursor-pointer"
+          />
+        </g>
       </svg>
     </div>
   );

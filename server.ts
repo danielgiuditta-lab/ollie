@@ -984,7 +984,10 @@ Provide the response as a JSON object matching the following structure:
   "immediateActions": [
     {
       "id": "string",
+      "title": "Short task title (e.g., Change slide color based on feedback)",
+      "titleDone": "Completed task title (e.g., I changed the color based on feedback)",
       "description": "Short task description (e.g., Reply to comment on 'branding.doc')",
+      "descriptionDone": "Completed description (e.g., I replied and updated branding.doc, please review.)",
       "source": "Details about source (e.g., Email from Sarah / Comment in branding.doc)",
       "action": "Exact recommended action...",
       "type": "email" | "chat" | "comment"
@@ -993,7 +996,10 @@ Provide the response as a JSON object matching the following structure:
   "followUps": [
     {
       "id": "string",
+      "title": "Short task title...",
+      "titleDone": "Completed task title...",
       "description": "Short task description...",
+      "descriptionDone": "Completed description...",
       "source": "Details about source...",
       "action": "Exact recommended action...",
       "type": "email" | "chat" | "comment"

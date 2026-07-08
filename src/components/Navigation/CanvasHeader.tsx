@@ -37,6 +37,7 @@ interface CanvasHeaderProps {
   isSourcesPanelOpen?: boolean;
   peers?: Record<string, any>;
   theme?: 'light' | 'dark';
+  activeProactiveTask?: any;
 }
 
 export function CanvasHeader({
@@ -51,7 +52,8 @@ export function CanvasHeader({
   onToggleSourcesPanel,
   isSourcesPanelOpen = true,
   peers,
-  theme = 'light'
+  theme = 'light',
+  activeProactiveTask
 }: CanvasHeaderProps) {
   const isHome = viewState === 'home';
   const isDark = theme === 'dark';
@@ -107,7 +109,7 @@ export function CanvasHeader({
 
     const spaceName = projectName === 'New Space' ? 'New Space' : projectName;
 
-    if (!selectedFile && viewState !== 'ai_summary') {
+    if (!selectedFile && viewState !== 'ai_summary' && !activeProactiveTask) {
       return (
         <span className="text-slate-800 dark:text-white text-lg font-medium">
           {spaceName}
@@ -115,7 +117,11 @@ export function CanvasHeader({
       );
     }
 
-    const artifactName = selectedFile ? selectedFile.name : (viewState === 'ai_summary' ? 'Search Summary' : '');
+    let artifactName = selectedFile ? selectedFile.name : (viewState === 'ai_summary' ? 'Search Summary' : '');
+    if (activeProactiveTask) {
+      const isDone = activeProactiveTask.status === 'done' || activeProactiveTask.status === 'approved';
+      artifactName = isDone ? (activeProactiveTask.titleDone || activeProactiveTask.title) : (activeProactiveTask.title || artifactName);
+    }
 
     return (
       <div className="flex items-center text-slate-700 dark:text-slate-200 text-lg font-normal font-sans">

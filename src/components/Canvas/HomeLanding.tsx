@@ -21,50 +21,71 @@ export const DEFAULT_TODO_ITEMS = [
   {
     id: 'todo-proactive-1',
     title: "Review Brand Guidelines & updates based on Emily's comments",
-    description: "Emily commented to consolidate the Brand Kit layout. Working on task...",
+    titleDone: "I reviewed Brand Guidelines & updated based on Emily's comments",
+    description: "Emily commented to consolidate the Brand Kit layout. Ready for review.",
     descriptionDone: "Emily commented to consolidate the Brand Kit layout. I did, please review.",
     workspace: "Branding",
-    sourceName: "Branding",
-    sourceMimeType: "text/html",
+    sourceName: "Brand Guidelines",
+    sourceMimeType: "application/vnd.google-apps.document",
     personName: "Emily",
     personAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
-    status: 'working',
+    status: 'blocked',
     hasPreview: true,
     involvesMe: true,
     filesToLoad: [
       {
-        name: 'branding.html',
+        name: 'Brand Guidelines.gdoc',
         type: 'code',
-        content: `<!DOCTYPE html>\n<html>\n<head>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="bg-neutral-950 text-white p-12 flex flex-col items-center justify-center min-h-screen">\n  <h1 class="text-5xl font-bold tracking-tight text-indigo-400">ecopaws</h1>\n  <p class="text-sm uppercase tracking-wider text-slate-400 mt-2">Sustainable Pet Brand - Final Guidelines Draft</p>\n  <div class="flex gap-3 mt-8">\n    <div class="w-10 h-10 rounded-full bg-[#FCDBDB] border-2 border-white shadow-md"></div>\n    <div class="w-10 h-10 rounded-full bg-[#DFF1FD] border-2 border-white shadow-md"></div>\n    <div class="w-10 h-10 rounded-full bg-[#FFF2E0] border-2 border-white shadow-md"></div>\n  </div>\n  <p class="mt-8 text-xs text-slate-500">Draft updated based on feedback. Consolidating Q3 brand specs.</p>\n</body>\n</html>`,
-        mimeType: 'text/html'
+        content: `# Brand Guidelines & Policies\n\nAuthor: Brand Operations\nContributors: Emily\n\n## Brand Kit Layout (Consolidated)\nOur brand emphasizes sustainability, transparent sourcing, and modern design aesthetic. All public collateral adheres to our updated color system and typography per Emily's feedback.`,
+        mimeType: 'application/vnd.google-apps.document'
       }
     ]
   },
   {
     id: 'todo-2',
-    title: 'Add the design strategy to Marketing campaign brief',
-    description: "Comments from David",
-    workspace: 'Marketing',
-    sourceName: "Marketing",
-    sourceMimeType: "application/vnd.google-apps.document",
+    title: 'Change slide color based on feedback',
+    titleDone: 'I changed the color based on feedback',
+    description: "David commented on Q3 Strategy Deck to use warm palette. Ready for review.",
+    descriptionDone: "David commented on Q3 Strategy Deck to use warm palette. I did, please review.",
+    workspace: 'Branding',
+    sourceName: "Q3 Strategy Deck",
+    sourceMimeType: "application/vnd.google-apps.presentation",
     personName: "David",
     personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    status: 'done',
-    hasPreview: false,
-    involvesMe: true
+    status: 'blocked',
+    hasPreview: true,
+    involvesMe: true,
+    filesToLoad: [
+      {
+        name: 'Q3 Strategy Deck.gslides',
+        type: 'code',
+        content: `# Q3 Brand Strategy\n\n## Warm Palette Transition\n- Replaced cool slate with warm amber tones per David's feedback\n- Adjusted typography contrast for accessibility\n- Consolidated Q3 brand metrics and targets\n\n## Next Steps\n- Roll out warm palette across marketing collateral\n- Share preview deck with design stakeholders`,
+        mimeType: 'application/vnd.google-apps.presentation'
+      }
+    ]
   },
   {
     id: 'todo-3',
-    title: 'Craft the strategy on Pricing Proposal doc',
-    description: "Comments from Juyun and Michael",
-    workspace: 'Pricing Proposal',
-    sourceName: "Pricing Proposal",
+    title: 'Remove section from paragraph based on feedback',
+    titleDone: 'I removed the section from paragraph based on feedback',
+    description: "Juyun commented on Brand Guidelines doc to remove legacy pricing. Ready for review.",
+    descriptionDone: "Juyun commented on Brand Guidelines doc to remove legacy pricing. I did, please review.",
+    workspace: 'Branding',
+    sourceName: "Brand Guidelines",
     sourceMimeType: "application/vnd.google-apps.document",
-    personName: "Juyun & Michael",
+    personName: "Juyun",
     personAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
-    status: 'done',
-    hasPreview: false,
-    involvesMe: true
+    status: 'blocked',
+    hasPreview: true,
+    involvesMe: true,
+    filesToLoad: [
+      {
+        name: 'Brand Guidelines.gdoc',
+        type: 'code',
+        content: `# Brand Guidelines & Policies\n\nAuthor: Brand Operations\nContributors: Juyun, Michael\n\n## Core Principles\nOur brand emphasizes sustainability, transparent sourcing, and modern design aesthetic. All public collateral must adhere to our updated color system and typography.\n\n## Pricing Policy (Updated)\n*Note: Legacy distributor pricing tier section has been cleanly removed per Juyun's feedback.*`,
+        mimeType: 'application/vnd.google-apps.document'
+      }
+    ]
   },
   {
     id: 'todo-space-external-1',
@@ -137,6 +158,7 @@ interface HomeLandingProps {
   isLoggedIn?: boolean;
   onBypassAuth?: () => void;
   todoCacheRef?: React.MutableRefObject<Record<string, any[]>>;
+  onProactiveTaskClick?: (task: any) => void;
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -502,7 +524,8 @@ export function HomeLanding({
   setTodoItems,
   isLoggedIn: isLoggedInProp,
   onBypassAuth,
-  todoCacheRef: todoCacheRefProp
+  todoCacheRef: todoCacheRefProp,
+  onProactiveTaskClick
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localBypassAuth, setLocalBypassAuth] = useState(false);
@@ -562,6 +585,40 @@ export function HomeLanding({
       // Proactively draft the very first item index!
       const isProactive = idx === 0;
 
+      // Smart artifact name and content generation based on task source and type
+      let fileName = 'Workspace Document.gdoc';
+      let contentVal = `# Proposed Action Draft\n\nTask: ${item.description}\n\nRecommended Fix:\n- ${item.action || 'Review and consolidate files'}\n\n*Agent proactively completed draft in sandbox.*`;
+      
+      if (item.source) {
+        let cleanSource = item.source;
+        if (cleanSource.startsWith("Comment in '") || cleanSource.startsWith('Comment in "')) {
+          const m = cleanSource.match(/Comment in ['"](.*?)['"]/i);
+          if (m && m[1]) cleanSource = m[1];
+        }
+        cleanSource = cleanSource.replace(/\s*\/\s*Calendar Invite.*$/i, '').trim();
+        cleanSource = cleanSource.replace(/(?:from|by|at)\s+.*$/i, '').trim();
+        if (cleanSource.length > 2) {
+          fileName = cleanSource;
+        }
+      }
+
+      if (mimeType === 'application/vnd.google-apps.presentation') {
+        if (!fileName.toLowerCase().endsWith('.gslides') && !fileName.toLowerCase().endsWith('.pptx')) {
+          fileName = `${fileName.replace(/\.[^/.]+$/, "")}.gslides`;
+        }
+        contentVal = `# Presentation Draft: ${fileName.replace(/\.gslides$/i, '')}\n\n## Updated Slides & Visuals\n- Applied design improvements per feedback: ${item.action || 'Updated layout and colors'}\n- Synchronized slide formatting across all cards\n\n## Next Steps\n- Share updated presentation deck with team\n- Ready for stakeholder review`;
+      } else if (mimeType === 'application/vnd.google-apps.spreadsheet') {
+        if (!fileName.toLowerCase().endsWith('.gsheet') && !fileName.toLowerCase().endsWith('.csv')) {
+          fileName = `${fileName.replace(/\.[^/.]+$/, "")}.gsheet`;
+        }
+        contentVal = `ID,Metric,Status,Value\n1,${item.description || 'Task Target'},Updated,100%\n2,Sandbox Execution,Verified,Completed`;
+      } else {
+        if (!fileName.toLowerCase().includes('.')) {
+          fileName = `${fileName}.gdoc`;
+        }
+        contentVal = `# ${fileName.replace(/\.gdoc$/i, '')}\n\n## Proactive Agent Execution\n**Task**: ${item.description || 'Review feedback and update document'}\n\n## Completed Output\n- Successfully implemented requested modifications: ${item.action || 'Consolidated sections and refined text'}\n- All changes have been drafted in this isolated sandbox environment for your review.\n\n*Status: Ready for approval.*`;
+      }
+
       return {
         id: item.id || `todo-real-${idx}`,
         title: item.description || 'Workspace Action Item',
@@ -576,13 +633,12 @@ export function HomeLanding({
         involvesMe: idx !== 3,
         hasPreview: isProactive,
         previewContent: item.description || "Consolidated details draft",
-        // Mock a draft file edit for this proactive task
         filesToLoad: [
           {
-            name: item.source && item.source.toLowerCase().includes('.') ? item.source.split(' ').pop() : 'draft_workspace.md',
+            name: fileName,
             type: 'code',
-            content: `# Proposed Action Draft\n\nTask: ${item.description}\n\nRecommended Fix:\n- ${item.action || 'Review and consolidate files'}\n\n*Agent proactively generated draft.*`,
-            mimeType: mimeType.includes('mail') || mimeType.includes('chat') ? 'text/markdown' : mimeType
+            content: contentVal,
+            mimeType: mimeType
           }
         ]
       };
@@ -1366,7 +1422,7 @@ export function HomeLanding({
         </h2>
         {isDigestLoading ? (
           <div className="w-full py-16 flex items-center justify-center">
-            <ShapeLoader size={80} />
+            <ShapeLoader size={160} />
           </div>
         ) : (
           <div className="flex flex-col gap-3.5 w-full">
@@ -1376,17 +1432,21 @@ export function HomeLanding({
                 item={item}
                 getFileIcon={getFileIcon}
                 onClick={() => {
-                  if (item.filesToLoad) {
-                    setSandboxFiles(item.filesToLoad);
-                    setSelectedFile(item.filesToLoad[0]);
+                  if (onProactiveTaskClick) {
+                    onProactiveTaskClick(item);
                   } else {
-                    setSandboxFiles([]);
-                    setSelectedFile(null);
-                  }
-                  setProjectName(item.workspace.split(' · ')[0]);
-                  setViewState('files');
-                  if (setActiveSidebar) {
-                    setActiveSidebar('gemini');
+                    if (item.filesToLoad) {
+                      setSandboxFiles(item.filesToLoad);
+                      setSelectedFile(item.filesToLoad[0]);
+                    } else {
+                      setSandboxFiles([]);
+                      setSelectedFile(null);
+                    }
+                    setProjectName(item.workspace.split(' · ')[0]);
+                    setViewState('files');
+                    if (setActiveSidebar) {
+                      setActiveSidebar('gemini');
+                    }
                   }
                 }}
               />

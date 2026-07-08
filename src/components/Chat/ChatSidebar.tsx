@@ -338,6 +338,10 @@ export function ChatSidebar({
                         teamMembers={msg.teamMembers}
                         targetSpaceName={msg.targetSpaceName}
                         onFinalizeSpace={onFinalizeSpace}
+                        isProactiveReview={msg.isProactiveReview}
+                        proactiveTask={msg.proactiveTask}
+                        onApproveProactive={msg.onApproveProactive}
+                        onFeedbackProactive={msg.onFeedbackProactive}
                       />
                     );
                   })}

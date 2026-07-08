@@ -183,6 +183,7 @@ export default function App() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [bypassAuth, setBypassAuth] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
+  const [activeProactiveTask, setActiveProactiveTask] = useState<any | null>(null);
   const isLoggedIn = accessToken !== null || bypassAuth;
 
   const fetchGeminiTasks = async (token?: string | null, email?: string) => {
@@ -2142,6 +2143,84 @@ export default function App() {
     setActiveSidebar('gemini');
   };
 
+  const handleProactiveTaskClick = (task: any) => {
+    let rawSpace = task.workspace || task.sourceName || 'Workspace';
+    if (rawSpace.startsWith("Comment in '") || rawSpace.startsWith('Comment in "')) {
+      const match = rawSpace.match(/Comment in ['"](.*?)['"]/i);
+      if (match && match[1]) rawSpace = match[1];
+    } else if (rawSpace.startsWith("Email from ")) {
+      rawSpace = rawSpace.replace("Email from ", "");
+    } else if (rawSpace.startsWith("Chat in ")) {
+      rawSpace = rawSpace.replace("Chat in ", "");
+    }
+    const spaceName = rawSpace.split(' · ')[0].split(' / ')[0].trim() || 'Workspace';
+    
+    setProjectName(spaceName);
+    if (task.filesToLoad && task.filesToLoad.length > 0) {
+      setSandboxFiles(task.filesToLoad);
+      setSelectedFile(task.filesToLoad[0]);
+    } else {
+      setSandboxFiles([]);
+      setSelectedFile(null);
+    }
+    setViewState('files');
+    setActiveProactiveTask(task);
+
+    const tempChatId = `${spaceName}-proactive-${task.id || Date.now()}`;
+    
+    const handleApproveProactive = () => {
+      setTodoItems(prev => {
+        const updated = prev.map(t => t.id === task.id ? { ...t, status: 'done', title: t.titleDone || t.title, description: t.descriptionDone || t.description } : t);
+        const spaceKey = activeSpaceId || 'home';
+        if (todoCacheRef.current) {
+          todoCacheRef.current[spaceKey] = updated;
+        }
+        return updated;
+      });
+      setActiveProactiveTask((prev: any) => prev ? { ...prev, status: 'done', title: prev.titleDone || prev.title, description: prev.descriptionDone || prev.description } : null);
+      setMessages(prev => prev.map(m => m.isProactiveReview ? {
+        ...m,
+        proactiveTask: { ...m.proactiveTask, status: 'done', title: m.proactiveTask.titleDone || m.proactiveTask.title, description: m.proactiveTask.descriptionDone || m.proactiveTask.description }
+      } : m));
+    };
+
+    const handleFeedbackProactive = () => {
+      const composerInput = document.querySelector('textarea[placeholder*="Ask Gemini"], textarea[placeholder*="Ask anything"], textarea') as HTMLTextAreaElement | null;
+      if (composerInput) {
+        composerInput.focus();
+      }
+    };
+
+    const proactiveMsgs = [
+      { role: 'user', text: `Review Proactive Action: ${task.titleDone || task.title}` },
+      {
+        role: 'bot',
+        text: '',
+        isProactiveReview: true,
+        proactiveTask: task,
+        onApproveProactive: handleApproveProactive,
+        onFeedbackProactive: handleFeedbackProactive
+      }
+    ];
+
+    chatSessionsCacheRef.current[tempChatId] = { messages: proactiveMsgs };
+    workspaceCacheRef.current[tempChatId] = {
+      ingestedFiles: [],
+      sandboxFiles: task.filesToLoad || [],
+      envId: null,
+      sandboxUrl: '',
+      messages: proactiveMsgs,
+      projectName: spaceName,
+      selectedFile: task.filesToLoad?.[0] || null,
+      indexFileSelected: false,
+      viewState: 'files'
+    };
+
+    setActiveChatId(tempChatId);
+    setMessages(proactiveMsgs);
+    setActiveSidebar('gemini');
+  };
+
   const handleFinalizeSpace = async (name: string, selectedPeople: any[]) => {
     setCurrentTask('app');
     const cleanFolderName = name
@@ -4094,6 +4173,7 @@ export default function App() {
           projectName={projectName}
           viewState={viewState}
           onHomeClick={() => {
+            setActiveProactiveTask(null);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setSelectedFile(null);
               setViewState('files');
@@ -4103,6 +4183,7 @@ export default function App() {
             }
           }}
           onCloseWorkspace={() => {
+            setActiveProactiveTask(null);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setSelectedFile(null);
               setViewState('files');
@@ -4111,7 +4192,10 @@ export default function App() {
               setHomeJourney('search');
             }
           }}
-          onCloseFile={() => setSelectedFile(null)}
+          onCloseFile={() => {
+            setActiveProactiveTask(null);
+            setSelectedFile(null);
+          }}
           selectedFile={selectedFile}
           members={members}
           onOpenInDrive={handleOpenInDrive}
@@ -4119,6 +4203,7 @@ export default function App() {
           isSourcesPanelOpen={isSourcesPanelOpen}
           peers={peers}
           theme={appTheme}
+          activeProactiveTask={activeProactiveTask}
         />
         <div className={`flex-1 flex overflow-hidden relative ${isSourcesPanelOpen ? 'gap-0' : 'gap-4'}`}>
           
@@ -4168,6 +4253,7 @@ export default function App() {
                       isLoggedIn={isLoggedIn}
                       onBypassAuth={() => setBypassAuth(true)}
                       todoCacheRef={todoCacheRef}
+                      onProactiveTaskClick={handleProactiveTaskClick}
                     />
                   </div>
                   {isIngesting && (

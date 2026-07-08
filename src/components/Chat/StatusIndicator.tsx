@@ -86,8 +86,50 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status }) => {
             />
           </svg>
         </>
-      ) : norm === 'blocked' ? (
-        <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+      ) : norm === 'blocked' || norm === 'review' ? (
+        <>
+          <svg 
+            width="24" 
+            height="24" 
+            viewBox="0 0 36 36" 
+            style={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              zIndex: 2,
+              overflow: 'visible'
+            }}
+          >
+            <defs>
+              <linearGradient id="blockedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#F59E0B" />
+                <stop offset="100%" stopColor="#EF4444" />
+              </linearGradient>
+            </defs>
+            <circle 
+              cx="18" 
+              cy="18" 
+              r="13.5" 
+              fill="none" 
+              stroke="rgba(245, 158, 11, 0.15)" 
+              strokeWidth="3.5" 
+            />
+            <circle 
+              cx="18" 
+              cy="18" 
+              r="13.5" 
+              fill="none" 
+              stroke="url(#blockedGrad)" 
+              strokeWidth="3.5" 
+              strokeDasharray="85" 
+              style={{ 
+                transformOrigin: '18px 18px',
+                animation: 'fillRing 2.2s ease-in-out infinite, rotateRing 1.8s linear infinite',
+                strokeLinecap: 'round' 
+              }} 
+            />
+          </svg>
+        </>
       ) : (
         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
       )}
