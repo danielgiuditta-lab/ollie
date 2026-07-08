@@ -32,6 +32,31 @@ interface BotMessageProps {
   onFinalizeSpace?: (name: string, selectedPeople: any[]) => Promise<void> | void;
 }
 
+const TeamAvatar = ({ avatar, name, size = 'md' }: { avatar: string; name: string; size?: 'sm' | 'md' }) => {
+  const [error, setError] = React.useState(false);
+  const sizeClasses = size === 'sm' ? 'w-6 h-6 text-[10px]' : 'w-8 h-8 text-sm';
+  const bgClasses = size === 'sm' 
+    ? 'bg-slate-200 dark:bg-slate-750 text-slate-600 dark:text-slate-350' 
+    : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+
+  if (avatar && !error) {
+    return (
+      <img 
+        src={avatar} 
+        className={`${size === 'sm' ? 'w-6 h-6' : 'w-8 h-8'} rounded-full object-cover shrink-0`} 
+        alt={name} 
+        onError={() => setError(true)}
+      />
+    );
+  }
+
+  return (
+    <div className={`${sizeClasses} ${bgClasses} rounded-full flex items-center justify-center font-bold shrink-0`}>
+      {(name || 'U').substring(0, 1).toUpperCase()}
+    </div>
+  );
+};
+
 // Utility to extract 2-3 high-level lines tops describing the action
 function cleanSummaryDescription(fullText: string): string {
   if (!fullText) return "Assembling response... Check detailed steps below.";
@@ -163,13 +188,7 @@ export function BotMessage({
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    {person.avatar ? (
-                      <img src={person.avatar} className="w-8 h-8 rounded-full" alt={person.name} />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
-                        {person.name.substring(0, 1)}
-                      </div>
-                    )}
+                    <TeamAvatar avatar={person.avatar} name={person.name} size="md" />
                     <div className="flex flex-col">
                       <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>
                         {person.name}
@@ -223,13 +242,7 @@ export function BotMessage({
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
-                          {person.avatar ? (
-                            <img src={person.avatar} className="w-6 h-6 rounded-full" alt={person.name} />
-                          ) : (
-                            <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-750 text-slate-600 dark:text-slate-350 flex items-center justify-center font-bold text-[10px]">
-                              {person.name.substring(0, 1)}
-                            </div>
-                          )}
+                          <TeamAvatar avatar={person.avatar} name={person.name} size="sm" />
                           <div className="flex flex-col">
                             <span className={`text-[11px] font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>
                               {person.name}

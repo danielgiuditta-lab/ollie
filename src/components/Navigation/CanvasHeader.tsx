@@ -1,5 +1,28 @@
+import React, { useState } from 'react';
 import { ChevronRight, X } from 'lucide-react';
 import { themeTokens } from '../../utils/themeTokens';
+
+const AvatarCircle = ({ member }: { member: any }) => {
+  const [error, setError] = useState(false);
+
+  return (
+    <div
+      className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-3xs ring-2 ring-white dark:ring-[#1E1F22] shrink-0 overflow-hidden bg-blue-500"
+      title={`${member.name} (${member.email})`}
+    >
+      {member.avatar && !error ? (
+        <img 
+          src={member.avatar} 
+          className="w-full h-full object-cover" 
+          alt={member.name} 
+          onError={() => setError(true)}
+        />
+      ) : (
+        (member.name || 'U').substring(0, 1).toUpperCase()
+      )}
+    </div>
+  );
+};
 
 interface CanvasHeaderProps {
   projectName?: string;
@@ -40,17 +63,7 @@ export function CanvasHeader({
     return (
       <div className="flex items-center -space-x-2 select-none shrink-0 mr-2">
         {members.map((member: any, idx: number) => (
-          <div
-            key={member.email || idx}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-3xs ring-2 ring-white dark:ring-[#1E1F22] shrink-0 overflow-hidden bg-blue-500"
-            title={`${member.name} (${member.email})`}
-          >
-            {member.avatar ? (
-              <img src={member.avatar} className="w-full h-full object-cover" alt={member.name} />
-            ) : (
-              (member.name || 'U').substring(0, 1).toUpperCase()
-            )}
-          </div>
+          <AvatarCircle key={member.email || idx} member={member} />
         ))}
       </div>
     );

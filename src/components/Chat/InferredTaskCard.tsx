@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
 import { StatusIndicator } from './StatusIndicator';
 
@@ -21,6 +21,8 @@ interface InferredTaskCardProps {
 }
 
 export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFileIcon, onClick }) => {
+  const [avatarFailed, setAvatarFailed] = useState(false);
+
   return (
     <div 
       onClick={onClick}
@@ -48,7 +50,18 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
             <span className="max-w-[100px] truncate block">{item.sourceName}</span>
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/50 dark:border-[#3E4042] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
-            <img src={item.personAvatar} alt="avatar icon" className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
+            {!avatarFailed ? (
+              <img 
+                src={item.personAvatar} 
+                alt="avatar icon" 
+                className="w-3.5 h-3.5 rounded-full object-cover shrink-0" 
+                onError={() => setAvatarFailed(true)}
+              />
+            ) : (
+              <div className="w-3.5 h-3.5 rounded-full bg-blue-500 text-white flex flex-center items-center justify-center text-[7px] font-bold shrink-0">
+                {(item.personName || 'U').substring(0, 1).toUpperCase()}
+              </div>
+            )}
             <span className="max-w-[80px] truncate block">{item.personName}</span>
           </div>
         </div>
