@@ -35,6 +35,9 @@ interface ChatSidebarProps {
   onBypassAuth?: () => void;
   projectName?: string;
   todoItems?: any[];
+  isNewSpaceCreation?: boolean;
+  spaceMode?: 'choice' | 'tracking' | 'tool';
+  onSelectSpaceMode?: (mode: 'tracking' | 'tool') => void;
 }
 
 export function ChatSidebar({ 
@@ -63,11 +66,21 @@ export function ChatSidebar({
   onLogin,
   onBypassAuth,
   projectName = '',
-  todoItems = []
+  todoItems = [],
+  isNewSpaceCreation = false,
+  spaceMode,
+  onSelectSpaceMode
 }: ChatSidebarProps) {
   const isHome = !projectName || projectName === 'Home Dashboard' || projectName === 'Home';
 
   const getSuggestions = () => {
+    if (!isHome && isNewSpaceCreation && (!spaceMode || spaceMode === 'choice')) {
+      return [
+        { label: "Let Ollie track your work", prompt: "Let Ollie track your work", mode: 'tracking' as const },
+        { label: "Build a custom tool with Ollie", prompt: "Build a custom tool with Ollie", mode: 'tool' as const }
+      ];
+    }
+
     const list = todoItems || [];
     
     const getPillLabel = (title: string) => {
@@ -110,6 +123,12 @@ export function ChatSidebar({
   const suggestions = getSuggestions();
 
   const getTaskIcon = (title: string) => {
+    if (title === "Let Ollie track your work") {
+      return <span className="text-lg shrink-0 select-none">🛡️</span>;
+    }
+    if (title === "Build a custom tool with Ollie") {
+      return <span className="text-lg shrink-0 select-none">⚡</span>;
+    }
     const lower = title.toLowerCase();
     if (lower.includes('dashboard') || lower.includes('visual')) {
       return <LayoutDashboard size={20} className="shrink-0 text-slate-800 dark:text-neutral-200" />;
@@ -291,7 +310,13 @@ export function ChatSidebar({
                   {suggestions.map((pill, idx) => (
                     <button 
                       key={idx}
-                      onClick={() => onSendMessage(pill.prompt)}
+                      onClick={() => {
+                        if ((pill as any).mode && onSelectSpaceMode) {
+                          onSelectSpaceMode((pill as any).mode);
+                        } else {
+                          onSendMessage(pill.prompt);
+                        }
+                      }}
                       className="w-fit max-w-full flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto bg-f8fafd hover:bg-f0f4f9"
                     >
                       {getTaskIcon(pill.prompt)}

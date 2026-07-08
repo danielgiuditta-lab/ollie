@@ -1447,69 +1447,6 @@ export function HomeLanding({
     );
   }
 
-  const isHome = !activeSpaceId || activeSpaceId === 'home_guest' || activeSpaceId === 'home' || activeSpaceId.startsWith('home_');
-  const showChoiceScreen = !isHome && !isSpaceCreation && (!spaceMode || spaceMode === 'choice');
-
-  if (showChoiceScreen) {
-    return (
-      <div id="home-landing-choice-content" className="w-full h-full flex flex-col items-center justify-center overflow-y-auto px-10 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
-        <div className="w-full max-w-[640px] text-center space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold text-slate-800 dark:text-[#E3E3E3] font-sans">
-              How would you like to use {projectName || 'this space'}?
-            </h2>
-            <p className="text-sm text-slate-500 dark:text-neutral-400">
-              Choose how Ollie should help you and your team collaborate in this workspace.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-            <button
-              onClick={() => onSelectSpaceMode && onSelectSpaceMode('tracking')}
-              className="flex flex-col items-start p-6 rounded-2xl bg-white dark:bg-[#1E1F22] border border-slate-200 dark:border-neutral-800 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer group"
-            >
-              <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 text-xl font-semibold group-hover:scale-105 transition-transform">
-                🛡️
-              </div>
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
-                Let Ollie track your work
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">
-                Automatically generate and track an inferred task list from the files and conversations in this space.
-              </p>
-            </button>
-
-            <button
-              onClick={() => onSelectSpaceMode && onSelectSpaceMode('tool')}
-              className="flex flex-col items-start p-6 rounded-2xl bg-white dark:bg-[#1E1F22] border border-slate-200 dark:border-neutral-800 hover:border-purple-500 dark:hover:border-purple-500 hover:shadow-md transition-all duration-200 text-left cursor-pointer group"
-            >
-              <div className="w-10 h-10 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4 text-xl font-semibold group-hover:scale-105 transition-transform">
-                ⚡
-              </div>
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
-                Build a custom tool with Ollie
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">
-                Prompt Ollie to vibe code a collaborative app (like a Kanban board or tracker) that becomes the canonical tool for this space.
-              </p>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isHome && !isSpaceCreation && spaceMode === 'tool') {
-    return (
-      <NullChat 
-        headline={`Build a tool for ${projectName || 'this space'}`}
-        metaline="Use the chat on the right to describe the tool you want to build (e.g. Kanban board, project dashboard)"
-        icon={<Sparkles className="w-8 h-8 text-purple-500 dark:text-purple-400 animate-pulse" />}
-        theme={theme}
-      />
-    );
-  }
-
   return (
     <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-y-auto pt-16 px-10 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
       <div className="w-full max-w-[640px] mt-8 text-left space-y-6">

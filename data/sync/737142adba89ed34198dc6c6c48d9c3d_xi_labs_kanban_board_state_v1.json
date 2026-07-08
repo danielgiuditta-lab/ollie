@@ -1,0 +1,39 @@
+{
+  "envId": "737142adba89ed34198dc6c6c48d9c3d",
+  "key": "xi_labs_kanban_board_state_v1",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-color-d65",
+        "title": "Optimize Lab D65 matrix transformation",
+        "description": "Align base XYZ to D65 standard conversions defined in lab-d65.js according to CIE 15.3:2004 section 8.2.1.1.",
+        "column": "todo",
+        "priority": "high",
+        "category": "Development",
+        "assignee": "Daniel Giuditta",
+        "date": "2026-07-08"
+      },
+      {
+        "id": "task-k-means",
+        "title": "Refactor LabPointProvider distance formula",
+        "description": "Optimize standard CIE 1976 delta E formula in lab_point_provider.js to bypass square root for faster K-means quantization.",
+        "column": "progress",
+        "priority": "medium",
+        "category": "Refactoring",
+        "assignee": "Kaushal Shah",
+        "date": "2026-07-08"
+      },
+      {
+        "id": "task-ux-standup",
+        "title": "Prep XI Labs UX Prototyping Standup material",
+        "description": "Assemble high-fidelity prototype views and design token specs for the upcoming standup review session.",
+        "column": "done",
+        "priority": "low",
+        "category": "Design",
+        "assignee": "Alan McLean",
+        "date": "2026-06-16"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-08T17:37:59.171Z"
+}

@@ -46,6 +46,7 @@ export default function App() {
   });
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [spaceModes, setSpaceModes] = useState<Record<string, 'choice' | 'tracking' | 'tool'>>({});
+  const [newlyCreatedSpaceIds, setNewlyCreatedSpaceIds] = useState<Set<string>>(new Set());
 
   const handleSelectSpaceMode = (spaceId: string, mode: 'tracking' | 'tool') => {
     setSpaceModes(prev => ({ ...prev, [spaceId]: mode }));
@@ -2326,6 +2327,7 @@ export default function App() {
       .join(' ');
 
     const spaceId = `space-${Date.now()}`;
+    setNewlyCreatedSpaceIds(prev => new Set(prev).add(spaceId));
 
     setActiveSpaceId(spaceId);
     setProjectName(cleanFolderName);
@@ -4276,6 +4278,9 @@ export default function App() {
           onBypassAuth={() => setBypassAuth(true)}
           projectName={projectName}
           todoItems={todoItems}
+          isNewSpaceCreation={activeSpaceId ? newlyCreatedSpaceIds.has(activeSpaceId) : false}
+          spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
+          onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
         />
       )}
 
