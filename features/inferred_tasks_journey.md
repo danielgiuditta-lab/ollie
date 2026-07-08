@@ -26,7 +26,7 @@ This guide walks through the complete end-to-end user journey for **Inferred Pro
 
 ## 🛠️ Step 3: New Space Creation & Onboarding Choice Flow
 1. The user clicks **+ New Space** in the left navigation pane (`activeSpaceId.startsWith('space-creation-')`).
-2. The chat sidebar null state displays: headline `What's this Space about?` in blue and metaline `Tell me the what your trying to accomplish in this Space`, with the context drawer collapsed. The canvas viewport is blank (`bg-transparent`).
+2. The chat sidebar null state displays headline `What's this Space about?` using `<NullTitle>`, with the context drawer collapsed. The canvas viewport is blank (`bg-transparent`).
 3. Once the user provides a topic and selects team members (`handleFinalizeSpace`), the space is created (`space-${Date.now()}`).
 4. In the chat sidebar null state, two choice pills appear:
    - 🛡️ **Let Ollie track your work**: Transitions the space to `'tracking'` mode, generating and displaying the inferred tasks list (`To Do:`) in the canvas.
