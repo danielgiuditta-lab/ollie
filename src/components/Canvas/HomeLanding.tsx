@@ -834,21 +834,20 @@ export function HomeLanding({
   };
 
   React.useEffect(() => {
-    // Clear digest data immediately on space/token change to avoid stale state mapping
+    const spaceKey = activeSpaceId || 'home';
+    const cached = todoCacheRef.current[spaceKey];
+    if (cached && cached.length > 0) {
+      setTodoItems(cached);
+      setIsDigestLoading(false);
+      setDigestError(null);
+      return;
+    }
+
     setDigestData(null);
 
     const isMock = localBypassAuth || isLoggedInProp;
     if (!accessToken && !isMock) {
       setTodoItems([]);
-      return;
-    }
-
-    const spaceKey = activeSpaceId || 'home';
-    const cached = todoCacheRef.current[spaceKey];
-    if (cached) {
-      setTodoItems(cached);
-      setIsDigestLoading(false);
-      setDigestError(null);
       return;
     }
 

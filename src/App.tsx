@@ -4236,6 +4236,7 @@ export default function App() {
           viewState={viewState}
           onHomeClick={() => {
             setActiveProactiveTask(null);
+            setIsSourcesPanelOpen(false);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setSelectedFile(null);
               setViewState('files');
@@ -4248,6 +4249,7 @@ export default function App() {
           }}
           onCloseWorkspace={() => {
             setActiveProactiveTask(null);
+            setIsSourcesPanelOpen(false);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setSelectedFile(null);
               setViewState('files');
@@ -4261,7 +4263,9 @@ export default function App() {
           onCloseFile={() => {
             setActiveProactiveTask(null);
             setSelectedFile(null);
+            setIsSourcesPanelOpen(false);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
+              setViewState('files');
               const spaceObj = recentTasks.find(t => (t.id || t.activeSpaceId) === activeSpaceId) || projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: projectName };
               handleFileClick(spaceObj, true, { isFromRecents: true });
             } else {
