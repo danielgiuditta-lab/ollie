@@ -1320,9 +1320,9 @@ export default function App() {
 
         setSandboxFiles(latestFiles => {
           let updatedFiles = latestFiles;
+          let smartTitle = "";
           const currentDoc = latestFiles.find(f => f.id === activeDoc.id || f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides');
           if (currentDoc) {
-            let smartTitle = "";
             const h1Match = (currentDoc.content || "").match(/^#\s+(.+)$/m);
             if (h1Match) {
               smartTitle = h1Match[1].trim()
@@ -1360,6 +1360,25 @@ export default function App() {
             console.log("[DocJourney Client] Triggering autoSaveToDrive");
             autoSaveToDrive(updatedFiles, activeFolderId);
           }
+
+          if (targetChatId && !targetChatId.endsWith('-temp')) {
+            setMessages(currentMessages => {
+              setTimeout(() => {
+                saveChatToDb(
+                  targetChatId,
+                  currentMessages,
+                  envId || null,
+                  sandboxUrl || '',
+                  projectName,
+                  updatedFiles,
+                  activeFolderId || activeSpaceId,
+                  smartTitle || undefined
+                );
+              }, 0);
+              return currentMessages;
+            });
+          }
+
           return updatedFiles;
         });
 
@@ -4370,7 +4389,7 @@ export default function App() {
         envId,
         sandboxUrl,
         currentSpaceName,
-        [newArtifact],
+        [...sandboxFiles.filter(f => f.name !== name), newArtifact],
         targetFolder,
         chatTitle
       );

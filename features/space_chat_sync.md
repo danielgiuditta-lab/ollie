@@ -70,6 +70,9 @@ To maintain visual clarity across `LeftNav` and the File Library (`FileIcon`):
 ### Invariant 7: Strict Unique ID Filtering (No Name Matching)
 All array filtering and state updates against `recentTasks` and `projects` MUST operate strictly on unique identifiers (`t.id !== targetId` or `p.id !== targetId`). Legacy string name matching (`name.toLowerCase() !== projectName.toLowerCase()`) is strictly prohibited when updating workspaces or child chats. Because multiple child chats under a Space share the parent space's `name` (e.g., `'Ollie'`), filtering by name wipes out concurrent child chats. By relying exclusively on unique IDs, zero collision occurs, allowing multiple child chats (`Custom Tool`, `New Document`) to exist simultaneously under the same parent Space without overwriting or deleting one another.
 
+### Invariant 8: Child Artifact Persistence Guard (`saveChatToDb`)
+Whenever an AI streaming handler (`/api/vibe-code`, `/api/doc-journey`) finishes generating or updating artifact content for a child chat session (`targetChatId`), it MUST explicitly execute `saveChatToDb(...)` passing the full updated `sandboxFiles` list and any derived smart title. Without this explicit persistence call, generated documents or tools exist only in ephemeral React state and will fail to restore from database storage when the user switches between chats in `LeftNav`. Furthermore, when initializing new artifacts in `handleCreateArtifactApp`, `saveChatToDb` must always receive the full combined workspace files manifest (`[...sandboxFiles.filter(...), newArtifact]`) rather than a singleton array (`[newArtifact]`), preventing accidental deletion of other canonical files from storage.
+
 ---
 
 ## 3. Verification & Maintenance

@@ -1,0 +1,90 @@
+{
+  "envId": "f03a45b12f9d1731d0c3f5b3f574177f",
+  "key": "board_state_data_ollie",
+  "data": {
+    "tasks": [
+      {
+        "title": "Coding Agent Development",
+        "assignee": "Mike Carcasole",
+        "column": "in-progress",
+        "description": "Aim to finish coding agent. Verify core flow, scheduled jobs, and teamfood integration.",
+        "createdAt": "2026-07-07T10:00:00Z",
+        "priority": "High",
+        "id": "task-1"
+      },
+      {
+        "column": "review",
+        "description": "Improvements to scheduled jobs. Fix active chat streaming bugs.",
+        "assignee": "Cowboy Lynk",
+        "title": "Scheduled Jobs & Chat Streaming Bugs",
+        "id": "task-2",
+        "priority": "High",
+        "createdAt": "2026-07-07T10:15:00Z"
+      },
+      {
+        "column": "todo",
+        "description": "Co-organize quality review list and fix prioritized teamfood bugs.",
+        "title": "Cowboy/Ian Bug Bash & Quality List",
+        "assignee": "Ian Mendiola",
+        "priority": "Medium",
+        "id": "task-3",
+        "createdAt": "2026-07-07T10:30:00Z"
+      },
+      {
+        "column": "in-progress",
+        "description": "Address Ollie UI refinements, homepage layout suggestions, and board bugs/improvements.",
+        "assignee": "Simon Sok",
+        "title": "UX/UI Refinements & Bugs",
+        "id": "task-4",
+        "priority": "Medium",
+        "createdAt": "2026-07-07T11:00:00Z"
+      },
+      {
+        "description": "Audit data privacy before opening teamfood outside of XI. Check security and access permissions for Directors+.",
+        "column": "review",
+        "assignee": "Zhengrong Ji",
+        "title": "Data Privacy & Directory Audit",
+        "id": "task-5",
+        "priority": "High",
+        "createdAt": "2026-07-07T11:30:00Z"
+      },
+      {
+        "createdAt": "2026-07-07T12:00:00Z",
+        "priority": "Medium",
+        "id": "task-6",
+        "title": "Production Deploy & Acceleration Track",
+        "assignee": "Ajay Yadav",
+        "column": "review",
+        "description": "Orchestrate production environment updates and acceleration track backfill with Ajay."
+      },
+      {
+        "id": "task-7",
+        "priority": "Medium",
+        "createdAt": "2026-07-07T12:30:00Z",
+        "description": "In-person co-design with Workspace customers in NYC office. Map context-sharing and AI delegation expectations.",
+        "column": "in-progress",
+        "assignee": "Daniel Giuditta",
+        "title": "UXR Track: Map Data Trails & Tool Ecosystems"
+      },
+      {
+        "id": "task-8",
+        "priority": "Low",
+        "createdAt": "2026-07-07T13:00:00Z",
+        "column": "done",
+        "description": "Set up and test the prototype testing process with users using their WS accounts.",
+        "assignee": "Mirjam van Esch",
+        "title": "GCP Prototype Testing Setup"
+      },
+      {
+        "assignee": "Michelle Haq",
+        "title": "Internal Components Evaluation",
+        "description": "Identify and paste internal components that could be useful for building Ollie.",
+        "column": "done",
+        "createdAt": "2026-07-07T14:00:00Z",
+        "id": "task-9",
+        "priority": "Low"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-09T02:23:34.698Z"
+}
