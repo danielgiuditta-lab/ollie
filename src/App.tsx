@@ -644,7 +644,8 @@ export default function App() {
     customProjectName?: string,
     customFiles?: any[],
     spaceIdVal?: string,
-    customChatName?: string
+    customChatName?: string,
+    customTaskType?: string
   ) => {
     if (!chatIdVal || chatIdVal.endsWith('-temp')) return;
     const isPlaceholder = (name?: string) => !name || name === 'New' || name === 'Building project...' || name === 'Workspace Project' || name === 'New Application' || name === 'app';
@@ -657,6 +658,11 @@ export default function App() {
       return;
     }
 
+    const existing = recentTasks.find(t => t && t.id === chatIdVal);
+    const resolvedChatName = customChatName || existing?.chatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : '');
+    const resolvedTaskType = customTaskType || existing?.taskType || existing?.type || null;
+    const resolvedType = existing?.type || (resolvedTaskType === 'site' ? 'site' : 'workspace');
+
     try {
       await fetch(`/api/chats/${chatIdVal}`, {
         method: 'POST',
@@ -665,7 +671,9 @@ export default function App() {
         },
         body: JSON.stringify({
           projectName: activeName || 'Workspace Project',
-          chatName: customChatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : ''),
+          chatName: resolvedChatName,
+          type: resolvedType,
+          taskType: resolvedTaskType,
           messages: messagesList,
           envId: activeEnv,
           activeSpaceId: resolvedSpaceId,
@@ -705,9 +713,9 @@ export default function App() {
           const newTask = {
             id: chatIdVal,
             name: (chatIdVal !== resolvedSpaceId && parentName) ? parentName : activeName,
-            chatName: customChatName || existing?.chatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : ''),
-            type: existing?.type || 'workspace',
-            taskType: existing?.taskType,
+            chatName: resolvedChatName,
+            type: resolvedType,
+            taskType: resolvedTaskType,
             messages: messagesList,
             activeSpaceId: resolvedSpaceId,
             updatedAt: now
@@ -764,7 +772,8 @@ export default function App() {
         projectName || 'Workspace',
         [],
         spaceId,
-        'Custom Tool'
+        'Custom Tool',
+        'site'
       );
     } else if (mode === 'tracking') {
       const botMsg = {
@@ -821,7 +830,8 @@ export default function App() {
         projectName || 'Workspace',
         [trackingArtifact],
         spaceId,
-        'Inferred Tasks'
+        'Inferred Tasks',
+        'inferred'
       );
     }
   };
@@ -3733,6 +3743,7 @@ export default function App() {
       setSandboxFiles([]);
       setIngestedFiles([]);
       setSelectedFile(null);
+      setMembers([]);
       
       const cachedChat = chatSessionsCacheRef.current[folderId];
       if (cachedChat && cachedChat.messages && !cachedChat.messages.some((m: any) => m.isProactiveReview)) {
@@ -3899,7 +3910,7 @@ export default function App() {
               const chatData = await chatRes.json();
               if (activeSpaceIdRef.current !== folderId) return;
               if (chatData) {
-                setMembers(chatData.members || []);
+                setMembers(isHomeChatId(folderId) ? [] : (chatData.members || []));
                 if (chatData.messages) {
                   const messagesChanged = JSON.stringify(chatData.messages) !== JSON.stringify(latestMessages);
                   if (messagesChanged) {
@@ -4008,7 +4019,7 @@ export default function App() {
           if (chatRes.ok) {
             const chatData = await chatRes.json();
             if (chatData) {
-              setMembers(chatData.members || []);
+              setMembers(isHomeChatId(folderId) ? [] : (chatData.members || []));
               if (chatData.messages && isFromRecents) setMessages(chatData.messages);
               if (chatData.envId) setEnvId(chatData.envId);
               if (chatData.sandboxUrl) setSandboxUrl(chatData.sandboxUrl);
@@ -4161,7 +4172,7 @@ export default function App() {
                 if (activeSpaceIdRef.current !== folderId) return;
 
                 if (chatData) {
-                  setMembers(chatData.members || []);
+                  setMembers(isHomeChatId(folderId) ? [] : (chatData.members || []));
                   if (chatData.messages) {
                     currentMessages = chatData.messages;
                     if (isFromRecents) {
@@ -4545,7 +4556,8 @@ export default function App() {
         currentSpaceName,
         [...sandboxFiles.filter(f => f.name !== name), newArtifact],
         targetFolder,
-        chatTitle
+        chatTitle,
+        type
       );
     }
 
@@ -4748,6 +4760,7 @@ export default function App() {
           peers={peers}
           theme={appTheme}
           activeProactiveTask={activeProactiveTask}
+          activeSpaceId={activeSpaceId}
         />
         <div className={`flex-1 flex overflow-hidden relative ${isSourcesPanelOpen ? 'gap-0' : 'gap-4'}`}>
           

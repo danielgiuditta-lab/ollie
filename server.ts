@@ -550,11 +550,14 @@ async function startServer() {
     try {
       const { chatId } = req.params;
       const sanitizedId = chatId.replace(/[^a-zA-Z0-9_\-]/g, "_");
-      const { projectName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles, members } = req.body;
+      const { projectName, chatName, type, taskType, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles, members } = req.body;
 
       const payload = {
         chatId: sanitizedId,
         projectName: projectName || "New Workspace",
+        chatName: chatName || null,
+        type: type || null,
+        taskType: taskType || null,
         messages: messages || [],
         envId: envId || null,
         activeSpaceId: activeSpaceId || null,

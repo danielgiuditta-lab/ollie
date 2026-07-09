@@ -1,0 +1,30 @@
+{
+  "chatId": "verify_test_chat_1783631835907",
+  "projectName": "Test Workspace",
+  "chatName": "My Doc Child Chat",
+  "type": "doc",
+  "taskType": "doc",
+  "messages": [
+    {
+      "role": "user",
+      "text": "create a doc"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space-test-123",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "document.doc",
+      "content": "test content"
+    }
+  ],
+  "userEmail": "",
+  "members": [
+    {
+      "email": "collab@example.com",
+      "name": "Collaborator"
+    }
+  ],
+  "updatedAt": "2026-07-09T21:17:16.002Z"
+}

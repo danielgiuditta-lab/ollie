@@ -1,0 +1,12 @@
+{
+  "chatId": "space-test-123",
+  "projectName": "Test Workspace",
+  "messages": [],
+  "sandboxFiles": [
+    {
+      "name": "document.doc",
+      "content": "test content"
+    }
+  ],
+  "updatedAt": "2026-07-09T21:17:16.442Z"
+}

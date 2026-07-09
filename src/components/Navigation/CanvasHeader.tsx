@@ -40,6 +40,7 @@ interface CanvasHeaderProps {
   peers?: Record<string, any>;
   theme?: 'light' | 'dark';
   activeProactiveTask?: any;
+  activeSpaceId?: string | null;
 }
 
 export function CanvasHeader({
@@ -55,10 +56,12 @@ export function CanvasHeader({
   isSourcesPanelOpen = true,
   peers,
   theme = 'light',
-  activeProactiveTask
+  activeProactiveTask,
+  activeSpaceId
 }: CanvasHeaderProps) {
   const isHome = viewState === 'home';
   const isDark = theme === 'dark';
+  const isHomeSpace = !activeSpaceId || String(activeSpaceId).toLowerCase().trim() === 'home' || String(activeSpaceId).toLowerCase().trim() === 'home_guest' || String(activeSpaceId).toLowerCase().trim().startsWith('home_') || String(activeSpaceId).toLowerCase().trim().startsWith('home-') || String(activeSpaceId).toLowerCase().trim() === 'home dashboard';
 
   // Render shared space members list
   const SharedMembersAvatars = () => {
@@ -169,7 +172,7 @@ export function CanvasHeader({
 
       <div className="flex items-center gap-3 relative select-none">
         {/* Actual people avatars shared with */}
-        {!isHome && <SharedMembersAvatars />}
+        {!isHome && !isHomeSpace && <SharedMembersAvatars />}
 
         {/* Library side panel toggle button */}
         {onToggleSourcesPanel && (
