@@ -3669,7 +3669,7 @@ export default function App() {
 
     setActiveChatId(targetChatId);
 
-    if (isHomeChatId(folderId)) {
+    if (isHomeChatId(folderId) && targetChatId === folderId) {
       activeSpaceIdRef.current = folderId;
       setLoadedFolderId(folderId);
       setActiveSpaceId(folderId);
@@ -3809,6 +3809,8 @@ export default function App() {
       cached.sandboxFiles.forEach((f: any) => {
         lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
       });
+      const totalCount = (cached.sandboxFiles?.length || 0) + (driveFiles?.length || 0);
+      setIsSourcesPanelOpen(totalCount > 0);
       
       // Allow cache updates for the newly active folder
       setLoadedFolderId(folderId);
@@ -4559,7 +4561,8 @@ export default function App() {
             } else {
               setIsAiSummarySnapped(false);
               setActiveSidebar('gemini');
-              setIsSourcesPanelOpen(false); // Collapse context panel by default
+              const hasFiles = (proj.sources?.length || proj.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
+              setIsSourcesPanelOpen(hasFiles);
               await handleFileClick(proj, true, { isFromRecents: true }); // skipSelect = true
             }
           }
@@ -4579,14 +4582,15 @@ export default function App() {
             } else {
               setIsAiSummarySnapped(false);
               setActiveSidebar('gemini');
-              setIsSourcesPanelOpen(false); // Collapse context panel by default
+              const hasFiles = (task.sources?.length || task.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
+              setIsSourcesPanelOpen(hasFiles);
               await handleFileClick(task, true, { isFromRecents: true }); // skipSelect = true
             }
           } else {
             setIsAiSummarySnapped(false);
             setActiveSidebar('gemini');
             setProjectName(task);
-            setIsSourcesPanelOpen(false); // Collapse context panel by default
+            setIsSourcesPanelOpen(false);
             setViewState('files');
             setSelectedFile(null);
           }
