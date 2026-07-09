@@ -1,0 +1,69 @@
+{
+  "envId": "240a4f7f5025594f7279315b45573783",
+  "key": "ollie_kanban_board_state",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-1",
+        "title": "Build Walkthrough & v0 Teamfood",
+        "description": "Prepare coding agent updates and build walkthrough for Thursday's milestone sync.",
+        "assignee": "Mike Carcasole",
+        "priority": "High",
+        "status": "in-progress",
+        "tag": "Task",
+        "dueDate": "2026-07-09"
+      },
+      {
+        "id": "task-2",
+        "title": "Scheduled Jobs & Chat Streaming Bugs",
+        "description": "Investigate scheduled job improvements and resolve chat streaming UI glitches. Cowboy & Ian bug bash.",
+        "assignee": "Cowboy Lynk",
+        "priority": "High",
+        "status": "to-do",
+        "tag": "Bug",
+        "dueDate": "2026-07-10"
+      },
+      {
+        "id": "task-3",
+        "title": "In-Person Co-design with Customers",
+        "description": "Host 90-minute in-person sessions at NYC Google Office to map data trails, tool ecosystems, and context habits.",
+        "assignee": "Mirjam van Esch",
+        "priority": "High",
+        "status": "to-do",
+        "tag": "Research",
+        "dueDate": "2026-07-16"
+      },
+      {
+        "id": "task-4",
+        "title": "Data Privacy & Directory Audit",
+        "description": "Perform security and data privacy audit for Directors+ access. Follow up on whether a full s/c is required.",
+        "assignee": "Ian Mendiola",
+        "priority": "Critical",
+        "status": "review",
+        "tag": "Security",
+        "dueDate": "2026-07-12"
+      },
+      {
+        "id": "task-5",
+        "title": "Homepage Redesign UX Refinements",
+        "description": "Polishing homepage redesign. Support suggestion feeds, zero state with stream, and less rigid data connectors.",
+        "assignee": "Simon Sok",
+        "priority": "Medium",
+        "status": "done",
+        "tag": "Design",
+        "dueDate": "2026-07-06"
+      },
+      {
+        "id": "task-6",
+        "title": "Automated Slack Summary Draft",
+        "description": "AI Agent trigger task: Generate high-fidelity project updates directly from daily Slack channels and thread activity.",
+        "assignee": "Coding Agent",
+        "priority": "Medium",
+        "status": "in-progress",
+        "tag": "Agent Draft",
+        "dueDate": "2026-07-14"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-09T02:55:35.857Z"
+}

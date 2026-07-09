@@ -73,6 +73,9 @@ All array filtering and state updates against `recentTasks` and `projects` MUST 
 ### Invariant 8: Child Artifact Persistence Guard (`saveChatToDb`)
 Whenever an AI streaming handler (`/api/vibe-code`, `/api/doc-journey`) finishes generating or updating artifact content for a child chat session (`targetChatId`), it MUST explicitly execute `saveChatToDb(...)` passing the full updated `sandboxFiles` list and any derived smart title. Without this explicit persistence call, generated documents or tools exist only in ephemeral React state and will fail to restore from database storage when the user switches between chats in `LeftNav`. Furthermore, when initializing new artifacts in `handleCreateArtifactApp`, `saveChatToDb` must always receive the full combined workspace files manifest (`[...sandboxFiles.filter(...), newArtifact]`) rather than a singleton array (`[newArtifact]`), preventing accidental deletion of other canonical files from storage.
 
+### Invariant 9: Parent Space Manifest Synchronization & Project Name Guard
+When creating or updating artifacts within a child chat session of a Space (`chatIdVal !== resolvedSpaceId`), `saveChatToDb` MUST explicitly synchronize the updated `sandboxFiles` manifest back to the parent Space file (`/api/chats/${resolvedSpaceId}`) and its memory cache (`workspaceCacheRef.current[resolvedSpaceId]`). This ensures any document or tool created in a child chat is permanently stored in the parent Space's library and available upon page reload. Additionally, file-naming operations in `handleCreateArtifactApp`, `/api/doc-journey`, and `/api/vibe-code` MUST NOT invoke `setProjectName(...)` when working inside a Space (`!isHomeChatId(activeSpaceId)`). The React `projectName` state represents the canonical title of the active Space; modifying it with document or tool titles causes the entire Space to be renamed in the navigation hierarchy.
+
 ---
 
 ## 3. Verification & Maintenance
@@ -81,5 +84,6 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 2. Verify that database persistence calls do not overwrite `home_*.json` files when working inside a non-home project workspace.
 3. Ensure child chats created in workspaces explicitly set `activeSpaceId` to their parent space ID and include `taskType` so `LeftNav` groups and icons them cleanly.
 4. Verify that closing breadcrumbs or selecting a space parent always navigates to top-level canonical artifacts (`index.html` / `inferred_tasks.json`) or clean onboarding chats without trapping the user in child doc sessions.
+5. Ensure `setProjectName(...)` is guarded against running inside Spaces during artifact generation so space names remain immutable.
 
 

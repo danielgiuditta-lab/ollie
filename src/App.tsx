@@ -676,14 +676,35 @@ export default function App() {
         })
       });
 
+      // If saving a child chat inside a parent space, also persist the updated file manifest to the parent space
+      if (resolvedSpaceId && resolvedSpaceId !== chatIdVal && !isHomeChatId(resolvedSpaceId)) {
+        if (workspaceCacheRef.current[resolvedSpaceId]) {
+          workspaceCacheRef.current[resolvedSpaceId].sandboxFiles = filesToSave;
+        }
+        fetch(`/api/chats/${resolvedSpaceId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectName: activeName || 'Workspace Project',
+            activeSpaceId: resolvedSpaceId,
+            sandboxUrl: activeSandboxUrl || sandboxUrl || '',
+            sandboxFiles: filesToSave,
+            userEmail: userProfile?.email || '',
+            members: members
+          })
+        }).catch(err => console.error("Failed to sync parent space manifest:", err));
+      }
+
       // Only add to recent tasks in side panel if the app is built and we have a descriptive title
       if (activeName && !isHomeChatId(resolvedSpaceId)) {
         setRecentTasks(prev => {
           const now = Date.now();
           const existing = prev.find(t => t && t.id === chatIdVal);
+          const parentSpace = prev.find(t => t && t.id === resolvedSpaceId) || projects.find(p => p && p.id === resolvedSpaceId);
+          const parentName = parentSpace ? parentSpace.name : activeName;
           const newTask = {
             id: chatIdVal,
-            name: activeName,
+            name: (chatIdVal !== resolvedSpaceId && parentName) ? parentName : activeName,
             chatName: customChatName || existing?.chatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : ''),
             type: existing?.type || 'workspace',
             taskType: existing?.taskType,
@@ -1360,7 +1381,9 @@ export default function App() {
                 return f;
               });
               setSelectedFile(prev => prev ? { ...prev, name: newDocName } : null);
-              setProjectName(smartTitle);
+              if (!activeSpaceId || isHomeChatId(activeSpaceId)) {
+                setProjectName(smartTitle);
+              }
             }
           }
 
@@ -2145,7 +2168,9 @@ export default function App() {
                     }
 
                     const activeName = resolvedName || (currentTask !== 'app' ? currentTask : 'New Application');
-                    setProjectName(activeName);
+                    if (!activeSpaceId || isHomeChatId(activeSpaceId)) {
+                      setProjectName(activeName);
+                    }
                     
                     const sessionItem = {
                       id: activeFolder,
@@ -3669,6 +3694,8 @@ export default function App() {
       setMessages([]);
     }
     
+    const matchingTask = recentTasks.find(t => t.id === targetChatId);
+
     if (cached) {
       // 1. Restore from cache immediately
       setIngestedFiles(cached.ingestedFiles || []);
@@ -3689,7 +3716,6 @@ export default function App() {
       
       const shouldSkipSelect = skipSelect && targetChatId === folderId;
       const isParentSpaceClick = targetChatId === folderId || shouldSkipSelect;
-      const matchingTask = recentTasks.find(t => t.id === targetChatId);
       const taskType = matchingTask?.taskType || matchingTask?.type || '';
 
       if (isParentSpaceClick) {
@@ -3715,13 +3741,19 @@ export default function App() {
         setIndexFileSelected(!!toolFile);
         setViewState(toolFile ? 'app' : 'home');
       } else if (taskType === 'doc') {
-        const docFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase() === 'document.doc'));
-        setSelectedFile(docFile || cached.sandboxFiles?.[0] || null);
+        const matchingDoc = matchingTask?.chatName ? cached.sandboxFiles?.find((f: any) => {
+          if (!f || !f.name) return false;
+          const fName = f.name.toLowerCase();
+          const cName = matchingTask.chatName.toLowerCase();
+          return fName.includes(cName) || cName.includes(fName.replace(/\.[^/.]+$/, ''));
+        }) : null;
+        const docFile = matchingDoc || cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase() === 'document.doc')) || cached.sandboxFiles?.[0] || null;
+        setSelectedFile(docFile);
         setIndexFileSelected(false);
         setViewState('files');
       } else if (taskType === 'slide') {
-        const slideFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.gslides') || f.name.toLowerCase().endsWith('.ppt') || f.name.toLowerCase().endsWith('.pptx')));
-        setSelectedFile(slideFile || cached.sandboxFiles?.[0] || null);
+        const slideFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.gslides') || f.name.toLowerCase().endsWith('.ppt') || f.name.toLowerCase().endsWith('.pptx'))) || cached.sandboxFiles?.[0] || null;
+        setSelectedFile(slideFile);
         setIndexFileSelected(false);
         setViewState('files');
       } else if (taskType === 'inferred' || taskType === 'tracking') {
@@ -3890,12 +3922,38 @@ export default function App() {
               
               if (chatData.sandboxFiles !== undefined) {
                 setSandboxFiles(chatData.sandboxFiles);
-                const canonicalTool = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
-                const indexHTML = canonicalTool || chatData.sandboxFiles[0];
-                if (!skipSelect && indexHTML) {
-                  setSelectedFile(indexHTML);
-                  setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
-                  setViewState(canonicalTool ? 'app' : 'files');
+                const chatTaskType = matchingTask?.taskType || matchingTask?.type || chatData.taskType || chatData.type || '';
+                let fileToSelect: any = null;
+                let nextViewState: any = 'files';
+
+                if (chatTaskType === 'site' || chatTaskType === 'tool') {
+                  fileToSelect = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html'))) || null;
+                  nextViewState = fileToSelect ? 'app' : 'home';
+                } else if (chatTaskType === 'doc') {
+                  const matchingDoc = matchingTask?.chatName ? chatData.sandboxFiles.find((f: any) => {
+                    if (!f || !f.name) return false;
+                    const fName = f.name.toLowerCase();
+                    const cName = matchingTask.chatName.toLowerCase();
+                    return fName.includes(cName) || cName.includes(fName.replace(/\.[^/.]+$/, ''));
+                  }) : null;
+                  fileToSelect = matchingDoc || chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase() === 'document.doc')) || chatData.sandboxFiles[0] || null;
+                  nextViewState = 'files';
+                } else if (chatTaskType === 'slide') {
+                  fileToSelect = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.gslides') || f.name.toLowerCase().endsWith('.ppt') || f.name.toLowerCase().endsWith('.pptx'))) || chatData.sandboxFiles[0] || null;
+                  nextViewState = 'files';
+                } else if (chatTaskType === 'inferred' || chatTaskType === 'tracking') {
+                  fileToSelect = chatData.sandboxFiles.find((f: any) => f && f.name && f.name.toLowerCase() === 'inferred_tasks.json') || null;
+                  nextViewState = 'files';
+                } else {
+                  const canonicalTool = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
+                  fileToSelect = canonicalTool || chatData.sandboxFiles[0] || null;
+                  nextViewState = canonicalTool ? 'app' : (chatData.sandboxFiles.length > 0 ? 'files' : 'home');
+                }
+
+                if (!skipSelect && fileToSelect) {
+                  setSelectedFile(fileToSelect);
+                  setIndexFileSelected(fileToSelect?.name?.toLowerCase().includes('index.html') ?? false);
+                  setViewState(nextViewState);
                 } else {
                   setSelectedFile(null);
                   setIndexFileSelected(false);
@@ -3909,9 +3967,9 @@ export default function App() {
                   sandboxUrl: chatData.sandboxUrl || '',
                   messages: chatData.messages || [],
                   projectName: chatData.projectName || fileName || projectName,
-                  selectedFile: (!skipSelect && indexHTML) ? indexHTML : null,
-                  indexFileSelected: (!skipSelect && indexHTML) ? (indexHTML?.name?.toLowerCase().includes('index.html') ?? false) : false,
-                  viewState: (!skipSelect && indexHTML) ? (canonicalTool ? 'app' : 'files') : (chatData.sandboxFiles.length > 0 ? 'files' : 'home')
+                  selectedFile: (!skipSelect && fileToSelect) ? fileToSelect : null,
+                  indexFileSelected: (!skipSelect && fileToSelect) ? (fileToSelect?.name?.toLowerCase().includes('index.html') ?? false) : false,
+                  viewState: (!skipSelect && fileToSelect) ? nextViewState : (chatData.sandboxFiles.length > 0 ? 'files' : 'home')
                 };
                 chatSessionsCacheRef.current[targetChatId] = {
                   messages: chatData.messages || []
@@ -4248,29 +4306,30 @@ export default function App() {
     let name = '';
     let content = '';
     let mimeType = '';
+    const isHomeContext = !activeSpaceId || activeSpaceId === 'root' || isHomeChatId(activeSpaceId);
 
     if (type === 'doc') {
       name = 'document.doc';
       content = `# New document\n\n## Tell me what you want to write`;
       mimeType = 'application/vnd.google-apps.document';
-      setProjectName('New Document');
+      if (isHomeContext) setProjectName('New Document');
       setCurrentTask('doc');
     } else if (type === 'slide') {
       name = 'presentation.gslides';
       content = '# Slide 1\n\n- ';
       mimeType = 'application/vnd.google-apps.presentation';
-      setProjectName('New Slide Deck');
+      if (isHomeContext) setProjectName('New Slide Deck');
       setCurrentTask('slide');
     } else if (type === 'sheet') {
       name = 'spreadsheet.gsheet';
       content = 'A,B,C,D,E';
       mimeType = 'application/vnd.google-apps.spreadsheet';
-      setProjectName('New Spreadsheet');
+      if (isHomeContext) setProjectName('New Spreadsheet');
     } else if (type === 'pix') {
       name = 'image.png';
       content = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%233186FF;stop-opacity:1"/><stop offset="100%" style="stop-color:%23DFF1FD;stop-opacity:1"/></linearGradient></defs><rect width="100%" height="100%" fill="url(%23g)"/><text x="50%" y="50%" font-family="sans-serif" font-size="32" font-weight="bold" fill="white" dominant-baseline="middle" text-anchor="middle">Ask Gemini to Generate Image</text></svg>`;
       mimeType = 'image/png';
-      setProjectName('New Image');
+      if (isHomeContext) setProjectName('New Image');
     } else if (type === 'site') {
       name = 'index.html';
       content = `<!DOCTYPE html>
@@ -4288,7 +4347,7 @@ export default function App() {
 </body>
 </html>`;
       mimeType = 'text/html';
-      setProjectName('New Website');
+      if (isHomeContext) setProjectName('New Website');
     }
 
     let createdDriveId = undefined;
@@ -4445,7 +4504,7 @@ export default function App() {
         }}
         activeChatId={activeChatId}
         onSelectChat={async (space, chat) => {
-          await handleFileClick(space, true, { isFromRecents: true, targetChatId: chat.id });
+          await handleFileClick(space, false, { isFromRecents: true, targetChatId: chat.id });
         }}
         onSelectProject={async (proj) => {
           if (typeof proj === 'object' && proj !== null) {
