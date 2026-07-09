@@ -1,0 +1,25 @@
+{
+  "envId": "07827055f34cdb14e9c04b755ce93aff",
+  "key": "ollie_prd_detailed_data",
+  "data": {
+    "signoffs": {
+      "sascha": false,
+      "cowboy": true,
+      "mike": false,
+      "gabor": false
+    },
+    "comments": [
+      {
+        "author": "Cowboy Lynk",
+        "text": "Quality matrix is looking solid. Let's make sure the sandbox scheduling is tight.",
+        "time": "Jul 8, 2026 10:14 AM"
+      },
+      {
+        "author": "Sascha Negele",
+        "text": "Reviewed the MVP scope timeline. Looks perfect for our July 16 targets.",
+        "time": "Jul 8, 2026 11:32 AM"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-09T12:02:21.982Z"
+}

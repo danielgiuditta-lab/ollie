@@ -6,7 +6,7 @@ import { HeroTitle } from '../Shared/HeroTitle';
 import { NullTitle } from '../Shared/NullTitle';
 import { IconButton } from '../Shared/IconButton';
 import { TaskCard } from './TaskCard';
-import { MessageSquare, History, FileText, ChevronRight, Activity, Smile, X, LayoutDashboard, CheckCircle2, Presentation, FolderKanban, Sparkles } from 'lucide-react';
+import { MessageSquare, History, FileText, ChevronRight, Activity, Smile, X, LayoutDashboard, CheckCircle2, Presentation, FolderKanban, Newspaper, Shield, Zap, ListTodo } from 'lucide-react';
 
 interface ChatSidebarProps {
   messages: any[];
@@ -145,31 +145,31 @@ export function ChatSidebar({
 
   const getTaskIcon = (title: string) => {
     if (title === "Get a summary of my day") {
-      return <Sparkles size={20} className="shrink-0 text-purple-600 dark:text-purple-400" />;
+      return <Newspaper size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
     if (title === "Let Ollie track your work") {
-      return <span className="text-lg shrink-0 select-none">🛡️</span>;
+      return <ListTodo size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
     if (title === "Build a custom tool with Ollie") {
-      return <span className="text-lg shrink-0 select-none">⚡</span>;
+      return <Zap size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
     if (title === "Create a Doc") {
-      return <FileText size={20} className="shrink-0 text-blue-600 dark:text-blue-400" />;
+      return <FileText size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
     if (title === "Create a Slideshow") {
-      return <Presentation size={20} className="shrink-0 text-amber-600 dark:text-amber-400" />;
+      return <Presentation size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
     const lower = title.toLowerCase();
     if (lower.includes('dashboard') || lower.includes('visual')) {
-      return <LayoutDashboard size={20} className="shrink-0 text-slate-800 dark:text-neutral-200" />;
+      return <LayoutDashboard size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
     if (lower.includes('tracker') || lower.includes('sales') || lower.includes('guidelines') || lower.includes('review') || lower.includes('brief') || lower.includes('marketing')) {
-      return <CheckCircle2 size={20} className="shrink-0 text-slate-800 dark:text-neutral-200" />;
+      return <CheckCircle2 size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
     if (lower.includes('presentation') || lower.includes('proposal') || lower.includes('strategy')) {
-      return <Presentation size={20} className="shrink-0 text-slate-800 dark:text-neutral-200" />;
+      return <Presentation size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
-    return <FolderKanban size={20} className="shrink-0 text-slate-800 dark:text-neutral-200" />;
+    return <FolderKanban size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
   };
 
   // Local state for comment stream prototyping

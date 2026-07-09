@@ -1485,7 +1485,8 @@ export default function App() {
         setViewState('files'); // Use existing canvas viewer and right library!
         setIsAiSummarySnapped(false);
         setActiveSidebar('gemini'); // Keep chat docked in side mode!
-        setIsSourcesPanelOpen(true); // Ensure existing right library panel is open!
+        const initialTotal = (sandboxFiles?.length || 0) + (driveFiles?.length || 0);
+        setIsSourcesPanelOpen(initialTotal > 0);
         
         let autoSelectedSources: any[] = [];
         if (contextFiles && Array.isArray(contextFiles) && contextFiles.length > 0) {
@@ -1643,6 +1644,8 @@ export default function App() {
                   });
                   return mergedDrive;
                 });
+                const totalFilesNow = files.length + (sandboxFiles?.length || 0) + (driveFiles?.length || 0);
+                setIsSourcesPanelOpen(totalFilesNow > 0);
                 continue;
               }
 
@@ -1716,22 +1719,6 @@ export default function App() {
         ];
 
         try {
-          await fetch(`/api/chats/${taskId}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              projectName: isNewSearch ? text : projectName,
-              messages: finalMessages,
-              envId: null,
-              activeSpaceId: null,
-              sandboxUrl: '',
-              userEmail: userProfile?.email || ''
-            })
-          });
-          console.log(`[Firebase] Saved AI Summary chat "${taskId}" to Cloud Firestore successfully.`);
-
           // Save AI summary as a doc artifact in the library
           const summaryDocFile = {
             name: `Daily_Summary_${new Date().toISOString().slice(0, 10)}.md`,
@@ -1743,13 +1730,24 @@ export default function App() {
           const updatedFiles = [...sandboxFiles.filter(f => f && f.name !== summaryDocFile.name), summaryDocFile];
           setSandboxFiles(updatedFiles);
           setSelectedFile(summaryDocFile);
-          if (activeSpaceId && workspaceCacheRef.current[activeSpaceId]) {
-            workspaceCacheRef.current[activeSpaceId].sandboxFiles = updatedFiles;
-          } else if (workspaceCacheRef.current[getHomeChatId()]) {
-            workspaceCacheRef.current[getHomeChatId()].sandboxFiles = updatedFiles;
+          
+          const targetSpaceId = activeSpaceId || 'home_guest';
+          if (workspaceCacheRef.current[targetSpaceId]) {
+            workspaceCacheRef.current[targetSpaceId].sandboxFiles = updatedFiles;
           }
-          if (isHomeChatId(activeSpaceId)) {
-            saveChatToDb(getHomeChatId(), messages, envId, sandboxUrl, 'Home Dashboard', updatedFiles, getHomeChatId());
+          if (workspaceCacheRef.current[taskId]) {
+            workspaceCacheRef.current[taskId].sandboxFiles = updatedFiles;
+          }
+          
+          const targetProjectName = isHomeChatId(targetSpaceId) ? 'Home Dashboard' : (projectName || 'Workspace Project');
+          const childChatName = text.length > 30 ? text.substring(0, 30) + '...' : text;
+          
+          // Save child chat session with full files and activeSpaceId so it restores cleanly when clicked
+          await saveChatToDb(taskId, finalMessages, envId, sandboxUrl, targetProjectName, updatedFiles, targetSpaceId, childChatName);
+          console.log(`[Firebase] Saved AI Summary chat "${taskId}" to Cloud Firestore successfully.`);
+
+          if (isHomeChatId(targetSpaceId)) {
+            await saveChatToDb(getHomeChatId(), finalMessages, envId, sandboxUrl, 'Home Dashboard', updatedFiles, getHomeChatId());
           }
         } catch (dbErr) {
           console.error("Failed to save AI Summary chat to DB:", dbErr);
@@ -1817,7 +1815,8 @@ export default function App() {
           activeFileName: selectedFile?.name || undefined,
           activeFileMimeType: selectedFile?.mimeType || undefined,
           activeFileContent: selectedFile?.content || undefined,
-          ingestedContext: contextToUse.length > 0 ? contextToUse.map(f => ({filename: f.name, content: f.content})) : undefined
+          ingestedContext: contextToUse.length > 0 ? contextToUse.map(f => ({filename: f.name, content: f.content})) : undefined,
+          members: members.length > 0 ? members : getTeamMembers()
         })
       });
       // Do not clear ingestedFiles so drive saving works later
