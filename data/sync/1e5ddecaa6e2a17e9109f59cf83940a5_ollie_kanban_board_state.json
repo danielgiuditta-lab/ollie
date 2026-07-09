@@ -1,0 +1,81 @@
+{
+  "envId": "1e5ddecaa6e2a17e9109f59cf83940a5",
+  "key": "ollie_kanban_board_state",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-1",
+        "title": "Coding Agent Prototype Walkthrough",
+        "description": "Focus on build walkthrough & target delivery by July 16. Implement initial features.",
+        "assignee": "MC",
+        "track": "Eng",
+        "priority": "High",
+        "status": "progress"
+      },
+      {
+        "id": "task-2",
+        "title": "Improvements to scheduled jobs",
+        "description": "Fix scheduler bugs and chat streaming interruptions in Teamfood.",
+        "assignee": "CL",
+        "track": "Quality",
+        "priority": "High",
+        "status": "todo"
+      },
+      {
+        "id": "task-3",
+        "title": "UX/UI Refinements & Bugs",
+        "description": "Work through Ollie Bugs & improvements list. Refine interactive feeds.",
+        "assignee": "SS",
+        "track": "Design",
+        "priority": "Medium",
+        "status": "todo"
+      },
+      {
+        "id": "task-4",
+        "title": "Data privacy & access audit",
+        "description": "Security review before opening Teamfood outside of XI. Define boundaries for Directors+.",
+        "assignee": "IM",
+        "track": "Security",
+        "priority": "High",
+        "status": "progress"
+      },
+      {
+        "id": "task-5",
+        "title": "In-person co-design sessions in NYC",
+        "description": "Schedule sessions for next week Wed-Fri at NYC office. Map context breadcrumbs & tools.",
+        "assignee": "ME",
+        "track": "UXR",
+        "priority": "High",
+        "status": "progress"
+      },
+      {
+        "id": "task-6",
+        "title": "Prepare GCP prototype testing plan",
+        "description": "Plan testing workflow. Set up active workspace customer tryouts with GCP prototype accounts.",
+        "assignee": "DG",
+        "track": "UXR",
+        "priority": "Medium",
+        "status": "todo"
+      },
+      {
+        "id": "task-7",
+        "title": "Internal production building blocks",
+        "description": "Synthesize reusable component structures to make Ollie development faster.",
+        "assignee": "MH",
+        "track": "Eng",
+        "priority": "Low",
+        "status": "done"
+      },
+      {
+        "id": "task-8",
+        "title": "Bug bash checklist compilation",
+        "description": "Draft high priority bugs during collaboration session with Ian Mendiola.",
+        "assignee": "CL",
+        "track": "Quality",
+        "priority": "Medium",
+        "status": "todo"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-09T02:38:03.871Z"
+}

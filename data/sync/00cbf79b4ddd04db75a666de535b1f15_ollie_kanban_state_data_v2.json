@@ -1,0 +1,49 @@
+{
+  "envId": "00cbf79b4ddd04db75a666de535b1f15",
+  "key": "ollie_kanban_state_data_v2",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-seed-1",
+        "title": "Audit data privacy before opening teamfood",
+        "description": "Audit data privacy before we open up teamfood outside XI. Follow up with Zhengrong Ji to check if full s/c is needed.",
+        "assignee": "Ian Mendiola",
+        "priority": "High",
+        "column": "todo"
+      },
+      {
+        "id": "task-seed-2",
+        "title": "UX/UI Refinements & Improvements",
+        "description": "Address Ollie bugs and UI/UX improvements identified in previous team food syncs.",
+        "assignee": "Simon Sok",
+        "priority": "Medium",
+        "column": "in-progress"
+      },
+      {
+        "id": "task-seed-3",
+        "title": "Agent Quality & Scheduled Jobs",
+        "description": "Improvements to scheduled jobs and chat streaming bugs. Collaborate with Ian on bug bash list.",
+        "assignee": "Cowboy Lynk",
+        "priority": "High",
+        "column": "in-progress"
+      },
+      {
+        "id": "task-seed-4",
+        "title": "Coding Agent Implementation",
+        "description": "Refining the Coding Agent. Aim to complete and show by Thursday.",
+        "assignee": "Mike Carcasole",
+        "priority": "High",
+        "column": "review"
+      },
+      {
+        "id": "task-seed-5",
+        "title": "Schedule co-design sessions with SMBs",
+        "description": "Recruiting and planning to schedule co-design sessions for next week (Wed-Fri).",
+        "assignee": "Mirjam van Esch",
+        "priority": "Medium",
+        "column": "done"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-09T02:34:18.528Z"
+}

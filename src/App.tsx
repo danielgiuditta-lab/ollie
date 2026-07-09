@@ -1049,6 +1049,14 @@ export default function App() {
   };
 
   const handleSendMessage = async (text: string, aiMode?: boolean, contextFiles?: any[]) => {
+    let resolvedFolderId = activeSpaceId;
+    let targetChatId = activeChatId;
+    if (isHomeChatId(resolvedFolderId)) {
+      targetChatId = getHomeChatId();
+    } else if (!targetChatId || isHomeChatId(targetChatId)) {
+      targetChatId = resolvedFolderId;
+    }
+
     if (activeSpaceId && activeSpaceId.startsWith('space-creation-')) {
       setMessages(prev => [...prev, { role: 'user', text }]);
       setIsLoading(true);
@@ -1395,13 +1403,6 @@ export default function App() {
     setIsLoading(true);
     setCurrentTask(activeAiMode ? 'AI Search Summary' : 'app');
 
-    let resolvedFolderId = activeSpaceId;
-    let targetChatId = activeChatId;
-    if (isHomeChatId(resolvedFolderId)) {
-      targetChatId = getHomeChatId();
-    } else if (!targetChatId || isHomeChatId(targetChatId)) {
-      targetChatId = resolvedFolderId;
-    }
     let inferredChatNameVal: string | undefined = undefined;
 
     if (chatModel === 'B' && resolvedFolderId && (!targetChatId || targetChatId === resolvedFolderId || targetChatId.endsWith('-temp') || targetChatId.includes('-chat-temp'))) {
