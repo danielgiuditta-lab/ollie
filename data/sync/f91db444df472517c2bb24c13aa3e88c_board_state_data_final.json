@@ -1,0 +1,61 @@
+{
+  "envId": "f91db444df472517c2bb24c13aa3e88c",
+  "key": "board_state_data_final",
+  "data": [
+    {
+      "id": "task-1",
+      "title": "Coding Agent Development",
+      "description": "Develop robust backbone and pipeline for the coding agent. Target release: Thursday.",
+      "assignee": "Mike Carcasole",
+      "priority": "High",
+      "status": "inprogress",
+      "tag": "Coding"
+    },
+    {
+      "id": "task-2",
+      "title": "Agent Quality & Scheduled Jobs",
+      "description": "Improve scheduled jobs reliability and fix chat streaming bugs. Run collaborative bug bash.",
+      "assignee": "Cowboy Lynk",
+      "priority": "High",
+      "status": "todo",
+      "tag": "Quality"
+    },
+    {
+      "id": "task-3",
+      "title": "UX/UI Refinements & Bug Fixes",
+      "description": "Refine Ollie interface elements, resolve reported UI bugs, and align spacing/padding constraints.",
+      "assignee": "Simon Sok",
+      "priority": "Medium",
+      "status": "inprogress",
+      "tag": "UX/UI"
+    },
+    {
+      "id": "task-4",
+      "title": "Data Privacy & Security Audit",
+      "description": "Perform thorough data privacy audit before teamfood release. Coordinate with Zhengrong Ji for Director+ permissions.",
+      "assignee": "Ian Mendiola",
+      "priority": "High",
+      "status": "todo",
+      "tag": "Security"
+    },
+    {
+      "id": "task-5",
+      "title": "In-Person Co-Design Sessions",
+      "description": "Conduct 90-minute in-person interviews at the Google NYC Office to map real-world workflows and data trails.",
+      "assignee": "Daniel Giuditta",
+      "priority": "High",
+      "status": "inprogress",
+      "tag": "UXR"
+    },
+    {
+      "id": "task-6",
+      "title": "Define GCP Prototype Testing Process",
+      "description": "Set up the environment for users to test the Google Cloud Platform prototype with their active Workspace accounts.",
+      "assignee": "Mirjam van Esch",
+      "priority": "Medium",
+      "status": "inreview",
+      "tag": "UXR"
+    }
+  ],
+  "updatedAt": "2026-07-09T03:10:29.618Z"
+}

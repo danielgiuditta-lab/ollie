@@ -1,0 +1,25 @@
+{
+  "chatId": "space-test-1783566880976-chat-doc-1783566881300",
+  "projectName": "Kanban Board Project",
+  "messages": [
+    {
+      "role": "bot",
+      "text": "Doc created"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space-test-1783566880976",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "Kanban Board PRD.doc",
+      "type": "code",
+      "content": "# Kanban PRD\n\nDetails here",
+      "isDocJourney": true,
+      "id": "doc-1"
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "updatedAt": "2026-07-09T03:14:41.308Z"
+}

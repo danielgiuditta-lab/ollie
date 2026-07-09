@@ -597,6 +597,32 @@ async function startServer() {
       // Local fallback
       await saveChatAsync(sanitizedId, payload);
 
+      if (activeSpaceId && activeSpaceId !== sanitizedId && !String(activeSpaceId).startsWith("home")) {
+        try {
+          const parentPayload = (await getChatAsync(activeSpaceId)) || {
+            chatId: activeSpaceId,
+            projectName: projectName || "New Workspace",
+            messages: [],
+            sandboxFiles: []
+          };
+          const existingFiles = Array.isArray(parentPayload.sandboxFiles) ? parentPayload.sandboxFiles : [];
+          const newFiles = Array.isArray(sandboxFiles) ? sandboxFiles : [];
+          const mergedMap = new Map();
+          for (const f of existingFiles) {
+            if (f && f.name) mergedMap.set(f.name.toLowerCase(), f);
+          }
+          for (const f of newFiles) {
+            if (f && f.name) mergedMap.set(f.name.toLowerCase(), f);
+          }
+          parentPayload.sandboxFiles = Array.from(mergedMap.values());
+          parentPayload.updatedAt = new Date().toISOString();
+          await saveChatAsync(activeSpaceId, parentPayload);
+          console.log(`[Server Sync] Automatically synced ${newFiles.length} files from child chat ${sanitizedId} to parent space ${activeSpaceId}`);
+        } catch (syncErr) {
+          console.error(`[Server Sync] Failed to sync child files to parent space:`, syncErr);
+        }
+      }
+
       res.json({ success: true, cloudSynced: firestoreWorked });
     } catch (error) {
       console.error("Chat write error:", error);
