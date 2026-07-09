@@ -4712,7 +4712,7 @@ export default function App() {
                   currentUserId={localUser?.id}
                   selectedFile={selectedFile}
                 >
-                  <div className={(!isIngesting && (viewState === 'home' || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                  <div className={(!isIngesting && (viewState === 'home' || selectedFile?.isInferredTask || selectedFile?.name?.toLowerCase() === 'inferred_tasks.json' || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
                     <HomeLanding 
                       accessToken={accessToken} 
                       userProfile={userProfile} 
@@ -4746,6 +4746,7 @@ export default function App() {
                       onProactiveTaskClick={handleProactiveTaskClick}
                       spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
                       onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
+                      selectedFile={selectedFile}
                     />
                   </div>
                   {isIngesting && (
@@ -4775,7 +4776,7 @@ export default function App() {
                       accessToken={accessToken}
                     />
                   )}
-                  {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && (
+                  {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && !selectedFile?.isInferredTask && selectedFile?.name?.toLowerCase() !== 'inferred_tasks.json' && (
                     <div 
                       className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200 p-4" 
                       id="canvas-unified-workspace"

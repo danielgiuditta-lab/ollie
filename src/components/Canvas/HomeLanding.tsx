@@ -187,6 +187,7 @@ interface HomeLandingProps {
   onProactiveTaskClick?: (task: any) => void;
   spaceMode?: 'choice' | 'tracking' | 'tool';
   onSelectSpaceMode?: (mode: 'tracking' | 'tool') => void;
+  selectedFile?: any;
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -561,7 +562,8 @@ export function HomeLanding({
   todoCacheRef: todoCacheRefProp,
   onProactiveTaskClick,
   spaceMode,
-  onSelectSpaceMode
+  onSelectSpaceMode,
+  selectedFile
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localBypassAuth, setLocalBypassAuth] = useState(false);
@@ -790,32 +792,17 @@ export function HomeLanding({
       return wordsT.some(w => wordsQ.includes(w));
     };
 
-    // Space Dashboard shows ALL tasks for the space, including teammate tasks
+    // Space Dashboard shows ONLY tasks that strictly belong to this space (no global/home leakage)
     return todoItems.filter(item => {
       const itemWorkspace = (item.workspace || '').toLowerCase().trim();
-      const itemSourceName = (item.sourceName || '').toLowerCase().trim();
-      const itemTitle = (item.title || '').toLowerCase().trim();
-      const itemDesc = (item.description || '').toLowerCase().trim();
+      if (!itemWorkspace) return false;
       
-      const isProjectMatch = matchesText(itemWorkspace, currentProject) || 
-                             matchesText(itemSourceName, currentProject) ||
-                             matchesText(itemTitle, currentProject);
-                             
-      if (isProjectMatch) return true;
-
-      // Scan sandboxFiles list inside the space context for matching titles or source references
-      return (sandboxFiles || []).some(file => {
-        if (!file || !file.name) return false;
-        const cleanFileName = file.name.split('/').pop().toLowerCase().replace(/\.[^/.]+$/, "").trim();
-        if (cleanFileName.length < 3) return false;
-
-        return matchesText(itemWorkspace, cleanFileName) || 
-               matchesText(itemSourceName, cleanFileName) ||
-               matchesText(itemTitle, cleanFileName) ||
-               matchesText(itemDesc, cleanFileName);
-      });
+      return matchesText(itemWorkspace, currentProject) || 
+             itemWorkspace === currentProject ||
+             itemWorkspace.includes(currentProject) || 
+             currentProject.includes(itemWorkspace);
     });
-  }, [todoItems, activeSpaceId, projectName, sandboxFiles]);
+  }, [todoItems, activeSpaceId, projectName]);
 
   const handleAgendaItemClick = (item: any) => {
     if (!item) return;
@@ -1457,7 +1444,8 @@ export function HomeLanding({
   }
 
   const isHome = isHomeId(activeSpaceId);
-  if (!isHome && spaceMode !== 'tracking') {
+  const isInferredTaskFile = selectedFile?.isInferredTask || selectedFile?.name?.toLowerCase() === 'inferred_tasks.json';
+  if (!isHome && spaceMode !== 'tracking' && !isInferredTaskFile) {
     return <div className="w-full h-full bg-transparent" />;
   }
 

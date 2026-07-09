@@ -1,0 +1,47 @@
+{
+  "chatId": "space-1783603384410-chat-1783603403947",
+  "projectName": "Overdrive",
+  "messages": [
+    {
+      "role": "bot",
+      "text": "I'm now tracking work for this space and synthesizing inferred tasks from your workspace activity and documents."
+    }
+  ],
+  "envId": "8555d50a74a4fd109206398e94b8fa28",
+  "activeSpaceId": "space-1783603384410",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "inferred_tasks.json",
+      "type": "code",
+      "content": "[]",
+      "mimeType": "application/json",
+      "isInferredTask": true,
+      "id": "inferred-tasks-1783603403947"
+    }
+  ],
+  "userEmail": "danielgiuditta@google.com",
+  "members": [
+    {
+      "name": "Daniel Giuditta",
+      "email": "danielgiuditta@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocI4XtQJyOGEbExqDChL5Jutn2AfMdv-Yaq9Pbdd1NMuBb-qO08=s64"
+    },
+    {
+      "name": "Michael Hopkins",
+      "email": "mhop@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjXBGX3dqdarHtjMvyHaOfUB-fKOf-EOxrHAr6vCKTRePXkx0Tg=s64"
+    },
+    {
+      "name": "David Wurtz",
+      "email": "wurtz@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjW7KVh0yVuDb5C5TdRwGD7YYrY9iwTZzjNklnwKjpKGKeTFhayw=s64"
+    },
+    {
+      "name": "Adnan Hasan",
+      "email": "adnanhasan@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjXuj1Wk09YVnE6TS2Z6BJRF8p7akM0wA6-3iFNEnps1tzIlKyY=s64"
+    }
+  ],
+  "updatedAt": "2026-07-09T13:23:24.009Z"
+}

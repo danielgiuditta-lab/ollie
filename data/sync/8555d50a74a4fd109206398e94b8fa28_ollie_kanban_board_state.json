@@ -1,0 +1,37 @@
+{
+  "envId": "8555d50a74a4fd109206398e94b8fa28",
+  "key": "ollie_kanban_board_state",
+  "data": [
+    {
+      "title": "Complete in-person UXR co-design sessions with Workspace Customers",
+      "status": "wishlist",
+      "assignee": "mirjam",
+      "id": "task-1"
+    },
+    {
+      "id": "task-2",
+      "title": "Refine Project Ollie UI/UX for main stream and custom views",
+      "status": "in-progress",
+      "assignee": "simon"
+    },
+    {
+      "status": "done",
+      "title": "Analyze survey responses from 100 participants regarding AI delegation",
+      "assignee": "mirjam",
+      "id": "task-3"
+    },
+    {
+      "title": "Build walkthrough and coding agent features for testing",
+      "status": "in-progress",
+      "assignee": "ian",
+      "id": "task-4"
+    },
+    {
+      "id": "task-5",
+      "title": "Audit and follow up on data privacy requirements for Directors+",
+      "status": "in-progress",
+      "assignee": "belinda"
+    }
+  ],
+  "updatedAt": "2026-07-09T13:20:16.057Z"
+}
