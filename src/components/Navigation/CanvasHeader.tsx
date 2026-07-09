@@ -172,7 +172,7 @@ export function CanvasHeader({
         {!isHome && <SharedMembersAvatars />}
 
         {/* Library side panel toggle button */}
-        {!isHome && onToggleSourcesPanel && (
+        {onToggleSourcesPanel && (
           <button
             onClick={onToggleSourcesPanel}
             className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}

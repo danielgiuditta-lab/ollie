@@ -10,7 +10,7 @@ import { MessageSquare, History, FileText, ChevronRight, Activity, Smile, X, Lay
 
 interface ChatSidebarProps {
   messages: any[];
-  onSendMessage: (text: string) => void;
+  onSendMessage: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
   isLoading: boolean;
   variant?: 'gemini' | 'comments' | 'history';
   onClose?: () => void;
@@ -80,7 +80,15 @@ export function ChatSidebar({
       return [];
     }
 
-    if (!isHome && isNewSpaceCreation && (!spaceMode || spaceMode === 'choice')) {
+    if (isHome) {
+      return [
+        { label: "Get a summary of my day", prompt: "Get a summary of my day", action: 'summary_day' as const },
+        { label: "Build a custom tool", prompt: "Build a custom tool with Ollie", mode: 'tool' as const },
+        { label: "Start a Doc", prompt: "Create a Doc", action: 'create_doc' as const }
+      ];
+    }
+
+    if (isNewSpaceCreation && (!spaceMode || spaceMode === 'choice')) {
       return [
         { label: "Let Ollie track your work", prompt: "Let Ollie track your work", mode: 'tracking' as const },
         { label: "Build a custom tool with Ollie", prompt: "Build a custom tool with Ollie", mode: 'tool' as const },
@@ -101,30 +109,22 @@ export function ChatSidebar({
       return title.length > 40 ? title.substring(0, 40) + '...' : title;
     };
 
-    let filtered = [];
-    if (isHome) {
-      filtered = list.filter(item => item.involvesMe !== false);
-    } else {
-      const currentProject = (projectName || '').toLowerCase().trim();
-      filtered = list.filter(item => {
-        const itemWorkspace = (item.workspace || '').toLowerCase().trim();
-        return itemWorkspace === currentProject || currentProject.includes(itemWorkspace) || itemWorkspace.includes(currentProject);
-      });
-    }
+    const currentProject = (projectName || '').toLowerCase().trim();
+    const filtered = list.filter(item => {
+      const itemWorkspace = (item.workspace || '').toLowerCase().trim();
+      return itemWorkspace === currentProject || currentProject.includes(itemWorkspace) || itemWorkspace.includes(currentProject);
+    });
 
     if (filtered.length > 0) {
       const base = filtered.map(item => ({
         label: getPillLabel(item.title),
         prompt: `Help me with: ${item.title}`
       }));
-      if (!isHome) {
-        return [
-          ...base,
-          { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
-          { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const }
-        ];
-      }
-      return base;
+      return [
+        ...base,
+        { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
+        { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const }
+      ];
     }
 
     // Fallback default suggestions
@@ -134,19 +134,19 @@ export function ChatSidebar({
       { label: "Make an interactive presentation", prompt: "Make an interactive presentation" },
       ...(fileCount > 3 ? [{ label: "Organize files", prompt: "Organize files" }] : [])
     ];
-    if (!isHome) {
-      return [
-        { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
-        { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const },
-        ...fallback
-      ];
-    }
-    return fallback;
+    return [
+      { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
+      { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const },
+      ...fallback
+    ];
   };
 
   const suggestions = getSuggestions();
 
   const getTaskIcon = (title: string) => {
+    if (title === "Get a summary of my day") {
+      return <Sparkles size={20} className="shrink-0 text-purple-600 dark:text-purple-400" />;
+    }
     if (title === "Let Ollie track your work") {
       return <span className="text-lg shrink-0 select-none">🛡️</span>;
     }
@@ -341,7 +341,9 @@ export function ChatSidebar({
                     <button 
                       key={idx}
                       onClick={() => {
-                        if ((pill as any).mode && onSelectSpaceMode) {
+                        if ((pill as any).action === 'summary_day') {
+                          onSendMessage(pill.prompt, true);
+                        } else if ((pill as any).mode && onSelectSpaceMode) {
                           onSelectSpaceMode((pill as any).mode);
                         } else if ((pill as any).action === 'create_doc' && onCreateArtifact) {
                           onCreateArtifact('doc', true);

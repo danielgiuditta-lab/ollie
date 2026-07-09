@@ -1712,6 +1712,25 @@ export default function App() {
             })
           });
           console.log(`[Firebase] Saved AI Summary chat "${taskId}" to Cloud Firestore successfully.`);
+
+          // Save AI summary as a doc artifact in the library
+          const summaryDocFile = {
+            name: `Daily_Summary_${new Date().toISOString().slice(0, 10)}.md`,
+            content: accumulatedOutput,
+            mimeType: 'text/markdown',
+            id: `summary-doc-${Date.now()}`,
+            isDocJourney: true
+          };
+          const updatedFiles = [...sandboxFiles.filter(f => f && f.name !== summaryDocFile.name), summaryDocFile];
+          setSandboxFiles(updatedFiles);
+          if (activeSpaceId && workspaceCacheRef.current[activeSpaceId]) {
+            workspaceCacheRef.current[activeSpaceId].sandboxFiles = updatedFiles;
+          } else if (workspaceCacheRef.current[getHomeChatId()]) {
+            workspaceCacheRef.current[getHomeChatId()].sandboxFiles = updatedFiles;
+          }
+          if (isHomeChatId(activeSpaceId)) {
+            saveChatToDb(getHomeChatId(), messages, envId, sandboxUrl, 'Home Dashboard', updatedFiles, getHomeChatId());
+          }
         } catch (dbErr) {
           console.error("Failed to save AI Summary chat to DB:", dbErr);
         }
@@ -4611,7 +4630,6 @@ export default function App() {
           viewState={viewState}
           onHomeClick={() => {
             setActiveProactiveTask(null);
-            setIsSourcesPanelOpen(false);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setSelectedFile(null);
               setViewState('files');
@@ -4624,7 +4642,6 @@ export default function App() {
           }}
           onCloseWorkspace={() => {
             setActiveProactiveTask(null);
-            setIsSourcesPanelOpen(false);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setSelectedFile(null);
               setViewState('files');
@@ -4638,7 +4655,6 @@ export default function App() {
           onCloseFile={() => {
             setActiveProactiveTask(null);
             setSelectedFile(null);
-            setIsSourcesPanelOpen(false);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
               setViewState('files');
               const projObj = projects.find(p => (p.id || p.activeSpaceId)?.toLowerCase() === activeSpaceId.toLowerCase()) || { id: activeSpaceId, name: projectName };
@@ -4800,7 +4816,7 @@ export default function App() {
 
           {/* Sources panel sidebar rendered on the RIGHT */}
           <AnimatePresence>
-            {isSourcesPanelOpen && (viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
+            {isSourcesPanelOpen && (viewState === 'home' || viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
               <CanvasSidebar 
                 files={activeSpaceId?.startsWith('space-creation-') ? spaceCreationSources : sandboxFiles}
                 driveFiles={driveFiles}
