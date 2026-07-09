@@ -680,19 +680,20 @@ export default function App() {
       if (activeName && !isHomeChatId(resolvedSpaceId)) {
         setRecentTasks(prev => {
           const now = Date.now();
+          const existing = prev.find(t => t && t.id === chatIdVal);
           const newTask = {
             id: chatIdVal,
             name: activeName,
-            chatName: customChatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : ''),
-            type: 'workspace',
+            chatName: customChatName || existing?.chatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : ''),
+            type: existing?.type || 'workspace',
+            taskType: existing?.taskType,
             messages: messagesList,
             activeSpaceId: resolvedSpaceId,
             updatedAt: now
           };
           const filtered = prev.filter(t => {
-            const id = typeof t === 'string' ? '' : t.id;
-            const name = typeof t === 'string' ? t : t.name;
-            return id !== chatIdVal && name.toLowerCase() !== activeName.toLowerCase() && !isPlaceholder(name);
+            const id = typeof t === 'string' ? '' : t?.id;
+            return id !== chatIdVal && !isPlaceholder(t?.name || '');
           });
           return [newTask, ...filtered];
         });
@@ -1398,18 +1399,20 @@ export default function App() {
       if (activeIdForTask && projectName) {
         setRecentTasks(prev => {
           const now = Date.now();
+          const existing = prev.find(t => t && (t.id === activeIdForTask || t.chatId === activeIdForTask));
           const filtered = prev.filter(t => {
             const id = typeof t === 'string' ? '' : t.id;
-            const name = typeof t === 'string' ? t : t.name;
-            return id !== activeIdForTask && name.toLowerCase() !== projectName.toLowerCase();
+            return id !== activeIdForTask;
           });
           return [{
             id: activeIdForTask,
             name: projectName,
-            chatName: inferredChatNameVal || (activeIdForTask.includes('-chat-') ? 'Chat' : ''),
-            type: 'workspace',
+            chatName: inferredChatNameVal || existing?.chatName || (activeIdForTask.includes('-chat-') ? 'Chat' : ''),
+            type: existing?.type || 'workspace',
+            taskType: existing?.taskType,
             activeSpaceId: resolvedFolderId || activeSpaceId,
-            updatedAt: now
+            updatedAt: now,
+            messages: existing?.messages
           }, ...filtered];
         });
       }
@@ -1494,8 +1497,7 @@ export default function App() {
         setRecentTasks(prev => {
           const filtered = prev.filter(t => {
             const tId = typeof t === 'string' ? '' : t.id;
-            const tName = typeof t === 'string' ? t : t.name;
-            return tId !== taskId && tName.toLowerCase() !== text.toLowerCase();
+            return tId !== taskId;
           });
           return [newTask, ...filtered];
         });
@@ -2136,23 +2138,26 @@ export default function App() {
                     };
 
                     setSuggestedListCache(prev => {
-                      const filtered = prev.filter(item => item.id !== sessionItem.id && item.name.toLowerCase() !== sessionItem.name.toLowerCase() && item.name !== 'Workspace Project' && item.name !== 'Building project...');
+                      const filtered = prev.filter(item => item.id !== sessionItem.id && item.name !== 'Workspace Project' && item.name !== 'Building project...');
                       return [sessionItem, ...filtered];
                     });
 
                     setRecentTasks(prev => {
                       const now = Date.now();
+                      const existing = prev.find(t => t && t.id === activeFolder);
                       const newTask = {
                         id: activeFolder,
                         name: activeName,
-                        type: 'workspace',
+                        chatName: existing?.chatName,
+                        type: existing?.type || 'workspace',
+                        taskType: existing?.taskType,
                         activeSpaceId: activeFolder,
                         updatedAt: now
                       };
                       const filtered = prev.filter(t => {
                         const id = typeof t === 'string' ? '' : t.id;
                         const name = typeof t === 'string' ? t : t.name;
-                        return id !== activeFolder && name.toLowerCase() !== activeName.toLowerCase() && name !== 'New' && name !== 'Building project...' && name !== 'Workspace Project';
+                        return id !== activeFolder && name !== 'New' && name !== 'Building project...' && name !== 'Workspace Project';
                       });
                       return [newTask, ...filtered];
                     });
@@ -2499,8 +2504,7 @@ export default function App() {
       const now = Date.now();
       const filtered = prev.filter(t => {
         const id = typeof t === 'string' ? '' : t.id;
-        const name = typeof t === 'string' ? t : t.name;
-        return id !== spaceId && name.toLowerCase() !== cleanFolderName.toLowerCase();
+        return id !== spaceId;
       });
       return [{ id: spaceId, name: cleanFolderName, type: 'space', activeSpaceId: spaceId, updatedAt: now }, ...filtered];
     });
@@ -2800,8 +2804,7 @@ export default function App() {
         const now = Date.now();
         const filtered = prev.filter(t => {
           const id = typeof t === 'string' ? '' : t.id;
-          const name = typeof t === 'string' ? t : t.name;
-          return id !== spaceId && name.toLowerCase() !== cleanFolderName.toLowerCase();
+          return id !== spaceId;
         });
         return [{ id: spaceId, name: cleanFolderName, type: 'space', activeSpaceId: spaceId, updatedAt: now }, ...filtered];
       });
@@ -4334,8 +4337,8 @@ export default function App() {
       return [newArtifact, ...filter];
     });
 
-    if (fromPill || type === 'doc' || type === 'slide') {
-      const initialMsg = [{ role: 'bot', text: type === 'doc' ? "How can I help with your doc?" : "How can I help with your presentation?" }];
+    if (fromPill || type === 'doc' || type === 'slide' || type === 'site') {
+      const initialMsg = [{ role: 'bot', text: type === 'doc' ? "How can I help with your doc?" : (type === 'site' ? "What custom tool would you like to build?" : "How can I help with your presentation?") }];
       setMessages(initialMsg);
 
       const targetChatId = `${targetFolder}-chat-${Date.now()}`;

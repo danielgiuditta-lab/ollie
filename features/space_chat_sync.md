@@ -67,6 +67,9 @@ To maintain visual clarity across `LeftNav` and the File Library (`FileIcon`):
 - **Inferred Tasks (`inferred`, `inferred_tasks.json`, tracking)**: Must be represented by the task tracking icon (`forms.png`).
 - **Documents (`doc`)**: Must be represented by the document icon (`docs.png`).
 
+### Invariant 7: Strict Unique ID Filtering (No Name Matching)
+All array filtering and state updates against `recentTasks` and `projects` MUST operate strictly on unique identifiers (`t.id !== targetId` or `p.id !== targetId`). Legacy string name matching (`name.toLowerCase() !== projectName.toLowerCase()`) is strictly prohibited when updating workspaces or child chats. Because multiple child chats under a Space share the parent space's `name` (e.g., `'Ollie'`), filtering by name wipes out concurrent child chats. By relying exclusively on unique IDs, zero collision occurs, allowing multiple child chats (`Custom Tool`, `New Document`) to exist simultaneously under the same parent Space without overwriting or deleting one another.
+
 ---
 
 ## 3. Verification & Maintenance

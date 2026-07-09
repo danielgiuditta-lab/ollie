@@ -30,6 +30,7 @@ This file tracks the development milestones for adding Google Workspace integrat
 ### 📍 Phase 5: Personal Spaces & Navigation Refactoring
 - [x] Redesign LeftNav to display Home (Dashboard) and Spaces (using dynamic emojis, inline expand chevrons for nested chats, and bottom avatar controls)
 - [x] Build sub-tabs and canvas views to list email threads, chat spaces, and docs comments in detail
+- [x] Enforce strict unique ID filtering (zero name-matching) across `recentTasks` and `projects` to allow concurrent child chats under a Space with distinct iconography (Sites, Doc, Forms)
 
 ### 📍 Phase 6: Project Spaces & Multiplayer Collaboration
 - [x] Implement Private Spaces (Just Me) for isolated document and code authoring
