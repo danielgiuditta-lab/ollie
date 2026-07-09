@@ -39,7 +39,7 @@ This guide walks through the complete end-to-end user journey for **Inferred Pro
 1. The user clicks on an existing project space in the Left Navigation pane (e.g. **Galaxy Deck**) that is in tracking mode.
 2. The active folder switches to the space ID (`activeSpaceId === 'space-123'`), and the Canvas transitions to `'files'` view.
 3. Because no specific file is selected (`selectedFile === null`), the viewport renders the **Space Dashboard** (powered by `HomeLanding`).
-4. **Scoped Filtering**: The dashboard scans `todoItems` and filters them, showing **only inferred tasks relevant to Galaxy Deck** (e.g. "Review Deck updates based on Chandu's comments"). Tasks from "H2 Planning Doc" or "Team priorities" are filtered out.
+4. **Scoped Filtering**: The dashboard scans `todoItems` and filters them, showing **only inferred tasks relevant to Galaxy Deck** (e.g. "I addressed Chandu's comment on Deck updates"). Tasks from "H2 Planning Doc" or "Team priorities" are filtered out.
 5. The background compiler timer continues running inside this viewport.
 
 ---
@@ -47,7 +47,7 @@ This guide walks through the complete end-to-end user journey for **Inferred Pro
 ## ⚡ Step 5: Proactive Agent Draft Completion & Preview
 1. After 40 seconds, the simulation timer completes.
 2. The active task's status transitions to `done` (green checkmark circle).
-3. The description updates to: `Chandu commented on to consolidate slides. I did, please review.`
+3. The description updates to: `Chandu commented to consolidate slides. I consolidated the slides for your review.`
 4. The right-hand preview container renders a visual thumbnail representing the updated draft slide deck with a zoom hover effect.
 5. The user clicks the preview thumbnail.
 6. The editor sidebar opens, loading the sandbox files state with the compiled draft (`Galaxy Deck.gslides`).

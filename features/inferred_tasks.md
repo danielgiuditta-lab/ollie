@@ -56,8 +56,11 @@ The feature uses a lightweight state machine. When the user logs in, the Home Da
   "immediateActions": [
     {
       "id": "todo-proactive-1",
-      "description": "Review Brand Guidelines & updates based on Emily's comments",
-      "action": "Emily commented to consolidate the Brand Kit layout. Please review and update.",
+      "title": "I addressed Emily's comment on Brand Guidelines",
+      "titleDone": "I addressed Emily's comment on Brand Guidelines",
+      "description": "I addressed Emily's comment on Brand Guidelines",
+      "descriptionDone": "I addressed Emily's comment on Brand Guidelines",
+      "action": "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
       "source": "Branding",
       "type": "comment"
     }

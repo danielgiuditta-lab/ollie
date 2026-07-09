@@ -46,10 +46,10 @@ export function cleanWorkspaceName(raw: string): string {
 export const DEFAULT_TODO_ITEMS = [
   {
     id: 'todo-proactive-1',
-    title: "Review Brand Guidelines & updates based on Emily's comments",
-    titleDone: "I reviewed Brand Guidelines & updated based on Emily's comments",
-    description: "Emily commented to consolidate the Brand Kit layout. Ready for review.",
-    descriptionDone: "Emily commented to consolidate the Brand Kit layout. I did, please review.",
+    title: "I addressed Emily's comment on Brand Guidelines",
+    titleDone: "I addressed Emily's comment on Brand Guidelines",
+    description: "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
+    descriptionDone: "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
     workspace: "Branding",
     sourceName: "Brand Guidelines",
     sourceMimeType: "application/vnd.google-apps.document",
@@ -69,10 +69,10 @@ export const DEFAULT_TODO_ITEMS = [
   },
   {
     id: 'todo-2',
-    title: 'Change slide color based on feedback',
-    titleDone: 'I changed the color based on feedback',
-    description: "David commented on Q3 Strategy Deck to use warm palette. Ready for review.",
-    descriptionDone: "David commented on Q3 Strategy Deck to use warm palette. I did, please review.",
+    title: "I changed the slide color based on David's feedback",
+    titleDone: "I changed the slide color based on David's feedback",
+    description: "David commented on Q3 Strategy Deck to use warm palette. I updated the palette for your review.",
+    descriptionDone: "David commented on Q3 Strategy Deck to use warm palette. I updated the palette for your review.",
     workspace: 'Branding',
     sourceName: "Q3 Strategy Deck",
     sourceMimeType: "application/vnd.google-apps.presentation",
@@ -92,10 +92,10 @@ export const DEFAULT_TODO_ITEMS = [
   },
   {
     id: 'todo-3',
-    title: 'Remove section from paragraph based on feedback',
-    titleDone: 'I removed the section from paragraph based on feedback',
-    description: "Juyun commented on Brand Guidelines doc to remove legacy pricing. Ready for review.",
-    descriptionDone: "Juyun commented on Brand Guidelines doc to remove legacy pricing. I did, please review.",
+    title: "I removed the section from paragraph based on Juyun's feedback",
+    titleDone: "I removed the section from paragraph based on Juyun's feedback",
+    description: "Juyun commented on Brand Guidelines doc to remove legacy pricing. I removed the section for your review.",
+    descriptionDone: "Juyun commented on Brand Guidelines doc to remove legacy pricing. I removed the section for your review.",
     workspace: 'Branding',
     sourceName: "Brand Guidelines",
     sourceMimeType: "application/vnd.google-apps.document",
@@ -115,8 +115,8 @@ export const DEFAULT_TODO_ITEMS = [
   },
   {
     id: 'todo-space-external-1',
-    title: "Chandu to update branding layout visuals",
-    description: "David left feedback forChandu to fix visuals",
+    title: "I updated the branding layout visuals for David",
+    description: "David left feedback for Chandu to fix visuals. I updated the layout visuals for your review.",
     workspace: "Branding",
     sourceName: "Branding",
     sourceMimeType: "text/html",
@@ -128,8 +128,8 @@ export const DEFAULT_TODO_ITEMS = [
   },
   {
     id: 'todo-4',
-    title: 'Update the sales performance tracker (annual_sales.csv)',
-    description: "Comments from David",
+    title: 'I updated the sales performance tracker (annual_sales.csv)',
+    description: "David commented on annual_sales.csv. I updated the figures against monthly data.",
     workspace: 'Sales',
     sourceName: "Sales",
     sourceMimeType: "application/vnd.google-apps.spreadsheet",
@@ -141,8 +141,8 @@ export const DEFAULT_TODO_ITEMS = [
   },
   {
     id: 'todo-5',
-    title: 'Have an update on Operations for leads',
-    description: "Messages from Bora and Megan",
+    title: 'I compiled an operations status update on leads',
+    description: "Bora and Megan messaged about leads. I compiled the operations status summary.",
     workspace: 'Operations',
     sourceName: "Operations",
     sourceMimeType: "application/vnd.google-apps.chat",
@@ -656,9 +656,9 @@ export function HomeLanding({
 
       return {
         id: item.id || `todo-real-${idx}`,
-        title: item.description || 'Workspace Action Item',
-        description: isProactive ? `${item.action || 'Analyzing details'}. Working on task...` : (item.action || 'Please review this workspace task.'),
-        descriptionDone: `${item.action || 'Please review this workspace task.'} I did, please review.`,
+        title: item.title || item.description || 'I processed a Workspace action item',
+        description: isProactive ? `${item.action || 'Analyzing details'}. Working on task...` : (item.action || 'I completed this task for your review.'),
+        descriptionDone: `${item.action || 'I completed this task for your review.'}`,
         workspace: derivedWorkspace,
         sourceName: cleanSpace,
         sourceMimeType: mimeType,
@@ -692,9 +692,9 @@ export function HomeLanding({
         const generatedTasks = [
           {
             id: `todo-gen-${activeSpaceId}-1`,
-            title: `Review and structure ${spaceName} index layout`,
-            description: `Consolidate components and resources in ${spaceName}. Working on task...`,
-            descriptionDone: `Consolidate components and resources in ${spaceName}. I did, please review.`,
+            title: `I structured the ${spaceName} index layout`,
+            description: `I consolidated components and resources in ${spaceName}. Working on task...`,
+            descriptionDone: `I consolidated components and resources in ${spaceName} for your review.`,
             workspace: spaceName,
             sourceName: `${spaceName} Files`,
             sourceMimeType: 'application/vnd.google-apps.document',
@@ -715,9 +715,9 @@ export function HomeLanding({
           },
           {
             id: `todo-gen-${activeSpaceId}-2`,
-            title: `Draft presentation deck for ${spaceName} goals`,
-            description: `Reviewing team feedback on ${spaceName} roadmap presentation.`,
-            descriptionDone: `Draft presentation deck for ${spaceName} goals. I did, please review.`,
+            title: `I drafted the presentation deck for ${spaceName} goals`,
+            description: `I incorporated team feedback into the ${spaceName} roadmap presentation for your review.`,
+            descriptionDone: `I incorporated team feedback into the ${spaceName} roadmap presentation for your review.`,
             workspace: spaceName,
             sourceName: 'Goals Deck',
             sourceMimeType: 'application/vnd.google-apps.presentation',
@@ -894,34 +894,34 @@ export function HomeLanding({
         immediateActions: [
           {
             id: 'todo-proactive-1',
-            description: "Review Brand Guidelines & updates based on Emily's comments",
-            action: "Emily commented to consolidate the Brand Kit layout. Please review and update.",
+            description: "I addressed Emily's comment on Brand Guidelines",
+            action: "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
             source: "Branding"
           },
           {
             id: 'todo-2',
-            description: 'Add the design strategy to Marketing campaign brief',
-            action: "Teammate suggested adding key design guidelines to the Marketing brief.",
+            description: 'I added the design strategy to the Marketing campaign brief',
+            action: "A teammate suggested adding key design guidelines. I updated the Marketing brief for your review.",
             source: "Marketing"
           },
           {
             id: 'todo-3',
-            description: 'Craft the strategy on Pricing Proposal doc',
-            action: "Update pricing tiers and structure on the pricing doc.",
+            description: 'I crafted the pricing strategy on Pricing Proposal doc',
+            action: "I updated pricing tiers and structure on the pricing doc for your review.",
             source: 'Pricing Proposal'
           }
         ],
         followUps: [
           {
             id: 'todo-4',
-            description: 'Update the sales performance tracker (annual_sales.csv)',
-            action: "Verify monthly figures against actual performance data.",
+            description: 'I updated the sales performance tracker (annual_sales.csv)',
+            action: "I verified monthly figures against actual performance data.",
             source: 'Sales'
           },
           {
             id: 'todo-5',
-            description: 'Have an update on Operations for leads',
-            action: "Review leads pipeline and compile operations status summary.",
+            description: 'I compiled an operations status update on leads',
+            action: "I reviewed the leads pipeline and compiled an operations status summary.",
             source: 'Operations'
           }
         ]

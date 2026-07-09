@@ -1018,38 +1018,38 @@ Provide the response as a JSON object matching the following structure:
   "immediateActions": [
     {
       "id": "string",
-      "title": "Short task title (e.g., Change slide color based on feedback)",
-      "titleDone": "Completed task title (e.g., I changed the color based on feedback)",
-      "description": "Short task description (e.g., Reply to comment on 'branding.doc')",
-      "descriptionDone": "Completed description (e.g., I replied and updated branding.doc, please review.)",
+      "title": "Task title in first-person ('I...') as if the agent completed the action (e.g., I addressed Miriam's comment on your post)",
+      "titleDone": "Completed task title in first-person ('I...') (e.g., I addressed Miriam's comment on your post)",
+      "description": "Task description in first-person ('I...') as if the agent completed the action (e.g., I replied to Miriam's comment and updated branding.doc for your review)",
+      "descriptionDone": "Completed description in first-person ('I...') (e.g., I replied to Miriam's comment and updated branding.doc for your review)",
       "source": "Details about source (e.g., Email from Sarah / Comment in branding.doc)",
-      "action": "Exact recommended action...",
+      "action": "Exact action completed in first-person ('I...') (e.g., I replied to Miriam's comment and updated branding.doc for your review)",
       "type": "email" | "chat" | "comment"
     }
   ],
   "followUps": [
     {
       "id": "string",
-      "title": "Short task title...",
-      "titleDone": "Completed task title...",
-      "description": "Short task description...",
-      "descriptionDone": "Completed description...",
+      "title": "Task title in first-person ('I...')...",
+      "titleDone": "Completed task title in first-person ('I...')...",
+      "description": "Task description in first-person ('I...')...",
+      "descriptionDone": "Completed description in first-person ('I...')...",
       "source": "Details about source...",
-      "action": "Exact recommended action...",
+      "action": "Exact action completed in first-person ('I...')...",
       "type": "email" | "chat" | "comment"
     }
   ],
   "updates": [
     {
       "id": "string",
-      "description": "General update info...",
+      "description": "General update info written in first-person ('I...')...",
       "source": "Details about source...",
       "type": "email" | "chat" | "comment"
     }
   ]
 }
 
-Ensure all IDs are unique. Keep tasks concise and actionable. Return ONLY the raw JSON object.`;
+Ensure all IDs are unique. CRITICAL: All task titles, descriptions, and actions MUST be phrased from the agent's first-person perspective ('I...') as if the agent has already completed or addressed the action on behalf of the user (e.g., instead of 'Miriam comments on a post', output 'I addressed Miriam's comment on your post'). Keep tasks concise and actionable. Return ONLY the raw JSON object.`;
 
       const response = await retryWithBackoff(() => ai.models.generateContent({
         model: "gemini-3.5-flash",
