@@ -49,23 +49,6 @@ export default function App() {
   const [spaceModes, setSpaceModes] = useState<Record<string, 'choice' | 'tracking' | 'tool'>>({});
   const [newlyCreatedSpaceIds, setNewlyCreatedSpaceIds] = useState<Set<string>>(new Set());
 
-  const handleSelectSpaceMode = (spaceId: string, mode: 'tracking' | 'tool') => {
-    setSpaceModes(prev => ({ ...prev, [spaceId]: mode }));
-    if (mode === 'tool') {
-      const botMsg = {
-        role: 'bot',
-        text: `What custom tool would you like to build for this space? (e.g., Kanban board, project dashboard, asset tracker)`
-      };
-      setMessages(prev => [...prev, botMsg]);
-      setActiveSidebar('gemini');
-      if (activeChatId) {
-        chatSessionsCacheRef.current[activeChatId] = {
-          messages: [...(chatSessionsCacheRef.current[activeChatId]?.messages || messages), botMsg]
-        };
-      }
-    }
-  };
-
 
   // Unified filesystem mapping states
   const [directoryContentsMap, setFolderContentsMap] = useState<Record<string, any[]>>({});
@@ -719,6 +702,128 @@ export default function App() {
     }
   };
 
+  const handleSelectSpaceMode = (spaceId: string, mode: 'tracking' | 'tool') => {
+    setSpaceModes(prev => ({ ...prev, [spaceId]: mode }));
+    const targetChatId = `${spaceId}-chat-${Date.now()}`;
+    setActiveChatId(targetChatId);
+
+    if (mode === 'tool') {
+      const botMsg = {
+        role: 'bot',
+        text: `What custom tool would you like to build for this space? (e.g., Kanban board, project dashboard, asset tracker)`
+      };
+      const initialMsgs = [botMsg];
+      setMessages(initialMsgs);
+      setActiveSidebar('gemini');
+
+      const toolArtifact = {
+        name: 'index.html',
+        type: 'code',
+        content: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Custom Tool</title>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="bg-slate-50 text-slate-800 p-8 min-h-screen flex items-center justify-center">\n  <div class="max-w-md w-full text-center space-y-4 bg-white p-8 rounded-3xl border shadow-sm">\n    <h1 class="text-3xl font-bold text-slate-950">Custom Tool</h1>\n    <p class="text-xs text-slate-500">Describe what tool you need in chat.</p>\n  </div>\n</body>\n</html>`,
+        mimeType: 'text/html',
+        id: `custom-tool-${Date.now()}`
+      };
+
+      setSandboxFiles(prev => {
+        const exists = prev.some(f => f.name.toLowerCase() === 'index.html');
+        const combined = exists ? prev : [toolArtifact, ...prev];
+        if (accessToken) {
+          autoSaveToDrive(combined, spaceId);
+        }
+        return combined;
+      });
+      setDriveFiles(prev => {
+        const exists = prev.some(f => f.name.toLowerCase() === 'index.html');
+        return exists ? prev : [toolArtifact, ...prev];
+      });
+      setSelectedFile(toolArtifact);
+      setIndexFileSelected(true);
+      setViewState('app');
+
+      setRecentTasks(prev => {
+        const now = Date.now();
+        const filtered = prev.filter(t => (t.id || '') !== targetChatId);
+        return [{
+          id: targetChatId,
+          name: projectName || 'Workspace',
+          chatName: 'Custom Tool',
+          type: 'site',
+          taskType: 'site',
+          activeSpaceId: spaceId,
+          messages: initialMsgs,
+          updatedAt: now
+        }, ...filtered];
+      });
+      saveChatToDb(
+        targetChatId,
+        initialMsgs,
+        envId,
+        sandboxUrl,
+        projectName || 'Workspace',
+        [toolArtifact],
+        spaceId,
+        'Custom Tool'
+      );
+    } else if (mode === 'tracking') {
+      const botMsg = {
+        role: 'bot',
+        text: `I'm now tracking work for this space and synthesizing inferred tasks from your workspace activity and documents.`
+      };
+      const initialMsgs = [botMsg];
+      setMessages(initialMsgs);
+      setActiveSidebar('gemini');
+
+      const trackingArtifact = {
+        name: 'inferred_tasks.json',
+        type: 'code',
+        content: JSON.stringify([], null, 2),
+        mimeType: 'application/json',
+        isInferredTask: true,
+        id: `inferred-tasks-${Date.now()}`
+      };
+
+      setSandboxFiles(prev => {
+        const exists = prev.some(f => f.name.toLowerCase() === 'inferred_tasks.json');
+        const combined = exists ? prev : [trackingArtifact, ...prev];
+        if (accessToken) {
+          autoSaveToDrive(combined, spaceId);
+        }
+        return combined;
+      });
+      setDriveFiles(prev => {
+        const exists = prev.some(f => f.name.toLowerCase() === 'inferred_tasks.json');
+        return exists ? prev : [trackingArtifact, ...prev];
+      });
+      setSelectedFile(trackingArtifact);
+      setViewState('files');
+
+      setRecentTasks(prev => {
+        const now = Date.now();
+        const filtered = prev.filter(t => (t.id || '') !== targetChatId);
+        return [{
+          id: targetChatId,
+          name: projectName || 'Workspace',
+          chatName: 'Inferred Tasks',
+          type: 'inferred',
+          taskType: 'inferred',
+          activeSpaceId: spaceId,
+          messages: initialMsgs,
+          updatedAt: now
+        }, ...filtered];
+      });
+      saveChatToDb(
+        targetChatId,
+        initialMsgs,
+        envId,
+        sandboxUrl,
+        projectName || 'Workspace',
+        [trackingArtifact],
+        spaceId,
+        'Inferred Tasks'
+      );
+    }
+  };
+
   const handleApplyOrganizeMoves = async (msgIndex: number) => {
     const msg = messages[msgIndex];
     if (!msg || !msg.proposedMoves || msg.proposedMoves.length === 0) return;
@@ -1299,7 +1404,7 @@ export default function App() {
     }
     let inferredChatNameVal: string | undefined = undefined;
 
-    if (chatModel === 'B' && resolvedFolderId && (!targetChatId || targetChatId.endsWith('-temp') || targetChatId.includes('-chat-temp'))) {
+    if (chatModel === 'B' && resolvedFolderId && (!targetChatId || targetChatId === resolvedFolderId || targetChatId.endsWith('-temp') || targetChatId.includes('-chat-temp'))) {
       targetChatId = `${resolvedFolderId}-chat-${Date.now()}`;
       inferredChatNameVal = inferChatName(text);
       setActiveChatId(targetChatId);
@@ -3488,16 +3593,9 @@ export default function App() {
     if (!folderId) return;
 
     // Resolve targetChatId
-    let targetChatId = options?.targetChatId || (typeof file === 'object' ? (file.chatId || file.id) : file);
+    let targetChatId = options?.targetChatId || (typeof file === 'object' && file.chatId ? file.chatId : folderId);
     if (!targetChatId && chatModel === 'B') {
-      const matchingChats = recentTasks.filter(t => t && t.activeSpaceId === folderId);
-      if (matchingChats.length > 0) {
-        matchingChats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-        targetChatId = matchingChats[0].id;
-      } else {
-        // Fallback: start with a temporary local blank chat session under Model B
-        targetChatId = `${folderId}-chat-temp`;
-      }
+      targetChatId = `${folderId}-chat-temp`;
     } else if (!targetChatId) {
       targetChatId = folderId;
     }
@@ -3586,26 +3684,53 @@ export default function App() {
         setMessages([]);
       }
       
-      const canonicalTool = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
-      const isSameSpace = activeSpaceId === folderId;
       const shouldSkipSelect = skipSelect && targetChatId === folderId;
-      if (canonicalTool) {
-        setSelectedFile(canonicalTool);
-        setIndexFileSelected(canonicalTool.name.toLowerCase().includes('index.html'));
-        setViewState('app');
-      } else if (shouldSkipSelect) {
-        setSelectedFile(null);
-        setIndexFileSelected(false);
-        setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'null');
-      } else if (!isSameSpace || targetChatId !== folderId) {
-        const autoSelectFile = cached.sandboxFiles?.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')) || cached.selectedFile || cached.sandboxFiles?.[0];
-        setSelectedFile(cached.selectedFile || autoSelectFile || null);
-        setIndexFileSelected((cached.selectedFile || autoSelectFile)?.name?.toLowerCase().includes('index.html') ?? false);
-        if (cached.viewState) {
-          setViewState(cached.viewState);
-        } else {
+      const isParentSpaceClick = targetChatId === folderId || shouldSkipSelect;
+      const matchingTask = recentTasks.find(t => t.id === targetChatId);
+      const taskType = matchingTask?.taskType || matchingTask?.type || '';
+
+      if (isParentSpaceClick) {
+        const canonicalTool = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')));
+        const inferredTaskFile = cached.sandboxFiles?.find((f: any) => f && f.name && f.name.toLowerCase() === 'inferred_tasks.json');
+        
+        if (canonicalTool) {
+          setSelectedFile(canonicalTool);
+          setIndexFileSelected(true);
           setViewState('app');
+        } else if (inferredTaskFile) {
+          setSelectedFile(inferredTaskFile);
+          setIndexFileSelected(false);
+          setViewState('files');
+        } else {
+          setSelectedFile(null);
+          setIndexFileSelected(false);
+          setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'null');
         }
+      } else if (taskType === 'site' || taskType === 'tool') {
+        const toolFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
+        setSelectedFile(toolFile || null);
+        setIndexFileSelected(true);
+        setViewState('app');
+      } else if (taskType === 'doc') {
+        const docFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase() === 'document.doc'));
+        setSelectedFile(docFile || cached.sandboxFiles?.[0] || null);
+        setIndexFileSelected(false);
+        setViewState('files');
+      } else if (taskType === 'slide') {
+        const slideFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.gslides') || f.name.toLowerCase().endsWith('.ppt') || f.name.toLowerCase().endsWith('.pptx')));
+        setSelectedFile(slideFile || cached.sandboxFiles?.[0] || null);
+        setIndexFileSelected(false);
+        setViewState('files');
+      } else if (taskType === 'inferred' || taskType === 'tracking') {
+        const taskFile = cached.sandboxFiles?.find((f: any) => f && f.name && f.name.toLowerCase() === 'inferred_tasks.json');
+        setSelectedFile(taskFile || null);
+        setIndexFileSelected(false);
+        setViewState('files');
+      } else {
+        const autoSelectFile = cached.selectedFile || cached.sandboxFiles?.[0] || null;
+        setSelectedFile(autoSelectFile);
+        setIndexFileSelected(autoSelectFile?.name?.toLowerCase().includes('index.html') ?? false);
+        setViewState(cached.viewState || (autoSelectFile?.name?.toLowerCase().includes('index.html') ? 'app' : 'files'));
       }
       cached.sandboxFiles.forEach((f: any) => {
         lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
@@ -4236,7 +4361,7 @@ export default function App() {
       const targetChatId = `${targetFolder}-chat-${Date.now()}`;
       setActiveChatId(targetChatId);
 
-      const chatTitle = type === 'doc' ? "New Document" : (type === 'slide' ? "New Slide Deck" : "New Artifact");
+      const chatTitle = type === 'doc' ? "New Document" : (type === 'slide' ? "New Slide Deck" : (type === 'site' ? "Custom Tool" : "New Artifact"));
 
       setRecentTasks(prev => {
         const now = Date.now();
@@ -4248,7 +4373,8 @@ export default function App() {
           id: targetChatId,
           name: currentSpaceName,
           chatName: chatTitle,
-          type: 'workspace',
+          type: type === 'site' ? 'site' : 'workspace',
+          taskType: type,
           activeSpaceId: targetFolder,
           messages: initialMsg,
           updatedAt: now

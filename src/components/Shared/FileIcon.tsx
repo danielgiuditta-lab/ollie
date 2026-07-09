@@ -28,8 +28,20 @@ export function getFileIcon(fileName: string = '', mimeType?: string, size: numb
     );
   }
 
-  if (nameLower.endsWith('.html') || nameLower === 'index.html' || nameLower.endsWith('/index.html')) {
+  if (
+    nameLower.endsWith('.html') || nameLower === 'index.html' || nameLower.endsWith('/index.html') || nameLower.includes('custom tool') || nameLower.includes('kanban') || (mimeType && mimeType.includes('site'))
+  ) {
     return <img src={htmlIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="site icon" referrerPolicy="no-referrer" />;
+  }
+
+  if (
+    nameLower.includes('inferred') ||
+    nameLower.includes('task') ||
+    nameLower.includes('to do') ||
+    nameLower.includes('roadmap') ||
+    (mimeType && mimeType.includes('inferred'))
+  ) {
+    return <img src={formsIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="task icon" referrerPolicy="no-referrer" />;
   }
   
   if (

@@ -1,5 +1,5 @@
 {
-  "chatId": "space-1783551308514",
+  "chatId": "space-1783551909366-chat-1783551916983",
   "projectName": "Ollie",
   "messages": [
     {
@@ -8,7 +8,7 @@
     }
   ],
   "envId": null,
-  "activeSpaceId": "space-1783551308514",
+  "activeSpaceId": "space-1783551909366",
   "sandboxUrl": "",
   "sandboxFiles": [
     {
@@ -19,7 +19,7 @@
       "createdFromComposer": true,
       "fontFamily": "Google Sans",
       "isDocJourney": true,
-      "id": "created-artifact-1783551312034"
+      "id": "created-artifact-1783551916983"
     }
   ],
   "userEmail": "danielgiuditta@google.com",
@@ -45,5 +45,5 @@
       "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjUP0nZZSsC7tRQg_3si0rRn-TJyMoD8j0kfQm3I-HdLEIVQYBsG=s64"
     }
   ],
-  "updatedAt": "2026-07-08T22:55:12.077Z"
+  "updatedAt": "2026-07-08T23:05:17.019Z"
 }

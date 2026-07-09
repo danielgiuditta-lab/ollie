@@ -49,11 +49,31 @@ if (isHomeChatId(chatIdVal) && !isHomeChatId(resolvedSpaceId)) {
 ### Invariant 4: LocalStorage Normalization & `isHomeChatId`
 When loading `recentTasks` from `localStorage`, entries representing home or home-like dashboards (`'home'`, `'home_guest'`, `'home dashboard'`, or IDs starting with `'home_'` / `'home-'`) MUST be normalized on parse to have `activeSpaceId: 'home'` and `name: 'Home'`. Furthermore, `isHomeChatId(id)` must trim strings and check all home prefix variations (`'home'`, `'home_guest'`, `'home_'`, `'home-'`, `'home dashboard'`).
 
+### Invariant 5: Child Chats Hierarchy & Top-Level Artifact Landing
+Within a Space (`activeSpaceId`), user actions generate dedicated child chat sessions (`${spaceId}-chat-${Date.now()}`) bound to `activeSpaceId = spaceId`:
+- **Doc Creation**: Generating a document creates a child chat session with `taskType: 'doc'`, placing `document.doc` directly in the library as a top-level artifact.
+- **Custom Tool Creation (`mode === 'tool'`)**: Choosing to build a custom tool creates a child chat session with `taskType: 'site'` and places `index.html` as a top-level artifact in the library.
+- **Inferred Tasks Setup (`mode === 'tracking'`)**: Enabling work tracking creates a child chat session with `taskType: 'inferred'` and places `inferred_tasks.json` as a top-level artifact in the library.
+- **General Q&A / Research**: Asking a question from the parent space root chat (`targetChatId === resolvedFolderId`) generates a distinct child chat session under the Space hierarchy in `LeftNav`.
+
+When navigating back to a Space (clicking the parent space in `LeftNav` or closing an artifact from breadcrumbs `Space > Doc`), the application MUST:
+1. Set `targetChatId = spaceId` (or maintain a clean parent space chat) instead of falling back to previous doc child chats.
+2. Check for canonical top-level artifacts (`index.html` or `inferred_tasks.json`). If present, the canvas automatically lands on that top-level artifact. If neither exists, the user lands on a clean space view with the choice onboarding pills.
+3. Clicking on a specific child chat in `LeftNav` deterministically resolves and selects its corresponding artifact (`index.html` for tool chats, `document.doc` for doc chats, `inferred_tasks.json` for inferred task chats).
+
+### Invariant 6: Consistent Iconography
+To maintain visual clarity across `LeftNav` and the File Library (`FileIcon`):
+- **Custom Tools (`site`, `index.html`)**: Must be represented by the Sites icon (`html.png`).
+- **Inferred Tasks (`inferred`, `inferred_tasks.json`, tracking)**: Must be represented by the task tracking icon (`forms.png`).
+- **Documents (`doc`)**: Must be represented by the document icon (`docs.png`).
+
 ---
 
 ## 3. Verification & Maintenance
 When adding new navigation tabs, space onboarding flows, or sidecar chats:
 1. Check that any call to `setActiveSpaceId` is accompanied by `setActiveChatId`.
 2. Verify that database persistence calls do not overwrite `home_*.json` files when working inside a non-home project workspace.
-3. Ensure child chats created in workspaces explicitly set `activeSpaceId` to their parent space ID so `LeftNav` groups them cleanly.
+3. Ensure child chats created in workspaces explicitly set `activeSpaceId` to their parent space ID and include `taskType` so `LeftNav` groups and icons them cleanly.
+4. Verify that closing breadcrumbs or selecting a space parent always navigates to top-level canonical artifacts (`index.html` / `inferred_tasks.json`) or clean onboarding chats without trapping the user in child doc sessions.
+
 
