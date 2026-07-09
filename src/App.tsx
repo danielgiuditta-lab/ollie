@@ -716,29 +716,9 @@ export default function App() {
       setMessages(initialMsgs);
       setActiveSidebar('gemini');
 
-      const toolArtifact = {
-        name: 'index.html',
-        type: 'code',
-        content: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Custom Tool</title>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="bg-slate-50 text-slate-800 p-8 min-h-screen flex items-center justify-center">\n  <div class="max-w-md w-full text-center space-y-4 bg-white p-8 rounded-3xl border shadow-sm">\n    <h1 class="text-3xl font-bold text-slate-950">Custom Tool</h1>\n    <p class="text-xs text-slate-500">Describe what tool you need in chat.</p>\n  </div>\n</body>\n</html>`,
-        mimeType: 'text/html',
-        id: `custom-tool-${Date.now()}`
-      };
-
-      setSandboxFiles(prev => {
-        const exists = prev.some(f => f.name.toLowerCase() === 'index.html');
-        const combined = exists ? prev : [toolArtifact, ...prev];
-        if (accessToken) {
-          autoSaveToDrive(combined, spaceId);
-        }
-        return combined;
-      });
-      setDriveFiles(prev => {
-        const exists = prev.some(f => f.name.toLowerCase() === 'index.html');
-        return exists ? prev : [toolArtifact, ...prev];
-      });
-      setSelectedFile(toolArtifact);
-      setIndexFileSelected(true);
-      setViewState('app');
+      setSelectedFile(null);
+      setIndexFileSelected(false);
+      setViewState('home');
 
       setRecentTasks(prev => {
         const now = Date.now();
@@ -760,7 +740,7 @@ export default function App() {
         envId,
         sandboxUrl,
         projectName || 'Workspace',
-        [toolArtifact],
+        [],
         spaceId,
         'Custom Tool'
       );
@@ -3704,13 +3684,13 @@ export default function App() {
         } else {
           setSelectedFile(null);
           setIndexFileSelected(false);
-          setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'null');
+          setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'home');
         }
       } else if (taskType === 'site' || taskType === 'tool') {
         const toolFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
         setSelectedFile(toolFile || null);
-        setIndexFileSelected(true);
-        setViewState('app');
+        setIndexFileSelected(!!toolFile);
+        setViewState(toolFile ? 'app' : 'home');
       } else if (taskType === 'doc') {
         const docFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase() === 'document.doc'));
         setSelectedFile(docFile || cached.sandboxFiles?.[0] || null);
@@ -3885,18 +3865,18 @@ export default function App() {
               if (chatData.sandboxUrl) setSandboxUrl(chatData.sandboxUrl);
               if (chatData.projectName) setProjectName(chatData.projectName);
               
-              if (chatData.sandboxFiles && chatData.sandboxFiles.length > 0) {
+              if (chatData.sandboxFiles !== undefined) {
                 setSandboxFiles(chatData.sandboxFiles);
                 const canonicalTool = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
                 const indexHTML = canonicalTool || chatData.sandboxFiles[0];
-                if (!skipSelect || canonicalTool) {
+                if (!skipSelect && indexHTML) {
                   setSelectedFile(indexHTML);
                   setIndexFileSelected(indexHTML?.name?.toLowerCase().includes('index.html') ?? false);
-                  setViewState('app');
+                  setViewState(canonicalTool ? 'app' : 'files');
                 } else {
                   setSelectedFile(null);
                   setIndexFileSelected(false);
-                  setViewState('files');
+                  setViewState(chatData.sandboxFiles.length > 0 ? 'files' : 'home');
                 }
                 
                 workspaceCacheRef.current[folderId] = {
@@ -3906,9 +3886,9 @@ export default function App() {
                   sandboxUrl: chatData.sandboxUrl || '',
                   messages: chatData.messages || [],
                   projectName: chatData.projectName || fileName || projectName,
-                  selectedFile: (skipSelect && !canonicalTool) ? null : indexHTML,
-                  indexFileSelected: (skipSelect && !canonicalTool) ? false : (indexHTML?.name?.toLowerCase().includes('index.html') ?? false),
-                  viewState: (skipSelect && !canonicalTool) ? 'files' : 'app'
+                  selectedFile: (!skipSelect && indexHTML) ? indexHTML : null,
+                  indexFileSelected: (!skipSelect && indexHTML) ? (indexHTML?.name?.toLowerCase().includes('index.html') ?? false) : false,
+                  viewState: (!skipSelect && indexHTML) ? (canonicalTool ? 'app' : 'files') : (chatData.sandboxFiles.length > 0 ? 'files' : 'home')
                 };
                 chatSessionsCacheRef.current[targetChatId] = {
                   messages: chatData.messages || []

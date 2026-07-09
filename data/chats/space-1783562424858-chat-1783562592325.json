@@ -1,5 +1,5 @@
 {
-  "chatId": "space-1783551909366-chat-1783551916983",
+  "chatId": "space-1783562424858-chat-1783562592325",
   "projectName": "Ollie",
   "messages": [
     {
@@ -7,8 +7,8 @@
       "text": "How can I help with your doc?"
     }
   ],
-  "envId": null,
-  "activeSpaceId": "space-1783551909366",
+  "envId": "2ae2c47b69d73db720fb57d5c615f5b9",
+  "activeSpaceId": "space-1783562424858",
   "sandboxUrl": "",
   "sandboxFiles": [
     {
@@ -19,7 +19,7 @@
       "createdFromComposer": true,
       "fontFamily": "Google Sans",
       "isDocJourney": true,
-      "id": "created-artifact-1783551916983"
+      "id": "created-artifact-1783562592325"
     }
   ],
   "userEmail": "danielgiuditta@google.com",
@@ -45,5 +45,5 @@
       "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjUP0nZZSsC7tRQg_3si0rRn-TJyMoD8j0kfQm3I-HdLEIVQYBsG=s64"
     }
   ],
-  "updatedAt": "2026-07-08T23:05:17.019Z"
+  "updatedAt": "2026-07-09T02:03:12.447Z"
 }

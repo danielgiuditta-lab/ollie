@@ -52,7 +52,7 @@ When loading `recentTasks` from `localStorage`, entries representing home or hom
 ### Invariant 5: Child Chats Hierarchy & Top-Level Artifact Landing
 Within a Space (`activeSpaceId`), user actions generate dedicated child chat sessions (`${spaceId}-chat-${Date.now()}`) bound to `activeSpaceId = spaceId`:
 - **Doc Creation**: Generating a document creates a child chat session with `taskType: 'doc'`, placing `document.doc` directly in the library as a top-level artifact.
-- **Custom Tool Creation (`mode === 'tool'`)**: Choosing to build a custom tool creates a child chat session with `taskType: 'site'` and places `index.html` as a top-level artifact in the library.
+- **Custom Tool Creation (`mode === 'tool'`)**: Choosing to build a custom tool creates a child chat session with `taskType: 'site'`, leaving the canvas blank without creating a placeholder `index.html` until Ollie generates the actual tool.
 - **Inferred Tasks Setup (`mode === 'tracking'`)**: Enabling work tracking creates a child chat session with `taskType: 'inferred'` and places `inferred_tasks.json` as a top-level artifact in the library.
 - **General Q&A / Research**: Asking a question from the parent space root chat (`targetChatId === resolvedFolderId`) generates a distinct child chat session under the Space hierarchy in `LeftNav`.
 
