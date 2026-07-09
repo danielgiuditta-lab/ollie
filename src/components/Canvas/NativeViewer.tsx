@@ -7,6 +7,7 @@ import {
   FileSpreadsheet, 
   FileCode, 
   Info,
+  CheckCircle2,
   Plus,
   Undo,
   Redo,
@@ -1939,8 +1940,107 @@ export function NativeViewer({
     );
   }
 
+  if (file.isCommDraft && file.commData) {
+    const isCal = file.commData.draftType === 'calendar' || file.commData.calDraft;
+    const comm = isCal ? file.commData.calDraft : file.commData.emailDraft;
+    return (
+      <div className="w-full h-full bg-[#F8FAFD] dark:bg-[#1E1F22] p-8 flex flex-col items-center justify-center overflow-y-auto select-text">
+        <div className="w-full max-w-2xl bg-white dark:bg-[#2B2D31] rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-neutral-700 flex flex-col gap-6 text-left">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-700 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <FileText size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{isCal ? 'Calendar Invite Update Draft' : 'Email Reply Draft'}</h3>
+                <p className="text-xs text-slate-500 dark:text-neutral-400">{file.commData.summaryOfChanges || 'Proactively synthesized communication'}</p>
+              </div>
+            </div>
+            <span className="px-3 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold rounded-full flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              Draft Ready
+            </span>
+          </div>
+          
+          {isCal ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">Event Title</label>
+                <input type="text" defaultValue={comm?.title || 'Meeting Check-in'} className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-800 dark:text-white font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">Proposed Time</label>
+                <input type="text" defaultValue={comm?.proposedTime || '2026-07-10T15:00:00Z'} className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-800 dark:text-white font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">Agenda / Notes</label>
+                <textarea rows={5} defaultValue={comm?.agenda || 'Updated agenda items'} className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">To</label>
+                <input type="text" defaultValue={comm?.to || 'team@company.com'} className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-800 dark:text-white font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">Subject</label>
+                <input type="text" defaultValue={comm?.subject || 'Re: Workspace update'} className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-800 dark:text-white font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">Body</label>
+                <textarea rows={6} defaultValue={comm?.body || 'Hi Team,\n\nI have addressed the requested changes.\n\nBest,\nOllie'} className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-neutral-700">
+            {onClose && (
+              <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-neutral-700 hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-neutral-300 font-semibold text-sm transition-all cursor-pointer">
+                Discard
+              </button>
+            )}
+            <button onClick={() => { if (onSave) onSave(file); }} className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-all cursor-pointer flex items-center gap-2">
+              <CheckCircle2 size={16} />
+              {isCal ? 'Update Calendar Invite' : 'Send Email Reply'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full relative flex flex-col overflow-hidden">
+      {file.isProactiveDraft && (
+        <div className="w-full bg-[#F8FAFD] dark:bg-[#1E1F22] border-b border-blue-200 dark:border-blue-900/50 px-6 py-3 flex items-center justify-between z-50 shadow-xs shrink-0 select-none">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+              <span className="text-xs font-bold">⚡</span>
+            </div>
+            <div className="min-w-0 text-left">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Proactive Draft Ready</span>
+                <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[10px] font-semibold">Simulated Diff</span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-neutral-400 truncate">{file.summaryOfChanges || "Incorporated recent comment feedback into file draft."}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {onClose && (
+              <button onClick={onClose} className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-neutral-700 hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-neutral-300 font-medium text-xs transition-all cursor-pointer">
+                Discard Draft
+              </button>
+            )}
+            {onSave && (
+              <button onClick={() => onSave(file)} className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all cursor-pointer shadow-sm flex items-center gap-1.5">
+                <HardDrive size={13} />
+                Approve & Save to Drive
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       <style>{`
         .native-serif-viewer,
         .native-serif-viewer *,

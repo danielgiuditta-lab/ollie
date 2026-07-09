@@ -1065,6 +1065,67 @@ Ensure all IDs are unique. CRITICAL: All task titles, descriptions, and actions 
     }
   });
 
+  app.post("/api/proactive-draft", async (req, res) => {
+    try {
+      const { task, originalContent } = req.body;
+      if (!task) {
+        return res.status(400).json({ error: "Task object is required" });
+      }
+
+      const ai = getGenAI();
+      if (!ai) {
+        return res.status(550).json({ error: "Gemini API key is not configured on the server." });
+      }
+
+      const isEmailOrCal = task.type === 'email' || 
+                           (task.source && task.source.toLowerCase().includes('email')) || 
+                           (task.title && (task.title.toLowerCase().includes('email') || task.title.toLowerCase().includes('cal') || task.title.toLowerCase().includes('invite')));
+
+      let promptText = "";
+      if (isEmailOrCal) {
+        promptText = `You are an AI assistant proactively drafting communication updates based on a workspace task.
+Task title: ${task.title || ''}
+Description: ${task.description || ''}
+Source: ${task.source || ''}
+Action: ${task.action || ''}
+
+Synthesize a structured draft for this communication. Output ONLY a raw JSON object matching this schema:
+{
+  "draftType": "${task.title?.toLowerCase().includes('cal') ? 'calendar' : 'email'}",
+  "emailDraft": { "to": "recipient@example.com", "subject": "Subject line", "body": "Body text written in professional tone" },
+  "calDraft": { "eventId": "evt_${Date.now()}", "title": "Meeting Title", "proposedTime": "2026-07-10T15:00:00Z", "agenda": "Updated discussion points and agenda items" },
+  "summaryOfChanges": "Brief explanation of what was prepared"
+}`;
+      } else {
+        promptText = `You are an AI assistant proactively drafting edits to a Google Workspace file based on user feedback or comments.
+Task title: ${task.title || ''}
+Feedback/Comment: ${task.description || task.action || ''}
+File name: ${task.sourceName || task.workspace || 'document'}
+Original file content:
+${originalContent || '(No initial content provided - synthesize an appropriate high-fidelity document, spreadsheet CSV, or slide markdown structure with the requested changes already applied)'}
+
+Please generate an updated version of the file content incorporating the requested feedback/changes, and provide a short summary of what you changed. Output ONLY a raw JSON object matching this schema:
+{
+  "draftType": "file_edit",
+  "draftContent": "The entire updated content of the file (markdown for doc/slides, CSV for sheet)",
+  "summaryOfChanges": "Brief 1-2 sentence summary of diffs/edits made (e.g., Removed legacy pricing tier B per Miriam's comment)"
+}`;
+      }
+
+      const response = await retryWithBackoff(() => ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: promptText,
+        config: { responseMimeType: "application/json" }
+      }));
+
+      const text = response.text || "{}";
+      res.json(JSON.parse(text));
+    } catch (error) {
+      console.error("Proactive draft synthesis error:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   app.post("/api/space-creation-rag", async (req, res) => {
     try {
       const { prompt, teamMembers } = req.body;

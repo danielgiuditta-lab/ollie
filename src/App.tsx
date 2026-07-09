@@ -2416,7 +2416,37 @@ export default function App() {
     const targetMime = task.filesToLoad?.[0]?.mimeType || task.sourceMimeType || matchedInDrive?.mimeType || 'application/vnd.google-apps.document';
     const targetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || `${spaceName}.gdoc`;
 
-    if (task.filesToLoad && task.filesToLoad.length > 0) {
+    if (task.draftData?.draftContent) {
+      const draftFileObj = {
+        name: targetName,
+        type: 'code',
+        content: task.draftData.draftContent,
+        driveId: targetId,
+        id: `draft-file-${task.id}`,
+        mimeType: targetMime,
+        isProactiveDraft: true,
+        summaryOfChanges: task.draftData.summaryOfChanges
+      };
+      setSandboxFiles([draftFileObj]);
+      setSelectedFile(draftFileObj);
+    } else if (task.draftData?.emailDraft || task.draftData?.calDraft || task.type === 'email' || task.source?.toLowerCase().includes('email') || task.title?.toLowerCase().includes('email') || task.title?.toLowerCase().includes('cal')) {
+      const commFileObj = {
+        name: task.draftData?.calDraft ? 'Calendar Invite Update' : 'Email Reply Draft',
+        type: 'code',
+        content: JSON.stringify(task.draftData || { task }, null, 2),
+        id: `comm-draft-${task.id}`,
+        mimeType: 'application/json',
+        isCommDraft: true,
+        commData: task.draftData || { 
+          draftType: task.title?.toLowerCase().includes('cal') ? 'calendar' : 'email', 
+          emailDraft: { to: 'team@company.com', subject: `Re: ${task.source || task.title}`, body: `Hi Team,\n\nI have addressed the feedback regarding ${task.title}. Let me know if further adjustments are needed.\n\nBest,\nOllie` },
+          calDraft: { eventId: `evt_${Date.now()}`, title: `${task.source || 'Project Check-in'} (Rescheduled)`, proposedTime: '2026-07-10T15:00:00Z', agenda: `Agenda:\n- Review updates on ${task.title}\n- Alignment on next steps` },
+          summaryOfChanges: 'Prepared proactive draft communication based on workspace feedback.' 
+        }
+      };
+      setSandboxFiles([commFileObj]);
+      setSelectedFile(commFileObj);
+    } else if (task.filesToLoad && task.filesToLoad.length > 0) {
       const updatedFiles = task.filesToLoad.map((f: any, idx: number) => {
         if (idx === 0 && targetId) {
           return {
@@ -2424,7 +2454,9 @@ export default function App() {
             name: matchedInDrive?.name || f.name,
             driveId: targetId,
             id: `real-file-${targetId}`,
-            mimeType: matchedInDrive?.mimeType || f.mimeType || targetMime
+            mimeType: matchedInDrive?.mimeType || f.mimeType || targetMime,
+            isProactiveDraft: true,
+            summaryOfChanges: "Updated content layout and incorporated feedback from team comments."
           };
         }
         return f;
@@ -2472,16 +2504,38 @@ export default function App() {
             });
             if (contentRes.ok) {
               const textOrDataUrl = await contentRes.text();
-              const realFileObj = {
+              const realFileObj: any = {
                 name: meta.name || spaceName,
                 type: 'code',
-                content: textOrDataUrl,
+                content: task.draftData?.draftContent || textOrDataUrl,
                 driveId: targetId,
                 mimeType: meta.mimeType,
-                id: `real-file-${targetId}`
+                id: `real-file-${targetId}`,
+                isProactiveDraft: !!task.draftData?.draftContent,
+                summaryOfChanges: task.draftData?.summaryOfChanges
               };
               setSandboxFiles([realFileObj]);
               setSelectedFile(realFileObj);
+
+              if (!task.draftData?.draftContent) {
+                fetch('/api/proactive-draft', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ task, originalContent: textOrDataUrl })
+                }).then(r => r.json()).then(draft => {
+                  if (draft.draftContent) {
+                    const updatedDraftObj = {
+                      ...realFileObj,
+                      content: draft.draftContent,
+                      isProactiveDraft: true,
+                      summaryOfChanges: draft.summaryOfChanges
+                    };
+                    setSandboxFiles([updatedDraftObj]);
+                    setSelectedFile(updatedDraftObj);
+                    setActiveProactiveTask((prev: any) => prev ? { ...prev, draftData: draft } : null);
+                  }
+                }).catch(e => console.error("Error drafting against live drive:", e));
+              }
             }
           }
         } catch (err) {

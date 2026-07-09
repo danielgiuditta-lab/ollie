@@ -741,10 +741,45 @@ export function HomeLanding({
     todoCacheRef.current[spaceKey] = finalTodos;
   }, [digestData, activeSpaceId, projectName]);
 
-  // 40 seconds simulation timer when loading active proactive tasks
+  // Proactive background draft generation and simulation timer
   useEffect(() => {
     const proactiveItem = todoItems.find(item => item.status === 'working');
     if (!proactiveItem) return;
+
+    let isMounted = true;
+    if (!proactiveItem.draftData && !proactiveItem.isDrafting) {
+      (async () => {
+        try {
+          setTodoItems(prev => prev.map(item => item.id === proactiveItem.id ? { ...item, isDrafting: true } : item));
+          const res = await fetch('/api/proactive-draft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ task: proactiveItem })
+          });
+          if (res.ok && isMounted) {
+            const draft = await res.json();
+            setTodoItems(prev => {
+              const updated = prev.map(item => {
+                if (item.id === proactiveItem.id) {
+                  return {
+                    ...item,
+                    status: 'done',
+                    description: item.descriptionDone || item.description,
+                    draftData: draft
+                  };
+                }
+                return item;
+              });
+              const spaceKey = activeSpaceId || 'home';
+              todoCacheRef.current[spaceKey] = updated;
+              return updated;
+            });
+          }
+        } catch (err) {
+          console.error("Error generating background proactive draft:", err);
+        }
+      })();
+    }
 
     const timer = setTimeout(() => {
       setTodoItems(prev => {
@@ -762,9 +797,12 @@ export function HomeLanding({
         todoCacheRef.current[spaceKey] = updated;
         return updated;
       });
-    }, 40000); // 40 seconds
+    }, 40000); // 40 seconds fallback
 
-    return () => clearTimeout(timer);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, [todoItems, activeSpaceId]);
 
   // Filter todoItems based on the active space/project
