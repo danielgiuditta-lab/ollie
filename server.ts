@@ -1713,6 +1713,12 @@ To modify "${activeFileName}", you must output a markdown code block with the ex
         systemInstruction += `\nUse these files as context, inspiration, or starting points. Enhance them based on the user prompt. You MUST output the modified files (such as index.html, styles.css, app.js etc.) using markdown code blocks so they can be rendered in the canvas. If you output multiple files, you MUST include the exact filename as the very first line inside the code block as a comment (e.g. <!-- index.html --> or /* app.js */). Never output generic file names like file-3.txt. IMPORTANT: If you use Tailwind classes, ensure the Tailwind CSS CDN script tag is included in the existing or new index.html file.`;
       }
 
+      systemInstruction += `\n\nCRITICAL DESIGN MANDATE (POLARIS / M3 & RADICAL SIMPLICITY):
+You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and Material Design 3 (M3) specifications defined in the system rules.
+- DO NOT over-engineer or add unnecessary complexity, especially for Kanban boards or custom tools.
+- A Kanban board must be radically simple: 3 clean columns (To Do, In Progress, Done) with minimal text cards. DO NOT add priority badges, colored tag chips, user avatars, due dates, filters, or complex popups unless explicitly asked.
+- Use only plain M3 colors (surface #ffffff, surface-container #f0f4f9, primary #0b57d0, outline #747775). No gradients, decorative badges, or unnecessary embellishments! Keep it clean, minimal, and elegant.`;
+
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');

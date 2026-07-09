@@ -1465,7 +1465,9 @@ export default function App() {
     if (viewState === 'home' && !activeAiMode) {
       setSandboxFiles([]);
       setSelectedFile(null);
-      setProjectName("Building project...");
+      if (!isHomeChatId(activeSpaceId)) {
+        setProjectName("Building project...");
+      }
       setViewState('app');
       setActiveSidebar('gemini');
     }
@@ -1476,13 +1478,14 @@ export default function App() {
       const isNewSearch = viewState === 'home' || !taskId;
 
       if (isNewSearch) {
-        taskId = 'ai-summary-' + Date.now();
+        const parentSpaceId = activeSpaceId || 'home_guest';
+        taskId = parentSpaceId + '-chat-' + Date.now();
         setActiveAiSummaryTaskId(taskId);
-        setProjectName(text.length > 30 ? text.substring(0, 30) + '...' : text);
         setPreviousViewState(viewState);
-        setViewState('ai_summary');
+        setViewState('files'); // Use existing canvas viewer and right library!
         setIsAiSummarySnapped(false);
-        setActiveSidebar(null);
+        setActiveSidebar('gemini'); // Keep chat docked in side mode!
+        setIsSourcesPanelOpen(true); // Ensure existing right library panel is open!
         
         let autoSelectedSources: any[] = [];
         if (contextFiles && Array.isArray(contextFiles) && contextFiles.length > 0) {
@@ -1530,10 +1533,16 @@ export default function App() {
         ];
         setAiSummaryMessages(initialMsgs);
 
+        const parentProj = projects.find(p => p && (p.id === parentSpaceId || p.activeSpaceId === parentSpaceId));
+        const parentName = parentProj ? parentProj.name : (isHomeChatId(parentSpaceId) ? 'Home Dashboard' : projectName);
+
         const newTask = {
           id: taskId,
-          name: text,
-          type: 'ai_summary',
+          name: parentName || 'Home Dashboard',
+          chatName: text.length > 30 ? text.substring(0, 30) + '...' : text,
+          type: 'workspace',
+          taskType: 'doc',
+          activeSpaceId: parentSpaceId,
           messages: initialMsgs,
           sources: autoSelectedSources
         };
@@ -1623,6 +1632,16 @@ export default function App() {
                   setRecentTasks(tasks => tasks.map(t => t.id === taskId ? { ...t, sources: merged } : t));
                   setProjects(projs => projs.map(p => p.id === taskId ? { ...p, sources: merged } : p));
                   return merged;
+                });
+                setDriveFiles(prev => {
+                  const mergedDrive = [...prev];
+                  files.forEach(f => {
+                    const fId = f.id || f.driveId;
+                    if (fId && !mergedDrive.some(m => (m.id || m.driveId) === fId)) {
+                      mergedDrive.push(f);
+                    }
+                  });
+                  return mergedDrive;
                 });
                 continue;
               }
@@ -1723,6 +1742,7 @@ export default function App() {
           };
           const updatedFiles = [...sandboxFiles.filter(f => f && f.name !== summaryDocFile.name), summaryDocFile];
           setSandboxFiles(updatedFiles);
+          setSelectedFile(summaryDocFile);
           if (activeSpaceId && workspaceCacheRef.current[activeSpaceId]) {
             workspaceCacheRef.current[activeSpaceId].sandboxFiles = updatedFiles;
           } else if (workspaceCacheRef.current[getHomeChatId()]) {
