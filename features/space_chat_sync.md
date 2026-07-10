@@ -79,6 +79,9 @@ To ensure child chats never lose their descriptive names or revert to `"Chat X"`
 ### Invariant 11: Home Workspace Collaborator Avatar Isolation
 When navigating into personal Home dashboards or inferred tasks under Home (`isHomeChatId(activeSpaceId)` is true), collaborator avatars from previously visited shared Spaces MUST NOT leak into the header. `CanvasHeader` must explicitly check that the workspace is not a Home chat before rendering `<SharedMembersAvatars />`, and `App.tsx` must explicitly reset `setMembers([])` whenever switching to or restoring Home chat sessions.
 
+### Invariant 12: Frozen Space ID Closure in Asynchronous Generation (`initialSpaceId`)
+When initiating AI streaming generations (`handleSendMessage`, `/api/vibe-code`, `/api/doc-journey`, `/api/summarize-task`), all asynchronous callbacks MUST reference the frozen `initialSpaceId` (or `resolvedFolderId`) captured at the synchronous start of turn rather than reading live React state (`activeSpaceId`). Furthermore, before auto-switching workspaces upon completion of newly generated projects (`workspace-...`), completion handlers MUST verify `activeSpaceIdRef.current === initialSpaceId`. Without this guard, switching workspaces during an active generation causes background callbacks to resolve against the newly selected space, creating orphaned "ghost spaces" with mismatched `activeSpaceId` references in `recentTasks`.
+
 ---
 
 ## 3. Verification & Maintenance
@@ -90,5 +93,6 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 5. Ensure `setProjectName(...)` is guarded against running inside Spaces during artifact generation so space names remain immutable.
 6. Confirm that backend storage APIs (`/api/chats/:chatId`) destructure and persist `chatName`, `type`, and `taskType`.
 7. Verify that collaborator avatars are stripped and reset when viewing tasks or files under personal Home chats.
+8. Ensure all asynchronous generation callbacks use frozen space ID closures (`initialSpaceId`) rather than live React state to prevent ghost workspaces when navigating during streaming.
 
 

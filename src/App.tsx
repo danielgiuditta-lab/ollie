@@ -1087,6 +1087,7 @@ export default function App() {
     } else if (!targetChatId || isHomeChatId(targetChatId)) {
       targetChatId = resolvedFolderId;
     }
+    const initialSpaceId = resolvedFolderId;
 
     if (activeSpaceId && activeSpaceId.startsWith('space-creation-')) {
       setMessages(prev => [...prev, { role: 'user', text }]);
@@ -1246,11 +1247,13 @@ export default function App() {
       setViewState('files');
       setActiveSidebar('gemini');
 
-      let activeFolderId = activeSpaceId;
+      let activeFolderId = initialSpaceId;
       if (!activeFolderId) {
         activeFolderId = `local-workspace-${Date.now()}`;
-        setActiveSpaceId(activeFolderId);
-        setActiveChatId(activeFolderId);
+        if (activeSpaceIdRef.current === initialSpaceId) {
+          setActiveSpaceId(activeFolderId);
+          setActiveChatId(activeFolderId);
+        }
       }
 
       const activeDoc = selectedFile || sandboxFiles.find(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides') || { name: currentTask === 'slide' ? 'presentation.gslides' : 'document.doc', content: '' };
@@ -1391,7 +1394,7 @@ export default function App() {
                 return f;
               });
               setSelectedFile(prev => prev ? { ...prev, name: newDocName } : null);
-              if (!activeSpaceId || isHomeChatId(activeSpaceId)) {
+              if (!initialSpaceId || isHomeChatId(initialSpaceId)) {
                 setProjectName(smartTitle);
               }
             }
@@ -1412,7 +1415,7 @@ export default function App() {
                   sandboxUrl || '',
                   projectName,
                   updatedFiles,
-                  activeFolderId || activeSpaceId,
+                  activeFolderId || initialSpaceId,
                   smartTitle || undefined
                 );
               }, 0);
@@ -1448,7 +1451,7 @@ export default function App() {
 
     // Move current task/conversation to the top when a new turn starts (only for vibe coding)
     if (!activeAiMode) {
-      const activeIdForTask = targetChatId || activeSpaceId;
+      const activeIdForTask = targetChatId || initialSpaceId;
       if (activeIdForTask && projectName) {
         setRecentTasks(prev => {
           const now = Date.now();
@@ -1463,7 +1466,7 @@ export default function App() {
             chatName: inferredChatNameVal || existing?.chatName || (activeIdForTask.includes('-chat-') ? 'Chat' : ''),
             type: existing?.type || 'workspace',
             taskType: existing?.taskType,
-            activeSpaceId: resolvedFolderId || activeSpaceId,
+            activeSpaceId: resolvedFolderId || initialSpaceId,
             updatedAt: now,
             messages: existing?.messages
           }, ...filtered];
@@ -1475,7 +1478,7 @@ export default function App() {
     if (viewState === 'home' && !activeAiMode) {
       setSandboxFiles([]);
       setSelectedFile(null);
-      if (!isHomeChatId(activeSpaceId)) {
+      if (!isHomeChatId(initialSpaceId)) {
         setProjectName("Building project...");
       }
       setViewState('app');
@@ -1488,7 +1491,7 @@ export default function App() {
       const isNewSearch = viewState === 'home' || !taskId;
 
       if (isNewSearch) {
-        const parentSpaceId = activeSpaceId || 'home_guest';
+        const parentSpaceId = initialSpaceId || 'home_guest';
         taskId = parentSpaceId + '-chat-' + Date.now();
         setActiveAiSummaryTaskId(taskId);
         setPreviousViewState(viewState);
@@ -1741,7 +1744,7 @@ export default function App() {
           setSandboxFiles(updatedFiles);
           setSelectedFile(summaryDocFile);
           
-          const targetSpaceId = activeSpaceId || 'home_guest';
+          const targetSpaceId = initialSpaceId || 'home_guest';
           if (workspaceCacheRef.current[targetSpaceId]) {
             workspaceCacheRef.current[targetSpaceId].sandboxFiles = updatedFiles;
           }
@@ -1781,7 +1784,7 @@ export default function App() {
       return;
     }
 
-    let activeFolderId = activeSpaceId;
+    let activeFolderId = initialSpaceId;
     let combinedFilesForSync: any[] = [];
 
     // Summarize the prompt
@@ -1804,7 +1807,7 @@ export default function App() {
     let activeEnvId = envId;
     let activeSandboxUrl = sandboxUrl;
     // "when i land on the landing page and oauth in, the files i select should be added to the folder i create and be used as context"
-    if (accessToken && isHomeChatId(activeSpaceId) && selectedDriveFiles.length > 0) {
+    if (accessToken && isHomeChatId(initialSpaceId) && selectedDriveFiles.length > 0) {
       const initMessage = 'Initializing space and setting up files...';
       setMessages(prev => [...prev, { role: 'bot', text: initMessage }]);
       const resVal = await createSpace(text);
@@ -2185,11 +2188,11 @@ export default function App() {
                   setSandboxUrl('');
 
                   if (combinedFilesForSync.length > 0) {
-                    const activeFolder = (isHomeChatId(activeSpaceId) || !activeSpaceId)
+                    const activeFolder = (isHomeChatId(initialSpaceId) || !initialSpaceId)
                       ? (activeFolderId || `workspace-${Date.now()}`)
-                      : activeSpaceId;
+                      : initialSpaceId;
                     resolvedFolderId = activeFolder;
-                    if (isHomeChatId(activeSpaceId) || !activeSpaceId) {
+                    if ((isHomeChatId(initialSpaceId) || !initialSpaceId) && activeSpaceIdRef.current === initialSpaceId) {
                       setActiveSpaceId(activeFolder);
                       setActiveChatId(activeFolder);
                     }
@@ -2216,7 +2219,7 @@ export default function App() {
                     }
 
                     const activeName = resolvedName || (currentTask !== 'app' ? currentTask : 'New Application');
-                    if (!activeSpaceId || isHomeChatId(activeSpaceId)) {
+                    if (!initialSpaceId || isHomeChatId(initialSpaceId)) {
                       setProjectName(activeName);
                     }
                     
@@ -2290,7 +2293,7 @@ export default function App() {
               activeSandboxUrl || '',
               projectName,
               combinedFilesForSync,
-              resolvedFolderId || activeSpaceId,
+              resolvedFolderId || initialSpaceId,
               inferredChatNameVal
             );
             if (inferredChatNameVal) {
