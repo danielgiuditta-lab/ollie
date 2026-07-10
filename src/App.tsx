@@ -812,8 +812,19 @@ export default function App() {
 
       // If saving a child chat inside a parent space, also persist the updated file manifest to the parent space
       if (resolvedSpaceId && resolvedSpaceId !== chatIdVal && !isHomeChatId(resolvedSpaceId)) {
+        const currentSpaceFiles = workspaceCacheRef.current[resolvedSpaceId]?.sandboxFiles || [];
+        const mergedSpaceFiles = [...currentSpaceFiles];
+        filesToSave.forEach(newF => {
+          if (!newF) return;
+          const idx = mergedSpaceFiles.findIndex(existingF => existingF && ((existingF.id && existingF.id === newF.id) || (existingF.driveId && existingF.driveId === newF.driveId) || (existingF.name === newF.name)));
+          if (idx >= 0) {
+            mergedSpaceFiles[idx] = { ...mergedSpaceFiles[idx], ...newF };
+          } else {
+            mergedSpaceFiles.push(newF);
+          }
+        });
         if (workspaceCacheRef.current[resolvedSpaceId]) {
-          workspaceCacheRef.current[resolvedSpaceId].sandboxFiles = filesToSave;
+          workspaceCacheRef.current[resolvedSpaceId].sandboxFiles = mergedSpaceFiles;
         }
         fetch(`/api/chats/${resolvedSpaceId}`, {
           method: 'POST',
@@ -822,7 +833,7 @@ export default function App() {
             projectName: activeName || 'Workspace Project',
             activeSpaceId: resolvedSpaceId,
             sandboxUrl: activeSandboxUrl || sandboxUrl || '',
-            sandboxFiles: filesToSave,
+            sandboxFiles: mergedSpaceFiles,
             userEmail: userProfile?.email || '',
             members: members
           })
@@ -4078,36 +4089,39 @@ export default function App() {
             setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'home');
           }
         }
-      } else if (taskType === 'site' || taskType === 'tool') {
-        const toolFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
-        setSelectedFile(toolFile || null);
-        setIndexFileSelected(!!toolFile && (toolFile.name.toLowerCase().includes('index.html') || toolFile.name.toLowerCase().endsWith('.html')));
-        setViewState(toolFile ? 'app' : 'home');
-      } else if (taskType === 'doc') {
-        const docFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
-        setSelectedFile(docFile);
-        setIndexFileSelected(false);
-        setViewState('files');
-      } else if (taskType === 'slide') {
-        const slideFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
-        setSelectedFile(slideFile);
-        setIndexFileSelected(false);
-        setViewState('files');
-      } else if (taskType === 'sheet') {
-        const sheetFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
-        setSelectedFile(sheetFile);
-        setIndexFileSelected(false);
-        setViewState('files');
-      } else if (taskType === 'inferred' || taskType === 'tracking') {
-        const taskFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
-        setSelectedFile(taskFile || null);
-        setIndexFileSelected(false);
-        setViewState('files');
       } else {
-        const autoSelectFile = cached.selectedFile || cached.sandboxFiles?.[0] || null;
-        setSelectedFile(autoSelectFile);
-        setIndexFileSelected(autoSelectFile?.name?.toLowerCase().includes('index.html') ?? false);
-        setViewState(cached.viewState || (autoSelectFile?.name?.toLowerCase().includes('index.html') ? 'app' : 'files'));
+        const allAvailableFiles = [...(cached.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
+        if (taskType === 'site' || taskType === 'tool') {
+          const toolFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          setSelectedFile(toolFile || null);
+          setIndexFileSelected(!!toolFile && (toolFile.name.toLowerCase().includes('index.html') || toolFile.name.toLowerCase().endsWith('.html')));
+          setViewState(toolFile ? 'app' : 'home');
+        } else if (taskType === 'doc') {
+          const docFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          setSelectedFile(docFile);
+          setIndexFileSelected(false);
+          setViewState('files');
+        } else if (taskType === 'slide') {
+          const slideFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          setSelectedFile(slideFile);
+          setIndexFileSelected(false);
+          setViewState('files');
+        } else if (taskType === 'sheet') {
+          const sheetFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          setSelectedFile(sheetFile);
+          setIndexFileSelected(false);
+          setViewState('files');
+        } else if (taskType === 'inferred' || taskType === 'tracking') {
+          const taskFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          setSelectedFile(taskFile || null);
+          setIndexFileSelected(false);
+          setViewState('files');
+        } else {
+          const autoSelectFile = cached.selectedFile || cached.sandboxFiles?.[0] || null;
+          setSelectedFile(autoSelectFile);
+          setIndexFileSelected(autoSelectFile?.name?.toLowerCase().includes('index.html') ?? false);
+          setViewState(cached.viewState || (autoSelectFile?.name?.toLowerCase().includes('index.html') ? 'app' : 'files'));
+        }
       }
       cached.sandboxFiles.forEach((f: any) => {
         lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
@@ -4162,48 +4176,49 @@ export default function App() {
               }
             }
 
-            const res = await fetch('/api/ingest-context', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`
-              },
-              body: JSON.stringify({ folderId })
-            });
-            if (activeSpaceIdRef.current !== folderId) return;
-            
             let latestIngested = currentCache.ingestedFiles || [];
             let latestSandboxFiles = currentCache.sandboxFiles || [];
 
-            if (res.ok) {
-              const data = await res.json();
+            if (isValidDriveId(folderId)) {
+              const res = await fetch('/api/ingest-context', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ folderId })
+              });
               if (activeSpaceIdRef.current !== folderId) return;
-              if (data.files) {
-                latestIngested = data.files;
-                const filesChanged = data.files.length !== (currentCache.ingestedFiles || []).length ||
-                  data.files.some((f: any, idx: number) => {
-                    const cachedF = (currentCache.ingestedFiles || [])[idx];
-                    return !cachedF || cachedF.id !== f.id || cachedF.content !== f.content;
-                  });
+              if (res.ok) {
+                const data = await res.json();
+                if (activeSpaceIdRef.current !== folderId) return;
+                if (data.files) {
+                  latestIngested = data.files;
+                  const filesChanged = data.files.length !== (currentCache.ingestedFiles || []).length ||
+                    data.files.some((f: any, idx: number) => {
+                      const cachedF = (currentCache.ingestedFiles || [])[idx];
+                      return !cachedF || cachedF.id !== f.id || cachedF.content !== f.content;
+                    });
 
-                if (filesChanged) {
-                  latestSandboxFiles = data.files.map((f: any, i: number) => ({
-                     name: f.filename,
-                     type: 'code',
-                     content: f.content,
-                     driveId: f.id,
-                     mimeType: f.mimeType,
-                     id: `ingested-file-${i}`
-                  }));
+                  if (filesChanged) {
+                    latestSandboxFiles = data.files.map((f: any, i: number) => ({
+                       name: f.filename,
+                       type: 'code',
+                       content: f.content,
+                       driveId: f.id,
+                       mimeType: f.mimeType,
+                       id: `ingested-file-${i}`
+                    }));
 
-                  setSandboxFiles(latestSandboxFiles);
-                  latestSandboxFiles.forEach((f: any) => {
-                    lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
-                  });
+                    setSandboxFiles(latestSandboxFiles);
+                    latestSandboxFiles.forEach((f: any) => {
+                      lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
+                    });
 
-                  const envIdFile = latestSandboxFiles.find((f: any) => f.name === '.env_id');
-                  if (envIdFile && envIdFile.content) {
-                    latestEnvId = envIdFile.content.trim();
+                    const envIdFile = latestSandboxFiles.find((f: any) => f.name === '.env_id');
+                    if (envIdFile && envIdFile.content) {
+                      latestEnvId = envIdFile.content.trim();
+                    }
                   }
                 }
               }
@@ -4270,20 +4285,21 @@ export default function App() {
                 let fileToSelect: any = null;
                 let nextViewState: any = 'files';
 
+                const allDbAvailableFiles = [...(chatData.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
                 if (chatTaskType === 'site' || chatTaskType === 'tool') {
-                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
+                  fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = fileToSelect ? 'app' : 'home';
                 } else if (chatTaskType === 'doc') {
-                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
+                  fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = 'files';
                 } else if (chatTaskType === 'slide') {
-                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
+                  fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = 'files';
                 } else if (chatTaskType === 'sheet') {
-                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
+                  fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = 'files';
                 } else if (chatTaskType === 'inferred' || chatTaskType === 'tracking') {
-                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
+                  fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = 'files';
                 } else {
                   const canonicalTool = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
@@ -4325,7 +4341,7 @@ export default function App() {
         }
       }
 
-      if (!accessToken) return;
+      if (!accessToken || !isValidDriveId(folderId)) return;
       // Cache miss - blocking load with ingestion spinner
       setIsIngesting(true);
       try {

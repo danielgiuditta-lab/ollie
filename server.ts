@@ -767,6 +767,10 @@ async function startServer() {
         return res.status(401).json({ error: "No authorization header" });
       }
 
+      if (!folderId || typeof folderId !== 'string' || folderId.startsWith('space-') || folderId.startsWith('local-') || folderId === 'root') {
+        return res.json({ files: [] });
+      }
+
       const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?fields=id,name,mimeType,size`, {
         headers: { Authorization: authHeader }
       });

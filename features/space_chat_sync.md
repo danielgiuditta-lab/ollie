@@ -89,6 +89,22 @@ To prevent fuzzy substring matching collisions (e.g. clicking a doc chat whose t
 ### Invariant 14: Space Mode Automatic Reversion (`spaceModes`)
 When all canonical custom tool chats (`site` / `tool`) or work tracking tasks (`inferred` / `tracking`) and their corresponding filesystem artifacts (`index.html`, `inferred_tasks.json`) are deleted from a Space via `handleRemoveTask` or `handleRemoveFile`, the application MUST automatically reset `spaceModes[spaceId]` back to `'choice'`. This guarantees that deleting all active custom tools or tracking tasks restores the initial choice onboarding pills ("Let Ollie track your work" and "Build a custom tool with Ollie") in the chat sidebar.
 
+### Invariant 15: Space Dashboard & Main Space Group Chat (`viewState === 'dashboard'`)
+When selecting a root Space (`targetChatId === spaceId` and `!isHomeChatId(spaceId)`):
+- The application sets `viewState = 'dashboard'`, rendering `<SpaceDashboard />` on the main canvas instead of defaulting to a blank canvas or auto-mounting a single tool.
+- The dashboard displays all items pinned to `pinnedArtifactIds` as live interactive preview cards (scaled iframes for custom tools, scaled native document renderers for docs/slides/sheets). Clicking on a card body jumps to its dedicated child authoring chat.
+- Cards feature a top-right 3-dots hover menu with **Edit** (navigates to child chat) and **Remove** (unpins from `pinnedArtifactIds`), proportional drag handles on vertical edges for resizing width ratios against adjacent cards, and drag-and-drop reordering.
+- In `CanvasHeader`, hovering over any artifact title displays a pin icon button next to the close `X` button, allowing users to toggle pin status directly from breadcrumbs.
+- The root Space chat sidebar operates as a **Group Chat** (`"${spaceName} Group Chat"`), featuring distinct light-grey surface styling (`bg-slate-100/90 dark:bg-[#18191B]/95`) to cleanly differentiate space orchestration from 1-to-1 child artifact authoring sessions.
+
+### Invariant 16: Combined Library & Sandbox Resolution (`resolveArtifactForChat`)
+When resolving the artifact associated with a chat session (`handleFileClick` or database chat restoration), `resolveArtifactForChat` MUST search across a combined array of all available file repositories: `const allAvailableFiles = [...(cached?.sandboxFiles || []), ...sandboxFiles, ...driveFiles];`. Because documents (`.doc`), spreadsheets, and slide decks (`.gslides`) synced from Google Drive reside in `driveFiles` rather than local `sandboxFiles`, combining both arrays guarantees that `associatedFileId` and `taskType` matching can reliably locate Drive-backed artifacts without falling back to default tool files (`index.html`).
+
+### Invariant 17: Drive ID Validation & Additive Manifest Merging
+To maintain stability across Google Drive syncing and database caching:
+- **Drive ID Guards:** Before calling Google Drive APIs or `/api/ingest-context`, the application MUST verify that an ID is a valid Drive folder ID (`!id.startsWith('space-')` and `!id.startsWith('local-')`), eliminating `400 Bad Request` ("Invalid Value") errors when working in local or virtual space containers.
+- **Additive Manifest Merging:** In `saveChatToDb`, when a child chat saves an artifact inside a space, it MUST merge its files into `workspaceCacheRef.current[resolvedSpaceId].sandboxFiles` (updating matching IDs or pushing new files) rather than overwriting the entire array with a single file. This ensures concurrent custom tools, docs, and slide decks are preserved in the space manifest.
+
 ---
 
 ## 3. Verification & Maintenance
@@ -103,5 +119,8 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 8. Ensure all asynchronous generation callbacks use frozen space ID closures (`initialSpaceId`) rather than live React state to prevent ghost workspaces when navigating during streaming.
 9. Verify that any new artifact generation workflow attaches `associatedFileId` and `associatedFileName` to its corresponding chat session.
 10. Verify that removing tasks or files from a Space triggers mode evaluation and resets `spaceModes[spaceId]` to `'choice'` when no tool or tracking artifacts remain.
+11. Confirm that `resolveArtifactForChat` is always passed a combined array of cached sandbox files, active sandbox files, and Drive library files (`[...cached, ...sandboxFiles, ...driveFiles]`).
+12. Verify that saving child chats performs additive merging against parent space file manifests in `workspaceCacheRef`.
+13. Ensure Drive API queries and context ingestion endpoints validate folder IDs against local/virtual prefixes before making network requests.
 
 
