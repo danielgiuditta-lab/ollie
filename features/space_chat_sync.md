@@ -140,6 +140,10 @@ const getSpacePins = (spaceId: string | null) => {
 };
 ```
 
+### Invariant 23: Dashboard Child Chat Artifact Aggregation (`getAllSpaceFiles`) & Session-Scoped IDs
+* **Child Chat Artifact Aggregation (`getAllSpaceFiles`):** When viewing the root Space Dashboard (`viewState === 'dashboard'`), custom tools and documents generated inside child authoring chats (`${spaceId}-chat-...`) are not present in the root space's direct `sandboxFiles` array. To ensure pinned custom tools and docs resolve and render live previews on the grid, the app MUST pass `getAllSpaceFiles(activeSpaceId)` to `<SpaceDashboard />`. This helper aggregates `sandboxFiles` across the root space and all child chats in `recentTasks`, `projects`, and `workspaceCacheRef`, preserving `.chatId` for authoring jumps.
+* **Session-Scoped File IDs:** In `/api/vibe-code`, generated code files MUST NEVER be assigned generic IDs like `'sandbox-file-0'`, as this causes ID collisions across multiple tools in the same space. All generated files MUST be scoped to their chat session: `id: `${targetChatId || activeChatId || 'sandbox'}-file-${i}``.
+
 ---
 
 ## 3. Verification & Maintenance
@@ -164,6 +168,9 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 18. Verify that `onSelectSpace` constructs a canonical `rootSpaceObj` with `id: space.id` before calling selection handlers.
 19. Confirm that `isParentSpaceClick` is enforced across memory cache hits, database chat restoration, and Drive context ingestion fallbacks in `handleFileClick`.
 20. Verify that all pinning operations update both `projects` and `recentTasks`, and use `getSpacePins(spaceId)` to resolve dashboard and breadcrumb pin states.
+21. Confirm that `<SpaceDashboard />` receives `getAllSpaceFiles(activeSpaceId)` so tools and docs from child authoring chats are visible when pinned.
+22. Verify that `/api/vibe-code` scopes generated file IDs to the session (`${targetChatId || activeChatId || 'sandbox'}-file-${i}`) to prevent ID collisions.
+
 
 
 

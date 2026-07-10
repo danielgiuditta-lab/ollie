@@ -2199,10 +2199,11 @@ export default function App() {
                 const filesManifest = parsedReport.files || parsedReport.manifest;
                 if (filesManifest && Array.isArray(filesManifest)) {
                   parsedFilesOuter = filesManifest;
+                  const idPrefix = targetChatId || activeChatId || 'sandbox';
                   const formattedFiles = filesManifest.map((f: any, i: number) => ({
                     ...f,
                     name: f.filename || f.name,
-                    id: `sandbox-file-${i}`,
+                    id: `${idPrefix}-file-${i}`,
                   }));
                   setSandboxFiles(prev => {
                      const updated = [...prev];
@@ -2292,15 +2293,20 @@ export default function App() {
                          if (titleMatch && titleMatch[1]) {
                              setProjectName(titleMatch[1].trim());
                          }
-                         parsedFiles.push({ name: inferredName || 'index.html', type: 'code', content: finalContent, id: `sandbox-file-${parsedFiles.length}` });
+                         const idPrefix = targetChatId || activeChatId || 'sandbox';
+                         parsedFiles.push({ name: inferredName || 'index.html', type: 'code', content: finalContent, id: `${idPrefix}-file-${parsedFiles.length}` });
                       } else if (lang === 'css' || inferredName === 'styles.css') {
-                         parsedFiles.push({ name: inferredName || 'styles.css', type: 'code', content: finalFileContent, id: `sandbox-file-${parsedFiles.length}` });
+                         const idPrefix = targetChatId || activeChatId || 'sandbox';
+                         parsedFiles.push({ name: inferredName || 'styles.css', type: 'code', content: finalFileContent, id: `${idPrefix}-file-${parsedFiles.length}` });
                       } else if (lang === 'javascript' || lang === 'js' || lang === 'jsx' || lang === 'ts' || lang === 'tsx') {
-                         parsedFiles.push({ name: inferredName || 'app.js', type: 'code', content: finalFileContent, id: `sandbox-file-${parsedFiles.length}` });
+                         const idPrefix = targetChatId || activeChatId || 'sandbox';
+                         parsedFiles.push({ name: inferredName || 'app.js', type: 'code', content: finalFileContent, id: `${idPrefix}-file-${parsedFiles.length}` });
                       } else if (lang === 'csv') {
-                         parsedFiles.push({ name: inferredName || 'database.csv', type: 'code', content: finalFileContent, id: `sandbox-file-${parsedFiles.length}` });
+                         const idPrefix = targetChatId || activeChatId || 'sandbox';
+                         parsedFiles.push({ name: inferredName || 'database.csv', type: 'code', content: finalFileContent, id: `${idPrefix}-file-${parsedFiles.length}` });
                       } else if (inferredName) {
-                         parsedFiles.push({ name: inferredName, type: 'code', content: finalFileContent, id: `sandbox-file-${parsedFiles.length}` });
+                         const idPrefix = targetChatId || activeChatId || 'sandbox';
+                         parsedFiles.push({ name: inferredName, type: 'code', content: finalFileContent, id: `${idPrefix}-file-${parsedFiles.length}` });
                       }
                    }
                 }
@@ -2309,7 +2315,8 @@ export default function App() {
                    const fallbackMatch = finalHtmlText.match(/(<!(?:DOCTYPE )?html[\s\S]*?(?:<\/html>|$))/i);
                    if (fallbackMatch) {
                       finalContent = fallbackMatch[1].trim();
-                      parsedFiles.push({ name: 'index.html', type: 'code', content: finalContent, id: 'sandbox-file-0' });
+                      const idPrefix = targetChatId || activeChatId || 'sandbox';
+                      parsedFiles.push({ name: 'index.html', type: 'code', content: finalContent, id: `${idPrefix}-file-0` });
                    }
                 }
 
@@ -3692,6 +3699,51 @@ export default function App() {
     if (pObj && pObj.pinnedArtifactIds) return pObj.pinnedArtifactIds;
     const tObj = recentTasks.find(t => t && (t.id === spaceId || (t.type === 'space' && t.activeSpaceId === spaceId)));
     return tObj?.pinnedArtifactIds || [];
+  };
+
+  const getAllSpaceFiles = (spaceId: string | null) => {
+    if (!spaceId) return [...sandboxFiles, ...driveFiles];
+    const allFilesMap = new Map<string, any>();
+
+    driveFiles.forEach(f => {
+      if (f) allFilesMap.set(f.id || f.driveId || f.name, f);
+    });
+    sandboxFiles.forEach(f => {
+      if (f) allFilesMap.set(f.id || f.driveId || f.name, f);
+    });
+
+    const checkList = (list: any[]) => {
+      list.forEach(item => {
+        if (item && (item.activeSpaceId === spaceId || item.id === spaceId || item.chatId === spaceId)) {
+          if (item.sandboxFiles && Array.isArray(item.sandboxFiles)) {
+            item.sandboxFiles.forEach((f: any) => {
+              if (f) {
+                const key = f.id || f.driveId || (item.id + '_' + f.name);
+                allFilesMap.set(key, { ...f, chatId: f.chatId || item.id });
+              }
+            });
+          }
+        }
+      });
+    };
+
+    checkList(recentTasks);
+    checkList(projects);
+
+    Object.entries(workspaceCacheRef.current).forEach(([k, cacheVal]: [string, any]) => {
+      if (k === spaceId || k.startsWith(spaceId + '-chat-') || cacheVal?.activeSpaceId === spaceId) {
+        if (cacheVal?.sandboxFiles && Array.isArray(cacheVal.sandboxFiles)) {
+          cacheVal.sandboxFiles.forEach((f: any) => {
+            if (f) {
+              const key = f.id || f.driveId || (k + '_' + f.name);
+              allFilesMap.set(key, { ...f, chatId: f.chatId || k });
+            }
+          });
+        }
+      }
+    });
+
+    return Array.from(allFilesMap.values());
   };
 
   const handlePinArtifact = (file: any) => {
@@ -5215,7 +5267,7 @@ export default function App() {
                       spaceId={activeSpaceId || ''}
                       spaceName={projectName || 'Space'}
                       pinnedArtifactIds={getSpacePins(activeSpaceId)}
-                      sandboxFiles={[...sandboxFiles, ...driveFiles]}
+                      sandboxFiles={getAllSpaceFiles(activeSpaceId)}
                       onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId })}
                       onRemovePin={handleUnpinArtifact}
                       onReorderPins={handleReorderPins}
