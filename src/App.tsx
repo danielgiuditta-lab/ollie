@@ -488,14 +488,42 @@ export default function App() {
     if (!task) return;
     const taskId = typeof task === 'string' ? task : (task.id || task.chatId);
     const taskName = typeof task === 'string' ? task : (task.name || '');
+    const spaceId = typeof task === 'string' ? null : task.activeSpaceId;
 
-    setRecentTasks((prev) => prev.filter((t) => {
-      const id = typeof t === 'string' ? t : (t.id || t.chatId);
-      const name = typeof t === 'string' ? t : (t.name || '');
-      if (taskId && id) return id !== taskId;
-      if (taskName && name) return name.toLowerCase() !== taskName.toLowerCase();
-      return t !== task;
-    }));
+    setRecentTasks((prev) => {
+      const updated = prev.filter((t) => {
+        const id = typeof t === 'string' ? t : (t.id || t.chatId);
+        const name = typeof t === 'string' ? t : (t.name || '');
+        if (taskId && id) return id !== taskId;
+        if (taskName && name) return name.toLowerCase() !== taskName.toLowerCase();
+        return t !== task;
+      });
+
+      if (spaceId && !isHomeChatId(spaceId)) {
+        const hasToolsOrTracking = updated.some(t => {
+          if (!t || typeof t === 'string') return false;
+          return t.activeSpaceId === spaceId && (
+            t.taskType === 'site' || t.taskType === 'tool' || 
+            t.taskType === 'inferred' || t.taskType === 'tracking' ||
+            t.type === 'site' || t.type === 'inferred'
+          );
+        });
+        const hasToolOrTrackingFile = sandboxFiles.some(f => f && f.name && (
+          f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html') ||
+          f.name.toLowerCase() === 'inferred_tasks.json'
+        ));
+        if (!hasToolsOrTracking && !hasToolOrTrackingFile) {
+          setSpaceModes(modes => {
+            if (modes[spaceId] && modes[spaceId] !== 'choice') {
+              return { ...modes, [spaceId]: 'choice' };
+            }
+            return modes;
+          });
+        }
+      }
+
+      return updated;
+    });
 
     if (taskId) {
       try {
@@ -616,16 +644,39 @@ export default function App() {
       }
     }
 
+    const updatedSandbox = (fileId ? sandboxFiles.filter((f) => (f.id || f.driveId) !== fileId) : sandboxFiles.filter((f) => f.name !== file.name));
     if (fileId) {
       setDriveFiles((prev) => prev.filter((f) => (f.id || f.driveId) !== fileId));
       setSelectedDriveFiles((prev) => prev.filter((f) => (f.id || f.driveId) !== fileId));
       setSuggestedListCache((prev) => prev.filter((f) => (f.id || f.driveId) !== fileId));
-      setSandboxFiles((prev) => prev.filter((f) => (f.id || f.driveId) !== fileId));
+      setSandboxFiles(updatedSandbox);
     } else if (file.name) {
       setDriveFiles((prev) => prev.filter((f) => f.name !== file.name));
       setSelectedDriveFiles((prev) => prev.filter((f) => f.name !== file.name));
       setSuggestedListCache((prev) => prev.filter((f) => f.name !== file.name));
-      setSandboxFiles((prev) => prev.filter((f) => f.name !== file.name));
+      setSandboxFiles(updatedSandbox);
+    }
+
+    if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
+      const hasToolOrTrackingFile = updatedSandbox.some(f => f && f.name && (
+        f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html') ||
+        f.name.toLowerCase() === 'inferred_tasks.json'
+      ));
+      const hasToolOrTrackingTask = recentTasks.some(t => {
+        if (!t || typeof t === 'string') return false;
+        return t.activeSpaceId === activeSpaceId && (
+          t.taskType === 'site' || t.taskType === 'tool' || t.taskType === 'inferred' || t.taskType === 'tracking' ||
+          t.type === 'site' || t.type === 'inferred'
+        );
+      });
+      if (!hasToolOrTrackingFile && !hasToolOrTrackingTask) {
+        setSpaceModes(modes => {
+          if (modes[activeSpaceId] && modes[activeSpaceId] !== 'choice') {
+            return { ...modes, [activeSpaceId]: 'choice' };
+          }
+          return modes;
+        });
+      }
     }
   };
 
@@ -732,7 +783,7 @@ export default function App() {
     const resolvedChatName = customChatName || existing?.chatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : '');
     const resolvedTaskType = customTaskType || existing?.taskType || existing?.type || null;
     const resolvedType = existing?.type || (resolvedTaskType === 'site' ? 'site' : 'workspace');
-    const resolvedFileId = associatedFileId || existing?.associatedFileId || (customFiles?.length === 1 ? (customFiles[0].id || customFiles[0].driveId) : undefined);
+    const resolvedFileId = associatedFileId || existing?.associatedFileId || (customFiles?.length === 1 ? (customFiles[0].driveId || customFiles[0].id) : undefined);
     const resolvedFileName = associatedFileName || existing?.associatedFileName || (customFiles?.length === 1 ? customFiles[0].name : undefined);
 
     try {
@@ -1502,7 +1553,7 @@ export default function App() {
                   activeFolderId || initialSpaceId,
                   smartTitle || undefined,
                   currentTask,
-                  currentDoc?.id || currentDoc?.driveId,
+                  currentDoc?.driveId || currentDoc?.id,
                   finalDocName
                 );
               }, 0);
@@ -4616,7 +4667,7 @@ export default function App() {
 
       const chatTitle = type === 'doc' ? "New Document" : (type === 'slide' ? "New Slide Deck" : (type === 'site' ? "Custom Tool" : "New Artifact"));
 
-      const fileIdVal = newArtifact.id || newArtifact.driveId;
+      const fileIdVal = newArtifact.driveId || newArtifact.id;
       setRecentTasks(prev => {
         const now = Date.now();
         const filtered = prev.filter(t => {

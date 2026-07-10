@@ -86,6 +86,9 @@ To prevent fuzzy substring matching collisions (e.g. clicking a doc chat whose t
 - **Backend Persistence (`POST /api/chats/:chatId`)**: Both client and server endpoints explicitly accept and store `associatedFileId` and `associatedFileName`.
 - **Artifact Resolution (`resolveArtifactForChat`)**: When navigating between chats in `LeftNav` via `handleFileClick`, `resolveArtifactForChat` checks for explicit `associatedFileId` / `associatedFileName` first. If missing (legacy chats), it filters candidates strictly by `taskType` (`doc`, `slide`, `sheet`, `site`, `inferred`) before performing exact or prefix base name matching, guaranteeing zero cross-type artifact collisions.
 
+### Invariant 14: Space Mode Automatic Reversion (`spaceModes`)
+When all canonical custom tool chats (`site` / `tool`) or work tracking tasks (`inferred` / `tracking`) and their corresponding filesystem artifacts (`index.html`, `inferred_tasks.json`) are deleted from a Space via `handleRemoveTask` or `handleRemoveFile`, the application MUST automatically reset `spaceModes[spaceId]` back to `'choice'`. This guarantees that deleting all active custom tools or tracking tasks restores the initial choice onboarding pills ("Let Ollie track your work" and "Build a custom tool with Ollie") in the chat sidebar.
+
 ---
 
 ## 3. Verification & Maintenance
@@ -99,5 +102,6 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 7. Verify that collaborator avatars are stripped and reset when viewing tasks or files under personal Home chats.
 8. Ensure all asynchronous generation callbacks use frozen space ID closures (`initialSpaceId`) rather than live React state to prevent ghost workspaces when navigating during streaming.
 9. Verify that any new artifact generation workflow attaches `associatedFileId` and `associatedFileName` to its corresponding chat session.
+10. Verify that removing tasks or files from a Space triggers mode evaluation and resets `spaceModes[spaceId]` to `'choice'` when no tool or tracking artifacts remain.
 
 
