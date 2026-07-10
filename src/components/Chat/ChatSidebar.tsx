@@ -40,6 +40,8 @@ interface ChatSidebarProps {
   spaceMode?: 'choice' | 'tracking' | 'tool';
   onSelectSpaceMode?: (mode: 'tracking' | 'tool') => void;
   activeSpaceId?: string | null;
+  isGroupChat?: boolean;
+  spaceName?: string;
 }
 
 export function ChatSidebar({ 
@@ -73,7 +75,9 @@ export function ChatSidebar({
   isNewSpaceCreation = false,
   spaceMode,
   onSelectSpaceMode,
-  activeSpaceId
+  activeSpaceId,
+  isGroupChat = false,
+  spaceName = ''
 }: ChatSidebarProps) {
   const isHome = !projectName || projectName === 'Home Dashboard' || projectName === 'Home';
 
@@ -228,6 +232,9 @@ export function ChatSidebar({
   };
 
   const getTitle = () => {
+    if (isGroupChat && spaceName) {
+      return `${spaceName} Group Chat`;
+    }
     switch (variant) {
       case 'comments': return "Comments";
       case 'history': return "History";
@@ -249,9 +256,9 @@ export function ChatSidebar({
       <div 
         style={isBottom ? undefined : { width: `${width}px` }}
         className={`h-full w-full flex flex-col pt-0 shrink-0 ${
-          theme === 'dark' 
-            ? 'bg-[#1E1F22] border-r border-[#2B2D31]' 
-            : 'bg-white border-r border-slate-200'
+          isGroupChat
+            ? (theme === 'dark' ? 'bg-[#18191B] border-r border-[#2B2D31]' : 'bg-slate-100/90 border-r border-slate-200/80')
+            : (theme === 'dark' ? 'bg-[#1E1F22] border-r border-[#2B2D31]' : 'bg-white border-r border-slate-200')
         } rounded-none relative overflow-hidden z-10 spring-transition shadow-none`}
       >
         {/* Header Panel */}

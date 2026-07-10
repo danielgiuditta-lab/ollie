@@ -4,8 +4,8 @@ import { RainbowRimOverlay } from '../Shared/RainbowRimOverlay';
 import { ShapeLoader } from '../Shared/ShapeLoader';
 
 interface CanvasMainProps {
-  viewState: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary';
-  setViewState: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary') => void;
+  viewState: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard';
+  setViewState: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard') => void;
   isLoading?: boolean;
   currentTask?: string;
   appTheme?: 'light' | 'dark';

@@ -158,7 +158,7 @@ interface HomeLandingProps {
   accessToken: string | null;
   userProfile: any;
   onLogin: () => void;
-  setViewState: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary') => void;
+  setViewState: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard') => void;
   setSandboxFiles: (files: any[]) => void;
   setSelectedFile: (file: any) => void;
   setProjectName: (name: string) => void;

@@ -13,6 +13,7 @@ import { usePresence } from './hooks/usePresence';
 import { PeerCursors } from './components/Canvas/PeerCursors';
 import { CanvasSidebar } from './components/Canvas/CanvasSidebar';
 import { NativeViewer } from './components/Canvas/NativeViewer';
+import { SpaceDashboard } from './components/Canvas/SpaceDashboard';
 import { HomeLanding, SUGGESTED_ITEMS, DEFAULT_TODO_ITEMS, cleanWorkspaceName } from './components/Canvas/HomeLanding';
 import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
@@ -99,7 +100,7 @@ export default function App() {
   const [activeSidebar, setActiveSidebar] = useState<'gemini' | 'comments' | 'history' | null>('gemini');
   const [chatDockPosition, setChatDockPosition] = useState<'side' | 'bottom'>('side');
   const [currentPath, setCurrentPath] = useState<string[]>([]);
-  const [viewState, setViewState] = useState<'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary'>('home');
+  const [viewState, setViewState] = useState<'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard'>('home');
   const [homeJourney, setHomeJourney] = useState<'search' | 'create'>('search');
   const [projectName, setProjectName] = useState('New');
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -107,7 +108,7 @@ export default function App() {
   const [aiSummaryMessages, setAiSummaryMessages] = useState<any[]>([]);
   const [activeAiSummaryTaskId, setActiveAiSummaryTaskId] = useState<string | null>(null);
   const [isAiSummarySnapped, setIsAiSummarySnapped] = useState(false);
-  const [previousViewState, setPreviousViewState] = useState<'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | null>(null);
+  const [previousViewState, setPreviousViewState] = useState<'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard' | null>(null);
   const lastSelectedFileRef = useRef<string | null>(null);
 
   const [chatModel, setChatModel] = useState<'A' | 'B'>(() => {
@@ -382,7 +383,7 @@ export default function App() {
     projectName: string;
     selectedFile: any;
     indexFileSelected: boolean;
-    viewState?: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary';
+    viewState?: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard';
   }>>({});
 
   const chatSessionsCacheRef = useRef<Record<string, {
@@ -3645,6 +3646,59 @@ export default function App() {
     return existingMimeType || 'text/plain';
   };
 
+  const handlePinArtifact = (file: any) => {
+    if (!activeSpaceId || !file) return;
+    const fileId = file.id || file.driveId;
+    if (!fileId) return;
+
+    setProjects(prev => prev.map(p => {
+      if (p && p.id === activeSpaceId) {
+        const currentPins = p.pinnedArtifactIds || [];
+        if (currentPins.includes(fileId)) return p;
+        const nextPins = [...currentPins, fileId];
+        fetch(`/api/chats/${activeSpaceId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...p, pinnedArtifactIds: nextPins })
+        }).catch(err => console.error("Failed to save pinned artifact:", err));
+        return { ...p, pinnedArtifactIds: nextPins };
+      }
+      return p;
+    }));
+  };
+
+  const handleUnpinArtifact = (fileId: string) => {
+    if (!activeSpaceId || !fileId) return;
+    setProjects(prev => prev.map(p => {
+      if (p && p.id === activeSpaceId) {
+        const currentPins = p.pinnedArtifactIds || [];
+        const nextPins = currentPins.filter((id: string) => id !== fileId);
+        fetch(`/api/chats/${activeSpaceId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...p, pinnedArtifactIds: nextPins })
+        }).catch(err => console.error("Failed to save unpinned artifact:", err));
+        return { ...p, pinnedArtifactIds: nextPins };
+      }
+      return p;
+    }));
+  };
+
+  const handleReorderPins = (newOrderedIds: string[]) => {
+    if (!activeSpaceId) return;
+    setProjects(prev => prev.map(p => {
+      if (p && p.id === activeSpaceId) {
+        fetch(`/api/chats/${activeSpaceId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...p, pinnedArtifactIds: newOrderedIds })
+        }).catch(err => console.error("Failed to save reordered pins:", err));
+        return { ...p, pinnedArtifactIds: newOrderedIds };
+      }
+      return p;
+    }));
+  };
+
   const isValidDriveId = (id: any) => {
     if (!id || typeof id !== 'string') return false;
     const lower = id.toLowerCase();
@@ -4002,21 +4056,27 @@ export default function App() {
       const taskType = matchingTask?.taskType || matchingTask?.type || '';
 
       if (isParentSpaceClick) {
-        const canonicalTool = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')));
-        const inferredTaskFile = cached.sandboxFiles?.find((f: any) => f && f.name && f.name.toLowerCase() === 'inferred_tasks.json');
-        
-        if (canonicalTool) {
-          setSelectedFile(canonicalTool);
-          setIndexFileSelected(true);
-          setViewState('app');
-        } else if (inferredTaskFile) {
-          setSelectedFile(inferredTaskFile);
-          setIndexFileSelected(false);
-          setViewState('files');
-        } else {
+        if (!isHomeChatId(folderId)) {
           setSelectedFile(null);
           setIndexFileSelected(false);
-          setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'home');
+          setViewState('dashboard');
+        } else {
+          const canonicalTool = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html')));
+          const inferredTaskFile = cached.sandboxFiles?.find((f: any) => f && f.name && f.name.toLowerCase() === 'inferred_tasks.json');
+          
+          if (canonicalTool) {
+            setSelectedFile(canonicalTool);
+            setIndexFileSelected(true);
+            setViewState('app');
+          } else if (inferredTaskFile) {
+            setSelectedFile(inferredTaskFile);
+            setIndexFileSelected(false);
+            setViewState('files');
+          } else {
+            setSelectedFile(null);
+            setIndexFileSelected(false);
+            setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'home');
+          }
         }
       } else if (taskType === 'site' || taskType === 'tool') {
         const toolFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
@@ -4891,6 +4951,8 @@ export default function App() {
           isNewSpaceCreation={activeSpaceId ? newlyCreatedSpaceIds.has(activeSpaceId) : false}
           spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
           onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
+          isGroupChat={!!(activeSpaceId && !isHomeChatId(activeSpaceId) && activeChatId === activeSpaceId)}
+          spaceName={projectName}
         />
       )}
 
@@ -5064,6 +5126,20 @@ export default function App() {
                          Open Edit Panel
                        </button>
                     </div>
+                  )}
+                  {viewState === 'dashboard' && (
+                    <SpaceDashboard 
+                      spaceId={activeSpaceId || ''}
+                      spaceName={projectName || 'Space'}
+                      pinnedArtifactIds={projects.find(p => p && p.id === activeSpaceId)?.pinnedArtifactIds || []}
+                      sandboxFiles={sandboxFiles}
+                      onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId })}
+                      onRemovePin={handleUnpinArtifact}
+                      onReorderPins={handleReorderPins}
+                      sandboxUrl={sandboxUrl}
+                      envId={envId}
+                      theme={appTheme}
+                    />
                   )}
                 </CanvasMain>
               )}
