@@ -170,6 +170,9 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 20. Verify that all pinning operations update both `projects` and `recentTasks`, and use `getSpacePins(spaceId)` to resolve dashboard and breadcrumb pin states.
 21. Confirm that `<SpaceDashboard />` receives `getAllSpaceFiles(activeSpaceId)` so tools and docs from child authoring chats are visible when pinned.
 22. Verify that `/api/vibe-code` scopes generated file IDs to the session (`${targetChatId || activeChatId || 'sandbox'}-file-${i}`) to prevent ID collisions.
+23. Confirm that the outer `<CanvasMain />` conditional check explicitly includes `viewState === 'dashboard'` so the dashboard container mounts when root spaces are selected.
+24. Verify that `<CanvasSidebar />` (Library drawer) includes `viewState === 'dashboard'` in its visibility condition so library files can be viewed and toggled while on the dashboard.
+25. Confirm that backend storage APIs (`/api/chats/:chatId`) destructure and persist `pinnedArtifactIds` and that Home (`<HomeLanding />`) renders `<SpaceDashboard />` when pinned items exist.
 
 
 

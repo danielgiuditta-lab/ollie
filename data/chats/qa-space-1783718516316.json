@@ -1,0 +1,30 @@
+{
+  "chatId": "qa-space-1783718516316",
+  "projectName": "New Workspace",
+  "chatName": null,
+  "type": "space",
+  "taskType": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [],
+  "envId": null,
+  "activeSpaceId": null,
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "qa-tool-1-1783718516316",
+      "name": "index.html",
+      "type": "code",
+      "content": "<h1>Vibe Coded App</h1>"
+    },
+    {
+      "id": "qa-doc-2-1783718516316",
+      "name": "notes.md",
+      "type": "code",
+      "content": "# Notes"
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "updatedAt": "2026-07-10T21:21:56.541Z"
+}

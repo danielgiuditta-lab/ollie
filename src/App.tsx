@@ -385,6 +385,7 @@ export default function App() {
     selectedFile: any;
     indexFileSelected: boolean;
     viewState?: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard';
+    pinnedArtifactIds?: string[];
   }>>({});
 
   const chatSessionsCacheRef = useRef<Record<string, {
@@ -3698,7 +3699,9 @@ export default function App() {
     const pObj = projects.find(p => p && (p.id === spaceId || p.activeSpaceId === spaceId));
     if (pObj && pObj.pinnedArtifactIds) return pObj.pinnedArtifactIds;
     const tObj = recentTasks.find(t => t && (t.id === spaceId || (t.type === 'space' && t.activeSpaceId === spaceId)));
-    return tObj?.pinnedArtifactIds || [];
+    if (tObj && tObj.pinnedArtifactIds) return tObj.pinnedArtifactIds;
+    const cacheObj = workspaceCacheRef.current[spaceId];
+    return cacheObj?.pinnedArtifactIds || [];
   };
 
   const getAllSpaceFiles = (spaceId: string | null) => {
@@ -3751,6 +3754,17 @@ export default function App() {
     const fileId = file.id || file.driveId;
     if (!fileId) return;
 
+    if (workspaceCacheRef.current[activeSpaceId]) {
+      const curPins = workspaceCacheRef.current[activeSpaceId].pinnedArtifactIds || [];
+      if (!curPins.includes(fileId)) {
+        const nextPins = [...curPins, fileId];
+        workspaceCacheRef.current[activeSpaceId] = {
+          ...workspaceCacheRef.current[activeSpaceId],
+          pinnedArtifactIds: nextPins
+        };
+      }
+    }
+
     const updatePins = (p: any) => {
       if (p && (p.id === activeSpaceId || (p.type === 'space' && p.activeSpaceId === activeSpaceId))) {
         const currentPins = p.pinnedArtifactIds || [];
@@ -3772,6 +3786,16 @@ export default function App() {
 
   const handleUnpinArtifact = (fileId: string) => {
     if (!activeSpaceId || !fileId) return;
+
+    if (workspaceCacheRef.current[activeSpaceId]) {
+      const curPins = workspaceCacheRef.current[activeSpaceId].pinnedArtifactIds || [];
+      const nextPins = curPins.filter((id: string) => id !== fileId);
+      workspaceCacheRef.current[activeSpaceId] = {
+        ...workspaceCacheRef.current[activeSpaceId],
+        pinnedArtifactIds: nextPins
+      };
+    }
+
     const updatePins = (p: any) => {
       if (p && (p.id === activeSpaceId || (p.type === 'space' && p.activeSpaceId === activeSpaceId))) {
         const currentPins = p.pinnedArtifactIds || [];
@@ -3791,6 +3815,14 @@ export default function App() {
 
   const handleReorderPins = (newOrderedIds: string[]) => {
     if (!activeSpaceId) return;
+
+    if (workspaceCacheRef.current[activeSpaceId]) {
+      workspaceCacheRef.current[activeSpaceId] = {
+        ...workspaceCacheRef.current[activeSpaceId],
+        pinnedArtifactIds: newOrderedIds
+      };
+    }
+
     const updatePins = (p: any) => {
       if (p && (p.id === activeSpaceId || (p.type === 'space' && p.activeSpaceId === activeSpaceId))) {
         fetch(`/api/chats/${activeSpaceId}`, {
@@ -5146,7 +5178,7 @@ export default function App() {
           {/* Main Viewport Content first (on the LEFT) */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative gap-4">
             <div className="flex-1 min-h-0 relative">
-              {(viewState === 'home' || viewState === 'ai_summary' || viewState === 'projector' || viewState === 'app' || viewState === 'files' || selectedFile) && (
+              {(viewState === 'home' || viewState === 'dashboard' || viewState === 'ai_summary' || viewState === 'projector' || viewState === 'app' || viewState === 'files' || selectedFile) && (
                 <CanvasMain 
                   viewState={viewState} 
                   setViewState={setViewState} 
@@ -5183,7 +5215,7 @@ export default function App() {
                       onResetChat={resetChatForDirectoryItem}
                       activeSpaceId={activeSpaceId}
                       projectName={projectName}
-                      sandboxFiles={sandboxFiles}
+                      sandboxFiles={getAllSpaceFiles(activeSpaceId || getHomeChatId())}
                       todoItems={todoItems}
                       setTodoItems={setTodoItems}
                       isLoggedIn={isLoggedIn}
@@ -5193,6 +5225,10 @@ export default function App() {
                       spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
                       onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
                       selectedFile={selectedFile}
+                      pinnedArtifactIds={getSpacePins(activeSpaceId || getHomeChatId())}
+                      onRemovePin={handleUnpinArtifact}
+                      onReorderPins={handleReorderPins}
+                      onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId || activeSpaceId || getHomeChatId() })}
                     />
                   </div>
                   {isIngesting && (
@@ -5300,7 +5336,7 @@ export default function App() {
 
           {/* Sources panel sidebar rendered on the RIGHT */}
           <AnimatePresence>
-            {isSourcesPanelOpen && (viewState === 'home' || viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
+            {isSourcesPanelOpen && (viewState === 'home' || viewState === 'dashboard' || viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (
               <CanvasSidebar 
                 files={activeSpaceId?.startsWith('space-creation-') ? spaceCreationSources : sandboxFiles}
                 driveFiles={driveFiles}

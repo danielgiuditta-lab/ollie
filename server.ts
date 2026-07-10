@@ -550,7 +550,7 @@ async function startServer() {
     try {
       const { chatId } = req.params;
       const sanitizedId = chatId.replace(/[^a-zA-Z0-9_\-]/g, "_");
-      const { projectName, chatName, type, taskType, associatedFileId, associatedFileName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles, members } = req.body;
+      const { projectName, chatName, type, taskType, associatedFileId, associatedFileName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles, members, pinnedArtifactIds } = req.body;
 
       const payload = {
         chatId: sanitizedId,
@@ -567,6 +567,7 @@ async function startServer() {
         sandboxFiles: sandboxFiles || [],
         userEmail: userEmail || "",
         members: members || [],
+        pinnedArtifactIds: pinnedArtifactIds || [],
         updatedAt: new Date().toISOString()
       };
 

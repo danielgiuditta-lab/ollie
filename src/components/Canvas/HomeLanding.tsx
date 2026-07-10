@@ -9,6 +9,7 @@ import { CreationJourney } from './CreationJourney';
 import { ShapeLoader } from '../Shared/ShapeLoader';
 import { NullTitle } from '../Shared/NullTitle';
 import { NullChat } from '../Shared/NullChat';
+import { SpaceDashboard } from './SpaceDashboard';
 
 import docsIcon from '../../assets/docs.png';
 import sheetsIcon from '../../assets/sheets.png';
@@ -188,6 +189,10 @@ interface HomeLandingProps {
   spaceMode?: 'choice' | 'tracking' | 'tool';
   onSelectSpaceMode?: (mode: 'tracking' | 'tool') => void;
   selectedFile?: any;
+  pinnedArtifactIds?: string[];
+  onRemovePin?: (fileId: string) => void;
+  onReorderPins?: (newOrderedIds: string[]) => void;
+  onSelectArtifact?: (file: any) => void;
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -563,7 +568,11 @@ export function HomeLanding({
   onProactiveTaskClick,
   spaceMode,
   onSelectSpaceMode,
-  selectedFile
+  selectedFile,
+  pinnedArtifactIds = [],
+  onRemovePin,
+  onReorderPins,
+  onSelectArtifact
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localBypassAuth, setLocalBypassAuth] = useState(false);
@@ -1499,6 +1508,25 @@ export function HomeLanding({
 
   return (
     <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-y-auto pt-16 px-10 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
+      {pinnedArtifactIds && pinnedArtifactIds.length > 0 && (
+        <div className="w-full max-w-[800px] text-left space-y-4 mb-8 mt-4">
+          <h2 className="text-2xl font-semibold text-slate-800 dark:text-[#E3E3E3] font-sans pl-1">
+            Pinned Artifacts:
+          </h2>
+          <div className="w-full min-h-[360px] relative">
+            <SpaceDashboard
+              spaceId={activeSpaceId || 'home'}
+              spaceName="Home Dashboard"
+              pinnedArtifactIds={pinnedArtifactIds}
+              sandboxFiles={sandboxFiles}
+              onSelectArtifact={onSelectArtifact || (() => {})}
+              onRemovePin={onRemovePin || (() => {})}
+              onReorderPins={onReorderPins || (() => {})}
+              theme={theme}
+            />
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-[640px] mt-8 text-left space-y-6">
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-[#E3E3E3] font-sans pl-1">
           To Do:

@@ -1,17 +1,20 @@
 {
-  "chatId": "space-1783717209652",
+  "chatId": "home_guest",
   "projectName": "New Workspace",
   "chatName": null,
-  "type": "space",
+  "type": "home",
   "taskType": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [],
   "envId": null,
-  "activeSpaceId": "space-1783717209652",
+  "activeSpaceId": null,
   "sandboxUrl": "",
   "sandboxFiles": [],
   "userEmail": "",
   "members": [],
-  "updatedAt": "2026-07-10T21:04:17.054Z"
+  "pinnedArtifactIds": [
+    "qa-tool-1-1783718539264"
+  ],
+  "updatedAt": "2026-07-10T21:22:20.065Z"
 }

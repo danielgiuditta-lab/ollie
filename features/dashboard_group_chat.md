@@ -43,6 +43,14 @@ const getSpacePins = (spaceId: string | null) => {
 * **Child Chat Artifact Aggregation (`getAllSpaceFiles`):** When viewing the root Space Dashboard (`viewState === 'dashboard'`), custom tools and documents generated inside child authoring chats (`${spaceId}-chat-...`) are not present in the root space's direct `sandboxFiles` array. To ensure pinned custom tools and docs resolve and render live previews on the grid, the app must pass `getAllSpaceFiles(activeSpaceId)` to `<SpaceDashboard />`. This helper aggregates `sandboxFiles` across the root space and all child chats in `recentTasks`, `projects`, and `workspaceCacheRef`, preserving `.chatId` for authoring jumps.
 * **Session-Scoped File IDs:** In `/api/vibe-code`, generated code files must never be assigned generic IDs like `'sandbox-file-0'`, as this causes ID collisions across multiple tools in the same space. All generated files must be scoped to their chat session: `id: `${targetChatId || activeChatId || 'sandbox'}-file-${i}``.
 
+### 1.5 Canvas Container & Sidebar Visibility (`viewState === 'dashboard'`)
+* **Canvas Wrapper Visibility:** When rendering `<CanvasMain />` in `App.tsx`, the conditional check MUST explicitly include `viewState === 'dashboard'`. Omitting `'dashboard'` causes the entire canvas container to unmount, leaving a blank screen when navigating to root spaces.
+* **Library Panel Visibility:** The right-hand `<CanvasSidebar />` (Library drawer) MUST also include `viewState === 'dashboard'` in its rendering condition so users can toggle and view space library files while on the dashboard.
+
+### 1.6 Home Dashboard Pinning Support (`<HomeLanding />`)
+* **Home Pinning Grid:** In addition to custom space dashboards, the root Home dashboard (`viewState === 'home'`, via `<HomeLanding />`) supports pinning vibe coded apps and library artifacts. When `pinnedArtifactIds` is non-empty on Home, `<HomeLanding />` embeds `<SpaceDashboard />` directly above the "To Do:" section.
+* **Cache & Persistence Synchronization:** To guarantee immediate responsiveness on Home, all pinning operations update `workspaceCacheRef.current[activeSpaceId]` alongside `projects` and `recentTasks`, and the backend endpoint (`POST /api/chats/:chatId`) explicitly destructures and stores `pinnedArtifactIds`.
+
 ---
 
 ## 2. Component Specifications
