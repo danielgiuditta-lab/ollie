@@ -264,7 +264,7 @@ export default function App() {
   const [spaceCreationSources, setSpaceCreationSources] = useState<any[]>([]);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'failed'>('idle');
   const [members, setMembers] = useState<any[]>([]);
-  const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(true);
+  const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
 
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [bypassAuth, setBypassAuth] = useState(false);
@@ -359,6 +359,7 @@ export default function App() {
       setActiveSpaceId(homeId);
       setActiveChatId(homeId);
       setProjectName('Home Dashboard');
+      setIsSourcesPanelOpen(false);
       loadHomeChat();
     }
   }, [userProfile?.email]);
@@ -897,6 +898,7 @@ export default function App() {
       setSelectedFile(null);
       setIndexFileSelected(false);
       setViewState('home');
+      setIsSourcesPanelOpen(false);
 
       setRecentTasks(prev => {
         const now = Date.now();
@@ -2567,6 +2569,7 @@ export default function App() {
     setMessages([]);
     if (isHome) {
       setViewState('home');
+      setIsSourcesPanelOpen(false);
     } else {
       if (viewState === 'home') {
         setViewState(selectedFile ? 'app' : (sandboxFiles.length > 0 ? 'files' : 'null'));
@@ -3683,13 +3686,21 @@ export default function App() {
     return existingMimeType || 'text/plain';
   };
 
+  const getSpacePins = (spaceId: string | null) => {
+    if (!spaceId) return [];
+    const pObj = projects.find(p => p && (p.id === spaceId || p.activeSpaceId === spaceId));
+    if (pObj && pObj.pinnedArtifactIds) return pObj.pinnedArtifactIds;
+    const tObj = recentTasks.find(t => t && (t.id === spaceId || (t.type === 'space' && t.activeSpaceId === spaceId)));
+    return tObj?.pinnedArtifactIds || [];
+  };
+
   const handlePinArtifact = (file: any) => {
     if (!activeSpaceId || !file) return;
     const fileId = file.id || file.driveId;
     if (!fileId) return;
 
-    setProjects(prev => prev.map(p => {
-      if (p && p.id === activeSpaceId) {
+    const updatePins = (p: any) => {
+      if (p && (p.id === activeSpaceId || (p.type === 'space' && p.activeSpaceId === activeSpaceId))) {
         const currentPins = p.pinnedArtifactIds || [];
         if (currentPins.includes(fileId)) return p;
         const nextPins = [...currentPins, fileId];
@@ -3701,13 +3712,16 @@ export default function App() {
         return { ...p, pinnedArtifactIds: nextPins };
       }
       return p;
-    }));
+    };
+
+    setProjects(prev => prev.map(updatePins));
+    setRecentTasks(prev => prev.map(updatePins));
   };
 
   const handleUnpinArtifact = (fileId: string) => {
     if (!activeSpaceId || !fileId) return;
-    setProjects(prev => prev.map(p => {
-      if (p && p.id === activeSpaceId) {
+    const updatePins = (p: any) => {
+      if (p && (p.id === activeSpaceId || (p.type === 'space' && p.activeSpaceId === activeSpaceId))) {
         const currentPins = p.pinnedArtifactIds || [];
         const nextPins = currentPins.filter((id: string) => id !== fileId);
         fetch(`/api/chats/${activeSpaceId}`, {
@@ -3718,13 +3732,15 @@ export default function App() {
         return { ...p, pinnedArtifactIds: nextPins };
       }
       return p;
-    }));
+    };
+    setProjects(prev => prev.map(updatePins));
+    setRecentTasks(prev => prev.map(updatePins));
   };
 
   const handleReorderPins = (newOrderedIds: string[]) => {
     if (!activeSpaceId) return;
-    setProjects(prev => prev.map(p => {
-      if (p && p.id === activeSpaceId) {
+    const updatePins = (p: any) => {
+      if (p && (p.id === activeSpaceId || (p.type === 'space' && p.activeSpaceId === activeSpaceId))) {
         fetch(`/api/chats/${activeSpaceId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3733,7 +3749,9 @@ export default function App() {
         return { ...p, pinnedArtifactIds: newOrderedIds };
       }
       return p;
-    }));
+    };
+    setProjects(prev => prev.map(updatePins));
+    setRecentTasks(prev => prev.map(updatePins));
   };
 
   const isValidDriveId = (id: any) => {
@@ -4039,6 +4057,7 @@ export default function App() {
           setMessages([]);
         }
       }
+      setIsSourcesPanelOpen(false);
       setViewState('home');
       return;
     }
@@ -4069,6 +4088,8 @@ export default function App() {
     }
     
     const matchingTask = recentTasks.find(t => t.id === targetChatId);
+    const shouldSkipSelect = skipSelect && targetChatId === folderId;
+    const isParentSpaceClick = targetChatId === folderId || shouldSkipSelect;
 
     if (cached) {
       // 1. Restore from cache immediately
@@ -4088,8 +4109,6 @@ export default function App() {
         setMessages([]);
       }
       
-      const shouldSkipSelect = skipSelect && targetChatId === folderId;
-      const isParentSpaceClick = targetChatId === folderId || shouldSkipSelect;
       const taskType = matchingTask?.taskType || matchingTask?.type || '';
 
       if (isParentSpaceClick) {
@@ -4153,7 +4172,7 @@ export default function App() {
         lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
       });
       const totalCount = (cached.sandboxFiles?.length || 0) + (driveFiles?.length || 0);
-      setIsSourcesPanelOpen(totalCount > 0);
+      setIsSourcesPanelOpen(!isHomeChatId(folderId) && totalCount > 0);
       
       // Allow cache updates for the newly active folder
       setLoadedFolderId(folderId);
@@ -4312,7 +4331,10 @@ export default function App() {
                 let nextViewState: any = 'files';
 
                 const allDbAvailableFiles = [...(chatData.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
-                if (chatTaskType === 'site' || chatTaskType === 'tool') {
+                if (isParentSpaceClick && !isHomeChatId(folderId)) {
+                  fileToSelect = null;
+                  nextViewState = 'dashboard';
+                } else if (chatTaskType === 'site' || chatTaskType === 'tool') {
                   fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = fileToSelect ? 'app' : 'home';
                 } else if (chatTaskType === 'doc') {
@@ -4340,7 +4362,7 @@ export default function App() {
                 } else {
                   setSelectedFile(null);
                   setIndexFileSelected(false);
-                  setViewState(chatData.sandboxFiles.length > 0 ? 'files' : 'home');
+                  setViewState(isParentSpaceClick && !isHomeChatId(folderId) ? 'dashboard' : (chatData.sandboxFiles.length > 0 ? 'files' : 'home'));
                 }
                 
                 workspaceCacheRef.current[folderId] = {
@@ -4352,7 +4374,7 @@ export default function App() {
                   projectName: chatData.projectName || fileName || projectName,
                   selectedFile: (!skipSelect && fileToSelect) ? fileToSelect : null,
                   indexFileSelected: (!skipSelect && fileToSelect) ? (fileToSelect?.name?.toLowerCase().includes('index.html') ?? false) : false,
-                  viewState: (!skipSelect && fileToSelect) ? nextViewState : (chatData.sandboxFiles.length > 0 ? 'files' : 'home')
+                  viewState: (!skipSelect && fileToSelect) ? nextViewState : (isParentSpaceClick && !isHomeChatId(folderId) ? 'dashboard' : (chatData.sandboxFiles.length > 0 ? 'files' : 'home'))
                 };
                 chatSessionsCacheRef.current[targetChatId] = {
                   messages: chatData.messages || []
@@ -4413,7 +4435,11 @@ export default function App() {
 
           let autoSelected = null;
           let isIdx = false;
-          if (sandboxMapped.length > 0) {
+          if (isParentSpaceClick && !isHomeChatId(folderId)) {
+            setSelectedFile(null);
+            setIndexFileSelected(false);
+            setViewState('dashboard');
+          } else if (sandboxMapped.length > 0) {
             const indexHTML = sandboxMapped.find((f: any) => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html'));
             const preferredDoc = sandboxMapped.find((f: any) => {
               const mType = (f.mimeType || '').toLowerCase();
@@ -5048,7 +5074,7 @@ export default function App() {
           activeProactiveTask={activeProactiveTask}
           activeSpaceId={activeSpaceId}
           onPinArtifact={(file) => {
-            const currentPins = projects.find(p => p && p.id === activeSpaceId)?.pinnedArtifactIds || [];
+            const currentPins = getSpacePins(activeSpaceId);
             const fileId = file?.id || file?.driveId;
             if (fileId && currentPins.includes(fileId)) {
               handleUnpinArtifact(fileId);
@@ -5059,9 +5085,7 @@ export default function App() {
           isPinned={
             !!(
               activeSpaceId &&
-              projects
-                .find(p => p && p.id === activeSpaceId)
-                ?.pinnedArtifactIds?.includes((selectedFile || activeProactiveTask)?.id || (selectedFile || activeProactiveTask)?.driveId)
+              getSpacePins(activeSpaceId)?.includes((selectedFile || activeProactiveTask)?.id || (selectedFile || activeProactiveTask)?.driveId)
             )
           }
         />
@@ -5190,7 +5214,7 @@ export default function App() {
                     <SpaceDashboard 
                       spaceId={activeSpaceId || ''}
                       spaceName={projectName || 'Space'}
-                      pinnedArtifactIds={projects.find(p => p && p.id === activeSpaceId)?.pinnedArtifactIds || []}
+                      pinnedArtifactIds={getSpacePins(activeSpaceId)}
                       sandboxFiles={[...sandboxFiles, ...driveFiles]}
                       onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId })}
                       onRemovePin={handleUnpinArtifact}

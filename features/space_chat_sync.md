@@ -120,6 +120,26 @@ await handleFileClick(task, false, { isFromRecents: true, targetChatId: task.id 
 ```
 Passing `skipSelect = true` is strictly prohibited for task/artifact chat selections, as it forces `setSelectedFile(null)` inside `handleFileClick`, clearing the canvas viewport and displaying an empty screen.
 
+### Invariant 21: Root Space Preservation & Canonical Root Selection (`LeftNav.tsx`)
+To prevent child artifact authoring chats from overriding the parent space and causing header clicks to show documents instead of the Space Dashboard:
+- **Root Space Preservation (`processChatSession`):** When computing `spacesMap` in `LeftNav.tsx` from `projects` and `recentTasks`, if `c.id === spaceId || c.type === 'space'` (meaning `c` is the canonical space root object), the handler MUST explicitly update `spacesMap[spaceId].raw = c` and set `type: 'space'`. This guarantees that even if a newly created child document chat (`${spaceId}-chat-...`) resides at index 0 of `recentTasks`, the parent space header retains the true space root object.
+- **Canonical Root Selection (`onSelectSpace`):** When a user clicks a parent space header in `LeftNav`, `onSelectSpace` MUST construct a canonical `rootSpaceObj` bound strictly to `id: space.id, activeSpaceId: space.id, chatId: space.id, type: 'space'` before delegating to `onSelectProject` or `onSelectTask`.
+- **Global `isParentSpaceClick` Guards (`App.tsx`):** In `handleFileClick`, `isParentSpaceClick` (`targetChatId === folderId || (skipSelect && targetChatId === folderId)`) MUST be computed before cache evaluation and checked across all asynchronous branches (including database restoration and Drive ingestion fallbacks). If `isParentSpaceClick && !isHomeChatId(folderId)` is true, the handler MUST execute `setSelectedFile(null); setIndexFileSelected(false); setViewState('dashboard');`.
+
+### Invariant 22: Unified Pinning Synchronization (`getSpacePins`)
+Because newly created spaces exist in `recentTasks` and may not immediately reside in `projects`:
+- **Dual Collection Updating:** All pinning modification handlers (`handlePinArtifact`, `handleUnpinArtifact`, `handleReorderPins`) MUST map and update both `setProjects(...)` and `setRecentTasks(...)` concurrently.
+- **Unified Resolution (`getSpacePins`):** Whenever resolving `pinnedArtifactIds` for `<SpaceDashboard />` or pin toggle status in `<CanvasHeader />`, the application MUST use a unified `getSpacePins(spaceId)` helper searching both `projects` and `recentTasks`:
+```ts
+const getSpacePins = (spaceId: string | null) => {
+  if (!spaceId) return [];
+  const pObj = projects.find(p => p && (p.id === spaceId || p.activeSpaceId === spaceId));
+  if (pObj && pObj.pinnedArtifactIds) return pObj.pinnedArtifactIds;
+  const tObj = recentTasks.find(t => t && (t.id === spaceId || (t.type === 'space' && t.activeSpaceId === spaceId)));
+  return tObj?.pinnedArtifactIds || [];
+};
+```
+
 ---
 
 ## 3. Verification & Maintenance
@@ -140,5 +160,10 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 14. Confirm that `<NativeViewer />` sets `isIframeViewer = false` and uses simulated native paper viewers for Google Workspace documents and presentations.
 15. Ensure any document generation streaming handler updates both `sandboxFiles` and `driveFiles` with renamed titles and content.
 16. Verify that clicking a child chat or task in `<LeftNav />` never passes `skipSelect = true`.
+17. Confirm that `processChatSession` in `LeftNav.tsx` updates `spacesMap[spaceId].raw` when encountering canonical root space objects (`id === spaceId || type === 'space'`).
+18. Verify that `onSelectSpace` constructs a canonical `rootSpaceObj` with `id: space.id` before calling selection handlers.
+19. Confirm that `isParentSpaceClick` is enforced across memory cache hits, database chat restoration, and Drive context ingestion fallbacks in `handleFileClick`.
+20. Verify that all pinning operations update both `projects` and `recentTasks`, and use `getSpacePins(spaceId)` to resolve dashboard and breadcrumb pin states.
+
 
 

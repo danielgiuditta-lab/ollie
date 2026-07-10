@@ -151,6 +151,15 @@ export function LeftNav({
           raw: c,
           chats: []
         };
+      } else {
+        if (c.id === spaceId || c.type === 'space') {
+          spacesMap[spaceId].raw = c;
+          spacesMap[spaceId].name = c.name || spacesMap[spaceId].name;
+          spacesMap[spaceId].type = c.type || spacesMap[spaceId].type;
+        }
+        if (isProject) {
+          spacesMap[spaceId].isProject = true;
+        }
       }
 
       if (c.messages && c.messages.length > 0) {
@@ -183,10 +192,18 @@ export function LeftNav({
   }, [recentTasks]);
 
   const onSelectSpace = (space: any) => {
+    const rootSpaceObj = {
+      ...space.raw,
+      id: space.id,
+      activeSpaceId: space.id,
+      chatId: space.id,
+      type: 'space',
+      name: space.name
+    };
     if (space.isProject) {
-      if (onSelectProject) onSelectProject(space.raw);
+      if (onSelectProject) onSelectProject(rootSpaceObj);
     } else {
-      if (onSelectTask) onSelectTask(space.raw);
+      if (onSelectTask) onSelectTask(rootSpaceObj);
     }
   };
 

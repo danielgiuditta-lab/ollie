@@ -25,6 +25,20 @@ interface SpaceManifest {
 ```
 When a space is rendered in `<AppView />`, if `targetChatId === spaceId`, the app renders `<SpaceDashboard pinnedIds={space.pinnedArtifactIds} />` instead of a standalone file editor.
 
+### 1.3 Dual-Collection Pinning Synchronization (`getSpacePins`)
+Because newly created spaces exist in `recentTasks` and may not immediately reside in `projects`:
+* **Dual Collection Updating:** All pinning modification handlers (`handlePinArtifact`, `handleUnpinArtifact`, `handleReorderPins`) must map and update both `setProjects(...)` and `setRecentTasks(...)` concurrently.
+* **Unified Resolution (`getSpacePins`):** Whenever resolving `pinnedArtifactIds` for `<SpaceDashboard />` or pin toggle status in `<CanvasHeader />`, the application must use a unified `getSpacePins(spaceId)` helper searching both `projects` and `recentTasks`:
+```ts
+const getSpacePins = (spaceId: string | null) => {
+  if (!spaceId) return [];
+  const pObj = projects.find(p => p && (p.id === spaceId || p.activeSpaceId === spaceId));
+  if (pObj && pObj.pinnedArtifactIds) return pObj.pinnedArtifactIds;
+  const tObj = recentTasks.find(t => t && (t.id === spaceId || (t.type === 'space' && t.activeSpaceId === spaceId)));
+  return tObj?.pinnedArtifactIds || [];
+};
+```
+
 ---
 
 ## 2. Component Specifications
@@ -56,7 +70,9 @@ When a space is rendered in `<AppView />`, if `targetChatId === spaceId`, the ap
 
 ### Phase 1: Data Model & Root State Refactoring
 1. **Extend Space Manifest:** Add `pinnedArtifactIds` and custom card width ratios to state definitions in `App.tsx` and persistence endpoints in `server.ts`.
-2. **View State Routing:** Modify `App.tsx` canvas resolution so selecting a root space (`targetChatId === spaceId`) sets `viewState = 'dashboard'` instead of falling back to empty null states.
+2. **View State Routing:** Modify `App.tsx` canvas resolution so selecting a root space (`targetChatId === spaceId`) sets `viewState = 'dashboard'` instead of falling back to empty null states. Ensure `isParentSpaceClick` is enforced across memory cache hits, database chat restoration, and Drive context ingestion fallbacks.
+3. **Dual-Collection Pinning:** Implement `getSpacePins(spaceId)` and update pinning modification handlers to synchronize both `projects` and `recentTasks`.
+4. **Root Space Preservation (`LeftNav`):** Update `processChatSession` to preserve root space raw objects when computing workspace trees so child authoring chats never override root space identifiers.
 
 ### Phase 2: Group Chat Visual Differentiation
 1. **ChatSidebar Theme Prop:** Pass an `isGroupChat={targetChatId === activeSpaceId}` boolean prop to `<ChatSidebar />`.
@@ -68,5 +84,5 @@ When a space is rendered in `<AppView />`, if `targetChatId === spaceId`, the ap
 3. **Resizing & Reordering Handlers:** Wire up side edge drag listeners for proportional adjacent card scaling and HTML5 drag-and-drop position swapping on the 3-dots handle.
 
 ### Phase 4: E2E Testing & Verification
-1. **Automated Verification:** Create a Puppeteer test script verifying space selection renders the dashboard, pinning/unpinning persists to disk, and group chat styling applies cleanly.
+1. **Automated Verification:** Create a Puppeteer test script verifying space selection renders the dashboard, pinning/unpinning persists to disk across both collections, and group chat styling applies cleanly.
 2. **Human Walkthrough:** Review the feel of the light grey visual distinction and resizing fluid mechanics with the founder.
