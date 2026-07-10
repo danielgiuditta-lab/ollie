@@ -190,9 +190,9 @@ export function NativeViewer({
                            nameLower === 'presentation.gslides' || 
                            nameLower === 'spreadsheet.gsheet');
   
-  // Embed iframe previews ONLY for real, non-mock, non-local files synced from actual GDrive API integration.
-  // Google Sheets are rendered via our interactive high-fidelity local grid viewer since iframe embedding is often blocked.
-  const isIframeViewer = !!(driveId && isRealDriveId(driveId) && (isGoogleDoc || isGoogleSlide) && !isComposerDoc);
+  // Google Docs, Slides, and Sheets block iframe embedding on localhost (X-Frame-Options/auth).
+  // Always use our interactive high-fidelity simulated native viewers (renderGoogleDocSim, etc.).
+  const isIframeViewer = false;
 
   const isRunnable = nameLower.endsWith('.html') || nameLower.endsWith('.md') || nameLower.endsWith('.markdown');
 

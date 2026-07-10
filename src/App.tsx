@@ -5165,7 +5165,7 @@ export default function App() {
                       spaceId={activeSpaceId || ''}
                       spaceName={projectName || 'Space'}
                       pinnedArtifactIds={projects.find(p => p && p.id === activeSpaceId)?.pinnedArtifactIds || []}
-                      sandboxFiles={sandboxFiles}
+                      sandboxFiles={[...sandboxFiles, ...driveFiles]}
                       onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId })}
                       onRemovePin={handleUnpinArtifact}
                       onReorderPins={handleReorderPins}
