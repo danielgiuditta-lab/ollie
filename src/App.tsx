@@ -27,6 +27,74 @@ const inferChatName = (text: string): string => {
   return candidate.length > 30 ? candidate.substring(0, 27) + '...' : candidate;
 };
 
+const resolveArtifactForChat = (files: any[], task: any, taskType: string): any => {
+  if (!files || files.length === 0) return null;
+  
+  // 1. Try explicit ID/name association first
+  const associatedId = task?.associatedFileId || task?.raw?.associatedFileId;
+  const associatedName = task?.associatedFileName || task?.raw?.associatedFileName;
+  
+  if (associatedId) {
+    const byId = files.find(f => f && (f.id === associatedId || f.driveId === associatedId));
+    if (byId) return byId;
+  }
+  if (associatedName) {
+    const byName = files.find(f => f && f.name && f.name.toLowerCase() === associatedName.toLowerCase());
+    if (byName) return byName;
+  }
+
+  // 2. Filter candidates strictly by taskType
+  let candidates = files;
+  if (taskType === 'doc') {
+    candidates = files.filter(f => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase().endsWith('.md') || f.name.toLowerCase().endsWith('.txt') || f.isDocJourney || f.mimeType?.includes('document')));
+  } else if (taskType === 'slide') {
+    candidates = files.filter(f => f && f.name && (f.name.toLowerCase().endsWith('.gslides') || f.name.toLowerCase().endsWith('.ppt') || f.name.toLowerCase().endsWith('.pptx') || f.mimeType?.includes('presentation')));
+  } else if (taskType === 'sheet') {
+    candidates = files.filter(f => f && f.name && (f.name.toLowerCase().endsWith('.gsheet') || f.name.toLowerCase().endsWith('.csv') || f.name.toLowerCase().endsWith('.xls') || f.name.toLowerCase().endsWith('.xlsx') || f.mimeType?.includes('spreadsheet')));
+  } else if (taskType === 'site' || taskType === 'tool') {
+    candidates = files.filter(f => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase().endsWith('.js') || f.name.toLowerCase().endsWith('.css')));
+  } else if (taskType === 'inferred' || taskType === 'tracking') {
+    candidates = files.filter(f => f && f.name && f.name.toLowerCase() === 'inferred_tasks.json');
+  }
+
+  if (candidates.length === 0) {
+    candidates = files;
+  }
+
+  // 3. Match within type candidates using strict name matching (exact base name without extension)
+  const chatName = (task?.chatName || task?.name || '').trim().toLowerCase();
+  if (chatName && chatName !== 'new document' && chatName !== 'custom tool' && chatName !== 'new slide deck' && chatName !== 'new spreadsheet') {
+    const exactBase = candidates.find(f => {
+      if (!f || !f.name) return false;
+      const baseName = f.name.toLowerCase().replace(/\.[^/.]+$/, '').trim();
+      return baseName === chatName;
+    });
+    if (exactBase) return exactBase;
+
+    if (chatName.length >= 4) {
+      const prefixMatch = candidates.find(f => {
+        if (!f || !f.name) return false;
+        const baseName = f.name.toLowerCase().replace(/\.[^/.]+$/, '').trim();
+        return baseName.length >= 4 && (baseName.startsWith(chatName) || chatName.startsWith(baseName));
+      });
+      if (prefixMatch) return prefixMatch;
+    }
+  }
+
+  // 4. Default to standard type defaults among candidates
+  if (taskType === 'site' || taskType === 'tool') {
+    return candidates.find(f => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html'))) || candidates[0] || null;
+  } else if (taskType === 'doc') {
+    return candidates.find(f => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase() === 'document.doc')) || candidates[0] || null;
+  } else if (taskType === 'slide') {
+    return candidates.find(f => f && f.name && (f.name.toLowerCase().endsWith('.gslides') || f.name.toLowerCase().endsWith('.ppt') || f.name.toLowerCase().endsWith('.pptx'))) || candidates[0] || null;
+  } else if (taskType === 'inferred' || taskType === 'tracking') {
+    return candidates.find(f => f && f.name && f.name.toLowerCase() === 'inferred_tasks.json') || candidates[0] || null;
+  }
+
+  return candidates[0] || null;
+};
+
 export default function App() {
   const [activeSidebar, setActiveSidebar] = useState<'gemini' | 'comments' | 'history' | null>('gemini');
   const [chatDockPosition, setChatDockPosition] = useState<'side' | 'bottom'>('side');
@@ -645,7 +713,9 @@ export default function App() {
     customFiles?: any[],
     spaceIdVal?: string,
     customChatName?: string,
-    customTaskType?: string
+    customTaskType?: string,
+    associatedFileId?: string,
+    associatedFileName?: string
   ) => {
     if (!chatIdVal || chatIdVal.endsWith('-temp')) return;
     const isPlaceholder = (name?: string) => !name || name === 'New' || name === 'Building project...' || name === 'Workspace Project' || name === 'New Application' || name === 'app';
@@ -662,6 +732,8 @@ export default function App() {
     const resolvedChatName = customChatName || existing?.chatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : '');
     const resolvedTaskType = customTaskType || existing?.taskType || existing?.type || null;
     const resolvedType = existing?.type || (resolvedTaskType === 'site' ? 'site' : 'workspace');
+    const resolvedFileId = associatedFileId || existing?.associatedFileId || (customFiles?.length === 1 ? (customFiles[0].id || customFiles[0].driveId) : undefined);
+    const resolvedFileName = associatedFileName || existing?.associatedFileName || (customFiles?.length === 1 ? customFiles[0].name : undefined);
 
     try {
       await fetch(`/api/chats/${chatIdVal}`, {
@@ -674,6 +746,8 @@ export default function App() {
           chatName: resolvedChatName,
           type: resolvedType,
           taskType: resolvedTaskType,
+          associatedFileId: resolvedFileId,
+          associatedFileName: resolvedFileName,
           messages: messagesList,
           envId: activeEnv,
           activeSpaceId: resolvedSpaceId,
@@ -716,6 +790,8 @@ export default function App() {
             chatName: resolvedChatName,
             type: resolvedType,
             taskType: resolvedTaskType,
+            associatedFileId: resolvedFileId,
+            associatedFileName: resolvedFileName,
             messages: messagesList,
             activeSpaceId: resolvedSpaceId,
             updatedAt: now
@@ -759,6 +835,7 @@ export default function App() {
           chatName: 'Custom Tool',
           type: 'site',
           taskType: 'site',
+          associatedFileName: 'index.html',
           activeSpaceId: spaceId,
           messages: initialMsgs,
           updatedAt: now
@@ -773,7 +850,9 @@ export default function App() {
         [],
         spaceId,
         'Custom Tool',
-        'site'
+        'site',
+        undefined,
+        'index.html'
       );
     } else if (mode === 'tracking') {
       const botMsg = {
@@ -817,6 +896,8 @@ export default function App() {
           chatName: 'Inferred Tasks',
           type: 'inferred',
           taskType: 'inferred',
+          associatedFileId: trackingArtifact.id,
+          associatedFileName: 'inferred_tasks.json',
           activeSpaceId: spaceId,
           messages: initialMsgs,
           updatedAt: now
@@ -831,7 +912,9 @@ export default function App() {
         [trackingArtifact],
         spaceId,
         'Inferred Tasks',
-        'inferred'
+        'inferred',
+        trackingArtifact.id,
+        'inferred_tasks.json'
       );
     }
   };
@@ -1364,6 +1447,7 @@ export default function App() {
           let updatedFiles = latestFiles;
           let smartTitle = "";
           const currentDoc = latestFiles.find(f => f.id === activeDoc.id || f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides');
+          let finalDocName = currentDoc?.name;
           if (currentDoc) {
             const h1Match = (currentDoc.content || "").match(/^#\s+(.+)$/m);
             if (h1Match) {
@@ -1385,15 +1469,15 @@ export default function App() {
               if (smartTitle.length > 50) smartTitle = smartTitle.substring(0, 47) + "...";
               const isSlideFile = currentDoc.name.endsWith('.gslides') || currentDoc.mimeType === 'application/vnd.google-apps.presentation';
               const ext = isSlideFile ? '.gslides' : '.doc';
-              const newDocName = smartTitle.toLowerCase().endsWith(ext) ? smartTitle : `${smartTitle}${ext}`;
-              console.log(`[DocJourney Client] Updating doc title from generic to: ${newDocName}`);
+              finalDocName = smartTitle.toLowerCase().endsWith(ext) ? smartTitle : `${smartTitle}${ext}`;
+              console.log(`[DocJourney Client] Updating doc title from generic to: ${finalDocName}`);
               updatedFiles = latestFiles.map(f => {
                 if (f.id === currentDoc.id || f.name === currentDoc.name) {
-                  return { ...f, name: newDocName };
+                  return { ...f, name: finalDocName };
                 }
                 return f;
               });
-              setSelectedFile(prev => prev ? { ...prev, name: newDocName } : null);
+              setSelectedFile(prev => prev ? { ...prev, name: finalDocName } : null);
               if (!initialSpaceId || isHomeChatId(initialSpaceId)) {
                 setProjectName(smartTitle);
               }
@@ -1416,7 +1500,10 @@ export default function App() {
                   projectName,
                   updatedFiles,
                   activeFolderId || initialSpaceId,
-                  smartTitle || undefined
+                  smartTitle || undefined,
+                  currentTask,
+                  currentDoc?.id || currentDoc?.driveId,
+                  finalDocName
                 );
               }, 0);
               return currentMessages;
@@ -3842,28 +3929,27 @@ export default function App() {
           setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'home');
         }
       } else if (taskType === 'site' || taskType === 'tool') {
-        const toolFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
+        const toolFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
         setSelectedFile(toolFile || null);
-        setIndexFileSelected(!!toolFile);
+        setIndexFileSelected(!!toolFile && (toolFile.name.toLowerCase().includes('index.html') || toolFile.name.toLowerCase().endsWith('.html')));
         setViewState(toolFile ? 'app' : 'home');
       } else if (taskType === 'doc') {
-        const matchingDoc = matchingTask?.chatName ? cached.sandboxFiles?.find((f: any) => {
-          if (!f || !f.name) return false;
-          const fName = f.name.toLowerCase();
-          const cName = matchingTask.chatName.toLowerCase();
-          return fName.includes(cName) || cName.includes(fName.replace(/\.[^/.]+$/, ''));
-        }) : null;
-        const docFile = matchingDoc || cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase() === 'document.doc')) || cached.sandboxFiles?.[0] || null;
+        const docFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
         setSelectedFile(docFile);
         setIndexFileSelected(false);
         setViewState('files');
       } else if (taskType === 'slide') {
-        const slideFile = cached.sandboxFiles?.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.gslides') || f.name.toLowerCase().endsWith('.ppt') || f.name.toLowerCase().endsWith('.pptx'))) || cached.sandboxFiles?.[0] || null;
+        const slideFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
         setSelectedFile(slideFile);
         setIndexFileSelected(false);
         setViewState('files');
+      } else if (taskType === 'sheet') {
+        const sheetFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
+        setSelectedFile(sheetFile);
+        setIndexFileSelected(false);
+        setViewState('files');
       } else if (taskType === 'inferred' || taskType === 'tracking') {
-        const taskFile = cached.sandboxFiles?.find((f: any) => f && f.name && f.name.toLowerCase() === 'inferred_tasks.json');
+        const taskFile = resolveArtifactForChat(cached.sandboxFiles || [], matchingTask, taskType);
         setSelectedFile(taskFile || null);
         setIndexFileSelected(false);
         setViewState('files');
@@ -4035,22 +4121,19 @@ export default function App() {
                 let nextViewState: any = 'files';
 
                 if (chatTaskType === 'site' || chatTaskType === 'tool') {
-                  fileToSelect = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html'))) || null;
+                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = fileToSelect ? 'app' : 'home';
                 } else if (chatTaskType === 'doc') {
-                  const matchingDoc = matchingTask?.chatName ? chatData.sandboxFiles.find((f: any) => {
-                    if (!f || !f.name) return false;
-                    const fName = f.name.toLowerCase();
-                    const cName = matchingTask.chatName.toLowerCase();
-                    return fName.includes(cName) || cName.includes(fName.replace(/\.[^/.]+$/, ''));
-                  }) : null;
-                  fileToSelect = matchingDoc || chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase() === 'document.doc')) || chatData.sandboxFiles[0] || null;
+                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = 'files';
                 } else if (chatTaskType === 'slide') {
-                  fileToSelect = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.gslides') || f.name.toLowerCase().endsWith('.ppt') || f.name.toLowerCase().endsWith('.pptx'))) || chatData.sandboxFiles[0] || null;
+                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
+                  nextViewState = 'files';
+                } else if (chatTaskType === 'sheet') {
+                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = 'files';
                 } else if (chatTaskType === 'inferred' || chatTaskType === 'tracking') {
-                  fileToSelect = chatData.sandboxFiles.find((f: any) => f && f.name && f.name.toLowerCase() === 'inferred_tasks.json') || null;
+                  fileToSelect = resolveArtifactForChat(chatData.sandboxFiles || [], { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = 'files';
                 } else {
                   const canonicalTool = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
@@ -4533,6 +4616,7 @@ export default function App() {
 
       const chatTitle = type === 'doc' ? "New Document" : (type === 'slide' ? "New Slide Deck" : (type === 'site' ? "Custom Tool" : "New Artifact"));
 
+      const fileIdVal = newArtifact.id || newArtifact.driveId;
       setRecentTasks(prev => {
         const now = Date.now();
         const filtered = prev.filter(t => {
@@ -4545,6 +4629,8 @@ export default function App() {
           chatName: chatTitle,
           type: type === 'site' ? 'site' : 'workspace',
           taskType: type,
+          associatedFileId: fileIdVal,
+          associatedFileName: name,
           activeSpaceId: targetFolder,
           messages: initialMsg,
           updatedAt: now
@@ -4560,7 +4646,9 @@ export default function App() {
         [...sandboxFiles.filter(f => f.name !== name), newArtifact],
         targetFolder,
         chatTitle,
-        type
+        type,
+        fileIdVal,
+        name
       );
     }
 

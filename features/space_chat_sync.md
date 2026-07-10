@@ -79,8 +79,12 @@ To ensure child chats never lose their descriptive names or revert to `"Chat X"`
 ### Invariant 11: Home Workspace Collaborator Avatar Isolation
 When navigating into personal Home dashboards or inferred tasks under Home (`isHomeChatId(activeSpaceId)` is true), collaborator avatars from previously visited shared Spaces MUST NOT leak into the header. `CanvasHeader` must explicitly check that the workspace is not a Home chat before rendering `<SharedMembersAvatars />`, and `App.tsx` must explicitly reset `setMembers([])` whenever switching to or restoring Home chat sessions.
 
-### Invariant 12: Frozen Space ID Closure in Asynchronous Generation (`initialSpaceId`)
-When initiating AI streaming generations (`handleSendMessage`, `/api/vibe-code`, `/api/doc-journey`, `/api/summarize-task`), all asynchronous callbacks MUST reference the frozen `initialSpaceId` (or `resolvedFolderId`) captured at the synchronous start of turn rather than reading live React state (`activeSpaceId`). Furthermore, before auto-switching workspaces upon completion of newly generated projects (`workspace-...`), completion handlers MUST verify `activeSpaceIdRef.current === initialSpaceId`. Without this guard, switching workspaces during an active generation causes background callbacks to resolve against the newly selected space, creating orphaned "ghost spaces" with mismatched `activeSpaceId` references in `recentTasks`.
+### Invariant 13: Explicit Artifact-to-Chat Mapping (`associatedFileId`, `associatedFileName`)
+To prevent fuzzy substring matching collisions (e.g. clicking a doc chat whose title contains "Ollie" erroneously matching and loading an `Ollie.gslides` presentation from the library), every child chat session created for an artifact MUST explicitly store `associatedFileId` and `associatedFileName` pointing to the artifact it created or manages. This is enforced across:
+- **Creation (`handleCreateArtifactApp`, `handleSelectSpaceMode`)**: When creating a tool, doc, slide, sheet, or tracking task, `associatedFileId` and `associatedFileName` are attached to the chat session in `recentTasks` and saved via `saveChatToDb(...)`.
+- **AI Generation (`/api/doc-journey`)**: Upon renaming or updating document artifacts during streaming, the updated file ID and name are passed as `associatedFileId` and `associatedFileName` to `saveChatToDb(...)`.
+- **Backend Persistence (`POST /api/chats/:chatId`)**: Both client and server endpoints explicitly accept and store `associatedFileId` and `associatedFileName`.
+- **Artifact Resolution (`resolveArtifactForChat`)**: When navigating between chats in `LeftNav` via `handleFileClick`, `resolveArtifactForChat` checks for explicit `associatedFileId` / `associatedFileName` first. If missing (legacy chats), it filters candidates strictly by `taskType` (`doc`, `slide`, `sheet`, `site`, `inferred`) before performing exact or prefix base name matching, guaranteeing zero cross-type artifact collisions.
 
 ---
 
@@ -91,8 +95,9 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 3. Ensure child chats created in workspaces explicitly set `activeSpaceId` to their parent space ID and include `taskType` so `LeftNav` groups and icons them cleanly.
 4. Verify that closing breadcrumbs or selecting a space parent always navigates to top-level canonical artifacts (`index.html` / `inferred_tasks.json`) or clean onboarding chats without trapping the user in child doc sessions.
 5. Ensure `setProjectName(...)` is guarded against running inside Spaces during artifact generation so space names remain immutable.
-6. Confirm that backend storage APIs (`/api/chats/:chatId`) destructure and persist `chatName`, `type`, and `taskType`.
+6. Confirm that backend storage APIs (`/api/chats/:chatId`) destructure and persist `chatName`, `type`, `taskType`, `associatedFileId`, and `associatedFileName`.
 7. Verify that collaborator avatars are stripped and reset when viewing tasks or files under personal Home chats.
 8. Ensure all asynchronous generation callbacks use frozen space ID closures (`initialSpaceId`) rather than live React state to prevent ghost workspaces when navigating during streaming.
+9. Verify that any new artifact generation workflow attaches `associatedFileId` and `associatedFileName` to its corresponding chat session.
 
 

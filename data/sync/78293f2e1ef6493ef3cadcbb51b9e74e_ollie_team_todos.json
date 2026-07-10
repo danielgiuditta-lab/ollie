@@ -1,0 +1,49 @@
+{
+  "envId": "78293f2e1ef6493ef3cadcbb51b9e74e",
+  "key": "ollie_team_todos",
+  "data": [
+    {
+      "id": "ollie-1",
+      "title": "Review Spanner DDL Schema for OllieDB",
+      "assignee": "Daniel Giuditta",
+      "completed": false
+    },
+    {
+      "id": "ollie-2",
+      "title": "Define TaskService Protobuf gRPC interface",
+      "assignee": "Zhengrong Ji",
+      "completed": true
+    },
+    {
+      "id": "ollie-3",
+      "title": "Draft Sobi Agent capability matching and routing policies",
+      "assignee": "Emily Thomas",
+      "completed": false
+    },
+    {
+      "id": "ollie-4",
+      "title": "Map user data trails and tool ecosystems for UX Audit",
+      "assignee": "Megan Bruce",
+      "completed": true
+    },
+    {
+      "id": "ollie-5",
+      "title": "Setup secure containerized development workspaces pre-loaded with internal toolchains",
+      "assignee": "Ajay Yadav",
+      "completed": false
+    },
+    {
+      "id": "ollie-6",
+      "title": "Implement DBSCAN vector clustering rules for Memory Service",
+      "assignee": "Ian Mendiola",
+      "completed": false
+    },
+    {
+      "id": "ollie-7",
+      "title": "Add confirmation loops inside Feed Service for bottom sign-off approvals",
+      "assignee": "Belinda Preno",
+      "completed": false
+    }
+  ],
+  "updatedAt": "2026-07-10T14:59:36.313Z"
+}
