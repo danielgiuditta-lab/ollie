@@ -27,7 +27,8 @@ interface ChatSidebarProps {
   isOrganizingFiles?: boolean;
   chatDockPosition?: 'side' | 'bottom';
   onChangeChatDockPosition?: (pos: 'side' | 'bottom') => void;
-  onFinalizeSpace?: (name: string, selectedPeople: any[]) => Promise<void> | void;
+  onFinalizeSpace?: (name: string, selectedPeople: any[], selectedDocs?: any[]) => Promise<void> | void;
+  onSelectSpacePeople?: (name: string, selectedPeople: any[]) => void;
   chatModel?: 'A' | 'B';
   onNewChat?: () => void;
   isLoggedIn?: boolean;
@@ -61,6 +62,7 @@ export function ChatSidebar({
   chatDockPosition = 'side',
   onChangeChatDockPosition,
   onFinalizeSpace,
+  onSelectSpacePeople,
   chatModel = 'A',
   onNewChat,
   isLoggedIn = false,
@@ -395,10 +397,14 @@ export function ChatSidebar({
                         onApplyMoves={() => onApplyMoves && onApplyMoves(index)}
                         onDoDifferently={() => onDoDifferently ? onDoDifferently(index) : onSendMessage("I'd like to organize these files differently: ")}
                         isSpacePeopleSelector={msg.isSpacePeopleSelector}
+                        isSpaceDocsSelector={msg.isSpaceDocsSelector}
                         suggestedPeople={msg.suggestedPeople}
+                        suggestedDocs={msg.suggestedDocs}
+                        selectedPeople={msg.selectedPeople}
                         teamMembers={msg.teamMembers}
                         targetSpaceName={msg.targetSpaceName}
                         onFinalizeSpace={onFinalizeSpace}
+                        onSelectSpacePeople={onSelectSpacePeople}
                         isProactiveReview={msg.isProactiveReview}
                         proactiveTask={msg.proactiveTask}
                         onApproveProactive={msg.onApproveProactive}

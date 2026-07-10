@@ -26,10 +26,14 @@ interface BotMessageProps {
   onApplyMoves?: () => void;
   onDoDifferently?: () => void;
   isSpacePeopleSelector?: boolean;
+  isSpaceDocsSelector?: boolean;
   suggestedPeople?: any[];
+  suggestedDocs?: any[];
+  selectedPeople?: any[];
   teamMembers?: any[];
   targetSpaceName?: string;
-  onFinalizeSpace?: (name: string, selectedPeople: any[]) => Promise<void> | void;
+  onFinalizeSpace?: (name: string, selectedPeople: any[], selectedDocs?: any[]) => Promise<void> | void;
+  onSelectSpacePeople?: (name: string, selectedPeople: any[]) => void;
   isProactiveReview?: boolean;
   proactiveTask?: any;
   onApproveProactive?: () => void;
@@ -110,10 +114,14 @@ export function BotMessage({
   onApplyMoves,
   onDoDifferently,
   isSpacePeopleSelector = false,
+  isSpaceDocsSelector = false,
   suggestedPeople = [],
+  suggestedDocs = [],
+  selectedPeople = [],
   teamMembers = [],
   targetSpaceName = '',
   onFinalizeSpace,
+  onSelectSpacePeople,
   isProactiveReview = false,
   proactiveTask,
   onApproveProactive,
@@ -207,6 +215,7 @@ export function BotMessage({
     const [pickerSearch, setPickerSearch] = React.useState('');
     const [isCreating, setIsCreating] = React.useState(false);
     const [createdStatus, setCreatedStatus] = React.useState<string | null>(null);
+    const [isSubmitted, setIsSubmitted] = React.useState(false);
 
     const togglePerson = (email: string) => {
       setSelectedEmails(prev =>
@@ -214,10 +223,13 @@ export function BotMessage({
       );
     };
 
-    const handleCreate = async () => {
-      if (onFinalizeSpace) {
+    const handleNextOrCreate = async () => {
+      const selectedList = (teamMembers || []).filter(p => selectedEmails.includes(p.email));
+      if (onSelectSpacePeople) {
+        setIsSubmitted(true);
+        onSelectSpacePeople(targetSpaceName || "New Space", selectedList);
+      } else if (onFinalizeSpace) {
         setIsCreating(true);
-        const selectedList = (teamMembers || []).filter(p => selectedEmails.includes(p.email));
         setCreatedStatus("Creating Drive folder...");
         
         try {
@@ -245,10 +257,10 @@ export function BotMessage({
           {text}
         </div>
 
-        <div className={`flex flex-col border rounded-3xl p-5 w-full shadow-xs ${
+        <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-xs ${
           isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-slate-200/80'
         }`}>
-          <div className="mb-4">
+          <div className="mb-2">
             <span 
               className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
               style={{ fontFamily: '"Product Sans", "Google Sans", sans-serif' }}
@@ -264,10 +276,10 @@ export function BotMessage({
               return (
                 <div 
                   key={idx} 
-                  onClick={() => togglePerson(person.email)}
+                  onClick={() => !isSubmitted && togglePerson(person.email)}
                   className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-colors ${
                     isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'
-                  }`}
+                  } ${isSubmitted ? 'opacity-70 pointer-events-none' : ''}`}
                 >
                   <div className="flex items-center gap-3">
                     <TeamAvatar avatar={person.avatar} name={person.name} size="md" />
@@ -282,6 +294,7 @@ export function BotMessage({
                     type="checkbox" 
                     checked={isChecked} 
                     onChange={() => {}} 
+                    disabled={isSubmitted}
                     className="rounded text-blue-500 focus:ring-blue-500 h-4 w-4 cursor-pointer"
                   />
                 </div>
@@ -290,59 +303,178 @@ export function BotMessage({
           </div>
 
           {/* Picker Toggle Button */}
-          <div className="mb-4">
-            <button 
-              onClick={() => setShowPicker(!showPicker)}
-              className="text-xs font-semibold text-blue-550 hover:text-blue-650 flex items-center gap-0.5 cursor-pointer border-none bg-transparent p-0 outline-none"
-            >
-              <span className="material-symbols-rounded text-base">{showPicker ? 'expand_less' : 'expand_more'}</span>
-              <span>{showPicker ? 'Hide team list' : 'Show team picker...'}</span>
-            </button>
+          {!isSubmitted && (
+            <div className="mb-4">
+              <button 
+                onClick={() => setShowPicker(!showPicker)}
+                className="text-xs font-semibold text-blue-550 hover:text-blue-650 flex items-center gap-0.5 cursor-pointer border-none bg-transparent p-0 outline-none"
+              >
+                <span className="material-symbols-rounded text-base">{showPicker ? 'expand_less' : 'expand_more'}</span>
+                <span>{showPicker ? 'Hide team list' : 'Show team picker...'}</span>
+              </button>
 
-            {showPicker && (
-              <div className={`mt-3 border rounded-2xl p-3 flex flex-col gap-2.5 ${
-                isDark ? 'bg-[#2B2D31] border-[#3B3D42]' : 'bg-slate-50 border-slate-200'
-              }`}>
-                <input 
-                  type="text"
-                  placeholder="Search team members..."
-                  value={pickerSearch}
-                  onChange={(e) => setPickerSearch(e.target.value)}
-                  className={`w-full text-xs px-3 py-2 rounded-xl outline-none border focus:border-blue-500 ${
-                    isDark ? 'bg-[#1E1F22] border-[#3B3D42] text-white' : 'bg-white border-slate-250 text-slate-800'
-                  }`}
-                />
-                <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
-                  {filteredTeam.map((person, idx) => {
-                    const isChecked = selectedEmails.includes(person.email);
-                    return (
-                      <div 
-                        key={idx}
-                        onClick={() => togglePerson(person.email)}
-                        className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${
-                          isDark ? 'hover:bg-white/5' : 'hover:bg-white/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <TeamAvatar avatar={person.avatar} name={person.name} size="md" />
-                          <div className="flex flex-col">
-                            <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                              {person.name}
-                            </span>
-                            <span className="text-xs text-slate-450">{person.email}</span>
+              {showPicker && (
+                <div className={`mt-3 border rounded-2xl p-3 flex flex-col gap-2.5 ${
+                  isDark ? 'bg-[#2B2D31] border-[#3B3D42]' : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <input 
+                    type="text"
+                    placeholder="Search team members..."
+                    value={pickerSearch}
+                    onChange={(e) => setPickerSearch(e.target.value)}
+                    className={`w-full text-xs px-3 py-2 rounded-xl outline-none border focus:border-blue-500 ${
+                      isDark ? 'bg-[#1E1F22] border-[#3B3D42] text-white' : 'bg-white border-slate-250 text-slate-800'
+                    }`}
+                  />
+                  <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
+                    {filteredTeam.map((person, idx) => {
+                      const isChecked = selectedEmails.includes(person.email);
+                      return (
+                        <div 
+                          key={idx}
+                          onClick={() => togglePerson(person.email)}
+                          className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${
+                            isDark ? 'hover:bg-white/5' : 'hover:bg-white/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <TeamAvatar avatar={person.avatar} name={person.name} size="md" />
+                            <div className="flex flex-col">
+                              <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                                {person.name}
+                              </span>
+                              <span className="text-xs text-slate-450">{person.email}</span>
+                            </div>
                           </div>
+                          <input 
+                            type="checkbox" 
+                            checked={isChecked} 
+                            onChange={() => {}} 
+                            className="rounded text-blue-500 h-3.5 w-3.5 cursor-pointer"
+                          />
                         </div>
-                        <input 
-                          type="checkbox" 
-                          checked={isChecked} 
-                          onChange={() => {}} 
-                          className="rounded text-blue-500 h-3.5 w-3.5 cursor-pointer"
-                        />
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
+            </div>
+          )}
+
+          <div className={`h-px w-full my-1 ${isDark ? 'bg-[#3B3D42]' : 'bg-slate-100'}`} />
+
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-3">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              {createdStatus || (isSubmitted ? 'Team members confirmed' : `${selectedEmails.length} selected`)}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="primary" 
+                theme={theme} 
+                onClick={handleNextOrCreate}
+                disabled={isCreating || isSubmitted || createdStatus?.includes("successfully")}
+              >
+                {isCreating ? 'Creating...' : (isSubmitted ? 'Confirmed' : (onSelectSpacePeople ? 'Next' : 'Create Space'))}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isSpaceDocsSelector) {
+    const [selectedDocIds, setSelectedDocIds] = React.useState<string[]>(
+      (suggestedDocs || []).map(d => d.id).filter(Boolean)
+    );
+    const [isCreating, setIsCreating] = React.useState(false);
+    const [createdStatus, setCreatedStatus] = React.useState<string | null>(null);
+
+    const toggleDoc = (id: string) => {
+      setSelectedDocIds(prev =>
+        prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+      );
+    };
+
+    const handleCreate = async () => {
+      if (onFinalizeSpace) {
+        setIsCreating(true);
+        const selectedList = (suggestedDocs || []).filter(d => selectedDocIds.includes(d.id));
+        setCreatedStatus("Creating Drive folder...");
+        
+        try {
+          await onFinalizeSpace(targetSpaceName || "New Space", selectedPeople || [], selectedList);
+          setCreatedStatus("Space created successfully!");
+        } catch (err) {
+          console.error(err);
+          setCreatedStatus("Failed to create space");
+        } finally {
+          setIsCreating(false);
+        }
+      }
+    };
+
+    return (
+      <div className="flex flex-col gap-3 w-full animate-fade-in-up">
+        <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
+          isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
+        }`} style={{ fontFamily: '"Inter", sans-serif' }}>
+          {text}
+        </div>
+
+        <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-xs ${
+          isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-slate-200/80'
+        }`}>
+          <div className="mb-1">
+            <span 
+              className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
+              style={{ fontFamily: '"Product Sans", "Google Sans", sans-serif' }}
+            >
+              Add Documents to {targetSpaceName}
+            </span>
+          </div>
+
+          {/* Meta line */}
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-neutral-400 mb-2 font-medium">
+            <span className="material-symbols-rounded text-sm text-blue-550">visibility</span>
+            <span>Docs will be visible to everyone in the space</span>
+          </div>
+
+          {/* Suggested docs list */}
+          <div className="flex flex-col gap-2 mb-4 max-h-64 overflow-y-auto scrollbar-thin pr-1">
+            {(suggestedDocs || []).map((doc, idx) => {
+              const isChecked = selectedDocIds.includes(doc.id);
+              return (
+                <div 
+                  key={idx} 
+                  onClick={() => toggleDoc(doc.id)}
+                  className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-colors ${
+                    isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <FileIcon fileName={doc.name} mimeType={doc.mimeType} size={22} />
+                    <div className="flex flex-col min-w-0">
+                      <span className={`text-[15px] font-medium truncate ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                        {doc.name}
+                      </span>
+                      {doc.description && (
+                        <span className="text-xs text-slate-400 dark:text-neutral-500 truncate">{doc.description}</span>
+                      )}
+                    </div>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={isChecked} 
+                    onChange={() => {}} 
+                    className="rounded text-blue-500 focus:ring-blue-500 h-4 w-4 cursor-pointer shrink-0 ml-2"
+                  />
+                </div>
+              );
+            })}
+            {(suggestedDocs || []).length === 0 && (
+              <div className="text-xs text-slate-400 py-2">No documents found from initial workspace search.</div>
             )}
           </div>
 
@@ -351,7 +483,7 @@ export function BotMessage({
           {/* Actions */}
           <div className="flex items-center justify-between pt-3">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              {createdStatus || `${selectedEmails.length} selected`}
+              {createdStatus || `${selectedDocIds.length} selected`}
             </span>
             <div className="flex items-center gap-2">
               <Button 

@@ -2769,7 +2769,21 @@ export default function App() {
     setActiveSidebar('gemini');
   };
 
-  const handleFinalizeSpace = async (name: string, selectedPeople: any[]) => {
+  const handleSelectSpacePeople = (name: string, selectedPeople: any[]) => {
+    setMessages(prev => [
+      ...prev,
+      {
+        role: 'bot',
+        text: `Great, I've noted those team members.\n\nHere are the documents found from your Drive workspace. Select which docs to add to the library:`,
+        isSpaceDocsSelector: true,
+        suggestedDocs: spaceCreationSources,
+        targetSpaceName: name,
+        selectedPeople: selectedPeople
+      }
+    ]);
+  };
+
+  const handleFinalizeSpace = async (name: string, selectedPeople: any[], selectedDocs?: any[]) => {
     setCurrentTask('app');
     const cleanFolderName = name
       .split(' ')
@@ -2798,7 +2812,8 @@ export default function App() {
     });
     
     try {
-      const fileTasks = spaceCreationSources.map(async (file, idx) => {
+      const docsToCopy = selectedDocs !== undefined ? selectedDocs : spaceCreationSources;
+      const fileTasks = docsToCopy.map(async (file, idx) => {
         let content = file.content || '';
         const mType = (file.mimeType || '').toLowerCase().trim();
         
@@ -4840,6 +4855,7 @@ export default function App() {
           chatDockPosition={chatDockPosition}
           onChangeChatDockPosition={setChatDockPosition}
           onFinalizeSpace={handleFinalizeSpace}
+          onSelectSpacePeople={handleSelectSpacePeople}
           chatModel={chatModel}
           onNewChat={handleCreateNewChat}
           isLoggedIn={isLoggedIn}
@@ -5190,6 +5206,7 @@ export default function App() {
                 onDoDifferently={handleDoDifferentlyOrganize}
                 isOrganizingFiles={isOrganizingFiles}
                 onFinalizeSpace={handleFinalizeSpace}
+                onSelectSpacePeople={handleSelectSpacePeople}
                 isLoggedIn={isLoggedIn}
                 onLogin={login}
                 onBypassAuth={() => setBypassAuth(true)}
