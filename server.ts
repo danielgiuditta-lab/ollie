@@ -1665,6 +1665,11 @@ ${activeFileContent || ''}
 ---
 ${contextText ? `\nReference files from Google Drive provided by user:\n${contextText}\n` : ''}
 
+CRITICAL RULES FOR AUTHORING NEW DOCUMENTS:
+- The Reference files from Google Drive provided below are strictly for background context (e.g. project details, terminology).
+- Do NOT merge into, adopt the title of, or copy the structure of reference documents.
+- You MUST create a BRAND NEW, distinct Level 1 heading ('# ...') specifically matching what the user requested to create in their prompt. For example, if the user asks to create a 'Roadmap', your output MUST begin with '# [Project Name] Roadmap', NOT a PRD or other reference document title.
+
 CRITICAL INSTRUCTIONS FOR RESPONSE FORMATTING:
 You MUST structure your response into two distinct sections using XML tags <chat> and <doc>:
 

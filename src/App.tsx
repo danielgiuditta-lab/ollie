@@ -1530,6 +1530,15 @@ export default function App() {
               const isSlideFile = currentDoc.name.endsWith('.gslides') || currentDoc.mimeType === 'application/vnd.google-apps.presentation';
               const ext = isSlideFile ? '.gslides' : '.doc';
               finalDocName = smartTitle.toLowerCase().endsWith(ext) ? smartTitle : `${smartTitle}${ext}`;
+
+              const collision = latestFiles.find(f => f && f.name === finalDocName && f.id !== currentDoc.id && f.driveId !== currentDoc.id && f.id !== currentDoc.driveId);
+              if (collision) {
+                const promptHint = text ? text.replace(/^(write|create|draft|generate|make|build|a|an|the|document|doc|for|project|about|\s+)+/i, '').trim().split(/\s+/)[0] : '';
+                const suffix = promptHint ? ` - ${promptHint.charAt(0).toUpperCase() + promptHint.slice(1)}` : ` (${Date.now().toString().slice(-4)})`;
+                const baseName = finalDocName.replace(/\.[^/.]+$/, '');
+                finalDocName = `${baseName}${suffix}${ext}`;
+              }
+
               console.log(`[DocJourney Client] Updating doc title from generic to: ${finalDocName}`);
               updatedFiles = latestFiles.map(f => {
                 if (f.id === currentDoc.id || f.name === currentDoc.name) {
@@ -3687,13 +3696,19 @@ export default function App() {
             if (searchRes.ok) {
               const searchData = await searchRes.json();
               if (searchData.files && searchData.files.length > 0) {
-                fileId = searchData.files[0].id;
-                file.driveId = fileId;
-                if (searchData.files[0].mimeType) {
-                  file.mimeType = searchData.files[0].mimeType;
+                const candidateId = searchData.files[0].id;
+                const alreadyOwned = files.some(other => other !== file && (other.id === candidateId || other.driveId === candidateId));
+                if (!alreadyOwned) {
+                  fileId = candidateId;
+                  file.driveId = fileId;
+                  if (searchData.files[0].mimeType) {
+                    file.mimeType = searchData.files[0].mimeType;
+                  }
+                  hasUpdates = true;
+                  console.log(`[Drive Auto-Save] Linked existing file ${file.name} to ID: ${fileId}`);
+                } else {
+                  console.log(`[Drive Auto-Save] Candidate file ID ${candidateId} for ${file.name} is already owned by another doc in space. Will create new file.`);
                 }
-                hasUpdates = true;
-                console.log(`[Drive Auto-Save] Linked existing file ${file.name} to ID: ${fileId}`);
               }
             }
           } catch (err) {

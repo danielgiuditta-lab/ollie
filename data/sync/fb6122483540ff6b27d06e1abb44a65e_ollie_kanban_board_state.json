@@ -1,0 +1,51 @@
+{
+  "envId": "fb6122483540ff6b27d06e1abb44a65e",
+  "key": "ollie_kanban_board_state",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-1",
+        "title": "Implement Semantic Cosine Classification for Workstream Triage",
+        "description": "Build the two-stage classification pipeline using Vertex AI 768-dimensional embeddings to auto-route tasks.",
+        "assigneeEmail": "yadavajay@google.com",
+        "status": "todo"
+      },
+      {
+        "id": "task-2",
+        "title": "Design DBSCAN Clustering Algorithm for Memory Dream Cron",
+        "description": "Develop offline vector consolidation sweep over Memory DB to cluster and merge overlapping factual nodes.",
+        "assigneeEmail": "mirjamvanesch@google.com",
+        "status": "todo"
+      },
+      {
+        "id": "task-3",
+        "title": "Build Task Service GRPC Interface Contracts",
+        "description": "Define Protobuf contracts for Task CRUD, tree operations, and semantic duplicate detection in Spanner.",
+        "assigneeEmail": "simonsok@google.com",
+        "status": "inprogress"
+      },
+      {
+        "id": "task-4",
+        "title": "Implement PTY Watchdog for Jetski Harness",
+        "description": "Create supervisory wrapper for executing hermetic shell commands inside containerized Cloudtop capsules.",
+        "assigneeEmail": "belindapreno@google.com",
+        "status": "inprogress"
+      },
+      {
+        "id": "task-5",
+        "title": "Draft Project Ollie Engineering Design Document (HLD)",
+        "description": "Document the baseline system architecture, domain microservices, and multi-channel event ingestion models.",
+        "assigneeEmail": "simonsok@google.com",
+        "status": "done"
+      },
+      {
+        "id": "task-6",
+        "title": "Conduct Baseline Workflow & Agent Delegation UX Research",
+        "description": "Complete study of tool fragmentation and context sharing across knowledge workers at the NYC Google Office.",
+        "assigneeEmail": "mirjamvanesch@google.com",
+        "status": "done"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-10T18:41:46.018Z"
+}
