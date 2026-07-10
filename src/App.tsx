@@ -823,9 +823,18 @@ export default function App() {
             mergedSpaceFiles.push(newF);
           }
         });
-        if (workspaceCacheRef.current[resolvedSpaceId]) {
-          workspaceCacheRef.current[resolvedSpaceId].sandboxFiles = mergedSpaceFiles;
-        }
+        const existingCache: any = workspaceCacheRef.current[resolvedSpaceId] || {};
+        workspaceCacheRef.current[resolvedSpaceId] = {
+          ingestedFiles: existingCache.ingestedFiles || [],
+          sandboxFiles: mergedSpaceFiles,
+          envId: existingCache.envId || null,
+          sandboxUrl: existingCache.sandboxUrl || '',
+          messages: existingCache.messages || [],
+          projectName: existingCache.projectName || activeName || 'Workspace',
+          selectedFile: existingCache.selectedFile || null,
+          indexFileSelected: existingCache.indexFileSelected || false,
+          viewState: existingCache.viewState || 'app'
+        };
         fetch(`/api/chats/${resolvedSpaceId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1502,6 +1511,17 @@ export default function App() {
                       return f;
                     });
                   });
+                  setDriveFiles(prev => {
+                    return prev.map(f => {
+                      const isTarget = (activeDoc.id && (f.id === activeDoc.id || f.driveId === activeDoc.id)) ||
+                                       (activeDoc.driveId && (f.id === activeDoc.driveId || f.driveId === activeDoc.driveId)) ||
+                                       (!activeDoc.id && !activeDoc.driveId && (f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides'));
+                      if (isTarget) {
+                        return { ...f, content: docText };
+                      }
+                      return f;
+                    });
+                  });
                   setSelectedFile(prev => prev ? { ...prev, content: docText } : { ...activeDoc, content: docText });
                 }
               }
@@ -1558,6 +1578,12 @@ export default function App() {
                 }
                 return f;
               });
+              setDriveFiles(prev => prev.map(f => {
+                if (f.id === currentDoc.id || f.name === currentDoc.name || (currentDoc.driveId && (f.id === currentDoc.driveId || f.driveId === currentDoc.driveId))) {
+                  return { ...f, name: finalDocName };
+                }
+                return f;
+              }));
               setSelectedFile(prev => prev ? { ...prev, name: finalDocName } : null);
               if (!initialSpaceId || isHomeChatId(initialSpaceId)) {
                 setProjectName(smartTitle);
@@ -4906,7 +4932,7 @@ export default function App() {
               setActiveSidebar('gemini');
               const hasFiles = (task.sources?.length || task.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
               setIsSourcesPanelOpen(hasFiles);
-              await handleFileClick(task, true, { isFromRecents: true }); // skipSelect = true
+              await handleFileClick(task, false, { isFromRecents: true, targetChatId: task.id });
             }
           } else {
             setIsAiSummarySnapped(false);

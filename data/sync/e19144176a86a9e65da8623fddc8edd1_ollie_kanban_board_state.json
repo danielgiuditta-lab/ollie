@@ -1,0 +1,45 @@
+{
+  "envId": "e19144176a86a9e65da8623fddc8edd1",
+  "key": "ollie_kanban_board_state",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-1",
+        "title": "Design Task Service gRPC interfaces and protobuf definitions",
+        "status": "todo",
+        "assignee": "yadavajay@google.com"
+      },
+      {
+        "id": "task-2",
+        "title": "Draft UX research script for 90-min baseline workflow sessions",
+        "status": "todo",
+        "assignee": "belindapreno@google.com"
+      },
+      {
+        "id": "task-3",
+        "title": "Implement DBSCAN vector clustering in Memory Dream Cron",
+        "status": "inprogress",
+        "assignee": "simonsok@google.com"
+      },
+      {
+        "id": "task-4",
+        "title": "Set up Cloudtop/Capsules sandboxed execution environment",
+        "status": "inprogress",
+        "assignee": "mirjamvanesch@google.com"
+      },
+      {
+        "id": "task-5",
+        "title": "Establish Workstream Service RBAC gatekeeper",
+        "status": "done",
+        "assignee": "yadavajay@google.com"
+      },
+      {
+        "id": "task-6",
+        "title": "Complete baseline workflow & agent delegation study analysis",
+        "status": "done",
+        "assignee": "belindapreno@google.com"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-10T20:28:42.565Z"
+}

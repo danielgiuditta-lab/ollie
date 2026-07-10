@@ -113,7 +113,7 @@ export function CanvasSidebar({
 
     if (prefix.length === 0) {
       // Root column: combine both files (sandboxFiles) and driveFiles
-      const sourceList = files || [];
+      const sourceList = [...(files || []), ...(driveFiles || [])];
       sourceList.forEach(file => {
         if (!file || !file.name) return;
         if (typeof file.content === 'string' && file.content.includes('Contents will load dynamically')) return;

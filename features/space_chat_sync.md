@@ -105,6 +105,21 @@ To maintain stability across Google Drive syncing and database caching:
 - **Drive ID Guards:** Before calling Google Drive APIs or `/api/ingest-context`, the application MUST verify that an ID is a valid Drive folder ID (`!id.startsWith('space-')` and `!id.startsWith('local-')`), eliminating `400 Bad Request` ("Invalid Value") errors when working in local or virtual space containers.
 - **Additive Manifest Merging:** In `saveChatToDb`, when a child chat saves an artifact inside a space, it MUST merge its files into `workspaceCacheRef.current[resolvedSpaceId].sandboxFiles` (updating matching IDs or pushing new files) rather than overwriting the entire array with a single file. This ensures concurrent custom tools, docs, and slide decks are preserved in the space manifest.
 
+### Invariant 18: Simulated Native Viewers & Disabled Iframes for Docs/Slides (`isIframeViewer`)
+Because Google Docs and Google Slides actively block iframe embedding on localhost and unauthenticated preview URLs (throwing `Could not establish connection` or `target-densitydpi` errors), the application MUST set `isIframeViewer = false;` in `<NativeViewer />`. All Google Workspace documents, slide decks, and spreadsheets MUST render via interactive, high-fidelity simulated native viewers (`renderGoogleDocSim`, `renderGoogleSlidesSim`, `renderGoogleSheetSim`) rather than raw iframe previews.
+
+### Invariant 19: Synchronous `driveFiles` Updating & Combined Library Rendering
+To prevent newly generated documents from disappearing from the Library sidebar or dashboard:
+- **Synchronous Generation Sync:** During AI streaming generation in `/api/doc-journey`, the client response handler MUST synchronously update both `setSandboxFiles` and `setDriveFiles` with new document titles and body content as chunks arrive and upon stream completion.
+- **Combined Library Source List:** In `<CanvasSidebar />`, the root directory level (`prefix.length === 0`) MUST merge local and remote repositories: `const sourceList = [...(files || []), ...(driveFiles || [])];`. Similarly, `<SpaceDashboard />` MUST receive `sandboxFiles={[...sandboxFiles, ...driveFiles]}` so pinned items are always resolved.
+
+### Invariant 20: LeftNav Selection & `skipSelect = false` Architecture
+When selecting any child artifact or task in `<LeftNav />` (`onSelectTask`), the navigation handler MUST explicitly pass `skipSelect = false` and bind `targetChatId: task.id` when calling `handleFileClick`:
+```ts
+await handleFileClick(task, false, { isFromRecents: true, targetChatId: task.id });
+```
+Passing `skipSelect = true` is strictly prohibited for task/artifact chat selections, as it forces `setSelectedFile(null)` inside `handleFileClick`, clearing the canvas viewport and displaying an empty screen.
+
 ---
 
 ## 3. Verification & Maintenance
@@ -122,5 +137,8 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 11. Confirm that `resolveArtifactForChat` is always passed a combined array of cached sandbox files, active sandbox files, and Drive library files (`[...cached, ...sandboxFiles, ...driveFiles]`).
 12. Verify that saving child chats performs additive merging against parent space file manifests in `workspaceCacheRef`.
 13. Ensure Drive API queries and context ingestion endpoints validate folder IDs against local/virtual prefixes before making network requests.
+14. Confirm that `<NativeViewer />` sets `isIframeViewer = false` and uses simulated native paper viewers for Google Workspace documents and presentations.
+15. Ensure any document generation streaming handler updates both `sandboxFiles` and `driveFiles` with renamed titles and content.
+16. Verify that clicking a child chat or task in `<LeftNav />` never passes `skipSelect = true`.
 
 
