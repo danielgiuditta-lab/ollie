@@ -306,7 +306,10 @@ export default function App() {
               id: c.chatId,
               name: folderName,
               chatName: c.chatName || '',
-              type: isAiSummary ? 'ai_summary' : 'workspace',
+              type: isAiSummary ? 'ai_summary' : (c.type || c.taskType || 'workspace'),
+              taskType: c.taskType || c.type || null,
+              associatedFileId: c.associatedFileId || null,
+              associatedFileName: c.associatedFileName || null,
               messages: c.messages || [],
               activeSpaceId: c.activeSpaceId || null,
               updatedAt: time
@@ -386,6 +389,10 @@ export default function App() {
     indexFileSelected: boolean;
     viewState?: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard';
     pinnedArtifactIds?: string[];
+    taskType?: string;
+    type?: string;
+    associatedFileId?: string;
+    associatedFileName?: string;
   }>>({});
 
   const chatSessionsCacheRef = useRef<Record<string, {
@@ -4163,17 +4170,17 @@ export default function App() {
     setActiveAiSummaryTaskId(null);
     setActiveSidebar('gemini');
 
-    const cached = workspaceCacheRef.current[targetChatId] || workspaceCacheRef.current[folderId];
+    const matchingTask = recentTasks.find(t => t.id === targetChatId);
+    const shouldSkipSelect = skipSelect && targetChatId === folderId;
+    const isParentSpaceClick = targetChatId === folderId || shouldSkipSelect;
+
+    const cached = workspaceCacheRef.current[targetChatId] || (isParentSpaceClick ? workspaceCacheRef.current[folderId] : undefined);
     const cachedChat = chatSessionsCacheRef.current[targetChatId];
 
     if (!isFromRecents || (!cached && !cachedChat)) {
       // Opening from directory/search navigation or cache miss starts a fresh blank chat with Gemini
       setMessages([]);
     }
-    
-    const matchingTask = recentTasks.find(t => t.id === targetChatId);
-    const shouldSkipSelect = skipSelect && targetChatId === folderId;
-    const isParentSpaceClick = targetChatId === folderId || shouldSkipSelect;
 
     if (cached) {
       // 1. Restore from cache immediately
@@ -4193,7 +4200,7 @@ export default function App() {
         setMessages([]);
       }
       
-      const taskType = matchingTask?.taskType || matchingTask?.type || '';
+      const taskType = matchingTask?.taskType || matchingTask?.type || cached.taskType || cached.type || '';
 
       if (isParentSpaceClick) {
         if (!isHomeChatId(folderId)) {
@@ -4220,28 +4227,29 @@ export default function App() {
         }
       } else {
         const allAvailableFiles = [...(cached.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
+        const taskContext = { ...matchingTask, ...cached, ...cachedChat };
         if (taskType === 'site' || taskType === 'tool') {
-          const toolFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          const toolFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           setSelectedFile(toolFile || null);
           setIndexFileSelected(!!toolFile && (toolFile.name.toLowerCase().includes('index.html') || toolFile.name.toLowerCase().endsWith('.html')));
           setViewState(toolFile ? 'app' : 'home');
         } else if (taskType === 'doc') {
-          const docFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          const docFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           setSelectedFile(docFile);
           setIndexFileSelected(false);
           setViewState('files');
         } else if (taskType === 'slide') {
-          const slideFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          const slideFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           setSelectedFile(slideFile);
           setIndexFileSelected(false);
           setViewState('files');
         } else if (taskType === 'sheet') {
-          const sheetFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          const sheetFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           setSelectedFile(sheetFile);
           setIndexFileSelected(false);
           setViewState('files');
         } else if (taskType === 'inferred' || taskType === 'tracking') {
-          const taskFile = resolveArtifactForChat(allAvailableFiles, matchingTask, taskType);
+          const taskFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           setSelectedFile(taskFile || null);
           setIndexFileSelected(false);
           setViewState('files');
@@ -4361,7 +4369,7 @@ export default function App() {
             }
 
             // Update the cache item
-            workspaceCacheRef.current[folderId] = {
+            const updatedCacheObj = {
               ingestedFiles: latestIngested,
               sandboxFiles: latestSandboxFiles,
               envId: latestEnvId,
@@ -4370,8 +4378,16 @@ export default function App() {
               projectName: currentCache.projectName || fileName,
               selectedFile: currentCache.selectedFile || null,
               indexFileSelected: currentCache.indexFileSelected || false,
-              viewState: currentCache.viewState || 'app'
+              viewState: currentCache.viewState || 'app',
+              taskType: currentCache.taskType,
+              type: currentCache.type,
+              associatedFileId: currentCache.associatedFileId,
+              associatedFileName: currentCache.associatedFileName
             };
+            workspaceCacheRef.current[targetChatId] = updatedCacheObj;
+            if (isParentSpaceClick) {
+              workspaceCacheRef.current[folderId] = updatedCacheObj;
+            }
             chatSessionsCacheRef.current[targetChatId] = {
               messages: latestMessages
             };
@@ -4449,7 +4465,7 @@ export default function App() {
                   setViewState(isParentSpaceClick && !isHomeChatId(folderId) ? 'dashboard' : (chatData.sandboxFiles.length > 0 ? 'files' : 'home'));
                 }
                 
-                workspaceCacheRef.current[folderId] = {
+                const restoredCacheEntry = {
                   ingestedFiles: chatData.ingestedFiles || [],
                   sandboxFiles: chatData.sandboxFiles,
                   envId: chatData.envId || null,
@@ -4458,8 +4474,16 @@ export default function App() {
                   projectName: chatData.projectName || fileName || projectName,
                   selectedFile: (!skipSelect && fileToSelect) ? fileToSelect : null,
                   indexFileSelected: (!skipSelect && fileToSelect) ? (fileToSelect?.name?.toLowerCase().includes('index.html') ?? false) : false,
-                  viewState: (!skipSelect && fileToSelect) ? nextViewState : (isParentSpaceClick && !isHomeChatId(folderId) ? 'dashboard' : (chatData.sandboxFiles.length > 0 ? 'files' : 'home'))
+                  viewState: (!skipSelect && fileToSelect) ? nextViewState : (isParentSpaceClick && !isHomeChatId(folderId) ? 'dashboard' : (chatData.sandboxFiles.length > 0 ? 'files' : 'home')),
+                  taskType: chatTaskType,
+                  type: chatData.type || chatTaskType,
+                  associatedFileId: chatData.associatedFileId || null,
+                  associatedFileName: chatData.associatedFileName || null
                 };
+                workspaceCacheRef.current[targetChatId] = restoredCacheEntry;
+                if (isParentSpaceClick) {
+                  workspaceCacheRef.current[folderId] = restoredCacheEntry;
+                }
                 chatSessionsCacheRef.current[targetChatId] = {
                   messages: chatData.messages || []
                 };

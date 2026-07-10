@@ -186,22 +186,29 @@ export function SpaceDashboard({
           <div
             key={fileId}
             style={{ width: `calc(${widthPct}% - 8px)` }}
-            className={`min-w-[320px] h-[340px] rounded-3xl border relative group flex flex-col overflow-hidden transition-all duration-200 ${
+            className={`min-w-[320px] h-[460px] rounded-3xl border relative group flex flex-col overflow-hidden transition-all duration-200 ${
               theme === 'dark'
-                ? 'bg-[#1E1F22] border-neutral-800 shadow-lg'
-                : 'bg-white border-slate-200/80 shadow-md'
+                ? 'bg-[#1E1F22] border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
+                : 'bg-white border-slate-100/80 shadow-[0_8px_30px_rgba(220,225,235,0.45)]'
             } ${isDragOver ? 'ring-2 ring-blue-500 scale-[1.01]' : ''}`}
-            onClick={() => onSelectArtifact(file)}
             onDragOver={(e) => handleDragOver(e, fileId)}
             onDragLeave={() => setDragOverCardId(null)}
             onDrop={(e) => handleDrop(e, fileId)}
           >
             {/* Header toolbar overlay (pointer-events-auto) */}
             <div className="h-11 px-4 border-b border-slate-100 dark:border-neutral-800/80 flex items-center justify-between shrink-0 bg-slate-50/80 dark:bg-[#18191B]/80 backdrop-blur-sm z-20 pointer-events-auto">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+              <div 
+                className="flex items-center gap-1.5 min-w-0 cursor-pointer group/title"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectArtifact(file);
+                }}
+                title="Click to open artifact authoring chat"
+              >
+                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate group-hover/title:text-blue-600 dark:group-hover/title:text-blue-400 transition-colors">
                   {file.name}
                 </span>
+                <span className="text-slate-400 opacity-0 group-hover/title:opacity-100 transition-opacity text-[10px]">↗</span>
               </div>
 
               {/* 3 dots reorder & menu handle */}
@@ -251,9 +258,9 @@ export function SpaceDashboard({
               </div>
             </div>
 
-            {/* Live Preview viewport (pointer-events-none so clicking body opens chat) */}
-            <div className="flex-1 w-full h-full relative overflow-hidden pointer-events-none select-none bg-slate-50/30 dark:bg-black/20">
-              <div className="absolute inset-0 scale-[0.65] origin-top-left w-[153%] h-[153%] pointer-events-none">
+            {/* Interactive Live Viewport (pointer-events-auto so user can interact with Kanban board / app) */}
+            <div className="flex-1 w-full h-full relative overflow-hidden pointer-events-auto select-auto bg-slate-50/30 dark:bg-black/20">
+              <div className="absolute inset-0 w-full h-full">
                 {isHtml ? (
                   <AppView
                     sandboxUrl={sandboxUrl}

@@ -62,9 +62,8 @@ const getSpacePins = (spaceId: string | null) => {
   * **Documents (`.doc`, `.md`):** Clean serif typography card showing author, last modified timestamp, and live excerpt snippet.
   * **Tracking Boards (`inferred_tasks.json`):** Miniature live Kanban summary widget showing To Do / In Progress / Done counts and assignee avatars.
 ### 2.3 Pinned Card Interaction & Layout Mechanics
-* **Live Previews:** All cards render actual live previews of their artifacts:
-  * Custom tools (`index.html`) render via scaled live iframe.
-  * Documents (`.doc`, `.md`) and Slides render via scaled live document previews.
+* **Live Previews & Full Interactivity:** All cards render full, unscaled, interactive live previews (`pointer-events-auto`, `h-[460px]`), allowing users to directly interact with vibe coded tools (e.g. dragging Kanban cards, clicking buttons) without leaving the dashboard grid. Clicking the title in the header toolbar opens the authoring chat.
+* **Visual Drop Shadows:** Cards utilize premium elevation shadows matching the chat input composer (`shadow-[0_8px_30px_rgba(220,225,235,0.45)]` in light mode and `shadow-[0_8px_30px_rgba(0,0,0,0.3)]` in dark mode).
 * **Hover Menu (Top-Right 3 Dots):**
   * Hovering over any card reveals a 3-dots icon button in the top right corner.
   * Clicking the 3 dots opens a styled dropdown menu (using our shared design system tokens) with two options: **"Edit"** and **"Remove"**.
