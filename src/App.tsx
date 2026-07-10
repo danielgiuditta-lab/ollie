@@ -5005,6 +5005,23 @@ export default function App() {
           theme={appTheme}
           activeProactiveTask={activeProactiveTask}
           activeSpaceId={activeSpaceId}
+          onPinArtifact={(file) => {
+            const currentPins = projects.find(p => p && p.id === activeSpaceId)?.pinnedArtifactIds || [];
+            const fileId = file?.id || file?.driveId;
+            if (fileId && currentPins.includes(fileId)) {
+              handleUnpinArtifact(fileId);
+            } else if (file) {
+              handlePinArtifact(file);
+            }
+          }}
+          isPinned={
+            !!(
+              activeSpaceId &&
+              projects
+                .find(p => p && p.id === activeSpaceId)
+                ?.pinnedArtifactIds?.includes((selectedFile || activeProactiveTask)?.id || (selectedFile || activeProactiveTask)?.driveId)
+            )
+          }
         />
         <div className={`flex-1 flex overflow-hidden relative ${isSourcesPanelOpen ? 'gap-0' : 'gap-4'}`}>
           

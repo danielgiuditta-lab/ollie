@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, X, Pin } from 'lucide-react';
 import { themeTokens } from '../../utils/themeTokens';
 
 import { cleanWorkspaceName } from '../Canvas/HomeLanding';
@@ -41,6 +41,8 @@ interface CanvasHeaderProps {
   theme?: 'light' | 'dark';
   activeProactiveTask?: any;
   activeSpaceId?: string | null;
+  onPinArtifact?: (file: any) => void;
+  isPinned?: boolean;
 }
 
 export function CanvasHeader({
@@ -57,7 +59,9 @@ export function CanvasHeader({
   peers,
   theme = 'light',
   activeProactiveTask,
-  activeSpaceId
+  activeSpaceId,
+  onPinArtifact,
+  isPinned = false
 }: CanvasHeaderProps) {
   const isHome = viewState === 'home';
   const isDark = theme === 'dark';
@@ -150,7 +154,7 @@ export function CanvasHeader({
         </span>
         <ChevronRight size={18} className="mx-2 text-slate-400 dark:text-slate-500 shrink-0" />
         
-        <div className="flex items-center gap-1.5 text-slate-800 dark:text-white font-medium">
+        <div className="flex items-center gap-1.5 text-slate-800 dark:text-white font-medium group/title">
           <span>{artifactName}</span>
           <button 
             onClick={selectedFile ? onCloseFile : onCloseWorkspace}
@@ -159,6 +163,15 @@ export function CanvasHeader({
           >
             <X size={14} className="text-slate-500 dark:text-slate-400" />
           </button>
+          {onPinArtifact && (selectedFile || activeProactiveTask) && (
+            <button
+              onClick={() => onPinArtifact(selectedFile || activeProactiveTask)}
+              className="opacity-0 group-hover/title:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center animate-fade-in"
+              title={isPinned ? "Unpin from Dashboard" : "Pin to Dashboard"}
+            >
+              <Pin size={14} className={isPinned ? "text-blue-500 dark:text-blue-400 fill-blue-500/20" : "text-slate-500 dark:text-slate-400"} />
+            </button>
+          )}
         </div>
       </div>
     );
