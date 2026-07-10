@@ -1390,7 +1390,9 @@ export default function App() {
         }
       }
 
-      const activeDoc = selectedFile || sandboxFiles.find(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides') || { name: currentTask === 'slide' ? 'presentation.gslides' : 'document.doc', content: '' };
+      const currentChatTask = recentTasks.find(t => t.id === (targetChatId || activeChatId));
+      const boundFileId = currentChatTask?.associatedFileId;
+      const activeDoc = (boundFileId ? sandboxFiles.find(f => f && (f.id === boundFileId || f.driveId === boundFileId)) : null) || selectedFile || sandboxFiles.find(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides') || { name: currentTask === 'slide' ? 'presentation.gslides' : 'document.doc', content: '' };
 
       try {
         console.log("[DocJourney Client] Sending POST /api/doc-journey with prompt:", text);
@@ -1479,7 +1481,10 @@ export default function App() {
                   console.log(`[DocJourney Client] Extracted docText (${docText.length} chars)`);
                   setSandboxFiles(prev => {
                     return prev.map(f => {
-                      if (f.id === activeDoc.id || f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides') {
+                      const isTarget = (activeDoc.id && (f.id === activeDoc.id || f.driveId === activeDoc.id)) ||
+                                       (activeDoc.driveId && (f.id === activeDoc.driveId || f.driveId === activeDoc.driveId)) ||
+                                       (!activeDoc.id && !activeDoc.driveId && (f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides'));
+                      if (isTarget) {
                         return { ...f, content: docText };
                       }
                       return f;
@@ -1497,7 +1502,11 @@ export default function App() {
         setSandboxFiles(latestFiles => {
           let updatedFiles = latestFiles;
           let smartTitle = "";
-          const currentDoc = latestFiles.find(f => f.id === activeDoc.id || f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides');
+          const currentDoc = latestFiles.find(f =>
+            (activeDoc.id && (f.id === activeDoc.id || f.driveId === activeDoc.id)) ||
+            (activeDoc.driveId && (f.id === activeDoc.driveId || f.driveId === activeDoc.driveId)) ||
+            (!activeDoc.id && !activeDoc.driveId && (f.name === activeDoc.name || f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides'))
+          );
           let finalDocName = currentDoc?.name;
           if (currentDoc) {
             const h1Match = (currentDoc.content || "").match(/^#\s+(.+)$/m);

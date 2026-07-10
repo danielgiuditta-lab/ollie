@@ -1,0 +1,33 @@
+{
+  "chatId": "home_guest-chat-1783708478139",
+  "projectName": "New Document",
+  "chatName": "New Document",
+  "type": "workspace",
+  "taskType": "doc",
+  "associatedFileId": "created-artifact-1783708478139",
+  "associatedFileName": "document.doc",
+  "messages": [
+    {
+      "role": "bot",
+      "text": "How can I help with your doc?"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "home_guest",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "document.doc",
+      "type": "code",
+      "content": "# New document\n\n## Tell me what you want to write",
+      "mimeType": "application/vnd.google-apps.document",
+      "createdFromComposer": true,
+      "fontFamily": "Google Sans",
+      "isDocJourney": true,
+      "id": "created-artifact-1783708478139"
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "updatedAt": "2026-07-10T18:34:38.142Z"
+}
