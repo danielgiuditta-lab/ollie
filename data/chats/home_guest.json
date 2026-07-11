@@ -1,0 +1,21 @@
+{
+  "chatId": "home_guest",
+  "projectName": "New Workspace",
+  "chatName": null,
+  "type": null,
+  "taskType": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [],
+  "envId": null,
+  "activeSpaceId": null,
+  "sandboxUrl": "",
+  "sandboxFiles": [],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [
+    "artifact_doc_1783794694936",
+    "artifact_doc_1783794743016"
+  ],
+  "updatedAt": "2026-07-11T18:32:23.194Z"
+}

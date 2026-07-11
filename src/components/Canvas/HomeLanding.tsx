@@ -156,22 +156,23 @@ export const DEFAULT_TODO_ITEMS = [
 ];
 
 interface HomeLandingProps {
-  accessToken: string | null;
-  userProfile: any;
-  onLogin: () => void;
-  setViewState: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard') => void;
-  setSandboxFiles: (files: any[]) => void;
-  setSelectedFile: (file: any) => void;
-  setProjectName: (name: string) => void;
-  handleSendMessage: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
+  accessToken?: string | null;
+  userProfile?: any;
+  onLogin?: () => void;
+  setViewState?: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard') => void;
+  setSandboxFiles?: (files: any[]) => void;
+  setSelectedFile?: (file: any) => void;
+  setProjectName?: (name: string) => void;
+  handleSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
   setActiveSpaceId?: (id: string | null) => void;
   handleSpaceIngest?: (file: any) => Promise<void>;
-  suggestedList: CoverSlideItem[];
-  setSuggestedList: React.Dispatch<React.SetStateAction<CoverSlideItem[]>>;
-  isLoadingDrive: boolean;
-  setIsLoadingDrive: React.Dispatch<React.SetStateAction<boolean>>;
+  suggestedList?: CoverSlideItem[];
+  setSuggestedList?: React.Dispatch<React.SetStateAction<CoverSlideItem[]>>;
+  isLoadingDrive?: boolean;
+  setIsLoadingDrive?: React.Dispatch<React.SetStateAction<boolean>>;
   sandboxUrl?: string;
   setActiveSidebar?: (sidebar: 'gemini' | 'comments' | 'history' | null) => void;
+  onOpenApp?: () => void;
   theme?: 'light' | 'dark';
   journey?: 'search' | 'create';
   onFileRemove?: (file: any) => void;
@@ -180,8 +181,8 @@ interface HomeLandingProps {
   activeSpaceId?: string | null;
   projectName?: string;
   sandboxFiles?: any[];
-  todoItems: any[];
-  setTodoItems: React.Dispatch<React.SetStateAction<any[]>>;
+  todoItems?: any[];
+  setTodoItems?: React.Dispatch<React.SetStateAction<any[]>>;
   isLoggedIn?: boolean;
   onBypassAuth?: () => void;
   todoCacheRef?: React.MutableRefObject<Record<string, any[]>>;

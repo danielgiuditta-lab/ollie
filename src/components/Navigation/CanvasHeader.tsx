@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronRight, X, Pin } from 'lucide-react';
 import { themeTokens } from '../../utils/themeTokens';
 
@@ -41,7 +41,10 @@ interface CanvasHeaderProps {
   theme?: 'light' | 'dark';
   activeProactiveTask?: any;
   activeSpaceId?: string | null;
-  onPinArtifact?: (file: any) => void;
+  onPinArtifact?: (file: any, targetSpaceId?: string) => void;
+  onUnpinArtifact?: (fileId: string, targetSpaceId?: string) => void;
+  getSpacePins?: (spaceId: string | null) => string[];
+  getHomeChatId?: () => string;
   isPinned?: boolean;
   projects?: any[];
   recentTasks?: any[];
@@ -63,13 +66,24 @@ export function CanvasHeader({
   activeProactiveTask,
   activeSpaceId,
   onPinArtifact,
+  onUnpinArtifact,
+  getSpacePins,
+  getHomeChatId,
   isPinned = false,
   projects = [],
   recentTasks = []
 }: CanvasHeaderProps) {
+  const [isPinMenuOpen, setIsPinMenuOpen] = useState(false);
   const isHome = viewState === 'home';
   const isDark = theme === 'dark';
   const isHomeSpace = !activeSpaceId || String(activeSpaceId).toLowerCase().trim() === 'home' || String(activeSpaceId).toLowerCase().trim() === 'home_guest' || String(activeSpaceId).toLowerCase().trim().startsWith('home_') || String(activeSpaceId).toLowerCase().trim().startsWith('home-') || String(activeSpaceId).toLowerCase().trim() === 'home dashboard';
+
+  useEffect(() => {
+    if (!isPinMenuOpen) return;
+    const handleClickOutside = () => setIsPinMenuOpen(false);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [isPinMenuOpen]);
 
   // Render shared space members list
   const SharedMembersAvatars = () => {
@@ -170,15 +184,77 @@ export function CanvasHeader({
           >
             <X size={14} className="text-slate-500 dark:text-slate-400" />
           </button>
-          {onPinArtifact && (selectedFile || activeProactiveTask) && (
-            <button
-              onClick={() => onPinArtifact(selectedFile || activeProactiveTask)}
-              className="opacity-0 group-hover/title:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center animate-fade-in"
-              title={isPinned ? "Unpin from Dashboard" : "Pin to Dashboard"}
-            >
-              <Pin size={14} className={isPinned ? "text-blue-500 dark:text-blue-400 fill-blue-500/20" : "text-slate-500 dark:text-slate-400"} />
-            </button>
-          )}
+          {onPinArtifact && (selectedFile || activeProactiveTask) && (() => {
+            const activeFile = selectedFile || activeProactiveTask;
+            const fileId = activeFile?.id || activeFile?.driveId;
+            const homeChatId = getHomeChatId ? getHomeChatId() : 'home';
+
+            const spaceTargetId = activeSpaceId && !isHomeSpace ? activeSpaceId : (activeFile?.activeSpaceId || activeFile?.folderId);
+            const hasSpaceTarget = spaceTargetId && String(spaceTargetId).toLowerCase().trim() !== 'home' && String(spaceTargetId).toLowerCase().trim() !== 'home_guest' && !String(spaceTargetId).toLowerCase().trim().startsWith('home_') && !String(spaceTargetId).toLowerCase().trim().startsWith('home-');
+
+            const spacePins = (getSpacePins && hasSpaceTarget) ? getSpacePins(spaceTargetId) : [];
+            const homePins = getSpacePins ? getSpacePins(homeChatId) : [];
+
+            const isPinnedToSpace = !!(fileId && spacePins.includes(fileId));
+            const isPinnedToHome = !!(fileId && homePins.includes(fileId));
+            const isPinnedAnywhere = isPinnedToSpace || isPinnedToHome || isPinned;
+
+            return (
+              <div className="relative inline-flex items-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsPinMenuOpen(prev => !prev);
+                  }}
+                  className="opacity-0 group-hover/title:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center animate-fade-in"
+                  title="Pin options"
+                >
+                  <Pin size={14} className={isPinnedAnywhere ? "text-blue-500 dark:text-blue-400 fill-blue-500/20" : "text-slate-500 dark:text-slate-400"} />
+                </button>
+
+                {isPinMenuOpen && (
+                  <div 
+                    className="absolute top-full left-0 mt-1.5 z-[9999] bg-white dark:bg-[#2B2D31] rounded-xl border border-slate-200 dark:border-white/10 shadow-xl p-1 min-w-[190px] animate-in fade-in zoom-in-95 duration-100 select-none text-left"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {hasSpaceTarget && spaceName && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isPinnedToSpace) {
+                            if (onUnpinArtifact) onUnpinArtifact(fileId, spaceTargetId);
+                          } else {
+                            onPinArtifact(activeFile, spaceTargetId);
+                          }
+                          setIsPinMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 transition-colors cursor-pointer outline-none mb-0.5 whitespace-nowrap"
+                      >
+                        <Pin size={14} className={isPinnedToSpace ? "text-blue-500 fill-blue-500/20 shrink-0" : "text-slate-400 shrink-0"} />
+                        <span>{isPinnedToSpace ? `Unpin from ${spaceName}` : `Pin to ${spaceName}`}</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isPinnedToHome) {
+                          if (onUnpinArtifact) onUnpinArtifact(fileId, homeChatId);
+                        } else {
+                          onPinArtifact(activeFile, homeChatId);
+                        }
+                        setIsPinMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 transition-colors cursor-pointer outline-none whitespace-nowrap"
+                    >
+                      <Pin size={14} className={isPinnedToHome ? "text-blue-500 fill-blue-500/20 shrink-0" : "text-slate-400 shrink-0"} />
+                      <span>{isPinnedToHome ? "Unpin from Home" : "Pin to Home"}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
     );

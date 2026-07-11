@@ -3645,28 +3645,32 @@ export default function App() {
     return Array.from(allFilesMap.values());
   };
 
-  const handlePinArtifact = (file: any) => {
-    if (!activeSpaceId || !file) return;
+  const handlePinArtifact = (file: any, targetSpaceId?: string) => {
+    const targetId = targetSpaceId || activeSpaceId || getHomeChatId();
+    if (!targetId || !file) return;
     const fileId = file.id || file.driveId;
     if (!fileId) return;
 
-    if (workspaceCacheRef.current[activeSpaceId]) {
-      const curPins = workspaceCacheRef.current[activeSpaceId].pinnedArtifactIds || [];
-      if (!curPins.includes(fileId)) {
-        const nextPins = [...curPins, fileId];
-        workspaceCacheRef.current[activeSpaceId] = {
-          ...workspaceCacheRef.current[activeSpaceId],
-          pinnedArtifactIds: nextPins
-        };
-      }
+    if (!workspaceCacheRef.current[targetId]) {
+      workspaceCacheRef.current[targetId] = { sandboxFiles: [], ingestedFiles: [], messages: [], envId: '', sandboxUrl: '', projectName: '', selectedFile: null, indexFileSelected: false } as any;
+    }
+    const curPins = workspaceCacheRef.current[targetId].pinnedArtifactIds || [];
+    if (!curPins.includes(fileId)) {
+      const nextPins = [...curPins, fileId];
+      workspaceCacheRef.current[targetId] = {
+        ...workspaceCacheRef.current[targetId],
+        pinnedArtifactIds: nextPins
+      };
     }
 
+    let updatedInLists = false;
     const updatePins = (p: any) => {
-      if (p && (p.id === activeSpaceId || (p.type === 'space' && p.activeSpaceId === activeSpaceId))) {
+      if (p && (p.id === targetId || (p.type === 'space' && p.activeSpaceId === targetId))) {
+        updatedInLists = true;
         const currentPins = p.pinnedArtifactIds || [];
         if (currentPins.includes(fileId)) return p;
         const nextPins = [...currentPins, fileId];
-        fetch(`/api/chats/${activeSpaceId}`, {
+        fetch(`/api/chats/${targetId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...p, pinnedArtifactIds: nextPins })
@@ -3678,25 +3682,37 @@ export default function App() {
 
     setProjects(prev => prev.map(updatePins));
     setRecentTasks(prev => prev.map(updatePins));
+
+    if (!updatedInLists) {
+      const nextPins = workspaceCacheRef.current[targetId]?.pinnedArtifactIds || [fileId];
+      fetch(`/api/chats/${targetId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: targetId, pinnedArtifactIds: nextPins })
+      }).catch(err => console.error("Failed to save pinned artifact to target:", err));
+    }
   };
 
-  const handleUnpinArtifact = (fileId: string) => {
-    if (!activeSpaceId || !fileId) return;
+  const handleUnpinArtifact = (fileId: string, targetSpaceId?: string) => {
+    const targetId = targetSpaceId || activeSpaceId || getHomeChatId();
+    if (!targetId || !fileId) return;
 
-    if (workspaceCacheRef.current[activeSpaceId]) {
-      const curPins = workspaceCacheRef.current[activeSpaceId].pinnedArtifactIds || [];
+    if (workspaceCacheRef.current[targetId]) {
+      const curPins = workspaceCacheRef.current[targetId].pinnedArtifactIds || [];
       const nextPins = curPins.filter((id: string) => id !== fileId);
-      workspaceCacheRef.current[activeSpaceId] = {
-        ...workspaceCacheRef.current[activeSpaceId],
+      workspaceCacheRef.current[targetId] = {
+        ...workspaceCacheRef.current[targetId],
         pinnedArtifactIds: nextPins
       };
     }
 
+    let updatedInLists = false;
     const updatePins = (p: any) => {
-      if (p && (p.id === activeSpaceId || (p.type === 'space' && p.activeSpaceId === activeSpaceId))) {
+      if (p && (p.id === targetId || (p.type === 'space' && p.activeSpaceId === targetId))) {
+        updatedInLists = true;
         const currentPins = p.pinnedArtifactIds || [];
         const nextPins = currentPins.filter((id: string) => id !== fileId);
-        fetch(`/api/chats/${activeSpaceId}`, {
+        fetch(`/api/chats/${targetId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...p, pinnedArtifactIds: nextPins })
@@ -3707,6 +3723,15 @@ export default function App() {
     };
     setProjects(prev => prev.map(updatePins));
     setRecentTasks(prev => prev.map(updatePins));
+
+    if (!updatedInLists && workspaceCacheRef.current[targetId]) {
+      const nextPins = workspaceCacheRef.current[targetId]?.pinnedArtifactIds || [];
+      fetch(`/api/chats/${targetId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: targetId, pinnedArtifactIds: nextPins })
+      }).catch(err => console.error("Failed to save unpinned artifact to target:", err));
+    }
   };
 
   const handleReorderPins = (newOrderedIds: string[]) => {
@@ -5131,15 +5156,10 @@ export default function App() {
           theme={appTheme}
           activeProactiveTask={activeProactiveTask}
           activeSpaceId={activeSpaceId}
-          onPinArtifact={(file) => {
-            const currentPins = getSpacePins(activeSpaceId);
-            const fileId = file?.id || file?.driveId;
-            if (fileId && currentPins.includes(fileId)) {
-              handleUnpinArtifact(fileId);
-            } else if (file) {
-              handlePinArtifact(file);
-            }
-          }}
+          onPinArtifact={handlePinArtifact}
+          onUnpinArtifact={handleUnpinArtifact}
+          getSpacePins={getSpacePins}
+          getHomeChatId={getHomeChatId}
           isPinned={
             !!(
               activeSpaceId &&

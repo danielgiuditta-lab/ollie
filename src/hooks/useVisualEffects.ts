@@ -5,7 +5,7 @@ export function useVisualEffects() {
     x: number;
     y: number;
     visible: boolean;
-    label: string;
+    label?: string;
     status: 'pointing' | 'grabbing' | 'idle';
   }>({
     x: 0,
@@ -15,15 +15,7 @@ export function useVisualEffects() {
     status: 'pointing'
   });
 
-  const [flyingClones, setFlyingClones] = useState<Array<{
-    id: string;
-    fileName: string;
-    iconType: string;
-    startX: number;
-    startY: number;
-    targetX: number;
-    targetY: number;
-  }>>([]);
+  const [flyingClones, setFlyingClones] = useState<Array<any>>([]);
 
   const [particleBursts, setParticleBursts] = useState<Array<{ id: string; x: number; y: number }>>([]);
   const [animatingFileIds, setAnimatingFileIds] = useState<string[]>([]);
