@@ -22,19 +22,8 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status }) => {
           0% {
             stroke-dashoffset: 85;
           }
-          50% {
-            stroke-dashoffset: 15;
-          }
           100% {
-            stroke-dashoffset: 85;
-          }
-        }
-        @keyframes rotateRing {
-          0% {
-            transform: rotate(-90deg);
-          }
-          100% {
-            transform: rotate(270deg);
+            stroke-dashoffset: 0;
           }
         }
       `}</style>
@@ -80,7 +69,8 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status }) => {
               strokeDasharray="85" 
               style={{ 
                 transformOrigin: '18px 18px',
-                animation: 'fillRing 2.2s ease-in-out infinite, rotateRing 1.8s linear infinite',
+                transform: 'rotate(-90deg)',
+                animation: 'fillRing 1.5s linear infinite',
                 strokeLinecap: 'round' 
               }} 
             />
@@ -124,7 +114,8 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status }) => {
               strokeDasharray="85" 
               style={{ 
                 transformOrigin: '18px 18px',
-                animation: 'fillRing 2.2s ease-in-out infinite, rotateRing 1.8s linear infinite',
+                transform: 'rotate(-90deg)',
+                animation: 'fillRing 1.5s linear infinite',
                 strokeLinecap: 'round' 
               }} 
             />

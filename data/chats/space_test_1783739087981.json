@@ -1,0 +1,15 @@
+{
+  "chatId": "space_test_1783739087981",
+  "projectName": "Ollie Test Workspace",
+  "messages": [],
+  "sandboxFiles": [
+    {
+      "name": "CodeMender PRD.doc",
+      "type": "code",
+      "content": "# CodeMender PRD\n\nContent details...",
+      "id": "created-doc-9999",
+      "isDocJourney": true
+    }
+  ],
+  "updatedAt": "2026-07-11T03:04:48.078Z"
+}

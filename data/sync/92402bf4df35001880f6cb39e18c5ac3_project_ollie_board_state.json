@@ -1,0 +1,45 @@
+{
+  "envId": "92402bf4df35001880f6cb39e18c5ac3",
+  "key": "project_ollie_board_state",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-1",
+        "title": "Implement Spanner cycle-detection CTE in CreateSubTask",
+        "status": "inprogress",
+        "assigneeEmail": "ianmendiola@google.com"
+      },
+      {
+        "assigneeEmail": "jizr@google.com",
+        "status": "todo",
+        "id": "task-2",
+        "title": "Design hybrid semantic + BM25 retrieval for Memory Service"
+      },
+      {
+        "status": "inprogress",
+        "assigneeEmail": "cdcarroll@google.com",
+        "title": "Sobi Harness: Add agent_extension.go permission checking",
+        "id": "task-3"
+      },
+      {
+        "status": "inprogress",
+        "assigneeEmail": "sgoodson@google.com",
+        "title": "Create UX Research Interview plan for baseline workflows",
+        "id": "task-4"
+      },
+      {
+        "id": "task-5",
+        "title": "DDL: Setup FactualFacts & MemoryACLs Spanner tables",
+        "assigneeEmail": "rspohn@google.com",
+        "status": "done"
+      },
+      {
+        "title": "Draft High Level Design (HLD) document for Project Ollie",
+        "id": "task-6",
+        "assigneeEmail": "ftj@google.com",
+        "status": "done"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-11T13:03:00.170Z"
+}
