@@ -150,6 +150,12 @@ const getSpacePins = (spaceId: string | null) => {
 ### Invariant 27: Direct Artifact Target Resolution on Edit / Selection
 When `handleFileClick` is invoked with a specific file object (such as clicking **Edit** or the card title on a pinned card in `<SpaceDashboard />`), `getAllSpaceFiles` attaches `activeSpaceId` to all resolved files so `folderId` evaluates to the parent space ID rather than the individual file ID. Additionally, `handleFileClick` matches and selects the exact file object directly (`specificFileMatch`) across memory cache and database restoration branches instead of falling through to default `resolveArtifactForChat` type guessing, guaranteeing pinned custom tools (`index.html`) open directly in `'app'` view.
 
+### Invariant 28: Space Object Exclusion from `specificFileMatch`
+In `handleFileClick`, when opening a Space or child chat session from `LeftNav`, `file` is passed as the parent Space raw object (e.g. `{ id: 'space-123', name: 'Ollie', type: 'space' }`). To prevent `specificFileMatch` from mistakenly comparing `f.name === file.name` against the parent space's title and selecting a random presentation or file from Google Drive (e.g. `Ollie.gslides`), `specificFileMatch` MUST verify that `file` is NOT a space/workspace container (`!file.type?.includes('space') && file.type !== 'workspace' && !file.chats && !file.isProject`).
+
+### Invariant 29: Child Memory Cache Dual-Indexing & Stream Target Preservation
+During creation and AI streaming generation in `/api/vibe-code`, `saveChatToDb` and `setRecentTasks` MUST index and save memory cache and task list entries for both `targetChatId` (the active child chat ID) and `resolvedSpaceId` (the parent space ID). Preserving `targetChatId` with its associated `taskType`, `associatedFileId`, and `associatedFileName` guarantees instant memory cache restoration (`workspaceCacheRef.current[targetChatId]`) and prevents cross-type artifact collisions when switching chats in `LeftNav`.
+
 ---
 
 ## 3. Verification & Maintenance

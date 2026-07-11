@@ -1,0 +1,51 @@
+{
+  "envId": "521a0902ab7b9de90290c8414be5386c",
+  "key": "ollie_kanban_board_state",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-1",
+        "title": "Implement push event listeners for Gmail & Google Chat spaces",
+        "status": "todo",
+        "assignee": "cdcarroll@google.com"
+      },
+      {
+        "id": "task-2",
+        "title": "Build Wiz-based interactive board & collaborative comment stream",
+        "status": "todo",
+        "assignee": "jannicar@google.com"
+      },
+      {
+        "id": "task-3",
+        "title": "Integrate Task Service with Spanner DB schema layout",
+        "status": "inprogress",
+        "assignee": "jizr@google.com"
+      },
+      {
+        "id": "task-4",
+        "title": "Develop capability-based routing logic for Task Fulfilment",
+        "status": "inprogress",
+        "assignee": "rspohn@google.com"
+      },
+      {
+        "id": "task-5",
+        "title": "Implement DBSCAN vector clustering for Memory Dream Cron sweeps",
+        "status": "inprogress",
+        "assignee": "ianmendiola@google.com"
+      },
+      {
+        "id": "task-6",
+        "title": "Set up PTY watchdog for secure Cloudtop/Capsules command execution",
+        "status": "done",
+        "assignee": "sgoodson@google.com"
+      },
+      {
+        "id": "task-7",
+        "title": "Create Memory DB schema for logical tier & RBAC separation",
+        "status": "done",
+        "assignee": "danielgiuditta@google.com"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-11T02:35:09.101Z"
+}

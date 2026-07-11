@@ -23,7 +23,7 @@ export const resolveArtifactForChat = (files: any[], task: any, taskType: string
   }
 
   // 2. Filter candidates strictly by taskType
-  let candidates = files;
+  let candidates: any[] = [];
   if (taskType === 'doc') {
     candidates = files.filter(f => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase().endsWith('.md') || f.name.toLowerCase().endsWith('.txt') || f.isDocJourney || f.mimeType?.includes('document')));
   } else if (taskType === 'slide') {
@@ -37,11 +37,11 @@ export const resolveArtifactForChat = (files: any[], task: any, taskType: string
   }
 
   if (candidates.length === 0) {
-    candidates = files;
+    return null;
   }
 
-  // 3. Match within type candidates using strict name matching
-  const chatName = (task?.chatName || task?.name || '').trim().toLowerCase();
+  // 3. Match within type candidates using strict chatName matching (never fallback to space name!)
+  const chatName = (task?.chatName || task?.raw?.chatName || '').trim().toLowerCase();
   if (chatName && chatName !== 'new document' && chatName !== 'custom tool' && chatName !== 'new slide deck' && chatName !== 'new spreadsheet') {
     const exactBase = candidates.find(f => {
       if (!f || !f.name) return false;

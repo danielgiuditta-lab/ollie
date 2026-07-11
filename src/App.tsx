@@ -643,8 +643,13 @@ export default function App() {
     const resolvedChatName = customChatName || existing?.chatName || (chatIdVal.includes('-chat-') ? (projectName !== 'Workspace Project' ? projectName : 'Chat') : '');
     const resolvedTaskType = customTaskType || existing?.taskType || existing?.type || null;
     const resolvedType = existing?.type || (resolvedTaskType === 'site' ? 'site' : 'workspace');
-    const resolvedFileId = associatedFileId || existing?.associatedFileId || (customFiles?.length === 1 ? (customFiles[0].driveId || customFiles[0].id) : undefined);
-    const resolvedFileName = associatedFileName || existing?.associatedFileName || (customFiles?.length === 1 ? customFiles[0].name : undefined);
+    
+    const primaryFile = (customFiles && customFiles.length > 0)
+      ? (customFiles.find(f => f && (f.isDocJourney || f.name.endsWith('.doc') || f.name.endsWith('.gslides') || f.name.endsWith('.gsheet') || f.name === 'index.html')) || customFiles[0])
+      : undefined;
+
+    const resolvedFileId = associatedFileId || existing?.associatedFileId || (customFiles?.length === 1 ? (customFiles[0].driveId || customFiles[0].id) : (primaryFile?.driveId || primaryFile?.id));
+    const resolvedFileName = associatedFileName || existing?.associatedFileName || (customFiles?.length === 1 ? customFiles[0].name : primaryFile?.name);
 
     try {
       await fetch(`/api/chats/${chatIdVal}`, {
@@ -668,6 +673,24 @@ export default function App() {
           members: members
         })
       });
+
+      // Populate memory cache for the child chat ID as well
+      const existingChildCache: any = workspaceCacheRef.current[chatIdVal] || {};
+      workspaceCacheRef.current[chatIdVal] = {
+        ingestedFiles: existingChildCache.ingestedFiles || [],
+        sandboxFiles: filesToSave,
+        envId: activeEnv,
+        sandboxUrl: activeSandboxUrl || sandboxUrl || '',
+        messages: messagesList,
+        projectName: activeName || 'Workspace Project',
+        selectedFile: existingChildCache.selectedFile || null,
+        indexFileSelected: existingChildCache.indexFileSelected || false,
+        viewState: existingChildCache.viewState || 'app',
+        taskType: resolvedTaskType,
+        type: resolvedType,
+        associatedFileId: resolvedFileId,
+        associatedFileName: resolvedFileName
+      };
 
       // If saving a child chat inside a parent space, also persist the updated file manifest to the parent space
       if (resolvedSpaceId && resolvedSpaceId !== chatIdVal && !isHomeChatId(resolvedSpaceId)) {
@@ -2301,20 +2324,24 @@ export default function App() {
 
                     setRecentTasks(prev => {
                       const now = Date.now();
-                      const existing = prev.find(t => t && t.id === activeFolder);
+                      const targetIdToUpdate = targetChatId || activeFolder;
+                      const existing = prev.find(t => t && t.id === targetIdToUpdate);
+                      const primaryFile = combinedFilesForSync.find(f => f && (f.name === 'index.html' || f.isDocJourney || f.name.endsWith('.doc'))) || combinedFilesForSync[0];
                       const newTask = {
-                        id: activeFolder,
+                        id: targetIdToUpdate,
                         name: activeName,
-                        chatName: existing?.chatName,
-                        type: existing?.type || 'workspace',
-                        taskType: existing?.taskType,
-                        activeSpaceId: activeFolder,
+                        chatName: existing?.chatName || inferredChatNameVal || 'Custom Tool',
+                        type: existing?.type || (existing?.taskType === 'site' ? 'site' : 'workspace'),
+                        taskType: existing?.taskType || 'site',
+                        associatedFileId: existing?.associatedFileId || primaryFile?.driveId || primaryFile?.id,
+                        associatedFileName: existing?.associatedFileName || primaryFile?.name || 'index.html',
+                        activeSpaceId: resolvedFolderId || initialSpaceId,
                         updatedAt: now
                       };
                       const filtered = prev.filter(t => {
                         const id = typeof t === 'string' ? '' : t.id;
                         const name = typeof t === 'string' ? t : t.name;
-                        return id !== activeFolder && name !== 'New' && name !== 'Building project...' && name !== 'Workspace Project';
+                        return id !== targetIdToUpdate && name !== 'New' && name !== 'Building project...' && name !== 'Workspace Project';
                       });
                       return [newTask, ...filtered];
                     });
@@ -2347,6 +2374,7 @@ export default function App() {
       if (targetChatId && !targetChatId.endsWith('-temp')) {
         setMessages(currentMessages => {
           setTimeout(() => {
+            const primaryFile = combinedFilesForSync.find(f => f && (f.name === 'index.html' || f.isDocJourney || f.name.endsWith('.doc'))) || combinedFilesForSync[0];
             saveChatToDb(
               targetChatId,
               currentMessages,
@@ -2355,7 +2383,10 @@ export default function App() {
               projectName,
               combinedFilesForSync,
               resolvedFolderId || initialSpaceId,
-              inferredChatNameVal
+              inferredChatNameVal,
+              'site',
+              primaryFile?.driveId || primaryFile?.id,
+              primaryFile?.name || 'index.html'
             );
             if (inferredChatNameVal) {
               fetchGeminiTasks(accessToken, userProfile?.email);
@@ -4106,8 +4137,9 @@ export default function App() {
         const allAvailableFiles = [...(cached.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
         const taskContext = { ...matchingTask, ...cached, ...cachedChat };
 
-        const specificFileMatch = (typeof file === 'object' && file && file.name && (file.id || file.driveId || file.chatId))
-          ? allAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || f.name === file.name)) || file
+        const isSpaceObject = typeof file === 'object' && file && (file.type === 'space' || file.type === 'workspace' || file.isProject || file.chats || file.activeSpaceId);
+        const specificFileMatch = (typeof file === 'object' && file && file.name && !isSpaceObject)
+          ? allAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || (file.isFromFileList && f.name === file.name))) || file
           : null;
 
         if (specificFileMatch && !specificFileMatch.type?.includes('space') && specificFileMatch.name !== 'inferred_tasks.json') {
@@ -4318,8 +4350,9 @@ export default function App() {
                 let nextViewState: any = 'files';
 
                 const allDbAvailableFiles = [...(chatData.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
-                const specificFileMatch = (typeof file === 'object' && file && file.name && (file.id || file.driveId || file.chatId))
-                  ? allDbAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || f.name === file.name)) || file
+                const isSpaceObject = typeof file === 'object' && file && (file.type === 'space' || file.type === 'workspace' || file.isProject || file.chats || file.activeSpaceId);
+                const specificFileMatch = (typeof file === 'object' && file && file.name && !isSpaceObject)
+                  ? allDbAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || (file.isFromFileList && f.name === file.name))) || file
                   : null;
 
                 if (isParentSpaceClick && !isHomeChatId(folderId)) {
