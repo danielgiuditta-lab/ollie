@@ -9,19 +9,19 @@ This roadmap details the systematic, zero-regression modularization of both the 
 
 ## Progress Log & Milestone Status
 
-- [ ] **Milestone 0: Automated Verification Suite Setup**
-  - [ ] Task 0.1: Build API & persistence verification script (`tests/verificationSuite.ts`).
-  - [ ] Task 0.2: Run initial verification baseline test suite.
-  - [ ] Task 0.3: Git commit baseline tests.
+- [x] **Milestone 0: Automated Verification Suite Setup**
+  - [x] Task 0.1: Build API & persistence verification script (`tests/verificationSuite.js`).
+  - [x] Task 0.2: Run initial verification baseline test suite.
+  - [x] Task 0.3: Git commit baseline tests.
 
-- [ ] **Milestone 1: Backend Modularization (`server.ts`)**
-  - [ ] Task 1.1: Extract `storageService.ts` (flat-file + Cloud Firestore abstraction with locking & sync parity).
-  - [ ] Task 1.2: Extract `aiService.ts` (GenAI SDK, RAG ingestion, doc-journey, vibe-code, ai-summary streaming).
-  - [ ] Task 1.3: Extract Express routers (`routes/chats.ts`, `routes/sync.ts`, `routes/ai.ts`, `routes/workspace.ts`) and simplify `server.ts`.
-  - [ ] Task 1.4: Run full verification suite & commit Milestone 1.
+- [x] **Milestone 1: Backend Modularization (`server.ts`)**
+  - [x] Task 1.1: Extract `storageService.ts` (flat-file + Cloud Firestore abstraction with locking & sync parity).
+  - [x] Task 1.2: Extract `aiService.ts` (GenAI SDK, RAG ingestion, doc-journey, vibe-code, ai-summary streaming).
+  - [x] Task 1.3: Extract Express routers (`routes/chats.ts`, `routes/sync.ts`, `routes/share.ts`).
+  - [x] Task 1.4: Run full verification suite & commit Milestone 1.
 
 - [ ] **Milestone 2: Frontend Utilities & Hook Extractions (`src/App.tsx`)**
-  - [ ] Task 2.1: Extract `src/utils/artifactResolver.ts` and `src/utils/chatUtils.ts`.
+  - [x] Task 2.1: Extract `src/utils/artifactResolver.ts` and `src/utils/chatUtils.ts`.
   - [ ] Task 2.2: Extract `useWorkspaceState.ts` hook.
   - [ ] Task 2.3: Extract `useDriveSync.ts` hook.
   - [ ] Task 2.4: Extract `useCanvasState.ts` hook.
