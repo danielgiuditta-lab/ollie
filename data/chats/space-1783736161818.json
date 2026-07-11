@@ -1,0 +1,20 @@
+{
+  "chatId": "space-1783736161818",
+  "projectName": "New Workspace",
+  "chatName": null,
+  "type": "space",
+  "taskType": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [],
+  "envId": null,
+  "activeSpaceId": "space-1783736161818",
+  "sandboxUrl": "",
+  "sandboxFiles": [],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [
+    "space-1783736161818-chat-1783736169825-file-0"
+  ],
+  "updatedAt": "2026-07-11T02:18:50.670Z"
+}

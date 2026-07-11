@@ -3656,7 +3656,11 @@ export default function App() {
             item.sandboxFiles.forEach((f: any) => {
               if (f) {
                 const key = f.id || f.driveId || (item.id + '_' + f.name);
-                allFilesMap.set(key, { ...f, chatId: f.chatId || item.id });
+                allFilesMap.set(key, { 
+                  ...f, 
+                  chatId: f.chatId || item.id,
+                  activeSpaceId: f.activeSpaceId || item.activeSpaceId || spaceId
+                });
               }
             });
           }
@@ -3673,7 +3677,11 @@ export default function App() {
           cacheVal.sandboxFiles.forEach((f: any) => {
             if (f) {
               const key = f.id || f.driveId || (k + '_' + f.name);
-              allFilesMap.set(key, { ...f, chatId: f.chatId || k });
+              allFilesMap.set(key, { 
+                ...f, 
+                chatId: f.chatId || k,
+                activeSpaceId: f.activeSpaceId || cacheVal.activeSpaceId || spaceId
+              });
             }
           });
         }
@@ -4026,16 +4034,28 @@ export default function App() {
       clearTimeout(syncTimeoutRef.current);
     }
     const isFromRecents = options?.isFromRecents ?? false;
-    const folderId = typeof file === 'string' ? file : (file.activeSpaceId || file.id);
-    if (!folderId) return;
 
     // Resolve targetChatId
-    let targetChatId = options?.targetChatId || (typeof file === 'object' && file.chatId ? file.chatId : folderId);
-    if (!targetChatId && chatModel === 'B') {
-      targetChatId = `${folderId}-chat-temp`;
-    } else if (!targetChatId) {
+    let targetChatId = options?.targetChatId || (typeof file === 'object' && file.chatId ? file.chatId : null);
+
+    // Resolve parent Space ID (folderId)
+    let folderId = typeof file === 'string' ? file : (file.activeSpaceId || file.parentSpaceId || file.spaceId || null);
+    if (!folderId && targetChatId) {
+      const matchingTask = recentTasks.find(t => t.id === targetChatId);
+      folderId = matchingTask?.activeSpaceId || matchingTask?.parentSpaceId || matchingTask?.spaceId || null;
+    }
+    if (!folderId && typeof file === 'object' && file) {
+      const matchingTask = recentTasks.find(t => t.id === file.id || t.id === file.chatId);
+      folderId = matchingTask?.activeSpaceId || (matchingTask?.type === 'space' ? matchingTask.id : null);
+    }
+    if (!folderId) {
+      folderId = (activeSpaceId && !isHomeChatId(activeSpaceId)) ? activeSpaceId : getHomeChatId();
+    }
+    if (!targetChatId) {
       targetChatId = folderId;
     }
+
+    if (!folderId) return;
 
     setActiveChatId(targetChatId);
 
@@ -4087,9 +4107,16 @@ export default function App() {
     setLoadedFolderId(null);
 
     setActiveSpaceId(folderId);
-    const fileName = typeof file === 'string' ? file : file.name;
-    if (fileName) {
-      setProjectName(fileName);
+    
+    // Maintain true parent Space name in projectName
+    const parentSpaceObj = projects.find(p => p && (p.id === folderId || p.activeSpaceId === folderId)) ||
+                          recentTasks.find(t => t && (t.id === folderId || (t.type === 'space' && t.activeSpaceId === folderId)));
+    if (isHomeChatId(folderId)) {
+      setProjectName('Home Dashboard');
+    } else if (parentSpaceObj?.name) {
+      setProjectName(parentSpaceObj.name);
+    } else if (typeof file === 'object' && file.type === 'space' && file.name) {
+      setProjectName(file.name);
     }
 
     // Reset AI mode summary state whenever opening a file/folder/workspace
@@ -4155,7 +4182,17 @@ export default function App() {
       } else {
         const allAvailableFiles = [...(cached.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
         const taskContext = { ...matchingTask, ...cached, ...cachedChat };
-        if (taskType === 'site' || taskType === 'tool') {
+
+        const specificFileMatch = (typeof file === 'object' && file && file.name && (file.id || file.driveId || file.chatId))
+          ? allAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || f.name === file.name)) || file
+          : null;
+
+        if (specificFileMatch && !specificFileMatch.type?.includes('space') && specificFileMatch.name !== 'inferred_tasks.json') {
+          const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
+          setSelectedFile(specificFileMatch);
+          setIndexFileSelected(isHtml);
+          setViewState(isHtml ? 'app' : 'files');
+        } else if (taskType === 'site' || taskType === 'tool') {
           const toolFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           setSelectedFile(toolFile || null);
           setIndexFileSelected(!!toolFile && (toolFile.name.toLowerCase().includes('index.html') || toolFile.name.toLowerCase().endsWith('.html')));
@@ -4302,7 +4339,7 @@ export default function App() {
               envId: latestEnvId,
               sandboxUrl: latestSandboxUrl,
               messages: latestMessages,
-              projectName: currentCache.projectName || fileName,
+              projectName: currentCache.projectName || projectName,
               selectedFile: currentCache.selectedFile || null,
               indexFileSelected: currentCache.indexFileSelected || false,
               viewState: currentCache.viewState || 'app',
@@ -4358,9 +4395,17 @@ export default function App() {
                 let nextViewState: any = 'files';
 
                 const allDbAvailableFiles = [...(chatData.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
+                const specificFileMatch = (typeof file === 'object' && file && file.name && (file.id || file.driveId || file.chatId))
+                  ? allDbAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || f.name === file.name)) || file
+                  : null;
+
                 if (isParentSpaceClick && !isHomeChatId(folderId)) {
                   fileToSelect = null;
                   nextViewState = 'dashboard';
+                } else if (specificFileMatch && !specificFileMatch.type?.includes('space') && specificFileMatch.name !== 'inferred_tasks.json') {
+                  fileToSelect = specificFileMatch;
+                  const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
+                  nextViewState = isHtml ? 'app' : 'files';
                 } else if (chatTaskType === 'site' || chatTaskType === 'tool') {
                   fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = fileToSelect ? 'app' : 'home';
@@ -4398,7 +4443,7 @@ export default function App() {
                   envId: chatData.envId || null,
                   sandboxUrl: chatData.sandboxUrl || '',
                   messages: chatData.messages || [],
-                  projectName: chatData.projectName || fileName || projectName,
+                  projectName: chatData.projectName || projectName,
                   selectedFile: (!skipSelect && fileToSelect) ? fileToSelect : null,
                   indexFileSelected: (!skipSelect && fileToSelect) ? (fileToSelect?.name?.toLowerCase().includes('index.html') ?? false) : false,
                   viewState: (!skipSelect && fileToSelect) ? nextViewState : (isParentSpaceClick && !isHomeChatId(folderId) ? 'dashboard' : (chatData.sandboxFiles.length > 0 ? 'files' : 'home')),
@@ -5063,6 +5108,8 @@ export default function App() {
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-white dark:bg-[#1E1F22] border-t-0 border-r-0 border-b-0 border-l border-slate-200 dark:border-[#2B2D31] rounded-none p-0 z-20 shadow-[0_0_8px_4px_#F8FAFD] dark:shadow-[0_0_15px_5px_rgba(0,0,0,0.5)]">
         <CanvasHeader 
           projectName={projectName}
+          projects={projects}
+          recentTasks={recentTasks}
           viewState={viewState}
           onHomeClick={() => {
             setActiveProactiveTask(null);
@@ -5255,7 +5302,7 @@ export default function App() {
                       spaceName={projectName || 'Space'}
                       pinnedArtifactIds={getSpacePins(activeSpaceId)}
                       sandboxFiles={getAllSpaceFiles(activeSpaceId)}
-                      onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId })}
+                      onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId || activeSpaceId || getHomeChatId() })}
                       onRemovePin={handleUnpinArtifact}
                       onReorderPins={handleReorderPins}
                       sandboxUrl={sandboxUrl}

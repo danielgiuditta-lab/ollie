@@ -144,6 +144,12 @@ const getSpacePins = (spaceId: string | null) => {
 * **Child Chat Artifact Aggregation (`getAllSpaceFiles`):** When viewing the root Space Dashboard (`viewState === 'dashboard'`), custom tools and documents generated inside child authoring chats (`${spaceId}-chat-...`) are not present in the root space's direct `sandboxFiles` array. To ensure pinned custom tools and docs resolve and render live previews on the grid, the app MUST pass `getAllSpaceFiles(activeSpaceId)` to `<SpaceDashboard />`. This helper aggregates `sandboxFiles` across the root space and all child chats in `recentTasks`, `projects`, and `workspaceCacheRef`, preserving `.chatId` for authoring jumps.
 * **Session-Scoped File IDs:** In `/api/vibe-code`, generated code files MUST NEVER be assigned generic IDs like `'sandbox-file-0'`, as this causes ID collisions across multiple tools in the same space. All generated files MUST be scoped to their chat session: `id: `${targetChatId || activeChatId || 'sandbox'}-file-${i}``.
 
+### Invariant 26: Parent Space Title Immutability & Breadcrumbs
+`projectName` in application state MUST strictly represent the parent Space's title (or `'Home Dashboard'`). Opening child authoring chats or child artifacts in `handleFileClick` MUST NOT mutate `projectName` to match the child artifact's name. `CanvasHeader` resolves `spaceName` by looking up the parent space object matching `activeSpaceId` from `projects` and `recentTasks`, ensuring breadcrumbs strictly render `Space > Artifact` (e.g. `Ollie > Product Requirements Document`) and never `Artifact 1 > Artifact 2`.
+
+### Invariant 27: Direct Artifact Target Resolution on Edit / Selection
+When `handleFileClick` is invoked with a specific file object (such as clicking **Edit** or the card title on a pinned card in `<SpaceDashboard />`), `getAllSpaceFiles` attaches `activeSpaceId` to all resolved files so `folderId` evaluates to the parent space ID rather than the individual file ID. Additionally, `handleFileClick` matches and selects the exact file object directly (`specificFileMatch`) across memory cache and database restoration branches instead of falling through to default `resolveArtifactForChat` type guessing, guaranteeing pinned custom tools (`index.html`) open directly in `'app'` view.
+
 ---
 
 ## 3. Verification & Maintenance

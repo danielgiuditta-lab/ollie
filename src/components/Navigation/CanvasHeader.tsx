@@ -43,6 +43,8 @@ interface CanvasHeaderProps {
   activeSpaceId?: string | null;
   onPinArtifact?: (file: any) => void;
   isPinned?: boolean;
+  projects?: any[];
+  recentTasks?: any[];
 }
 
 export function CanvasHeader({
@@ -61,7 +63,9 @@ export function CanvasHeader({
   activeProactiveTask,
   activeSpaceId,
   onPinArtifact,
-  isPinned = false
+  isPinned = false,
+  projects = [],
+  recentTasks = []
 }: CanvasHeaderProps) {
   const isHome = viewState === 'home';
   const isDark = theme === 'dark';
@@ -116,7 +120,10 @@ export function CanvasHeader({
       );
     }
 
-    const spaceName = projectName === 'New Space' ? 'New Space' : cleanWorkspaceName(projectName);
+    const parentSpaceObj = (projects || []).find((p: any) => p && (p.id === activeSpaceId || p.activeSpaceId === activeSpaceId)) ||
+                           (recentTasks || []).find((t: any) => t && (t.id === activeSpaceId || (t.type === 'space' && t.activeSpaceId === activeSpaceId)));
+    const rawSpaceName = parentSpaceObj?.name || parentSpaceObj?.chatName || projectName;
+    const spaceName = rawSpaceName === 'New Space' ? 'New Space' : cleanWorkspaceName(rawSpaceName);
 
     if (!selectedFile && viewState !== 'ai_summary' && !activeProactiveTask) {
       return (
