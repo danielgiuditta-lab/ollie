@@ -4,7 +4,6 @@ import { NativeViewer } from '../Canvas/NativeViewer';
 import { SpaceDashboard } from '../Canvas/SpaceDashboard';
 import { AISummaryView } from '../Canvas/AISummaryView';
 import { HomeLanding } from '../Canvas/HomeLanding';
-import { ComponentsCatalog } from '../ComponentsCatalog';
 import { ViewState } from '../../hooks/useCanvasState';
 
 interface CanvasContainerProps {
@@ -16,13 +15,15 @@ interface CanvasContainerProps {
   sandboxUrl: string;
   envId: string | null;
   appTheme: 'light' | 'dark';
-  pinnedArtifactIds: string[];
+  pinnedArtifactIds?: string[];
+  aiSummarySources?: any[];
+  aiSummaryMessages?: any[];
+  isAiSummaryLoading?: boolean;
+  onSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
+  onSnapAiSummary?: () => void;
   onSelectArtifact: (file: any) => void;
   onRemovePin: (fileId: string) => void;
   onReorderPins: (newOrderedIds: string[]) => void;
-  onSelectSpaceMode?: (spaceId: string, mode: 'tracking' | 'tool') => void;
-  onFinalizeSpace?: (name: string, selectedPeople: any[], selectedDocs?: any[]) => void;
-  onSelectSuggestedItem?: (item: any) => void;
   onOpenApp?: () => void;
 }
 
@@ -36,10 +37,14 @@ export function CanvasContainer({
   envId,
   appTheme,
   pinnedArtifactIds = [],
+  aiSummarySources = [],
+  aiSummaryMessages = [],
+  isAiSummaryLoading = false,
+  onSendMessage,
+  onSnapAiSummary,
   onSelectArtifact,
   onRemovePin,
   onReorderPins,
-  onSelectSuggestedItem,
   onOpenApp
 }: CanvasContainerProps) {
   if (viewState === 'dashboard' && activeSpaceId) {
@@ -80,6 +85,11 @@ export function CanvasContainer({
   if (viewState === 'ai_summary') {
     return (
       <AISummaryView
+        sources={aiSummarySources}
+        messages={aiSummaryMessages}
+        onSendMessage={onSendMessage || (() => {})}
+        isLoading={isAiSummaryLoading}
+        onSnap={onSnapAiSummary || (() => {})}
         theme={appTheme}
       />
     );
@@ -89,7 +99,6 @@ export function CanvasContainer({
     <HomeLanding
       projectName={projectName}
       theme={appTheme}
-      onSelectSuggestedItem={onSelectSuggestedItem}
       onOpenApp={onOpenApp}
     />
   );

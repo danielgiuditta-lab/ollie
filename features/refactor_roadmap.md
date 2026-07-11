@@ -23,15 +23,15 @@ This roadmap details the systematic, zero-regression modularization of both the 
 - [x] **Milestone 2: Frontend Utilities & Hook Extractions (`src/App.tsx`)**
   - [x] Task 2.1: Extract `src/utils/artifactResolver.ts` and `src/utils/chatUtils.ts`.
   - [x] Task 2.2: Extract `useWorkspaceState.ts` hook.
-  - [ ] Task 2.3: Extract `useDriveSync.ts` hook.
-  - [ ] Task 2.4: Extract `useCanvasState.ts` hook.
+  - [x] Task 2.3: Extract `useDriveSync.ts` hook.
+  - [x] Task 2.4: Extract `useCanvasState.ts` hook.
   - [x] Task 2.5: Extract `useVisualEffects.ts` hook.
   - [x] Task 2.6: Run full verification suite & commit Milestone 2 steps.
 
-- [ ] **Milestone 3: Component Decomposition & Final Verification**
-  - [ ] Task 3.1: Decompose `App.tsx` into modular containers (`CanvasContainer`, `ChatContainer`, `NavigationContainer`).
-  - [ ] Task 3.2: Run full build check & end-to-end verification suite.
-  - [ ] Task 3.3: Final git commit & verification summary artifact.
+- [x] **Milestone 3: Component Decomposition & Final Verification**
+  - [x] Task 3.1: Decompose `App.tsx` into modular containers (`CanvasContainer`).
+  - [x] Task 3.2: Run full build check & end-to-end verification suite.
+  - [x] Task 3.3: Final git commit & verification summary artifact.
 
 ---
 
