@@ -4151,7 +4151,7 @@ export default function App() {
         const allAvailableFiles = [...(cached.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
         const taskContext = { ...matchingTask, ...cached, ...cachedChat };
 
-        const isSpaceObject = typeof file === 'object' && file && (file.type === 'space' || file.type === 'workspace' || file.isProject || file.chats || file.activeSpaceId);
+        const isSpaceObject = typeof file === 'object' && file && (file.type === 'space' || file.type === 'workspace' || file.isProject || file.chats);
         const specificFileMatch = (typeof file === 'object' && file && file.name && !isSpaceObject)
           ? allAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || (file.isFromFileList && f.name === file.name))) || file
           : null;
@@ -5202,7 +5202,10 @@ export default function App() {
                       pinnedArtifactIds={getSpacePins(activeSpaceId || getHomeChatId())}
                       onRemovePin={handleUnpinArtifact}
                       onReorderPins={handleReorderPins}
-                      onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId || activeSpaceId || getHomeChatId() })}
+                      onSelectArtifact={(file) => {
+                        const targetChatId = file?.chatId || recentTasks.find(t => t.associatedFileId === file?.id || t.associatedFileName === file?.name)?.id || activeSpaceId || getHomeChatId();
+                        handleFileClick(file, false, { isFromRecents: true, targetChatId });
+                      }}
                     />
                   </div>
                   {isIngesting && (

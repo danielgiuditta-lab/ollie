@@ -156,6 +156,9 @@ In `handleFileClick`, when opening a Space or child chat session from `LeftNav`,
 ### Invariant 29: Child Memory Cache Dual-Indexing & Stream Target Preservation
 During creation and AI streaming generation in `/api/vibe-code`, `saveChatToDb` and `setRecentTasks` MUST index and save memory cache and task list entries for both `targetChatId` (the active child chat ID) and `resolvedSpaceId` (the parent space ID). Preserving `targetChatId` with its associated `taskType`, `associatedFileId`, and `associatedFileName` guarantees instant memory cache restoration (`workspaceCacheRef.current[targetChatId]`) and prevents cross-type artifact collisions when switching chats in `LeftNav`.
 
+### Invariant 30: De-polymorphized Navigation Helpers (`openSpace`, `openChat`, `openFile`)
+`LeftNav.tsx` navigation callbacks (`onSelectSpace`, `onSelectChat`, `onSelectProject`, `onSelectTask`) MUST use explicit, strongly-typed helpers (`openSpace`, `openChat`, `openFile`) in `App.tsx` rather than passing generic, polymorphic objects directly to `handleFileClick`. This ensures that opening a space header (`openSpace(spaceId)`), switching authoring chats (`openChat(chatId)`), or viewing an artifact (`openFile(fileId)`) execute distinct, non-overlapping initialization steps.
+
 ---
 
 ## 3. Verification & Maintenance
