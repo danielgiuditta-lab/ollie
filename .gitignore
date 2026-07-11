@@ -7,3 +7,6 @@ coverage/
 .env*
 !.env.example
 .antigravity/
+data/chats/test_*
+data/sync/test_*
+data/shards/
