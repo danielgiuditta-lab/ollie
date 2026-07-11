@@ -3977,6 +3977,20 @@ export default function App() {
     }
   }, [accessToken, currentPath, resetChatForDirectoryItem]);
 
+  const openSpace = async (spaceId: string) => {
+    return handleFileClick(spaceId, true, { isFromRecents: true, targetChatId: spaceId });
+  };
+
+  const openChat = async (chatId: string, spaceId?: string) => {
+    const parentSpaceId = spaceId || recentTasks.find(t => t.id === chatId)?.activeSpaceId || activeSpaceId || getHomeChatId();
+    const spaceObj = { id: parentSpaceId, activeSpaceId: parentSpaceId, type: 'space' };
+    return handleFileClick(spaceObj, false, { isFromRecents: true, targetChatId: chatId });
+  };
+
+  const openFile = async (fileObj: any) => {
+    return handleFileClick(fileObj, false, { isFromRecents: true });
+  };
+
   const handleFileClick = async (file: any, skipSelect = false, options?: { isFromRecents?: boolean, targetChatId?: string }) => {
     setActiveProactiveTask(null);
     console.log("[DEBUG] handleFileClick called with:", {
@@ -4955,7 +4969,7 @@ export default function App() {
         }}
         activeChatId={activeChatId}
         onSelectChat={async (space, chat) => {
-          await handleFileClick(space, false, { isFromRecents: true, targetChatId: chat.id });
+          await openChat(chat.id, space.id);
         }}
         onSelectProject={async (proj) => {
           if (typeof proj === 'object' && proj !== null) {
@@ -4973,7 +4987,7 @@ export default function App() {
               setActiveSidebar('gemini');
               const hasFiles = (proj.sources?.length || proj.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
               setIsSourcesPanelOpen(hasFiles);
-              await handleFileClick(proj, true, { isFromRecents: true }); // skipSelect = true
+              await openSpace(proj.id);
             }
           }
         }}
@@ -4994,7 +5008,13 @@ export default function App() {
               setActiveSidebar('gemini');
               const hasFiles = (task.sources?.length || task.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
               setIsSourcesPanelOpen(hasFiles);
-              await handleFileClick(task, false, { isFromRecents: true, targetChatId: task.id });
+              const targetChat = task.chatId || task.id;
+              const isChildChat = targetChat !== task.id && targetChat !== task.activeSpaceId;
+              if (isChildChat) {
+                await openChat(targetChat, task.activeSpaceId || task.id);
+              } else {
+                await openSpace(task.id);
+              }
             }
           } else {
             setIsAiSummarySnapped(false);

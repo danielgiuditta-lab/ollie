@@ -1,5 +1,5 @@
 {
-  "chatId": "space_test_1783737767016-chat-1783737767016",
+  "chatId": "space_test_1783738164049-chat-1783738164049",
   "projectName": "Ollie Test Workspace",
   "chatName": "CodeMender PRD",
   "type": "workspace",
@@ -17,7 +17,7 @@
     }
   ],
   "envId": null,
-  "activeSpaceId": "space_test_1783737767016",
+  "activeSpaceId": "space_test_1783738164049",
   "sandboxUrl": "",
   "sandboxFiles": [
     {
@@ -31,5 +31,5 @@
   "userEmail": "",
   "members": [],
   "pinnedArtifactIds": [],
-  "updatedAt": "2026-07-11T02:42:47.061Z"
+  "updatedAt": "2026-07-11T02:49:24.091Z"
 }
