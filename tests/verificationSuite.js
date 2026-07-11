@@ -6,10 +6,6 @@ async function testEndpoint(name, path, options = {}) {
   const url = `${BASE_URL}${path}`;
   try {
     const res = await fetch(url, options);
-    if (!res.ok && res.status !== 404) {
-      console.error(`❌ [${name}] Failed with status ${res.status}`);
-      return false;
-    }
     const contentType = res.headers.get('content-type');
     let data;
     if (contentType && contentType.includes('application/json')) {
@@ -17,6 +13,12 @@ async function testEndpoint(name, path, options = {}) {
     } else {
       data = await res.text();
     }
+    
+    if (!res.ok) {
+      console.log(`ℹ️ [${name}] Status ${res.status}`);
+      return { ok: false, status: res.status, data };
+    }
+    
     console.log(`✅ [${name}] Status ${res.status}`);
     return { ok: true, status: res.status, data };
   } catch (err) {
@@ -44,14 +46,14 @@ async function runSuite() {
     })
   });
 
-  if (!postChatRes || !postChatRes.data.success) {
+  if (!postChatRes.ok || !postChatRes.data.success) {
     console.error('FAILED POST Chat verification');
     process.exit(1);
   }
 
   // 2. Read Chat
   const getChatRes = await testEndpoint('GET /api/chats/:chatId', `/api/chats/${testChatId}`);
-  if (!getChatRes || getChatRes.data.projectName !== 'Test Verification Project') {
+  if (!getChatRes.ok || getChatRes.data.projectName !== 'Test Verification Project') {
     console.error('FAILED GET Chat verification mismatch');
     process.exit(1);
   }
@@ -61,11 +63,11 @@ async function runSuite() {
   await testEndpoint('POST /api/sync/:envId/:key', `/api/sync/test_env/${syncKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ state: { columns: ['todo', 'done'] } })
+    body: JSON.stringify({ data: { columns: ['todo', 'done'] } })
   });
 
   const getSyncRes = await testEndpoint('GET /api/sync/:envId/:key', `/api/sync/test_env/${syncKey}`);
-  if (!getSyncRes || !getSyncRes.data.state) {
+  if (!getSyncRes.ok || !getSyncRes.data || !getSyncRes.data.data) {
     console.error('FAILED GET Sync verification');
     process.exit(1);
   }
@@ -75,21 +77,35 @@ async function runSuite() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      title: 'Shared Verification Sandbox',
-      html: '<h1>Shared</h1>',
-      css: 'body { color: red; }',
-      js: 'console.log(1)'
+      envId: 'test_env_123',
+      workspaceName: 'Shared Verification Sandbox',
+      files: [{ name: 'index.html', content: '<h1>Shared</h1>' }]
     })
   });
-  if (shareRes && shareRes.data.slug) {
-    await testEndpoint('GET /api/share/:slug', `/api/share/${shareRes.data.slug}`);
+  if (!shareRes.ok || !shareRes.data.slug) {
+    console.error('FAILED POST Share verification');
+    process.exit(1);
   }
 
-  // 5. Workspace Digest
-  await testEndpoint('GET /api/workspace-digest', `/api/workspace-digest?folderId=${testSpaceId}`);
+  const getShareRes = await testEndpoint('GET /api/share/:slug', `/api/share/${shareRes.data.slug}`);
+  if (!getShareRes.ok || !getShareRes.data.envId) {
+    console.error('FAILED GET Share verification');
+    process.exit(1);
+  }
+
+  // 5. Workspace Digest Endpoint (Requires authorization header check)
+  const digestRes = await testEndpoint('GET /api/workspace-digest', `/api/workspace-digest?folderId=${testSpaceId}`);
+  if (digestRes.status !== 401 && !digestRes.ok) {
+    console.error('FAILED GET Workspace digest verification unexpected status', digestRes.status);
+    process.exit(1);
+  }
 
   // 6. Cleanup Test Chat
-  await testEndpoint('DELETE /api/chats/:chatId', `/api/chats/${testChatId}`, { method: 'DELETE' });
+  const delChatRes = await testEndpoint('DELETE /api/chats/:chatId', `/api/chats/${testChatId}`, { method: 'DELETE' });
+  if (!delChatRes.ok) {
+    console.error('FAILED DELETE Chat verification');
+    process.exit(1);
+  }
 
   console.log('\n✨ ALL BASELINE VERIFICATION TESTS PASSED SUCCESSFULLY! ✨');
 }
