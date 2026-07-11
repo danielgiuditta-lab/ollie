@@ -23,32 +23,74 @@ import { ShapeLoader } from './components/Shared/ShapeLoader';
 import { inferChatName, resolveArtifactForChat } from './utils/artifactResolver';
 
 
+import { useCanvasState } from './hooks/useCanvasState';
+import { useDriveSync } from './hooks/useDriveSync';
+import { useWorkspaceState } from './hooks/useWorkspaceState';
+import { useVisualEffects } from './hooks/useVisualEffects';
+import { CanvasContainer } from './components/Layout/CanvasContainer';
+
 export default function App() {
-  const [activeSidebar, setActiveSidebar] = useState<'gemini' | 'comments' | 'history' | null>('gemini');
+  const {
+    activeSidebar, setActiveSidebar,
+    currentPath, setCurrentPath,
+    viewState, setViewState,
+    previousViewState, setPreviousViewState,
+    homeJourney, setHomeJourney,
+    projectName, setProjectName,
+    selectedFile, setSelectedFile,
+    indexFileSelected, setIndexFileSelected,
+    viewMode, setViewMode,
+    isLeftNavExpanded, setIsLeftNavExpanded,
+    directoryContentsMap, setFolderContentsMap,
+    loadingDirectories, setLoadingFolders,
+    appTheme, toggleAppTheme
+  } = useCanvasState();
+
+  const {
+    userProfile, setUserProfile,
+    driveFiles, setDriveFiles,
+    isDriveLoading, setIsDriveLoading,
+    selectedDriveFiles, setSelectedDriveFiles,
+    suggestedListCache, setSuggestedListCache,
+    isDriveSuggestLoading, setIsDriveSuggestLoading,
+    accessToken, setAccessToken,
+    bypassAuth, setBypassAuth,
+    isLoggedIn,
+    isIngesting, setIsIngesting,
+    ingestedFiles, setIngestedFiles
+  } = useDriveSync();
+
+  const {
+    recentTasks, setRecentTasks,
+    projects, setProjects,
+    activeSpaceId, setActiveSpaceId,
+    activeChatId, setActiveChatId,
+    spaceModes, setSpaceModes,
+    newlyCreatedSpaceIds, setNewlyCreatedSpaceIds,
+    isCreatingSpace, setIsCreatingSpace,
+    spaceCreationSources, setSpaceCreationSources,
+    members, setMembers,
+    getHomeChatId, isHomeChatId
+  } = useWorkspaceState(userProfile);
+
+  const {
+    geminiCursor, setGeminiCursor,
+    flyingClones, setFlyingClones,
+    particleBursts, setParticleBursts,
+    animatingFileIds, setAnimatingFileIds,
+    isOrganizingFiles, setIsOrganizingFiles
+  } = useVisualEffects();
+
   const [chatDockPosition, setChatDockPosition] = useState<'side' | 'bottom'>('side');
-  const [currentPath, setCurrentPath] = useState<string[]>([]);
-  const [viewState, setViewState] = useState<'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard'>('home');
-  const [homeJourney, setHomeJourney] = useState<'search' | 'create'>('search');
-  const [projectName, setProjectName] = useState('New');
-  const [selectedFile, setSelectedFile] = useState<any>(null);
   const [aiSummarySources, setAiSummarySources] = useState<any[]>([]);
   const [aiSummaryMessages, setAiSummaryMessages] = useState<any[]>([]);
   const [activeAiSummaryTaskId, setActiveAiSummaryTaskId] = useState<string | null>(null);
   const [isAiSummarySnapped, setIsAiSummarySnapped] = useState(false);
-  const [previousViewState, setPreviousViewState] = useState<'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard' | null>(null);
   const lastSelectedFileRef = useRef<string | null>(null);
 
   const [chatModel, setChatModel] = useState<'A' | 'B'>(() => {
     return (localStorage.getItem('chat-model') as 'A' | 'B') || 'A';
   });
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [spaceModes, setSpaceModes] = useState<Record<string, 'choice' | 'tracking' | 'tool'>>({});
-  const [newlyCreatedSpaceIds, setNewlyCreatedSpaceIds] = useState<Set<string>>(new Set());
-
-
-  // Unified filesystem mapping states
-  const [directoryContentsMap, setFolderContentsMap] = useState<Record<string, any[]>>({});
-  const [loadingDirectories, setLoadingFolders] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (selectedFile && selectedFile.name) {
@@ -65,139 +107,20 @@ export default function App() {
       lastSelectedFileRef.current = null;
     }
   }, [selectedFile]);
+
   const [messages, setMessages] = useState<any[]>([]);
   const [envId, setEnvId] = useState<string | null>(null);
   const [sandboxUrl, setSandboxUrl] = useState<string>('');
   const [sandboxFiles, setSandboxFiles] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Agent File Moving Animation overlay states
-  const [geminiCursor, setGeminiCursor] = useState<{
-    x: number;
-    y: number;
-    visible: boolean;
-    status: 'idle' | 'grabbing';
-  }>({ x: 0, y: 0, visible: false, status: 'idle' });
-
-  const [flyingClones, setFlyingClones] = useState<Array<{
-    id: string;
-    name: string;
-    mimeType?: string;
-    x: number;
-    y: number;
-  }>>([]);
-
-  const [particleBursts, setParticleBursts] = useState<Array<{ id: string; x: number; y: number }>>([]);
-  const [impactSpaceId, setImpactFolderId] = useState<string | null>(null);
-  const [animatingFileIds, setAnimatingFileIds] = useState<string[]>([]);
-  const [isOrganizingFiles, setIsOrganizingFiles] = useState<boolean>(false);
-  const [currentTask, setCurrentTask] = useState<string>('app');
-  const [appTheme, setAppTheme] = useState<'light' | 'dark'>(() => {
-    const saved = (localStorage.getItem('manual-theme') || localStorage.getItem('app-theme')) as 'light' | 'dark' | null;
-    if (saved === 'dark') {
-      document.documentElement.classList.add('dark');
-      return 'dark';
-    }
-    document.documentElement.classList.remove('dark');
-    return 'light';
-  });
-  const toggleAppTheme = () => {
-    const nextTheme = appTheme === 'light' ? 'dark' : 'light';
-    setAppTheme(nextTheme);
-    localStorage.setItem('manual-theme', nextTheme);
-    localStorage.setItem('app-theme', nextTheme);
-    if (nextTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
-  const [isIngesting, setIsIngesting] = useState(false);
-  const [ingestedFiles, setIngestedFiles] = useState<any[]>([]);
   const [sharedLoading, setSharedLoading] = useState(false);
-  const [indexFileSelected, setIndexFileSelected] = useState<boolean>(true);
-  const [viewMode, setViewMode] = useState<'file' | 'preview'>('preview');
-
-  // LeftNav open/close state, Recent Tasks session list, and Pinned Projects
-  const [isLeftNavExpanded, setIsLeftNavExpanded] = useState(false);
-  const [recentTasks, setRecentTasks] = useState<any[]>(() => {
-    const saved = localStorage.getItem('drive_recent_tasks');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed.map(t => {
-            if (t && typeof t === 'object') {
-              const lowerName = (t.name || '').toLowerCase().trim();
-              const lowerSpaceId = String(t.activeSpaceId || t.id || '').toLowerCase().trim();
-              if (lowerName === 'home' || lowerSpaceId === 'home' || lowerSpaceId === 'home_guest' || lowerSpaceId.startsWith('home_') || lowerSpaceId.startsWith('home-')) {
-                return { ...t, activeSpaceId: 'home', name: 'Home' };
-              }
-            }
-            return t;
-          });
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-    return [];
-  });
-
-  const [projects, setProjects] = useState<any[]>(() => {
-    const saved = localStorage.getItem('drive_projects');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // ignore
-      }
-    }
-    return [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem('drive_recent_tasks', JSON.stringify(recentTasks));
-  }, [recentTasks]);
-
-  useEffect(() => {
-    localStorage.setItem('drive_projects', JSON.stringify(projects));
-  }, [projects]);
-
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [driveFiles, setDriveFiles] = useState<any[]>([]);
-  const [isDriveLoading, setIsDriveLoading] = useState(false);
-
-  // Cached suggested files / templates for HomeLanding to prevent redundant loadings
-  const [suggestedListCache, setSuggestedListCache] = useState<any[]>(SUGGESTED_ITEMS);
-  const [isDriveSuggestLoading, setIsDriveSuggestLoading] = useState(false);
-
-  const getHomeChatId = useCallback(() => {
-    const email = userProfile?.email || 'guest';
-    const sanitizedEmail = email.replace(/[^a-zA-Z0-9_\-]/g, "_");
-    return `home_${sanitizedEmail}`;
-  }, [userProfile?.email]);
-
-  const isHomeChatId = useCallback((id: string | null) => {
-    if (!id) return true;
-    const lower = String(id).toLowerCase().trim();
-    return lower === 'home' || lower === 'home_guest' || lower.startsWith('home_') || lower.startsWith('home-') || lower === 'home dashboard';
-  }, []);
-
-  // Spaces Platform States
-  const [selectedDriveFiles, setSelectedDriveFiles] = useState<any[]>([]);
-  const [activeSpaceId, setActiveSpaceId] = useState<string | null>('home_guest');
-  const [isCreatingSpace, setIsCreatingSpace] = useState(false);
-  const [spaceCreationSources, setSpaceCreationSources] = useState<any[]>([]);
+  const [impactSpaceId, setImpactFolderId] = useState<string | null>(null);
+  const [currentTask, setCurrentTask] = useState<string>('app');
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'failed'>('idle');
-  const [members, setMembers] = useState<any[]>([]);
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
-
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [bypassAuth, setBypassAuth] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
   const [activeProactiveTask, setActiveProactiveTask] = useState<any | null>(null);
-  const isLoggedIn = accessToken !== null || bypassAuth;
+
 
   const fetchGeminiTasks = async (token?: string | null, email?: string) => {
     try {
