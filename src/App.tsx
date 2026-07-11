@@ -4151,7 +4151,7 @@ export default function App() {
         const allAvailableFiles = [...(cached.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
         const taskContext = { ...matchingTask, ...cached, ...cachedChat };
 
-        const isSpaceObject = typeof file === 'object' && file && (file.type === 'space' || file.type === 'workspace' || file.isProject || file.chats);
+        const isSpaceObject = typeof file === 'object' && file && Boolean(file.type?.includes('space') || file.type === 'workspace' || file.isProject || file.chats);
         const specificFileMatch = (typeof file === 'object' && file && file.name && !isSpaceObject)
           ? allAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || (file.isFromFileList && f.name === file.name))) || file
           : null;
@@ -4364,7 +4364,7 @@ export default function App() {
                 let nextViewState: any = 'files';
 
                 const allDbAvailableFiles = [...(chatData.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
-                const isSpaceObject = typeof file === 'object' && file && (file.type === 'space' || file.type === 'workspace' || file.isProject || file.chats || file.activeSpaceId);
+                const isSpaceObject = typeof file === 'object' && file && Boolean(file.type?.includes('space') || file.type === 'workspace' || file.isProject || file.chats);
                 const specificFileMatch = (typeof file === 'object' && file && file.name && !isSpaceObject)
                   ? allDbAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || (file.isFromFileList && f.name === file.name))) || file
                   : null;
