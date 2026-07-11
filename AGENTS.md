@@ -65,6 +65,7 @@ This file contains persistent rules and project-specific conventions for the AI 
 - **Inferred Tasks Specification:** Refer to [/features/inferred_tasks.md](./features/inferred_tasks.md) for context synthesis prompts, client-side caching mechanisms, and background agent simulation views.
 - **Space & Chat Synchronization Specification:** Refer to [/features/space_chat_sync.md](./features/space_chat_sync.md) for the architectural invariants governing `activeChatId` vs `activeSpaceId` synchronization and database persistence guards.
 - **Space Dashboard & Group Chat Specification:** Refer to [/features/dashboard_group_chat.md](./features/dashboard_group_chat.md) for the architecture and interactive layout mechanics of the root space canvas dashboard and group chat styling.
+- **Architectural Refactoring Roadmap & Verification Plan:** Refer to [/features/refactor_roadmap.md](./features/refactor_roadmap.md) for the active, step-by-step modularization plan, milestone verification logs, and safe git commit checkpoints.
 - **Always Keep Feature Documentation Updated:** Whenever new features, UX workflows, or architectural refinements are implemented (such as changes to onboarding, navigation, or synchronization), you MUST always update all relevant markdown specification files in `/features/` (and references in `AGENTS.md`) to keep our documentation accurate and aligned with the codebase.
 
 
