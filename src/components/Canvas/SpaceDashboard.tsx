@@ -62,8 +62,25 @@ export function SpaceDashboard({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Resolve pinned file objects
-  const pinnedFiles = pinnedArtifactIds
+  // Resolve synthetic or real To-dos artifact
+  const hasTodoCard = Boolean(todoItems && todoItems.length > 0);
+  const todoArtifact = sandboxFiles.find(f => f && (f.isInferredTask || f.name?.toLowerCase() === 'inferred_tasks.json' || f.id === 'todo-card')) || {
+    id: 'todo-card',
+    name: 'inferred_tasks.json',
+    type: 'code',
+    mimeType: 'application/json',
+    isInferredTask: true,
+    taskType: 'inferred'
+  };
+
+  const isTodoPinned = pinnedArtifactIds.length === 0 ? hasTodoCard : (
+    pinnedArtifactIds.includes('todo-card') ||
+    pinnedArtifactIds.includes('inferred-tasks') ||
+    pinnedArtifactIds.some(id => String(id).toLowerCase().includes('todo') || String(id).toLowerCase().includes('inferred'))
+  );
+
+  // Combine regular pinned files with todo card if pinned
+  const regularPinnedFiles = pinnedArtifactIds
     .map(id => sandboxFiles.find(f => f && (
       f.id === id || 
       f.driveId === id ||
@@ -71,6 +88,11 @@ export function SpaceDashboard({
       (f.name && id && (String(id).toLowerCase().endsWith('-' + f.name.toLowerCase()) || String(id).toLowerCase().endsWith('_' + f.name.toLowerCase()) || String(id).toLowerCase() === f.name.toLowerCase()))
     )))
     .filter(Boolean);
+
+  const pinnedFiles = [
+    ...regularPinnedFiles,
+    ...(isTodoPinned && !regularPinnedFiles.some(f => f.id === todoArtifact.id || f.name === todoArtifact.name) ? [todoArtifact] : [])
+  ];
 
   // Close menu on click outside
   useEffect(() => {
@@ -173,8 +195,7 @@ export function SpaceDashboard({
     setDraggedCardId(null);
   };
 
-  const hasTodoCard = Boolean(todoItems && todoItems.length > 0);
-  const totalCardsCount = pinnedFiles.length + (hasTodoCard ? 1 : 0);
+  const totalCardsCount = pinnedFiles.length;
 
   if (totalCardsCount === 0) {
     return (
@@ -202,10 +223,12 @@ export function SpaceDashboard({
       className="w-full h-full flex flex-wrap gap-4 p-6 overflow-y-auto content-start items-start select-none"
     >
       {pinnedFiles.map((file, idx) => {
-        const fileId = file.id || file.driveId;
+        const fileId = file.id || file.driveId || 'file-' + idx;
         const widthPct = cardWidths[fileId] || (totalCardsCount === 1 ? 100 : 48);
-        const isHtml = file.name && (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase() === 'index.html');
+        const isTodo = file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos';
+        const isHtml = !isTodo && file.name && (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase() === 'index.html');
         const isDragOver = dragOverCardId === fileId;
+        const cardTitle = isTodo ? 'To-dos' : file.name;
 
         return (
           <div
@@ -231,8 +254,13 @@ export function SpaceDashboard({
                 title="Click to open artifact authoring chat"
               >
                 <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate group-hover/title:text-blue-600 dark:group-hover/title:text-blue-400 transition-colors">
-                  {file.name}
+                  {cardTitle}
                 </span>
+                {isTodo && todoItems && todoItems.length > 0 && (
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400 bg-slate-200/60 dark:bg-neutral-800 px-2 py-0.5 rounded-full ml-1">
+                    {todoItems.length}
+                  </span>
+                )}
                 <span className="text-slate-400 opacity-0 group-hover/title:opacity-100 transition-opacity text-[10px]">↗</span>
               </div>
 
@@ -286,7 +314,49 @@ export function SpaceDashboard({
             {/* Interactive Live Viewport */}
             <div className="flex-1 w-full h-full relative overflow-hidden pointer-events-auto select-auto bg-slate-50/30 dark:bg-black/20">
               <div className="absolute inset-0 w-full h-full">
-                {isHtml ? (
+                {isTodo ? (
+                  isHtml ? (
+                    <AppView
+                      sandboxUrl={sandboxUrl}
+                      files={sandboxFiles}
+                      envId={envId}
+                      selectedFile={file}
+                      theme={theme}
+                    />
+                  ) : (
+                    <div className="w-full h-full overflow-y-auto p-4 space-y-3">
+                      {todoItems && todoItems.map((item) => (
+                        <InferredTaskCard 
+                          key={item.id}
+                          item={item}
+                          getFileIcon={getFileIcon || (() => '')}
+                          onClick={() => {
+                            if (onProactiveTaskClick) {
+                              onProactiveTaskClick(item);
+                            } else {
+                              if (item.filesToLoad && setSandboxFiles && setSelectedFile) {
+                                setSandboxFiles(item.filesToLoad);
+                                setSelectedFile(item.filesToLoad[0]);
+                              } else if (setSandboxFiles && setSelectedFile) {
+                                setSandboxFiles([]);
+                                setSelectedFile(null);
+                              }
+                              if (setProjectName) {
+                                setProjectName(item.workspace.split(' · ')[0]);
+                              }
+                              if (setViewState) {
+                                setViewState('files');
+                              }
+                              if (setActiveSidebar) {
+                                setActiveSidebar('gemini');
+                              }
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )
+                ) : isHtml ? (
                   <AppView
                     sandboxUrl={sandboxUrl}
                     files={sandboxFiles}
@@ -313,7 +383,7 @@ export function SpaceDashboard({
                 title="Drag to resize width"
               />
             )}
-            {(idx < pinnedFiles.length - 1 || hasTodoCard) && (
+            {idx < pinnedFiles.length - 1 && (
               <div
                 onMouseDown={(e) => startResizing(e, fileId, idx, 'right')}
                 className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize z-20 hover:bg-blue-500/40 transition-colors"
@@ -323,73 +393,6 @@ export function SpaceDashboard({
           </div>
         );
       })}
-
-      {/* Inferred Tasks / To-Dos Card */}
-      {hasTodoCard && (
-        <div
-          key="todo-card"
-          style={{ width: `calc(${cardWidths['todo-card'] || (totalCardsCount === 1 ? 100 : 48)}% - 8px)` }}
-          className={`min-w-[320px] h-[460px] rounded-3xl border relative group flex flex-col overflow-hidden transition-all duration-200 ${
-            theme === 'dark'
-              ? 'bg-[#1E1F22] border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
-              : 'bg-white border-slate-100/80 shadow-[0_8px_30px_rgba(220,225,235,0.45)]'
-          }`}
-        >
-          {/* Header toolbar */}
-          <div className="h-11 px-4 border-b border-slate-100 dark:border-neutral-800/80 flex items-center justify-between shrink-0 bg-slate-50/80 dark:bg-[#18191B]/80 backdrop-blur-sm z-20 pointer-events-auto">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
-                To-dos
-              </span>
-            </div>
-            <span className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400 bg-slate-200/60 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
-              {todoItems!.length}
-            </span>
-          </div>
-
-          {/* Body content */}
-          <div className="flex-1 w-full h-full relative overflow-y-auto pointer-events-auto select-auto bg-slate-50/30 dark:bg-black/20 p-4 space-y-3">
-            {todoItems!.map((item) => (
-              <InferredTaskCard 
-                key={item.id}
-                item={item}
-                getFileIcon={getFileIcon || (() => '')}
-                onClick={() => {
-                  if (onProactiveTaskClick) {
-                    onProactiveTaskClick(item);
-                  } else {
-                    if (item.filesToLoad && setSandboxFiles && setSelectedFile) {
-                      setSandboxFiles(item.filesToLoad);
-                      setSelectedFile(item.filesToLoad[0]);
-                    } else if (setSandboxFiles && setSelectedFile) {
-                      setSandboxFiles([]);
-                      setSelectedFile(null);
-                    }
-                    if (setProjectName) {
-                      setProjectName(item.workspace.split(' · ')[0]);
-                    }
-                    if (setViewState) {
-                      setViewState('files');
-                    }
-                    if (setActiveSidebar) {
-                      setActiveSidebar('gemini');
-                    }
-                  }
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Left resize handle for todo-card if there are pinned files before it */}
-          {pinnedFiles.length > 0 && (
-            <div
-              onMouseDown={(e) => startResizing(e, 'todo-card', pinnedFiles.length, 'left')}
-              className="absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-20 hover:bg-blue-500/40 transition-colors"
-              title="Drag to resize width"
-            />
-          )}
-        </div>
-      )}
     </div>
   );
 }

@@ -102,3 +102,39 @@ When a user creates a new space, instead of immediately generating and jumping i
    - 🛡️ **Let Ollie track your work**: Sets space mode to `'tracking'`, activating the inferred task list (`To Do:`) in the space canvas.
    - ⚡ **Build a custom tool with Ollie**: Sets space mode to `'tool'`, initiating a conversational prompt from Ollie to vibe code a custom collaborative app for the space.
 3. **Canonical Tool Launching**: When navigating back to any space where a custom tool (`index.html`) has been built, the canvas auto-selects that tool and mounts it in `<AppView>`, making the canvas itself function as that canonical tool.
+
+---
+
+## 6. Out-of-the-Box Vibe-Codable Widget Architecture
+
+Inferred Tasks (`To-dos`) function as an out-of-the-box system widget artifact (`id: 'todo-card'`, `name: 'To-dos'`, `taskType: 'inferred'`) pinned by default to Space and Home dashboards.
+
+### 6.1 Unified Pinned Card Frame & Header (`SpaceDashboard.tsx`)
+- The `To-dos` widget renders inside the exact same container frame as other pinned artifacts.
+- Header toolbar features:
+  - Title: **To-dos**
+  - Item Count Badge: E.g., `todoItems.length`
+  - Reorder Handle (drag & drop)
+  - 3-dots `...` Dropdown Menu featuring **`Edit`** and **`Remove`**:
+    - **Edit**: Invokes `onSelectArtifact(todoFile)`, opening the artifact in the canvas viewer and activating its tied child authoring chat session.
+    - **Remove**: Invokes `onRemovePin('todo-card')`, hiding the widget card from the active dashboard (re-pinnable from the Library).
+
+### 6.2 Lazy Child Chat Binding & Header Breadcrumbs (`CanvasHeader.tsx` & `App.tsx`)
+- **Lazy Load Isolation**: On Space root dashboards (`viewState = 'dashboard'`), the active chat thread remains bound to the Space Group Chat (`activeChatId = activeSpaceId`). The To-dos child chat is **not** loaded or opened until the user explicitly clicks `Edit`.
+- **Child Chat Session**: Clicking `Edit` switches to `viewState = 'app'` / `'files'` and activates the dedicated child authoring thread (`${spaceId}-chat-inferred`, `taskType: 'inferred'`, `associatedFileName: 'inferred_tasks.json'`).
+- **Breadcrumb Hierarchy**:
+  - Space Root Dashboard: Displays `SpaceName` (e.g. **`Branding`**).
+  - Editing To-dos Artifact: Displays `SpaceName > To-dos` (e.g. **`Branding > To-dos`** or **`Home > To-dos`**).
+  - Closing Artifact: Clicking `X` or the parent space breadcrumb reverts to `viewState = 'dashboard'` in the main Space Group Chat.
+
+### 6.3 Natural Language Vibe Coding & Dual View Rendering
+- Prompts inside the To-dos child chat thread route to `/api/vibe-code` with focus file context (`activeFileName: 'inferred_tasks.json'`).
+- Users can modify the widget with natural language turns:
+  - **Filtering Instructions**: E.g. *"only tell me about Google Workspace items"* -> filters tasks list items.
+  - **Visual Layout Instructions**: E.g. *"change visual layout to a 2-column Kanban board with dark styling"* -> vibe codes a complete standalone `index.html` web tool for the widget.
+- **Dual View Rendering**:
+  - Out of the box: Renders high-fidelity interactive `InferredTaskCard` items.
+  - Vibe-coded tool: Automatically mounts `<AppView>` inside both the full artifact viewport and the dashboard card when `index.html` is generated.
+
+### 6.4 Framework Extensibility for Future Widgets
+By standardizing system widgets under a generic artifact pattern (`type: 'widget'`, `taskType: 'inferred' | 'widget'`), future out-of-the-box widgets (e.g., *Asset Tracker*, *Calendar Digest*, *Project Health*) inherit the exact same pinned card frame, 3-dots menu actions, lazy child chat binding, and vibe-coding engine out of the box.

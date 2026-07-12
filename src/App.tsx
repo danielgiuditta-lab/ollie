@@ -3733,6 +3733,18 @@ export default function App() {
       }
     });
 
+    const todoFile = sandboxFiles.find(f => f && (f.isInferredTask || f.name?.toLowerCase() === 'inferred_tasks.json' || f.id === 'todo-card')) || {
+      id: 'todo-card',
+      name: 'inferred_tasks.json',
+      type: 'code',
+      mimeType: 'application/json',
+      isInferredTask: true,
+      taskType: 'inferred'
+    };
+    if (!allFilesMap.has('todo-card') && !allFilesMap.has('inferred_tasks.json')) {
+      allFilesMap.set('todo-card', todoFile);
+    }
+
     return Array.from(allFilesMap.values());
   };
 
@@ -4314,7 +4326,7 @@ export default function App() {
           folderId
         });
 
-        if (specificFileMatch && !specificFileMatch.type?.includes('space') && specificFileMatch.name !== 'inferred_tasks.json') {
+        if (specificFileMatch && !specificFileMatch.type?.includes('space')) {
           const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
           setSelectedFile(specificFileMatch);
           setIndexFileSelected(isHtml);
@@ -4342,10 +4354,18 @@ export default function App() {
           setIndexFileSelected(false);
           setViewState('files');
         } else if (taskType === 'inferred' || taskType === 'tracking') {
-          const taskFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
-          setSelectedFile(taskFile || null);
-          setIndexFileSelected(false);
-          setViewState('files');
+          const taskFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType) || specificFileMatch || {
+            id: 'todo-card',
+            name: 'inferred_tasks.json',
+            type: 'code',
+            mimeType: 'application/json',
+            isInferredTask: true,
+            taskType: 'inferred'
+          };
+          const isHtml = taskFile?.name?.toLowerCase().endsWith('.html') || taskFile?.name?.toLowerCase() === 'index.html';
+          setSelectedFile(taskFile);
+          setIndexFileSelected(isHtml);
+          setViewState(isHtml ? 'app' : 'files');
         } else {
           const resolved = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           const autoSelectFile = resolved || cached.selectedFile || cached.sandboxFiles?.[0] || null;
@@ -5459,7 +5479,11 @@ export default function App() {
                       pinnedArtifactIds={getSpacePins(activeSpaceId)}
                       sandboxFiles={getAllSpaceFiles(activeSpaceId)}
                       onSelectArtifact={(file) => {
-                        const targetChatId = file?.chatId || findAssociatedChatForFile(file, recentTasks)?.id || activeSpaceId || getHomeChatId();
+                        const isTodo = file && (file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos');
+                        const resolvedSpace = (activeSpaceId && !isHomeChatId(activeSpaceId)) ? activeSpaceId : getHomeChatId();
+                        const targetChatId = isTodo 
+                          ? `${resolvedSpace}-chat-inferred`
+                          : (file?.chatId || findAssociatedChatForFile(file, recentTasks)?.id || resolvedSpace);
                         console.log("[DEBUG] SpaceDashboard onSelectArtifact triggered for file:", { file, targetChatId });
                         handleFileClick(file, false, { isFromRecents: true, targetChatId, isParentSpaceClick: false });
                       }}

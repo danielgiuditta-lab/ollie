@@ -1786,6 +1786,13 @@ To modify "${activeFileName}", you must output a markdown code block with the ex
   - The ENTIRE written/designed work MUST be enclosed inside the markdown code block targeting standard filenames (e.g., <!-- ${activeFileName} -->), which dynamically synchronizes the text and saves it directly to Google Drive.`;
       }
 
+      if (activeFileName && (activeFileName.toLowerCase().includes('inferred') || activeFileName.toLowerCase().includes('todo') || activeFileName.toLowerCase().includes('to-do'))) {
+        systemInstruction += `\n\nINFERRED TASKS & TO-DOS TOOL CUSTOMIZATION CONTEXT:
+The user is modifying their Out-of-the-Box "To-dos" (Inferred Tasks) tool with natural language.
+- If the user asks to filter tasks (e.g., "only tell me about Google Workspace items"), modify the task list rules or output a custom index.html web view displaying only Google Workspace items.
+- If the user asks for layout or visual changes (e.g., "change layout visually", "make background dark slate", "display as a kanban board"), output a full, self-contained index.html file wrapped in an HTML markdown block (\`\`\`html ... \`\`\`) for the custom tool.`;
+      }
+
       if (ingestedContext && Array.isArray(ingestedContext) && ingestedContext.length > 0) {
         systemInstruction += `\n\nThe user has provided the following files from their workspace (Google Drive) as context for this task:\n`;
         ingestedContext.forEach((f: any) => {

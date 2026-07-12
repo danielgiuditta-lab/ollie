@@ -148,7 +148,11 @@ export function CanvasHeader({
     }
 
     let artifactName = selectedFile ? selectedFile.name : (viewState === 'ai_summary' ? 'Search Summary' : '');
-    if (activeProactiveTask) {
+    const isTodoArtifact = selectedFile && (selectedFile.isInferredTask || selectedFile.taskType === 'inferred' || selectedFile.id === 'todo-card' || selectedFile.name?.toLowerCase() === 'inferred_tasks.json' || selectedFile.name === 'To-dos');
+    
+    if (isTodoArtifact) {
+      artifactName = 'To-dos';
+    } else if (activeProactiveTask) {
       const isDone = activeProactiveTask.status === 'done' || activeProactiveTask.status === 'approved';
       let rawTaskTitle = isDone ? (activeProactiveTask.titleDone || activeProactiveTask.title) : (activeProactiveTask.title || activeProactiveTask.description || 'Task');
       if (rawTaskTitle.length > 38) {
