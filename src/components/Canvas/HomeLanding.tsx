@@ -1587,57 +1587,26 @@ export function HomeLanding({
   }
 
   return (
-    <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-y-auto pt-16 px-10 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
-      {pinnedArtifactIds && pinnedArtifactIds.length > 0 && (
-        <div className="w-full max-w-[800px] text-left space-y-4 mb-8 mt-4">
-          <h2 className="text-2xl font-semibold text-slate-800 dark:text-[#E3E3E3] font-sans pl-1">
-            Pinned Artifacts:
-          </h2>
-          <div className="w-full min-h-[360px] relative">
-            <SpaceDashboard
-              spaceId={activeSpaceId || 'home'}
-              spaceName="Home Dashboard"
-              pinnedArtifactIds={pinnedArtifactIds}
-              sandboxFiles={sandboxFiles}
-              onSelectArtifact={onSelectArtifact || (() => {})}
-              onRemovePin={onRemovePin || (() => {})}
-              onReorderPins={onReorderPins || (() => {})}
-              theme={theme}
-            />
-          </div>
-        </div>
-      )}
-      <div className="w-full max-w-[640px] mt-8 text-left space-y-6">
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-[#E3E3E3] font-sans pl-1">
-          To Do:
-        </h2>
-        <div className="flex flex-col gap-3.5 w-full">
-          {filteredTodoItems.map((item) => (
-            <InferredTaskCard 
-              key={item.id}
-              item={item}
-              getFileIcon={getFileIcon}
-              onClick={() => {
-                if (onProactiveTaskClick) {
-                  onProactiveTaskClick(item);
-                } else {
-                  if (item.filesToLoad) {
-                    setSandboxFiles(item.filesToLoad);
-                    setSelectedFile(item.filesToLoad[0]);
-                  } else {
-                    setSandboxFiles([]);
-                    setSelectedFile(null);
-                  }
-                  setProjectName(item.workspace.split(' · ')[0]);
-                  setViewState('files');
-                  if (setActiveSidebar) {
-                    setActiveSidebar('gemini');
-                  }
-                }
-              }}
-            />
-          ))}
-        </div>
+    <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-y-auto pt-6 px-6 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
+      <div className="w-full h-full relative">
+        <SpaceDashboard
+          spaceId={activeSpaceId || 'home'}
+          spaceName="Home Dashboard"
+          pinnedArtifactIds={pinnedArtifactIds}
+          sandboxFiles={sandboxFiles}
+          onSelectArtifact={onSelectArtifact || (() => {})}
+          onRemovePin={onRemovePin || (() => {})}
+          onReorderPins={onReorderPins || (() => {})}
+          theme={theme}
+          todoItems={filteredTodoItems}
+          getFileIcon={getFileIcon}
+          onProactiveTaskClick={onProactiveTaskClick}
+          setSandboxFiles={setSandboxFiles}
+          setSelectedFile={setSelectedFile}
+          setProjectName={setProjectName}
+          setViewState={setViewState}
+          setActiveSidebar={setActiveSidebar}
+        />
       </div>
     </div>
   );

@@ -27,6 +27,8 @@ interface BotMessageProps {
   onDoDifferently?: () => void;
   isSpacePeopleSelector?: boolean;
   isSpaceDocsSelector?: boolean;
+  isMembersAddedNotice?: boolean;
+  addedMembers?: any[];
   suggestedPeople?: any[];
   suggestedDocs?: any[];
   selectedPeople?: any[];
@@ -40,9 +42,9 @@ interface BotMessageProps {
   onFeedbackProactive?: () => void;
 }
 
-const TeamAvatar = ({ avatar, name, size = 'md' }: { avatar: string; name: string; size?: 'sm' | 'md' }) => {
+const TeamAvatar = ({ avatar, name, size = 'md' }: { avatar?: string; name?: string; size?: 'sm' | 'md' | 'lg' }) => {
   const [error, setError] = React.useState(false);
-  const sizeClasses = size === 'sm' ? 'w-6 h-6 text-[10px]' : 'w-8 h-8 text-sm';
+  const sizeClasses = size === 'sm' ? 'w-6 h-6 text-[10px]' : size === 'lg' ? 'w-10 h-10 text-base' : 'w-8 h-8 text-sm';
   const bgClasses = size === 'sm' 
     ? 'bg-slate-200 dark:bg-slate-750 text-slate-600 dark:text-slate-350' 
     : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
@@ -51,19 +53,28 @@ const TeamAvatar = ({ avatar, name, size = 'md' }: { avatar: string; name: strin
     return (
       <img 
         src={avatar} 
-        className={`${size === 'sm' ? 'w-6 h-6' : 'w-8 h-8'} rounded-full object-cover shrink-0`} 
-        alt={name} 
+        className={`${sizeClasses} rounded-full object-cover shrink-0 ring-2 ring-white dark:ring-[#1E1F22]`} 
+        alt={name || 'User'} 
         onError={() => setError(true)}
       />
     );
   }
 
   return (
-    <div className={`${sizeClasses} ${bgClasses} rounded-full flex items-center justify-center font-bold shrink-0`}>
+    <div className={`${sizeClasses} ${bgClasses} rounded-full flex items-center justify-center font-bold shrink-0 ring-2 ring-white dark:ring-[#1E1F22]`}>
       {(name || 'U').substring(0, 1).toUpperCase()}
     </div>
   );
 };
+
+export function formatPeopleNames(people: any[]): string {
+  if (!people || people.length === 0) return "Team members";
+  const names = people.map(p => p.name || p.displayName || 'Collaborator').filter(Boolean);
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  if (names.length === 3) return `${names[0]}, ${names[1]}, and ${names[2]}`;
+  return `${names[0]}, ${names[1]}, and ${names.length - 2} others`;
+}
 
 // Utility to extract 2-3 high-level lines tops describing the action
 function cleanSummaryDescription(fullText: string): string {
@@ -115,6 +126,8 @@ export function BotMessage({
   onDoDifferently,
   isSpacePeopleSelector = false,
   isSpaceDocsSelector = false,
+  isMembersAddedNotice = false,
+  addedMembers = [],
   suggestedPeople = [],
   suggestedDocs = [],
   selectedPeople = [],
@@ -128,6 +141,32 @@ export function BotMessage({
   onFeedbackProactive
 }: BotMessageProps) {
   const isDark = theme === 'dark';
+
+  if (isMembersAddedNotice || (addedMembers && addedMembers.length > 0)) {
+    const people = (addedMembers && addedMembers.length > 0) ? addedMembers : (selectedPeople || []);
+    return (
+      <div className="flex flex-col gap-3 w-full animate-in fade-in slide-in-from-bottom-3 duration-300">
+        <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
+          isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
+        }`} style={{ fontFamily: '"Inter", sans-serif' }}>
+          {text}
+        </div>
+
+        {people.length > 0 && (
+          <div className="flex items-center -space-x-2 pl-1 pt-0.5 select-none">
+            {people.map((person: any, idx: number) => (
+              <TeamAvatar 
+                key={person.email || idx} 
+                avatar={person.avatar} 
+                name={person.name} 
+                size="md" 
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (isProactiveReview && proactiveTask) {
     const isApproved = proactiveTask.status === 'done' || proactiveTask.status === 'approved';
@@ -416,7 +455,7 @@ export function BotMessage({
     };
 
     return (
-      <div className="flex flex-col gap-3 w-full animate-fade-in-up">
+      <div className="flex flex-col gap-3 w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
         <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
           isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
         }`} style={{ fontFamily: '"Inter", sans-serif' }}>

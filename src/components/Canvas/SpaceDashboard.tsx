@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MoreHorizontal, Edit2, Trash2, Pin } from 'lucide-react';
 import { AppView } from './AppView';
 import { NativeViewer } from './NativeViewer';
+import { InferredTaskCard } from '../Chat/InferredTaskCard';
 
 interface SpaceDashboardProps {
   spaceId: string;
@@ -14,6 +15,14 @@ interface SpaceDashboardProps {
   sandboxUrl?: string;
   envId?: string | null;
   theme?: 'light' | 'dark';
+  todoItems?: any[];
+  getFileIcon?: (mimeType?: string) => string;
+  onProactiveTaskClick?: (item: any) => void;
+  setSandboxFiles?: (files: any[]) => void;
+  setSelectedFile?: (file: any) => void;
+  setProjectName?: (name: string) => void;
+  setViewState?: (state: any) => void;
+  setActiveSidebar?: (sidebar: any) => void;
 }
 
 export function SpaceDashboard({
@@ -26,7 +35,15 @@ export function SpaceDashboard({
   onReorderPins,
   sandboxUrl,
   envId,
-  theme = 'light'
+  theme = 'light',
+  todoItems,
+  getFileIcon,
+  onProactiveTaskClick,
+  setSandboxFiles,
+  setSelectedFile,
+  setProjectName,
+  setViewState,
+  setActiveSidebar
 }: SpaceDashboardProps) {
   const [cardWidths, setCardWidths] = useState<Record<string, number>>({});
   const [activeMenuCardId, setActiveMenuCardId] = useState<string | null>(null);
@@ -156,7 +173,10 @@ export function SpaceDashboard({
     setDraggedCardId(null);
   };
 
-  if (pinnedFiles.length === 0) {
+  const hasTodoCard = Boolean(todoItems && todoItems.length > 0);
+  const totalCardsCount = pinnedFiles.length + (hasTodoCard ? 1 : 0);
+
+  if (totalCardsCount === 0) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-transparent text-center select-none animate-in fade-in duration-300">
         <div className="max-w-md p-8 rounded-3xl border border-dashed border-slate-300 dark:border-neutral-800 bg-white/50 dark:bg-[#18191B]/50 backdrop-blur-sm flex flex-col items-center gap-4 shadow-sm">
@@ -183,7 +203,7 @@ export function SpaceDashboard({
     >
       {pinnedFiles.map((file, idx) => {
         const fileId = file.id || file.driveId;
-        const widthPct = cardWidths[fileId] || (pinnedFiles.length === 1 ? 100 : 48);
+        const widthPct = cardWidths[fileId] || (totalCardsCount === 1 ? 100 : 48);
         const isHtml = file.name && (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase() === 'index.html');
         const isDragOver = dragOverCardId === fileId;
 
@@ -263,7 +283,7 @@ export function SpaceDashboard({
               </div>
             </div>
 
-            {/* Interactive Live Viewport (pointer-events-auto so user can interact with Kanban board / app) */}
+            {/* Interactive Live Viewport */}
             <div className="flex-1 w-full h-full relative overflow-hidden pointer-events-auto select-auto bg-slate-50/30 dark:bg-black/20">
               <div className="absolute inset-0 w-full h-full">
                 {isHtml ? (
@@ -285,7 +305,7 @@ export function SpaceDashboard({
               </div>
             </div>
 
-            {/* Vertical resize handles (pointer-events-auto) */}
+            {/* Vertical resize handles */}
             {idx > 0 && (
               <div
                 onMouseDown={(e) => startResizing(e, fileId, idx, 'left')}
@@ -293,7 +313,7 @@ export function SpaceDashboard({
                 title="Drag to resize width"
               />
             )}
-            {idx < pinnedFiles.length - 1 && (
+            {(idx < pinnedFiles.length - 1 || hasTodoCard) && (
               <div
                 onMouseDown={(e) => startResizing(e, fileId, idx, 'right')}
                 className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize z-20 hover:bg-blue-500/40 transition-colors"
@@ -303,6 +323,73 @@ export function SpaceDashboard({
           </div>
         );
       })}
+
+      {/* Inferred Tasks / To-Dos Card */}
+      {hasTodoCard && (
+        <div
+          key="todo-card"
+          style={{ width: `calc(${cardWidths['todo-card'] || (totalCardsCount === 1 ? 100 : 48)}% - 8px)` }}
+          className={`min-w-[320px] h-[460px] rounded-3xl border relative group flex flex-col overflow-hidden transition-all duration-200 ${
+            theme === 'dark'
+              ? 'bg-[#1E1F22] border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
+              : 'bg-white border-slate-100/80 shadow-[0_8px_30px_rgba(220,225,235,0.45)]'
+          }`}
+        >
+          {/* Header toolbar */}
+          <div className="h-11 px-4 border-b border-slate-100 dark:border-neutral-800/80 flex items-center justify-between shrink-0 bg-slate-50/80 dark:bg-[#18191B]/80 backdrop-blur-sm z-20 pointer-events-auto">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                To-dos
+              </span>
+            </div>
+            <span className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400 bg-slate-200/60 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
+              {todoItems!.length}
+            </span>
+          </div>
+
+          {/* Body content */}
+          <div className="flex-1 w-full h-full relative overflow-y-auto pointer-events-auto select-auto bg-slate-50/30 dark:bg-black/20 p-4 space-y-3">
+            {todoItems!.map((item) => (
+              <InferredTaskCard 
+                key={item.id}
+                item={item}
+                getFileIcon={getFileIcon || (() => '')}
+                onClick={() => {
+                  if (onProactiveTaskClick) {
+                    onProactiveTaskClick(item);
+                  } else {
+                    if (item.filesToLoad && setSandboxFiles && setSelectedFile) {
+                      setSandboxFiles(item.filesToLoad);
+                      setSelectedFile(item.filesToLoad[0]);
+                    } else if (setSandboxFiles && setSelectedFile) {
+                      setSandboxFiles([]);
+                      setSelectedFile(null);
+                    }
+                    if (setProjectName) {
+                      setProjectName(item.workspace.split(' · ')[0]);
+                    }
+                    if (setViewState) {
+                      setViewState('files');
+                    }
+                    if (setActiveSidebar) {
+                      setActiveSidebar('gemini');
+                    }
+                  }
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Left resize handle for todo-card if there are pinned files before it */}
+          {pinnedFiles.length > 0 && (
+            <div
+              onMouseDown={(e) => startResizing(e, 'todo-card', pinnedFiles.length, 'left')}
+              className="absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-20 hover:bg-blue-500/40 transition-colors"
+              title="Drag to resize width"
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

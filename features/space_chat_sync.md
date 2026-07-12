@@ -226,8 +226,6 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 - **Synchronous Pin Updating**: `handlePinArtifact` and `handleUnpinArtifact` inspect `isHomeChatId(targetId)` and update `homePins` synchronously, triggering an immediate UI re-render of `<HomeLanding>` without requiring a browser refresh.
 - **Home Navigation Routing Guard**: In `handleFileClick`, navigating to root Home (`isParentSpaceClick` and `isHomeChatId(folderId)`) evaluates `viewState = 'home'` (when no standalone tool/inferred task is running), ensuring `<HomeLanding>` mounts and displays the pinned artifacts section.
 
-
-
-
-
-
+### Invariant 42: Space Creation Module Transitions & Finalization Welcome Notice
+- **Doc Module Auto Slide-Up & Auto-Scroll**: When confirming team member selections in the people module (`isSpacePeopleSelector`), the doc module (`isSpaceDocsSelector`) is appended to messages and transitions cleanly with slide-up entrance styling (`animate-in fade-in slide-in-from-bottom-4 duration-300`). `ChatSidebar.tsx` listens to `messages` updates via `messagesEndRef` and automatically scrolls smoothly to bring the doc module into full view.
+- **Finalized Space Welcome Notice & Facepile**: Upon finalizing space creation (`handleFinalizeSpace`), the root Space chat is initialized with a message notice: `"[people] added to this chat, you can create a new private chat any time"`, dynamically formatting selected people names (`formatPeopleNames`) and displaying an overlapping facepile of member avatars (`isMembersAddedNotice: true`, `addedMembers`). Both client state and `/api/chats/${spaceId}` disk storage persist the notice payload across page reloads.

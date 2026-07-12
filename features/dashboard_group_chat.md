@@ -78,6 +78,10 @@ const getSpacePins = (spaceId: string | null) => {
 * **Drag-and-Drop Reordering:**
   * Grabbing and dragging the 3-dots handle allows dragging one artifact over another to swap their positions in the grid (`pinnedArtifactIds` array order).
 
+### 2.4 Space Creation Wizard & Member Welcome Notice
+* **Step-by-Step Module Transitions:** During space creation, the chat sidebar renders the interactive **People Module** (`isSpacePeopleSelector`). Confirming team members triggers the **Doc Module** (`isSpaceDocsSelector`), which automatically slides up in view (`animate-in fade-in slide-in-from-bottom-4 duration-300`) while the chat container smooth-scrolls into view via `messagesEndRef`.
+* **Welcome Notice & Member Facepile:** Upon completing space creation (`onFinalizeSpace`), the main space group chat initializes with: `"[people] added to this chat, you can create a new private chat any time"`, dynamically listing selected names and displaying an overlapping member avatar facepile (`isMembersAddedNotice: true`, `addedMembers`).
+
 ---
 
 ## 3. Execution Roadmap & Phased Delivery

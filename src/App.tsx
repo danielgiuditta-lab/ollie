@@ -20,6 +20,7 @@ import { AISummaryView } from './components/Canvas/AISummaryView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
+import { formatPeopleNames } from './components/Chat/BotMessage';
 import { inferChatName, resolveArtifactForChat, findAssociatedChatForFile } from './utils/artifactResolver';
 
 
@@ -2933,14 +2934,22 @@ export default function App() {
       setIndexFileSelected(false);
       setViewState(newSandboxFiles.length > 0 ? 'files' : 'null');
       setSyncStatus('synced');
-      setMessages([]);
+
+      const peopleNamesText = formatPeopleNames(selectedPeople);
+      const welcomeMsg = {
+        role: 'bot',
+        text: `${peopleNamesText} added to this chat, you can create a new private chat any time`,
+        isMembersAddedNotice: true,
+        addedMembers: selectedPeople
+      };
+      setMessages([welcomeMsg]);
 
       try {
         await fetch(`/api/chats/${spaceId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: [],
+            messages: [welcomeMsg],
             envId: null,
             sandboxUrl: '',
             projectName: cleanFolderName,

@@ -207,6 +207,14 @@ export function ChatSidebar({
     return baseEvents;
   };
 
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
   const [width, setWidth] = useState<number>(400);
 
   const startResize = (e: React.MouseEvent) => {
@@ -405,6 +413,8 @@ export function ChatSidebar({
                         onDoDifferently={() => onDoDifferently ? onDoDifferently(index) : onSendMessage("I'd like to organize these files differently: ")}
                         isSpacePeopleSelector={msg.isSpacePeopleSelector}
                         isSpaceDocsSelector={msg.isSpaceDocsSelector}
+                        isMembersAddedNotice={msg.isMembersAddedNotice}
+                        addedMembers={msg.addedMembers}
                         suggestedPeople={msg.suggestedPeople}
                         suggestedDocs={msg.suggestedDocs}
                         selectedPeople={msg.selectedPeople}
@@ -439,6 +449,8 @@ export function ChatSidebar({
                   </div>
                 );
               })()}
+
+              <div ref={messagesEndRef} />
             </>
           )}
 
