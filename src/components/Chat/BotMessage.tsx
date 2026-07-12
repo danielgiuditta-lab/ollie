@@ -13,6 +13,7 @@ interface BotMessageProps {
   thinking?: string;
   steps?: any[];
   theme?: 'light' | 'dark';
+  isGroupChat?: boolean;
   isLoading?: boolean;
   taskTitle?: string;
   key?: number | string;
@@ -42,18 +43,20 @@ interface BotMessageProps {
   onFeedbackProactive?: () => void;
 }
 
-const TeamAvatar = ({ avatar, name, size = 'md' }: { avatar?: string; name?: string; size?: 'sm' | 'md' | 'lg' }) => {
+const TeamAvatar = ({ avatar, name, size = 'md', isGroupChat = false }: { avatar?: string; name?: string; size?: 'sm' | 'md' | 'lg'; isGroupChat?: boolean }) => {
   const [error, setError] = React.useState(false);
   const sizeClasses = size === 'sm' ? 'w-6 h-6 text-[10px]' : size === 'lg' ? 'w-10 h-10 text-base' : 'w-8 h-8 text-sm';
   const bgClasses = size === 'sm' 
     ? 'bg-slate-200 dark:bg-slate-750 text-slate-600 dark:text-slate-350' 
     : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
 
+  const ringStyle = isGroupChat ? 'ring-2 ring-slate-300 dark:ring-[#2B2D31]' : 'ring-2 ring-slate-300 dark:ring-[#2B2D31]';
+
   if (avatar && !error) {
     return (
       <img 
         src={avatar} 
-        className={`${sizeClasses} rounded-full object-cover shrink-0 ring-2 ring-white dark:ring-[#1E1F22]`} 
+        className={`${sizeClasses} rounded-full object-cover shrink-0 ${ringStyle}`} 
         alt={name || 'User'} 
         onError={() => setError(true)}
       />
@@ -61,7 +64,7 @@ const TeamAvatar = ({ avatar, name, size = 'md' }: { avatar?: string; name?: str
   }
 
   return (
-    <div className={`${sizeClasses} ${bgClasses} rounded-full flex items-center justify-center font-bold shrink-0 ring-2 ring-white dark:ring-[#1E1F22]`}>
+    <div className={`${sizeClasses} ${bgClasses} rounded-full flex items-center justify-center font-bold shrink-0 ${ringStyle}`}>
       {(name || 'U').substring(0, 1).toUpperCase()}
     </div>
   );
@@ -115,6 +118,7 @@ function cleanSummaryDescription(fullText: string): string {
 export function BotMessage({ 
   text, 
   theme = 'light',
+  isGroupChat = false,
   variant = 'chat',
   onSourceClick,
   sources = [],
@@ -160,6 +164,7 @@ export function BotMessage({
                 avatar={person.avatar} 
                 name={person.name} 
                 size="md" 
+                isGroupChat={isGroupChat}
               />
             ))}
           </div>

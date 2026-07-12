@@ -279,6 +279,7 @@ export function ChatSidebar({
                 onClick={onNewChat} 
                 title="New Chat"
                 theme={theme}
+                isGroupChat={isGroupChat}
               >
                 <span className="material-symbols-rounded text-[18px]">add</span>
               </IconButton>
@@ -289,6 +290,7 @@ export function ChatSidebar({
                 onClick={() => onChangeChatDockPosition(isBottom ? 'side' : 'bottom')} 
                 title={isBottom ? "Dock to side" : "Dock to bottom"}
                 theme={theme}
+                isGroupChat={isGroupChat}
               >
                 <span className="material-symbols-rounded text-[18px]">
                   {isBottom ? 'grid_layout_side' : 'dock_to_bottom'}
@@ -301,6 +303,7 @@ export function ChatSidebar({
                 onClick={onUnsnapAiSummary} 
                 title="Dock to bottom (AI Summary view)"
                 theme={theme}
+                isGroupChat={isGroupChat}
               >
                 <span className="material-symbols-rounded text-[18px]">dock_to_bottom</span>
               </IconButton>
@@ -311,6 +314,7 @@ export function ChatSidebar({
                 onClick={isAiSummarySnapped && onUnsnapAiSummary ? onUnsnapAiSummary : onClose} 
                 title="Hide Sidebar"
                 theme={theme}
+                isGroupChat={isGroupChat}
               >
                 <X size={18} className={theme === 'dark' ? 'text-white' : 'text-[#5F6368]'} />
               </IconButton>
@@ -370,7 +374,11 @@ export function ChatSidebar({
                           onSendMessage(pill.prompt);
                         }
                       }}
-                      className="w-fit max-w-full flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto bg-f8fafd hover:bg-f0f4f9"
+                      className={`w-fit max-w-full flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto ${
+                        isGroupChat
+                          ? 'bg-white hover:bg-slate-50 border border-slate-200/60 shadow-2xs'
+                          : 'bg-f8fafd hover:bg-f0f4f9'
+                      }`}
                     >
                       {getTaskIcon(pill.prompt)}
                       <span 
@@ -395,13 +403,14 @@ export function ChatSidebar({
                 <>
                   {messages.map((msg, index) => {
                     if (msg.role === 'user') {
-                      return <UserMessage key={index} text={msg.text} theme={theme} />;
+                      return <UserMessage key={index} text={msg.text} theme={theme} isGroupChat={isGroupChat} />;
                     }
                     return (
                       <BotMessage 
                         key={index} 
                         text={msg.text} 
                         theme={theme} 
+                        isGroupChat={isGroupChat}
                         variant={currentTask === 'AI Search Summary' ? 'summary' : 'chat'}
                         onSourceClick={onSourceClick}
                         sources={sources}
@@ -519,7 +528,9 @@ export function ChatSidebar({
         {/* Footer/Composer State */}
         {variant !== 'history' && (
           <div className={`p-4 relative z-10 shrink-0 ${
-            theme === 'dark' ? 'bg-[#1E1F22]' : 'bg-white'
+            isGroupChat
+              ? (theme === 'dark' ? 'bg-[#18191B]' : 'bg-slate-100/90')
+              : (theme === 'dark' ? 'bg-[#1E1F22]' : 'bg-white')
           }`}>
             <Composer 
               onSend={variant === 'comments' ? handlePostComment : onSendMessage} 
@@ -532,6 +543,7 @@ export function ChatSidebar({
                     : "Type a message..."
               }
               theme={theme}
+              isGroupChat={isGroupChat}
               onCreateArtifact={onCreateArtifact}
             />
           </div>

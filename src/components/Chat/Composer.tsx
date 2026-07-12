@@ -12,6 +12,7 @@ interface ComposerProps {
   onSend: (text: string) => void;
   placeholder?: string;
   theme?: 'light' | 'dark';
+  isGroupChat?: boolean;
   onCreateArtifact?: (type: 'doc' | 'slide' | 'sheet' | 'pix' | 'site' | 'upload') => void;
   layout?: 'side' | 'bottom';
   onDockToSide?: () => void;
@@ -22,6 +23,7 @@ export function Composer({
   onSend, 
   placeholder, 
   theme = 'light',
+  isGroupChat = false,
   onCreateArtifact,
   layout = 'side',
   onDockToSide
@@ -155,17 +157,17 @@ export function Composer({
           <div className="absolute -inset-3 bg-gradient-to-r from-[#8B5CF6]/15 via-[#6366F1]/15 to-[#3B82F6]/15 rounded-full blur-2xl -z-10 pointer-events-none" />
 
           <div className={`w-full h-[72px] ${
-            theme === 'dark' 
-              ? 'bg-[#1E1F22]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' 
-              : 'bg-white/95 border-slate-100/80 shadow-[0_8px_30px_rgba(220,225,235,0.45)]'
+            isGroupChat
+              ? (theme === 'dark' ? 'bg-[#282A2D]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' : 'bg-[#e2e8f0]/80 border-slate-300/50 shadow-[0_8px_30px_rgba(200,205,215,0.45)]')
+              : (theme === 'dark' ? 'bg-[#1E1F22]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' : 'bg-white/95 border-slate-100/80 shadow-[0_8px_30px_rgba(220,225,235,0.45)]')
           } rounded-full px-5 border flex items-center gap-3.5 backdrop-blur-md transition-all duration-300`}>
             {/* Left Plus Button */}
             <button 
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-              className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none bg-transparent shrink-0 ${
-                theme === 'dark' 
-                  ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' 
-                  : 'hover:bg-slate-50 text-slate-500 hover:text-slate-800'
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none shrink-0 ${
+                isGroupChat
+                  ? (theme === 'dark' ? 'bg-[#1E1F22] text-white hover:bg-[#282A2D]' : 'bg-white hover:bg-slate-50 text-slate-700 shadow-2xs')
+                  : (theme === 'dark' ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' : 'hover:bg-slate-50 text-slate-500 hover:text-slate-800')
               }`}
               title={isDrawerOpen ? "Close drawer" : "Add or Create Options"}
             >
@@ -197,10 +199,10 @@ export function Composer({
               {onDockToSide && (
                 <button
                   onClick={onDockToSide}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none bg-transparent ${
-                    theme === 'dark' 
-                      ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' 
-                      : 'hover:bg-slate-50 text-slate-500 hover:text-slate-850'
+                  className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
+                    isGroupChat
+                      ? (theme === 'dark' ? 'bg-[#1E1F22] text-white hover:bg-[#282A2D]' : 'bg-white hover:bg-slate-50 text-slate-700 shadow-2xs')
+                      : (theme === 'dark' ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' : 'hover:bg-slate-50 text-slate-500 hover:text-slate-850')
                   }`}
                   title="Dock to side"
                 >
@@ -213,8 +215,11 @@ export function Composer({
                 disabled={!text.trim() || disabled}
                 className={`w-11 h-11 rounded-full flex items-center justify-center transition border-none outline-none ${
                   text.trim() && !disabled 
-                    ? (theme === 'dark' ? 'bg-[#0B57D0] text-white hover:bg-blue-750 cursor-pointer' : 'bg-[#E8F0FE] text-[#0B57D0] hover:bg-[#D2E3FC] cursor-pointer') 
-                    : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
+                    ? (theme === 'dark' ? 'bg-[#0B57D0] text-white hover:bg-blue-750 cursor-pointer' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer') 
+                    : (isGroupChat 
+                        ? (theme === 'dark' ? 'bg-[#1E1F22] text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-white text-slate-400 shadow-2xs cursor-not-allowed')
+                        : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
+                      )
                 }`}
               >
                 <ArrowUp size={18} />
@@ -223,8 +228,12 @@ export function Composer({
           </div>
         </div>
       ) : (
-        /* ORIGINAL SIDE STATE VISUALS (unchanged) */
-        <div className={`w-full ${theme === 'dark' ? 'bg-[#131416] border-[#2B2D31]' : 'bg-white border-gray-100'} rounded-3xl p-3 px-4 shadow-sm border flex flex-col gap-2 transition-all duration-300`}>
+        /* ORIGINAL SIDE STATE VISUALS (Group Chat background aware) */
+        <div className={`w-full ${
+          isGroupChat
+            ? (theme === 'dark' ? 'bg-[#282A2D] border-[#3B3D42]' : 'bg-[#e2e8f0]/80 border-slate-300/40 shadow-xs')
+            : (theme === 'dark' ? 'bg-[#131416] border-[#2B2D31]' : 'bg-white border-gray-100')
+        } rounded-3xl p-3 px-4 shadow-sm border flex flex-col gap-2 transition-all duration-300`}>
           <textarea
             placeholder={placeholder || "what do you want to build?"}
             className={`w-full bg-transparent resize-none outline-none text-sm ${theme === 'dark' ? 'text-[#E3E3E3] placeholder-[#9E9E9E]' : 'text-gray-800 placeholder-gray-500'} py-2 max-h-32 min-h-12 border-none ring-0 focus:ring-0 focus:border-none focus:outline-none`}
@@ -236,10 +245,10 @@ export function Composer({
           <div className="flex items-center justify-between mt-2">
             <button 
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none bg-transparent ${
-                theme === 'dark' 
-                  ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' 
-                  : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
+                isGroupChat
+                  ? (theme === 'dark' ? 'bg-[#1E1F22] text-white hover:bg-[#282A2D]' : 'bg-white hover:bg-slate-50 text-slate-700 shadow-2xs')
+                  : (theme === 'dark' ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800')
               }`}
               title={isDrawerOpen ? "Close drawer" : "Add or Create Options"}
             >
@@ -250,10 +259,10 @@ export function Composer({
               )}
             </button>
             <div className="flex items-center gap-3">
-              <button className={`h-10 px-4 rounded-full flex items-center gap-1.5 font-medium text-xs transition cursor-pointer border-none outline-none bg-transparent ${
-                theme === 'dark'
-                  ? 'hover:bg-[#282A2D] text-white'
-                  : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
+              <button className={`h-10 px-4 rounded-full flex items-center gap-1.5 font-medium text-xs transition cursor-pointer border-none outline-none ${
+                isGroupChat
+                  ? (theme === 'dark' ? 'bg-[#1E1F22] text-white hover:bg-[#282A2D]' : 'bg-white hover:bg-slate-50 text-slate-700 shadow-2xs')
+                  : (theme === 'dark' ? 'hover:bg-[#282A2D] text-white' : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900')
               }`}>
                 <span className={theme === 'dark' ? 'font-semibold text-white' : 'font-semibold text-gray-700'}>Flash</span> Extended <ChevronDown size={14} />
               </button>
@@ -262,8 +271,11 @@ export function Composer({
                 disabled={!text.trim() || disabled}
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition border-none outline-none ${
                   text.trim() && !disabled 
-                    ? (theme === 'dark' ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer' : 'bg-blue-100 text-blue-600 hover:bg-blue-200 cursor-pointer') 
-                    : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-[#f0f4f9]/50 text-gray-400 cursor-not-allowed')
+                    ? (theme === 'dark' ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer') 
+                    : (isGroupChat 
+                        ? (theme === 'dark' ? 'bg-[#1E1F22] text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-white text-slate-400 shadow-2xs cursor-not-allowed')
+                        : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-[#f0f4f9]/50 text-gray-400 cursor-not-allowed')
+                      )
                 }`}
               >
                 <ArrowUp size={16} />
