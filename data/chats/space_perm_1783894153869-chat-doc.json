@@ -1,0 +1,33 @@
+{
+  "chatId": "space_perm_1783894153869-chat-doc",
+  "projectName": "Permanent Architecture Test Space",
+  "chatName": "PRD Document Chat",
+  "type": "chat",
+  "taskType": "doc",
+  "associatedFileId": "space_perm_1783894153869-file-doc",
+  "associatedFileName": "PRD.doc",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Draft PRD"
+    },
+    {
+      "role": "model",
+      "content": "Here is PRD"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space_perm_1783894153869",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "space_perm_1783894153869-file-doc",
+      "name": "PRD.doc",
+      "content": "## Product Requirements"
+    }
+  ],
+  "userEmail": "dan1@c.googlers.com",
+  "members": [],
+  "pinnedArtifactIds": [],
+  "updatedAt": "2026-07-12T22:09:14.132Z"
+}

@@ -4298,13 +4298,21 @@ export default function App() {
           file.type?.includes('space') || 
           file.type === 'workspace' || 
           file.isProject || 
-          file.chats || 
-          file.chatId || 
-          (typeof file.id === 'string' && (file.id.includes('-chat-') || file.id.startsWith('space-') || file.id.startsWith('local-')))
-        );
+          Boolean(file.chats)
+        ) && !file.name?.includes('.');
+
         const specificFileMatch = (typeof file === 'object' && file && (file.id || file.driveId) && !isSpaceObject)
           ? allAvailableFiles.find((f: any) => f && ((file.id && (f.id === file.id || f.driveId === file.id)) || (file.driveId && (f.driveId === file.driveId || f.id === file.driveId))))
           : null;
+
+        console.log("[DEBUG] handleFileClick cache resolution:", {
+          isSpaceObject,
+          fileId: file?.id || file?.driveId,
+          fileName: file?.name,
+          specificFileMatch: specificFileMatch ? specificFileMatch.name : null,
+          targetChatId,
+          folderId
+        });
 
         if (specificFileMatch && !specificFileMatch.type?.includes('space') && specificFileMatch.name !== 'inferred_tasks.json') {
           const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
@@ -4527,6 +4535,15 @@ export default function App() {
                 const specificFileMatch = (typeof file === 'object' && file && (file.id || file.driveId) && !isSpaceObject)
                   ? allDbAvailableFiles.find((f: any) => f && ((file.id && (f.id === file.id || f.driveId === file.id)) || (file.driveId && (f.driveId === file.driveId || f.id === file.driveId))))
                   : null;
+
+                console.log("[DEBUG] handleFileClick DB fetch resolution:", {
+                  isSpaceObject,
+                  fileId: file?.id || file?.driveId,
+                  fileName: file?.name,
+                  specificFileMatch: specificFileMatch ? specificFileMatch.name : null,
+                  targetChatId,
+                  folderId
+                });
 
                 if (isParentSpaceClick && !isHomeChatId(folderId)) {
                   fileToSelect = null;
@@ -5362,7 +5379,8 @@ export default function App() {
                       onRemovePin={handleUnpinArtifact}
                       onReorderPins={handleReorderPins}
                       onSelectArtifact={(file) => {
-                        const targetChatId = file?.chatId || recentTasks.find(t => t.associatedFileId === file?.id || t.associatedFileName === file?.name)?.id || activeSpaceId || getHomeChatId();
+                        const targetChatId = file?.chatId || findAssociatedChatForFile(file, recentTasks)?.id || activeSpaceId || getHomeChatId();
+                        console.log("[DEBUG] HomeLanding onSelectArtifact triggered for file:", { file, targetChatId });
                         handleFileClick(file, false, { isFromRecents: true, targetChatId, isParentSpaceClick: false });
                       }}
                     />
@@ -5442,6 +5460,7 @@ export default function App() {
                       sandboxFiles={getAllSpaceFiles(activeSpaceId)}
                       onSelectArtifact={(file) => {
                         const targetChatId = file?.chatId || findAssociatedChatForFile(file, recentTasks)?.id || activeSpaceId || getHomeChatId();
+                        console.log("[DEBUG] SpaceDashboard onSelectArtifact triggered for file:", { file, targetChatId });
                         handleFileClick(file, false, { isFromRecents: true, targetChatId, isParentSpaceClick: false });
                       }}
                       onRemovePin={handleUnpinArtifact}
