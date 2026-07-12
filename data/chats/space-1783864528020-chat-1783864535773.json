@@ -1,0 +1,53 @@
+{
+  "chatId": "space-1783864528020-chat-1783864535773",
+  "projectName": "Ollie",
+  "chatName": "Inferred Tasks",
+  "type": "workspace",
+  "taskType": "inferred",
+  "associatedFileId": "inferred-tasks-1783864535773",
+  "associatedFileName": "inferred_tasks.json",
+  "messages": [
+    {
+      "role": "bot",
+      "text": "I'm now tracking work for this space and synthesizing inferred tasks from your workspace activity and documents."
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space-1783864528020",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "inferred_tasks.json",
+      "type": "code",
+      "content": "[]",
+      "mimeType": "application/json",
+      "isInferredTask": true,
+      "id": "inferred-tasks-1783864535773"
+    }
+  ],
+  "userEmail": "danielgiuditta@google.com",
+  "members": [
+    {
+      "name": "Ajay Yadav",
+      "email": "yadavajay@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjW5ytDzOzOxOMnVKGMTlZFIQFZGQE-F3hF9WT2C3_8rKFkSa6V4xQ=s64"
+    },
+    {
+      "name": "Belinda Preno",
+      "email": "belindapreno@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjW8kkayF4FN3ib50ZpJsNFIMcSF9CLOgEcXNjlG9yhQ2xy1dL2q=s64"
+    },
+    {
+      "name": "Daniel Giuditta",
+      "email": "danielgiuditta@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocI4XtQJyOGEbExqDChL5Jutn2AfMdv-Yaq9Pbdd1NMuBb-qO08=s64"
+    },
+    {
+      "name": "Simon Sok",
+      "email": "simonsok@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjUJwa8yeHprZ88_pXXGVlN6TT1mDyU1T8GUcNOixdQ46wyCNDlcGA=s64"
+    }
+  ],
+  "pinnedArtifactIds": [],
+  "updatedAt": "2026-07-12T13:55:35.823Z"
+}

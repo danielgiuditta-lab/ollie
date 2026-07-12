@@ -28,22 +28,24 @@ chatsRouter.post('/:chatId', async (req, res) => {
     const sanitizedId = chatId.replace(/[^a-zA-Z0-9_\-]/g, "_");
     const { projectName, chatName, type, taskType, associatedFileId, associatedFileName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles, members, pinnedArtifactIds } = req.body;
 
+    const existing = await getChatAsync(sanitizedId);
+
     const payload = {
       chatId: sanitizedId,
-      projectName: projectName || "New Workspace",
-      chatName: chatName || null,
-      type: type || null,
-      taskType: taskType || null,
-      associatedFileId: associatedFileId || null,
-      associatedFileName: associatedFileName || null,
-      messages: messages || [],
-      envId: envId || null,
-      activeSpaceId: activeSpaceId || null,
-      sandboxUrl: sandboxUrl || "",
-      sandboxFiles: sandboxFiles || [],
-      userEmail: userEmail || "",
-      members: members || [],
-      pinnedArtifactIds: pinnedArtifactIds || [],
+      projectName: projectName || existing?.projectName || "New Workspace",
+      chatName: chatName || existing?.chatName || null,
+      type: type || existing?.type || null,
+      taskType: taskType || existing?.taskType || null,
+      associatedFileId: associatedFileId || existing?.associatedFileId || null,
+      associatedFileName: associatedFileName || existing?.associatedFileName || null,
+      messages: messages !== undefined ? messages : (existing?.messages || []),
+      envId: envId || existing?.envId || null,
+      activeSpaceId: activeSpaceId || existing?.activeSpaceId || null,
+      sandboxUrl: sandboxUrl !== undefined ? sandboxUrl : (existing?.sandboxUrl || ""),
+      sandboxFiles: sandboxFiles !== undefined ? sandboxFiles : (existing?.sandboxFiles || []),
+      userEmail: userEmail || existing?.userEmail || "",
+      members: members !== undefined ? members : (existing?.members || []),
+      pinnedArtifactIds: pinnedArtifactIds !== undefined ? pinnedArtifactIds : (existing?.pinnedArtifactIds || []),
       updatedAt: new Date().toISOString()
     };
 

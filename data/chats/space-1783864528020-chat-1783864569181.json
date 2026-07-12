@@ -1,0 +1,75 @@
+{
+  "chatId": "space-1783864528020-chat-1783864569181",
+  "projectName": "Ollie",
+  "chatName": "Product Requirement Document Project Ollie",
+  "type": "workspace",
+  "taskType": "doc",
+  "associatedFileId": "created-artifact-1783864569181",
+  "associatedFileName": "Product Requirement Document Project Ollie.doc",
+  "messages": [
+    {
+      "role": "bot",
+      "text": "How can I help with your doc?"
+    },
+    {
+      "role": "user",
+      "text": "write a prd for ollie"
+    },
+    {
+      "role": "bot",
+      "text": ""
+    },
+    {
+      "role": "bot",
+      "text": "I have drafted a comprehensive Product Requirement Document (PRD) for Project Ollie. \n\nThis PRD synthesizes the architectural decisions, meeting notes, and UX research insights from your reference files. It specifically highlights:\n* **The Core Vision:** Mitigating context switching and transforming traditional passive AI assistants into proactive team members.\n* **Key Principles:** A minimalist visual UX, proactive execution, and strict multiplayer boundaries.\n* **Functional Requirements:** Including the Workstream Triage, Proactive \"Draft Mode\" for AI-generated artifacts, and the crucial Top-and-Bottom Human-in-the-Loop (HITL) governance framework.\n* **Security & Privacy Boundaries:** Delineating private vs. shared spaces, preventing data leakage, and detailing dual-identity execution.\n\nReview the draft below and let me know if you would like to refine any specific sections, such as success metrics or user stories!"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space-1783864528020",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "inferred_tasks.json",
+      "type": "code",
+      "content": "[]",
+      "mimeType": "application/json",
+      "isInferredTask": true,
+      "id": "inferred-tasks-1783864535773"
+    },
+    {
+      "name": "Product Requirement Document Project Ollie.doc",
+      "type": "code",
+      "content": "# Product Requirement Document: Project Ollie\n\n## 1. Executive Summary & Vision\n\nModern software engineering and program management teams suffer from severe context fragmentation. Valuable time is lost manually triaging notifications, updating statuses, and switching between siloed communication and productivity tools (Gmail, Google Chat, Buganizer, Jira, Critique, and Google Docs). \n\nProject Ollie is an enterprise-grade, proactive collaborative workspace application that integrates human teams and AI agents into unified \"Workstreams.\" Unlike traditional chat-based AI utilities that wait for manual prompts, Ollie is a proactive, background-operating teammate. It infers tasks from context, scaffolds work, and executes complex workflows, while maintaining strict security boundaries and human-in-the-loop control.\n\nThe ultimate objective of Ollie is to become a \"self-driving workspace\" where users can manage, collaborate on, and execute their entire body of work without constantly jumping between external tools.\n\n## 2. Key Product Themes & Principles\n\n### Minimalist & Low-Friction UX\nTo eliminate tool fatigue, Ollie prioritizes a minimalist, highly visual interface. Users should rarely have to type manual commands or jump back to raw email/document surfaces. Drag-and-drop actions, interactive widgets, and instant preview actions are favored over complex text configurations.\n\n### Proactive Execution\nOllie does not simply notify users of outstanding tasks. It detects tasks proactively, initiates background execution (such as drafting an email reply, preparing a code diff, or constructing a status report), and presents the finished draft to the user for single-click dispatch.\n\n### Multiplayer Collaboration\nWork is inherently collaborative. Ollie enables shared context among humans and agents within distinct workspaces called Workstreams. Teams can co-steer agents, monitor shared pipelines, and collectively review automated outputs.\n\n### Absolute Security & \"Draft Mode\" Privacy\nTrust is paramount. Agent-generated artifacts remain strictly private to the individual in a \"Draft Mode\" state until explicitly approved and published to the shared space. Clear visual delineation prevents sensitive personal data or unfinished agent thoughts from leaking into shared group channels.\n\n## 3. User Personas & Target Audience\n\n### Primary Persona: The Context-Flooded Knowledge Worker (e.g., Program Managers, Operations Leads, Software Engineers)\n* **Pain Points:** Spends hours tracking down updates across multiple chats, docs, and issue trackers. Struggles to maintain an up-to-date source of truth for project health.\n* **Ollie's Value:** Automates the \"context gardening\"—aggregating updates, synthesizing digests, and staging routine communication drafts.\n\n### Secondary Persona: The Technical Builder (e.g., Software Engineers utilizing coding agents)\n* **Pain Points:** Slowed down by manual scaffolding, waiting for builds, or triaging duplicate bugs across disparate issue trackers.\n* **Ollie's Value:** Integrates with sandboxed execution environments to automatically generate pull requests, fix simple bugs, and run checks before a human even opens their editor.\n\n## 4. Functional Requirements & Feature Specifications\n\n### 4.1 Workstream Management & Intelligent Triage\n* **Workstream Creation & Integration:** Users can create shared Workstreams bound to external assets (such as Google Groups, Shared Drives, Buganizer Hotlists, and Chat spaces).\n* **Workstream Inference Engine:** When a new task, email, or bug is ingested, Ollie must automatically classify and route it to the correct Workstream using semantic vector similarity and heuristic filters.\n* **Duplicate Detection:** The platform must automatically identify and merge duplicate tasks, linking original sources (such as a bug ticket and an email thread) to a single canonical task representation.\n\n### 4.2 Proactive \"Draft Mode\" & Task Lifecycle\n* **State Engine:** Tasks must adhere to strict state transitions: Untriaged -> Triaged -> In Progress -> Pending Review -> Completed.\n* **Mandatory Draft Mode:** Any artifact created by an agent (document drafts, code modifications, outbound messages) must default to a private draft visible only to the task assignee.\n* **Single-Click Publishing:** Assignees can review, edit, and approve drafts directly in the Ollie interface, publishing them to the shared Workstream or sending them to external systems with one click.\n\n### 4.3 Collaborative Dashboard & Interactive Feed\n* **Widget-Based UI:** The main dashboard must utilize custom, configurable widgets (akin to a mobile OS landing surface) to display task updates, project metrics, and active workstreams.\n* **Activity Feed:** A real-time, chronological feed of updates, comment threads, and interactive agent execution cards.\n* **Multiplayer Review:** Shared tasks requiring multi-expert approvals must support group voting, comment resolution, and explicit co-signing before final dispatch.\n\n### 4.4 Top-and-Bottom Human-in-the-Loop (HITL) Governance\nTo guarantee safety and prevent runaway automation, Ollie must enforce a two-stage governance model:\n* **Top Refinement:** Highly ambiguous goals detected by agents must require explicit human scoping and goal confirmation before automated background execution is allowed to start.\n* **Bottom Sign-off:** All compiled deliverables (such as pull requests, public documentation updates, or outward communications) require manual human approval in the Feed Service before final external dispatch.\n\n## 5. Security, Privacy & Trust Architecture\n\n### Dual-Identity Execution Boundaries\nOllie must strictly segregate personal and shared workloads:\n* **Personal Tasks:** Private tasks run entirely under the individual user's authorization token (Gaia session). Neither Workstream agents nor team members can inspect private tasks or the user's personal memory store.\n* **Workstream Tasks:** Workstream-visible tasks execute under delegated service credentials, ensuring actions are authorized against the initiating human’s role-based access control (RBAC) boundaries.\n\n### Safety Guardrails & Drive Isolation\n* **Onboarding Security Check:** When first populating a Workstream with Google Drive documents or team artifacts, Ollie must present a mandatory human-in-the-loop verification step to prevent the accidental ingestion of sensitive or restricted-access documents.\n* **Permissions Matching:** Ollie must dynamically verify that any shared document displayed in the UI respects existing corporate ACLs and Google Drive permissions.\n\n### Sandboxed Actuation\n* All automated code changes and CLI executions must occur within isolated, hermetic container environments (Cloudtop/Capsules). Production environments must never be exposed to direct, un-sandboxed agent modification.\n\n## 6. Key Performance Indicators (KPIs) & Success Metrics\n\n* **Context Switching Reduction:** Decrease in the daily average number of times a user navigates away from the Ollie workspace to access Gmail, Docs, or external trackers.\n* **Time-to-Resolution (TTR) Acceleration:** Reduction in the time elapsed from task ingestion (e.g., a Buganizer ticket creation) to completion (the fix merged/deployed) via automated agent drafting.\n* **Trust & Delegation Rate:** The percentage of inferred tasks that users choose to delegate to agents rather than handling manually or restricting to \"Human Only\" execution.\n* **Draft Acceptance Rate:** The percentage of agent-generated drafts that are published or sent with minimal to no manual text modifications.",
+      "mimeType": "application/vnd.google-apps.document",
+      "createdFromComposer": true,
+      "fontFamily": "Google Sans",
+      "isDocJourney": true,
+      "id": "created-artifact-1783864569181"
+    }
+  ],
+  "userEmail": "danielgiuditta@google.com",
+  "members": [
+    {
+      "name": "Ajay Yadav",
+      "email": "yadavajay@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjW5ytDzOzOxOMnVKGMTlZFIQFZGQE-F3hF9WT2C3_8rKFkSa6V4xQ=s64"
+    },
+    {
+      "name": "Belinda Preno",
+      "email": "belindapreno@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjW8kkayF4FN3ib50ZpJsNFIMcSF9CLOgEcXNjlG9yhQ2xy1dL2q=s64"
+    },
+    {
+      "name": "Daniel Giuditta",
+      "email": "danielgiuditta@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocI4XtQJyOGEbExqDChL5Jutn2AfMdv-Yaq9Pbdd1NMuBb-qO08=s64"
+    },
+    {
+      "name": "Simon Sok",
+      "email": "simonsok@google.com",
+      "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjUJwa8yeHprZ88_pXXGVlN6TT1mDyU1T8GUcNOixdQ46wyCNDlcGA=s64"
+    }
+  ],
+  "pinnedArtifactIds": [],
+  "updatedAt": "2026-07-12T13:56:41.784Z"
+}

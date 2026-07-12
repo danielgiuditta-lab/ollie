@@ -20,7 +20,7 @@ import { AISummaryView } from './components/Canvas/AISummaryView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
-import { inferChatName, resolveArtifactForChat } from './utils/artifactResolver';
+import { inferChatName, resolveArtifactForChat, findAssociatedChatForFile } from './utils/artifactResolver';
 
 
 import { useCanvasState } from './hooks/useCanvasState';
@@ -153,13 +153,9 @@ export default function App() {
             const validProjectName = c.projectName && c.projectName !== 'Workspace' && c.projectName !== 'Workspace Project' && c.projectName !== 'New Workspace' && c.projectName !== 'Web App Project';
             const folderName = validProjectName ? c.projectName : (driveTasksMap.get(folderId) || c.projectName || "Workspace");
 
+            const isSpaceContainer = c.type === 'space' || c.chatId === folderId || isHomeChatId(c.chatId);
+            const taskPins = isSpaceContainer ? (c.pinnedArtifactIds || []) : [];
             const taskObj = {
-              id: c.chatId,
-              name: folderName,
-              chatName: c.chatName || '',
-              const isSpaceContainer = c.type === 'space' || c.chatId === folderId || isHomeChatId(c.chatId);
-              const taskPins = isSpaceContainer ? (c.pinnedArtifactIds || []) : [];
-              const taskObj = {
                 id: c.chatId,
                 name: c.projectName || c.chatName || folderName,
                 chatName: c.chatName || c.projectName || 'Chat',
@@ -4089,8 +4085,14 @@ export default function App() {
     }
     const isFromRecents = options?.isFromRecents ?? false;
 
-    // Resolve targetChatId
+    // Resolve targetChatId using explicit options, inline file chatId, or reverse lookup via findAssociatedChatForFile
     let targetChatId = options?.targetChatId || (typeof file === 'object' && file.chatId ? file.chatId : null);
+    if (!targetChatId && typeof file === 'object' && file && !options?.isParentSpaceClick) {
+      const associatedChat = findAssociatedChatForFile(file, recentTasks);
+      if (associatedChat) {
+        targetChatId = associatedChat.id;
+      }
+    }
 
     // Resolve parent Space ID (folderId)
     let folderId = typeof file === 'string' ? file : (file.activeSpaceId || file.parentSpaceId || file.spaceId || null);
@@ -5381,7 +5383,10 @@ export default function App() {
                       spaceName={projectName || 'Space'}
                       pinnedArtifactIds={getSpacePins(activeSpaceId)}
                       sandboxFiles={getAllSpaceFiles(activeSpaceId)}
-                      onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId || activeSpaceId || getHomeChatId(), isParentSpaceClick: false })}
+                      onSelectArtifact={(file) => {
+                        const targetChatId = file?.chatId || findAssociatedChatForFile(file, recentTasks)?.id || activeSpaceId || getHomeChatId();
+                        handleFileClick(file, false, { isFromRecents: true, targetChatId, isParentSpaceClick: false });
+                      }}
                       onRemovePin={handleUnpinArtifact}
                       onReorderPins={handleReorderPins}
                       sandboxUrl={sandboxUrl}

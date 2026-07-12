@@ -207,7 +207,11 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 22. Verify that `/api/vibe-code` scopes generated file IDs to the session (`${targetChatId || activeChatId || 'sandbox'}-file-${i}`) to prevent ID collisions.
 23. Confirm that the outer `<CanvasMain />` conditional check explicitly includes `viewState === 'dashboard'` so the dashboard container mounts when root spaces are selected.
 24. Verify that `<CanvasSidebar />` (Library drawer) includes `viewState === 'dashboard'` in its visibility condition so library files can be viewed and toggled while on the dashboard.
-25. Confirm that backend storage APIs (`/api/chats/:chatId`) destructure and persist `pinnedArtifactIds` and that Home (`<HomeLanding />`) renders `<SpaceDashboard />` when pinned items exist.
+### Invariant 37: Bidirectional Library Reverse Lookup (`findAssociatedChatForFile`) & Preservation Middleware
+- **Bidirectional Library Lookup**: When a user selects an artifact from the File Library panel on the right (`CanvasSidebar`), `handleFileClick` executes `findAssociatedChatForFile(file, recentTasks)` to locate the child chat session where `associatedFileId === file.id` or `associatedFileName === file.name`. If found, `targetChatId` is set to that child chat session ID, automatically activating its authoring conversation thread in the left sidebar.
+- **Backend Schema Preservation Guard**: The server endpoint (`POST /api/chats/:chatId` in `chats.ts`) fetches the existing chat JSON payload from disk before saving updates. If optional metadata (`associatedFileId`, `associatedFileName`, `taskType`, `chatName`, or `pinnedArtifactIds`) is omitted in streaming or partial client POST bodies, the endpoint preserves the existing on-disk values instead of writing `null`/`undefined`. This guarantees cold browser reloads (F5) rehydrate complete structural metadata.
+- **Verification**: Run `npx tsx scratch/test_permanent_architectural_solution.ts` to verify reverse-lookup resolution, stream save metadata preservation, and cold page reloads.
+
 
 
 

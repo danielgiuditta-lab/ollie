@@ -1,9 +1,55 @@
+export interface ChildChatSession {
+  id: string;
+  spaceId?: string;
+  activeSpaceId?: string;
+  taskType?: 'site' | 'tool' | 'doc' | 'slide' | 'sheet' | 'inferred' | 'tracking';
+  associatedFileId?: string;
+  associatedFileName?: string;
+  chatName?: string;
+  type?: string;
+  raw?: any;
+}
+
+export interface SpaceContainer {
+  id: string;
+  name: string;
+  type: string;
+  pinnedArtifactIds?: string[];
+  sandboxFiles?: any[];
+}
+
 export const inferChatName = (text: string): string => {
   const clean = text.replace(/[#*`_\[\]]/g, '').trim();
   const words = clean.split(/\s+/).filter(Boolean);
   if (words.length === 0) return 'New Chat';
   const candidate = words.slice(0, 5).join(' ');
   return candidate.length > 30 ? candidate.substring(0, 27) + '...' : candidate;
+};
+
+export const findAssociatedChatForFile = (file: any, recentTasks: any[]): any | null => {
+  if (!file || !recentTasks || recentTasks.length === 0) return null;
+  const fileId = file.id || file.driveId;
+  const fileName = file.name;
+
+  if (fileId) {
+    const match = recentTasks.find(t => t && (t.associatedFileId === fileId || t.raw?.associatedFileId === fileId));
+    if (match) return match;
+  }
+
+  if (fileName) {
+    const match = recentTasks.find(t => {
+      const name = t?.associatedFileName || t?.raw?.associatedFileName;
+      return name && name.toLowerCase() === fileName.toLowerCase();
+    });
+    if (match) return match;
+  }
+
+  if (file.chatId) {
+    const match = recentTasks.find(t => t && t.id === file.chatId);
+    if (match) return match;
+  }
+
+  return null;
 };
 
 export const resolveArtifactForChat = (files: any[], task: any, taskType: string): any => {
@@ -73,3 +119,4 @@ export const resolveArtifactForChat = (files: any[], task: any, taskType: string
 
   return candidates[0] || null;
 };
+
