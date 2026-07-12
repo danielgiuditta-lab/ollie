@@ -12,7 +12,7 @@ async function runTests() {
   const spaceId = `space_verify_${Date.now()}`;
   const childChatId = `${spaceId}-chat-${Date.now()}`;
   const artifactId1 = `artifact_doc_${Date.now()}`;
-  const artifactId2 = `artifact_site_${Date.now()}`;
+  const artifactId2 = `created-artifact-${Date.now()}`;
 
   // ----------------------------------------------------
   // TEST 1: Post initial space with pinnedArtifactIds
@@ -27,7 +27,7 @@ async function runTests() {
       pinnedArtifactIds: [artifactId1, artifactId2],
       sandboxFiles: [
         { id: artifactId1, name: 'requirements.doc', content: '# Requirements' },
-        { id: artifactId2, name: 'index.html', content: '<h1>App</h1>' }
+        { id: artifactId2, name: 'index.html', content: '<h1>App Placeholder</h1>' }
       ]
     })
   });
@@ -97,6 +97,14 @@ async function runTests() {
   }
   console.log("   ✅ Parent space preserved pins AND merged child chat sandbox files!");
 
+  // Read back child chat directly to ensure it does NOT store duplicate space pins
+  const readChildRes = await fetch(`${BASE_URL}/api/chats/${childChatId}`);
+  const childData = await readChildRes.json();
+  if (childData.pinnedArtifactIds && childData.pinnedArtifactIds.length > 0) {
+    throw new Error(`TEST 3b FAILED: Child chat erroneously stored space pins! Got: ${JSON.stringify(childData.pinnedArtifactIds)}`);
+  }
+  console.log("   ✅ Child chat stored clean payload without pin leakage!");
+
   // ----------------------------------------------------
   // TEST 4: Explicit unpinning (passing empty array)
   // ----------------------------------------------------
@@ -123,16 +131,16 @@ async function runTests() {
   console.log("\n5. Testing resolveArtifactForChat utility logic...");
   const filesList = [
     { id: 'file-doc-1', name: 'Product Requirements.doc', mimeType: 'application/vnd.google-apps.document' },
-    { id: 'file-site-1', name: 'index.html', content: '<html></html>' },
+    { id: artifactId2, name: 'index.html', content: '<h1>Updated App Code</h1>' },
     { id: 'file-task-1', name: 'inferred_tasks.json', content: '[]' }
   ];
 
   // Association match
-  const matchById = resolveArtifactForChat(filesList, { associatedFileId: 'file-doc-1' }, 'doc');
-  if (matchById?.id !== 'file-doc-1') {
-    throw new Error(`TEST 5a FAILED: Expected file-doc-1, got ${matchById?.id}`);
+  const matchById = resolveArtifactForChat(filesList, { associatedFileId: artifactId2 }, 'site');
+  if (matchById?.id !== artifactId2) {
+    throw new Error(`TEST 5a FAILED: Expected ${artifactId2}, got ${matchById?.id}`);
   }
-  console.log("   ✅ Resolved artifact by explicit associatedFileId");
+  console.log("   ✅ Resolved custom tool artifact by explicit associatedFileId matching created-artifact ID");
 
   // Task type fallback match
   const matchTypeDoc = resolveArtifactForChat(filesList, { chatName: 'Product Requirements' }, 'doc');
@@ -142,8 +150,8 @@ async function runTests() {
   console.log("   ✅ Resolved doc artifact by candidate taskType filtering");
 
   const matchTypeSite = resolveArtifactForChat(filesList, { chatName: 'Custom Tool' }, 'site');
-  if (matchTypeSite?.id !== 'file-site-1') {
-    throw new Error(`TEST 5c FAILED: Expected file-site-1 for site task type, got ${matchTypeSite?.id}`);
+  if (matchTypeSite?.id !== artifactId2) {
+    throw new Error(`TEST 5c FAILED: Expected ${artifactId2} for site task type, got ${matchTypeSite?.id}`);
   }
   console.log("   ✅ Resolved site artifact by candidate taskType filtering");
 

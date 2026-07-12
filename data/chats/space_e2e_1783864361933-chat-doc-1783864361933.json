@@ -1,0 +1,29 @@
+{
+  "chatId": "space_e2e_1783864361933-chat-doc-1783864361933",
+  "projectName": "End-To-End Flight Tracker",
+  "chatName": "Product Strategy",
+  "type": "doc",
+  "taskType": "doc",
+  "associatedFileId": "created-doc-1783864361933",
+  "associatedFileName": "strategy.doc",
+  "messages": [
+    {
+      "role": "bot",
+      "text": "Drafted strategy doc"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space_e2e_1783864361933",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "created-doc-1783864361933",
+      "name": "strategy.doc",
+      "content": "# Product Strategy Plan"
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [],
+  "updatedAt": "2026-07-12T13:52:42.169Z"
+}

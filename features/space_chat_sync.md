@@ -168,6 +168,15 @@ Frontend persistence (`saveChatToDb`) MUST resolve current pinned IDs via `getSp
 ### Invariant 33: Child Chat Parent Space ID Guard (`handleFileClick`)
 When navigating or switching context, `handleFileClick` MUST resolve parent space IDs (`folderId`) using string split fallback (`file.id.split('-chat-')[0]` or `targetChatId.split('-chat-')[0]`) if `activeSpaceId` is omitted. This guarantees `activeSpaceId` remains strictly bound to the parent Space ID and never mutates to a child chat session ID.
 
+### Invariant 34: Auto-Pinning Artifacts on Creation (`handleCreateArtifactApp`)
+When a custom tool, document, or slide deck artifact is initialized inside a Space (`!isHomeChatId(targetFolder)`), `handleCreateArtifactApp` MUST invoke `handlePinArtifact(newArtifact, targetFolder)` to automatically attach its `id` to the parent Space's `pinnedArtifactIds`. This ensures newly generated tools and artifacts immediately appear as live interactive preview cards on the parent `<SpaceDashboard>`.
+
+### Invariant 35: Pin Isolation Guard for Child Chats (`saveChatToDb` & `fetchGeminiTasks`)
+Only parent space containers (`chatIdVal === resolvedSpaceId`) and Home (`isHomeChatId(chatIdVal)`) store and transmit `pinnedArtifactIds`. Child chat sessions (`${spaceId}-chat-...`) MUST NOT carry separate `pinnedArtifactIds` in backend database payloads (`saveChatToDb`) or `recentTasks` items (`fetchGeminiTasks`), preventing pin leakage into Home or child chats upon page reload.
+
+### Invariant 36: Consistent File ID Preservation (`/api/vibe-code`)
+When processing generated code files (`deduplicatedParsedFiles`) upon vibe-code streaming completion, if a file with the same name already exists in `sandboxFiles` or `workspaceCacheRef.current[targetChatId]`, the handler MUST preserve the existing file's `id` and `driveId`. Preserving existing file IDs guarantees that `pinnedArtifactIds`, `associatedFileId`, and `resolveArtifactForChat` remain perfectly synchronized, allowing custom tools (`index.html`) to render cleanly both on the Space Dashboard and when clicking child tool chats.
+
 ---
 
 ## 3. Verification & Maintenance
@@ -184,6 +193,8 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 10. Verify that removing tasks or files from a Space triggers mode evaluation and resets `spaceModes[spaceId]` to `'choice'` when no tool or tracking artifacts remain.
 11. Confirm that `resolveArtifactForChat` is always passed a combined array of cached sandbox files, active sandbox files, and Drive library files (`[...cached, ...sandboxFiles, ...driveFiles]`).
 12. Verify that saving child chats performs additive merging against parent space file manifests in `workspaceCacheRef`.
+13. Confirm that `pinnedArtifactIds` are only attached to parent space containers and Home, preserving ID consistency across `/api/vibe-code` generation so custom tools render live cards on `<SpaceDashboard>` and full HTML views when clicking child chats.
+14. **Automated Page Reload & Navigation Matrix Verification**: Execute `npx tsx scratch/test_e2e_reload_and_navigation.ts` to simulate complete page reloads (wiping React memory state), pre-cache restoration from backend storage, and rapid click navigation across Home, Space Dashboards, Custom Tool chats, and Document chats without data loss or UI rendering errors.
 13. Ensure Drive API queries and context ingestion endpoints validate folder IDs against local/virtual prefixes before making network requests.
 14. Confirm that `<NativeViewer />` sets `isIframeViewer = false` and uses simulated native paper viewers for Google Workspace documents and presentations.
 15. Ensure any document generation streaming handler updates both `sandboxFiles` and `driveFiles` with renamed titles and content.

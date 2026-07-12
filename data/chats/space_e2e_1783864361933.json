@@ -1,0 +1,31 @@
+{
+  "chatId": "space_e2e_1783864361933",
+  "projectName": "End-To-End Flight Tracker",
+  "chatName": null,
+  "type": "space",
+  "taskType": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [],
+  "envId": null,
+  "activeSpaceId": "space_e2e_1783864361933",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "created-tool-1783864361933",
+      "name": "index.html",
+      "content": "<html><body><h1>Kanban App</h1></body></html>"
+    },
+    {
+      "id": "created-doc-1783864361933",
+      "name": "strategy.doc",
+      "content": "# Product Strategy Plan"
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [
+    "created-tool-1783864361933"
+  ],
+  "updatedAt": "2026-07-12T13:52:42.224Z"
+}

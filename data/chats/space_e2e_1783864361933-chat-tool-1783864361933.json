@@ -1,0 +1,29 @@
+{
+  "chatId": "space_e2e_1783864361933-chat-tool-1783864361933",
+  "projectName": "End-To-End Flight Tracker",
+  "chatName": "Custom Tool",
+  "type": "site",
+  "taskType": "site",
+  "associatedFileId": "created-tool-1783864361933",
+  "associatedFileName": "index.html",
+  "messages": [
+    {
+      "role": "bot",
+      "text": "Built custom Kanban tool"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space_e2e_1783864361933",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "created-tool-1783864361933",
+      "name": "index.html",
+      "content": "<html><body><h1>Kanban App</h1></body></html>"
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [],
+  "updatedAt": "2026-07-12T13:52:42.101Z"
+}

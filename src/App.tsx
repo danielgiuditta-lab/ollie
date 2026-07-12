@@ -157,36 +157,42 @@ export default function App() {
               id: c.chatId,
               name: folderName,
               chatName: c.chatName || '',
-              type: isAiSummary ? 'ai_summary' : (c.type || c.taskType || 'workspace'),
-              taskType: c.taskType || c.type || null,
-              associatedFileId: c.associatedFileId || null,
-              associatedFileName: c.associatedFileName || null,
-              messages: c.messages || [],
-              sandboxFiles: c.sandboxFiles || [],
-              pinnedArtifactIds: c.pinnedArtifactIds || [],
-              activeSpaceId: folderId,
-              updatedAt: time
-            };
-
-            if (c.chatId) {
-              const existingCache: any = workspaceCacheRef.current[c.chatId] || {};
-              workspaceCacheRef.current[c.chatId] = {
-                ingestedFiles: existingCache.ingestedFiles || [],
-                sandboxFiles: c.sandboxFiles || existingCache.sandboxFiles || [],
-                envId: c.envId || existingCache.envId || null,
-                sandboxUrl: c.sandboxUrl || existingCache.sandboxUrl || '',
-                messages: c.messages || existingCache.messages || [],
-                projectName: folderName,
-                selectedFile: existingCache.selectedFile || null,
-                indexFileSelected: existingCache.indexFileSelected || false,
-                viewState: existingCache.viewState || 'app',
-                pinnedArtifactIds: c.pinnedArtifactIds || existingCache.pinnedArtifactIds || [],
+              const isSpaceContainer = c.type === 'space' || c.chatId === folderId || isHomeChatId(c.chatId);
+              const taskPins = isSpaceContainer ? (c.pinnedArtifactIds || []) : [];
+              const taskObj = {
+                id: c.chatId,
+                name: c.projectName || c.chatName || folderName,
+                chatName: c.chatName || c.projectName || 'Chat',
+                type: isAiSummary ? 'ai_summary' : (c.type || c.taskType || 'workspace'),
                 taskType: c.taskType || c.type || null,
-                type: c.type || null,
                 associatedFileId: c.associatedFileId || null,
-                associatedFileName: c.associatedFileName || null
+                associatedFileName: c.associatedFileName || null,
+                messages: c.messages || [],
+                sandboxFiles: c.sandboxFiles || [],
+                pinnedArtifactIds: taskPins,
+                activeSpaceId: folderId,
+                updatedAt: time
               };
-            }
+
+              if (c.chatId) {
+                const existingCache: any = workspaceCacheRef.current[c.chatId] || {};
+                workspaceCacheRef.current[c.chatId] = {
+                  ingestedFiles: existingCache.ingestedFiles || [],
+                  sandboxFiles: c.sandboxFiles || existingCache.sandboxFiles || [],
+                  envId: c.envId || existingCache.envId || null,
+                  sandboxUrl: c.sandboxUrl || existingCache.sandboxUrl || '',
+                  messages: c.messages || existingCache.messages || [],
+                  projectName: folderName,
+                  selectedFile: existingCache.selectedFile || null,
+                  indexFileSelected: existingCache.indexFileSelected || false,
+                  viewState: existingCache.viewState || 'app',
+                  pinnedArtifactIds: isSpaceContainer ? (c.pinnedArtifactIds || existingCache.pinnedArtifactIds || []) : [],
+                  taskType: c.taskType || c.type || null,
+                  type: c.type || null,
+                  associatedFileId: c.associatedFileId || null,
+                  associatedFileName: c.associatedFileName || null
+                };
+              }
             if (folderId && folderId !== c.chatId && !isHomeChatId(folderId)) {
               const parentCache: any = workspaceCacheRef.current[folderId] || {};
               const currentSpaceFiles = parentCache.sandboxFiles || [];
@@ -695,7 +701,8 @@ export default function App() {
 
     const resolvedFileId = associatedFileId || existing?.associatedFileId || (customFiles?.length === 1 ? (customFiles[0].driveId || customFiles[0].id) : (primaryFile?.driveId || primaryFile?.id));
     const resolvedFileName = associatedFileName || existing?.associatedFileName || (customFiles?.length === 1 ? customFiles[0].name : primaryFile?.name);
-    const resolvedPins = getSpacePins(chatIdVal).length > 0 ? getSpacePins(chatIdVal) : (getSpacePins(resolvedSpaceId).length > 0 ? getSpacePins(resolvedSpaceId) : (existing?.pinnedArtifactIds || []));
+    const isSelfSpace = chatIdVal === resolvedSpaceId || isHomeChatId(chatIdVal);
+    const resolvedPins = isSelfSpace ? (getSpacePins(resolvedSpaceId).length > 0 ? getSpacePins(resolvedSpaceId) : (existing?.pinnedArtifactIds || [])) : undefined;
 
     try {
       await fetch(`/api/chats/${chatIdVal}`, {
@@ -737,7 +744,7 @@ export default function App() {
         type: resolvedType,
         associatedFileId: resolvedFileId,
         associatedFileName: resolvedFileName,
-        pinnedArtifactIds: resolvedPins
+        pinnedArtifactIds: isSelfSpace ? (resolvedPins || []) : []
       };
 
       // If saving a child chat inside a parent space, also persist the updated file manifest to the parent space
@@ -2306,13 +2313,16 @@ export default function App() {
 
                   const updatedSandbox = [...sandboxFiles];
                   deduplicatedParsedFiles.forEach(pf => {
-                     const existingIdx = updatedSandbox.findIndex(f => f.name.toLowerCase() === pf.name.toLowerCase());
+                     const existingIdx = updatedSandbox.findIndex(f => f && f.name && f.name.toLowerCase() === pf.name.toLowerCase());
+                     const existingFile = existingIdx !== -1 ? updatedSandbox[existingIdx] : workspaceCacheRef.current[targetChatId || '']?.sandboxFiles?.find((f: any) => f && f.name && f.name.toLowerCase() === pf.name.toLowerCase());
                      const pfWithMime = {
                        ...pf,
+                       id: existingFile?.id || pf.id,
+                       driveId: existingFile?.driveId || pf.driveId,
                        mimeType: getMimeTypeFromFileName(pf.name, pf.mimeType),
                      };
                      if (existingIdx !== -1) {
-                        updatedSandbox[existingIdx] = { ...updatedSandbox[existingIdx], content: pf.content, mimeType: pfWithMime.mimeType };
+                        updatedSandbox[existingIdx] = { ...updatedSandbox[existingIdx], ...pfWithMime };
                      } else {
                         updatedSandbox.push(pfWithMime);
                      }
@@ -5009,6 +5019,10 @@ export default function App() {
         fileIdVal,
         name
       );
+
+      if (!isHomeChatId(targetFolder)) {
+        handlePinArtifact(newArtifact, targetFolder);
+      }
     }
 
     setSelectedFile(newArtifact);
