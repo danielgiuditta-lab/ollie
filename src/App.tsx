@@ -120,7 +120,7 @@ export default function App() {
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
   const [activeProactiveTask, setActiveProactiveTask] = useState<any | null>(null);
-
+  const [homePins, setHomePins] = useState<string[]>([]);
 
   const fetchGeminiTasks = async (token?: string | null, email?: string) => {
     try {
@@ -189,6 +189,11 @@ export default function App() {
                   associatedFileName: c.associatedFileName || null
                 };
               }
+
+            if (isHomeChatId(c.chatId) && c.pinnedArtifactIds && Array.isArray(c.pinnedArtifactIds)) {
+              setHomePins(c.pinnedArtifactIds);
+            }
+
             if (folderId && folderId !== c.chatId && !isHomeChatId(folderId)) {
               const parentCache: any = workspaceCacheRef.current[folderId] || {};
               const currentSpaceFiles = parentCache.sandboxFiles || [];
@@ -217,13 +222,11 @@ export default function App() {
         console.error("Error fetching user chats from Firestore:", fErr);
       }
 
-      // Filter to only items with active messages/LLM interactions or workspaces/spaces, and exclude home chats
       const mergedTasks = firestoreTasks.filter(ft => 
         !isHomeChatId(ft.id) && 
         (ft.type === 'workspace' || (ft.messages && ft.messages.length > 0))
       );
       
-      // Sort reverse-chronologically by timestamp
       mergedTasks.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
       setRecentTasks(mergedTasks);
@@ -243,8 +246,15 @@ export default function App() {
         const chatRes = await fetch(`/api/chats/${homeId}`);
         if (chatRes.ok) {
           const chatData = await chatRes.json();
-          if (chatData && chatData.messages) {
-            setMessages(chatData.messages);
+          if (chatData) {
+            if (chatData.messages) setMessages(chatData.messages);
+            if (chatData.pinnedArtifactIds && Array.isArray(chatData.pinnedArtifactIds)) {
+              setHomePins(chatData.pinnedArtifactIds);
+              workspaceCacheRef.current[homeId] = {
+                ...workspaceCacheRef.current[homeId],
+                pinnedArtifactIds: chatData.pinnedArtifactIds
+              };
+            }
             return;
           }
         }
@@ -3652,6 +3662,10 @@ export default function App() {
 
   const getSpacePins = (spaceId: string | null) => {
     if (!spaceId) return [];
+    if (isHomeChatId(spaceId)) {
+      const cachePins = workspaceCacheRef.current[spaceId]?.pinnedArtifactIds;
+      return (cachePins && cachePins.length > 0) ? cachePins : homePins;
+    }
     const pObj = projects.find(p => p && (p.id === spaceId || p.activeSpaceId === spaceId));
     if (pObj && pObj.pinnedArtifactIds) return pObj.pinnedArtifactIds;
     const tObj = recentTasks.find(t => t && (t.id === spaceId || (t.type === 'space' && t.activeSpaceId === spaceId)));
@@ -3734,6 +3748,11 @@ export default function App() {
       };
     }
 
+    if (isHomeChatId(targetId)) {
+      const nextPins = workspaceCacheRef.current[targetId]?.pinnedArtifactIds || [];
+      setHomePins(nextPins);
+    }
+
     let updatedInLists = false;
     const updatePins = (p: any) => {
       if (p && (p.id === targetId || (p.type === 'space' && p.activeSpaceId === targetId))) {
@@ -3775,6 +3794,11 @@ export default function App() {
         ...workspaceCacheRef.current[targetId],
         pinnedArtifactIds: nextPins
       };
+    }
+
+    if (isHomeChatId(targetId)) {
+      const nextPins = workspaceCacheRef.current[targetId]?.pinnedArtifactIds || [];
+      setHomePins(nextPins);
     }
 
     let updatedInLists = false;
@@ -4254,7 +4278,7 @@ export default function App() {
           } else {
             setSelectedFile(null);
             setIndexFileSelected(false);
-            setViewState(cached.sandboxFiles?.length > 0 ? 'files' : 'home');
+            setViewState('home');
           }
         }
       } else {

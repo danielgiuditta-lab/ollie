@@ -1,0 +1,37 @@
+{
+  "envId": "2fa0b719850c9e0de893fe287d8a1349",
+  "key": "sojo_kanban_board_state_final",
+  "data": [
+    {
+      "id": "task-1",
+      "title": "Define 'Task' primitive structure specifying state, goal & outcomes",
+      "status": "Done",
+      "assignee": "boqing@google.com"
+    },
+    {
+      "id": "task-2",
+      "title": "Incorporate market data, SMB growth metrics and sizing into Pitch Deck",
+      "status": "In Progress",
+      "assignee": "alanmclean@google.com"
+    },
+    {
+      "id": "task-3",
+      "title": "Refine Jet Ski end-to-end prototype for Friday review session",
+      "status": "In Progress",
+      "assignee": "carlinyuen@google.com"
+    },
+    {
+      "id": "task-4",
+      "title": "Analyze Sojo steering feedback & layout custom interaction rules",
+      "status": "To Do",
+      "assignee": "mirjamvanesch@google.com"
+    },
+    {
+      "id": "task-5",
+      "title": "Confirm CLI connection policies and test System Compatibility",
+      "status": "To Do",
+      "assignee": "carlinyuen@google.com"
+    }
+  ],
+  "updatedAt": "2026-07-12T17:38:45.800Z"
+}

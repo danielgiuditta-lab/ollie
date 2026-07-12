@@ -221,9 +221,10 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 - **Explicit Pinning Mandate**: `handleCreateArtifactApp` strictly omits automatic `handlePinArtifact` calls upon initializing new documents (`.doc`) or slide decks (`.gslides`). Pinning occurs exclusively when the human user explicitly clicks the Pin action button in the breadcrumb toolbar (`CanvasHeader`) or right-hand File Library (`CanvasSidebar`).
 - **Strict Container Object Separation (`isSpaceObject`)**: In `handleFileClick`, `isSpaceObject` exclusively verifies container flags (`type === 'space'`, `type === 'workspace'`, `isProject`, `chats`) and excludes objects with file extensions (`!file.name?.includes('.')`). Artifact files generated inside child chats carrying session-scoped IDs (`space-123-chat-...-file-0`) or `.chatId` properties are recognized as `specificFileMatch` and open directly in their native viewer/editor when clicked from dashboard preview cards.
 
-### Invariant 40: Canonical ID Preservation & Cross-Dashboard Resolution
-- **Canonical ID Preservation**: `handlePinArtifact` resolves `fileId` using existing canonical fields (`file.id || file.driveId || file.associatedFileId`) rather than generating synthetic space-prefixed IDs that overwrite the file's identity.
-- **Cross-Dashboard Card Resolution**: In `<SpaceDashboard />`, resolution of `pinnedArtifactIds` against `sandboxFiles` checks `f.id === id || f.driveId === id`, with case-insensitive and suffix fallback matching (`id.endsWith('-' + f.name.toLowerCase())`). This guarantees custom tools pinned from spaces render live preview cards on both Space and Home dashboards.
+### Invariant 41: Home Pins React State Synchronization & Routing Guard
+- **Dedicated `homePins` State**: Because root Home is filtered out of `recentTasks` (`!isHomeChatId(ft.id)`), updates to Home pins do not alter `recentTasks` array references. A dedicated `homePins` React state tracks Home dashboard pins in memory, rehydrating from `/api/chats/${homeId}` in `loadHomeChat` upon initial page mount.
+- **Synchronous Pin Updating**: `handlePinArtifact` and `handleUnpinArtifact` inspect `isHomeChatId(targetId)` and update `homePins` synchronously, triggering an immediate UI re-render of `<HomeLanding>` without requiring a browser refresh.
+- **Home Navigation Routing Guard**: In `handleFileClick`, navigating to root Home (`isParentSpaceClick` and `isHomeChatId(folderId)`) evaluates `viewState = 'home'` (when no standalone tool/inferred task is running), ensuring `<HomeLanding>` mounts and displays the pinned artifacts section.
 
 
 
