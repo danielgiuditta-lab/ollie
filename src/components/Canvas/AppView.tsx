@@ -220,7 +220,18 @@ export const AppView = memo(function AppView({ sandboxUrl, files, envId, project
     return undefined;
   }, [files, selectedFile]);
 
-  const showIframe = sandboxUrl || srcDoc;
+  const isSelfOrigin = (url?: string) => {
+    if (!url) return false;
+    try {
+      const parsed = new URL(url, window.location.origin);
+      return parsed.origin === window.location.origin || parsed.host === window.location.host;
+    } catch (e) {
+      return url.includes(window.location.host) || url.includes('localhost:3000');
+    }
+  };
+
+  const validExternalSandboxUrl = (sandboxUrl && !isSelfOrigin(sandboxUrl)) ? sandboxUrl : undefined;
+  const showIframe = Boolean(validExternalSandboxUrl || srcDoc);
 
   const isDark = theme === 'dark';
 
@@ -228,7 +239,10 @@ export const AppView = memo(function AppView({ sandboxUrl, files, envId, project
     <div className="w-full h-full p-0 overflow-hidden">
       {!showIframe ? (
         <div className={`w-full h-full ${isDark ? 'bg-[#131416] text-gray-400' : 'bg-white text-gray-400'} flex items-center justify-center`}>
-          <p>Waiting for code generation...</p>
+          <div className="flex flex-col items-center gap-3">
+            <span className="material-symbols-rounded text-3xl animate-spin text-blue-500">sync</span>
+            <p className="text-sm font-medium">Waiting for application code generation...</p>
+          </div>
         </div>
       ) : (
         <iframe
@@ -237,7 +251,7 @@ export const AppView = memo(function AppView({ sandboxUrl, files, envId, project
             iframeRef.current = el;
             if (onIframeRef) onIframeRef(el);
           }}
-          src={sandboxUrl || undefined}
+          src={validExternalSandboxUrl}
           srcDoc={srcDoc}
           sandbox="allow-scripts allow-forms allow-popups allow-same-origin allow-modals allow-downloads"
           className="w-full h-full bg-white border-none outline-none"

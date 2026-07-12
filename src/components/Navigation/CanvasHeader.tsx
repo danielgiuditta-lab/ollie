@@ -156,10 +156,11 @@ export function CanvasHeader({
       }
       artifactName = rawTaskTitle;
     } else if (artifactName && typeof artifactName === 'string') {
-      artifactName = artifactName.replace(/\.(doc|gdoc|gslides|gsheet|docx|pptx|xlsx|pdf|md|csv)$/i, '');
+      artifactName = artifactName.replace(/\.(doc|gdoc|gslides|gsheet|docx|pptx|xlsx|pdf|md|csv|html|htm)$/i, '');
       if (artifactName.toLowerCase() === 'document') artifactName = 'Doc';
       if (artifactName.toLowerCase() === 'presentation') artifactName = 'Slide Deck';
       if (artifactName.toLowerCase() === 'spreadsheet') artifactName = 'Sheet';
+      if (artifactName.toLowerCase() === 'index' || artifactName.toLowerCase() === 'index.html') artifactName = 'Custom Tool';
       if (artifactName.length > 28) {
         artifactName = artifactName.substring(0, 26).trim() + '...';
       }

@@ -4190,9 +4190,11 @@ export default function App() {
           setViewState(isHtml ? 'app' : 'files');
         } else if (taskType === 'site' || taskType === 'tool') {
           const toolFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
-          setSelectedFile(toolFile || null);
-          setIndexFileSelected(!!toolFile && (toolFile.name.toLowerCase().includes('index.html') || toolFile.name.toLowerCase().endsWith('.html')));
-          setViewState(toolFile ? 'app' : 'home');
+          const canonicalHtml = toolFile || allAvailableFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
+          const selectedTool = canonicalHtml || { name: 'index.html', content: '' };
+          setSelectedFile(selectedTool);
+          setIndexFileSelected(true);
+          setViewState('app');
         } else if (taskType === 'doc') {
           const docFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           setSelectedFile(docFile);
@@ -4404,8 +4406,10 @@ export default function App() {
                   const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
                   nextViewState = isHtml ? 'app' : 'files';
                 } else if (chatTaskType === 'site' || chatTaskType === 'tool') {
-                  fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
-                  nextViewState = fileToSelect ? 'app' : 'home';
+                  const toolFile = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
+                  const canonicalHtml = toolFile || (chatData.sandboxFiles || []).find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
+                  fileToSelect = canonicalHtml || { name: 'index.html', content: '' };
+                  nextViewState = 'app';
                 } else if (chatTaskType === 'doc') {
                   fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = 'files';
