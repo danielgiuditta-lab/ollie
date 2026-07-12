@@ -149,10 +149,11 @@ export default function App() {
           firestoreTasks = list.map((c: any) => {
             const isAiSummary = c.chatId && c.chatId.startsWith('ai-summary-');
             const time = c.updatedAt ? new Date(c.updatedAt).getTime() : 0;
-            const folderId = c.activeSpaceId || c.chatId;
+            const folderId = c.activeSpaceId || (c.chatId && c.chatId.includes('-chat-') ? c.chatId.split('-chat-')[0] : c.chatId);
             const validProjectName = c.projectName && c.projectName !== 'Workspace' && c.projectName !== 'Workspace Project' && c.projectName !== 'New Workspace' && c.projectName !== 'Web App Project';
             const folderName = validProjectName ? c.projectName : (driveTasksMap.get(folderId) || c.projectName || "Workspace");
-            return {
+
+            const taskObj = {
               id: c.chatId,
               name: folderName,
               chatName: c.chatName || '',
@@ -161,9 +162,53 @@ export default function App() {
               associatedFileId: c.associatedFileId || null,
               associatedFileName: c.associatedFileName || null,
               messages: c.messages || [],
-              activeSpaceId: c.activeSpaceId || null,
+              sandboxFiles: c.sandboxFiles || [],
+              pinnedArtifactIds: c.pinnedArtifactIds || [],
+              activeSpaceId: folderId,
               updatedAt: time
             };
+
+            if (c.chatId) {
+              const existingCache: any = workspaceCacheRef.current[c.chatId] || {};
+              workspaceCacheRef.current[c.chatId] = {
+                ingestedFiles: existingCache.ingestedFiles || [],
+                sandboxFiles: c.sandboxFiles || existingCache.sandboxFiles || [],
+                envId: c.envId || existingCache.envId || null,
+                sandboxUrl: c.sandboxUrl || existingCache.sandboxUrl || '',
+                messages: c.messages || existingCache.messages || [],
+                projectName: folderName,
+                selectedFile: existingCache.selectedFile || null,
+                indexFileSelected: existingCache.indexFileSelected || false,
+                viewState: existingCache.viewState || 'app',
+                pinnedArtifactIds: c.pinnedArtifactIds || existingCache.pinnedArtifactIds || [],
+                taskType: c.taskType || c.type || null,
+                type: c.type || null,
+                associatedFileId: c.associatedFileId || null,
+                associatedFileName: c.associatedFileName || null
+              };
+            }
+            if (folderId && folderId !== c.chatId && !isHomeChatId(folderId)) {
+              const parentCache: any = workspaceCacheRef.current[folderId] || {};
+              const currentSpaceFiles = parentCache.sandboxFiles || [];
+              const mergedMap = new Map();
+              currentSpaceFiles.forEach((f: any) => { if (f && f.name) mergedMap.set(f.name.toLowerCase(), f); });
+              (c.sandboxFiles || []).forEach((f: any) => { if (f && f.name) mergedMap.set(f.name.toLowerCase(), f); });
+              workspaceCacheRef.current[folderId] = {
+                ingestedFiles: parentCache.ingestedFiles || [],
+                envId: parentCache.envId || null,
+                sandboxUrl: parentCache.sandboxUrl || '',
+                messages: parentCache.messages || [],
+                selectedFile: parentCache.selectedFile || null,
+                indexFileSelected: parentCache.indexFileSelected || false,
+                viewState: parentCache.viewState || 'app',
+                ...parentCache,
+                sandboxFiles: Array.from(mergedMap.values()),
+                pinnedArtifactIds: c.pinnedArtifactIds || parentCache.pinnedArtifactIds || [],
+                projectName: parentCache.projectName || folderName
+              };
+            }
+
+            return taskObj;
           });
         }
       } catch (fErr) {
@@ -650,6 +695,7 @@ export default function App() {
 
     const resolvedFileId = associatedFileId || existing?.associatedFileId || (customFiles?.length === 1 ? (customFiles[0].driveId || customFiles[0].id) : (primaryFile?.driveId || primaryFile?.id));
     const resolvedFileName = associatedFileName || existing?.associatedFileName || (customFiles?.length === 1 ? customFiles[0].name : primaryFile?.name);
+    const resolvedPins = getSpacePins(chatIdVal).length > 0 ? getSpacePins(chatIdVal) : (getSpacePins(resolvedSpaceId).length > 0 ? getSpacePins(resolvedSpaceId) : (existing?.pinnedArtifactIds || []));
 
     try {
       await fetch(`/api/chats/${chatIdVal}`, {
@@ -670,7 +716,8 @@ export default function App() {
           sandboxUrl: activeSandboxUrl || sandboxUrl || '',
           sandboxFiles: filesToSave,
           userEmail: userProfile?.email || '',
-          members: members
+          members: members,
+          pinnedArtifactIds: resolvedPins
         })
       });
 
@@ -689,7 +736,8 @@ export default function App() {
         taskType: resolvedTaskType,
         type: resolvedType,
         associatedFileId: resolvedFileId,
-        associatedFileName: resolvedFileName
+        associatedFileName: resolvedFileName,
+        pinnedArtifactIds: resolvedPins
       };
 
       // If saving a child chat inside a parent space, also persist the updated file manifest to the parent space
@@ -705,6 +753,7 @@ export default function App() {
             mergedSpaceFiles.push(newF);
           }
         });
+        const spacePins = getSpacePins(resolvedSpaceId);
         const existingCache: any = workspaceCacheRef.current[resolvedSpaceId] || {};
         workspaceCacheRef.current[resolvedSpaceId] = {
           ingestedFiles: existingCache.ingestedFiles || [],
@@ -715,7 +764,8 @@ export default function App() {
           projectName: existingCache.projectName || activeName || 'Workspace',
           selectedFile: existingCache.selectedFile || null,
           indexFileSelected: existingCache.indexFileSelected || false,
-          viewState: existingCache.viewState || 'app'
+          viewState: existingCache.viewState || 'app',
+          pinnedArtifactIds: spacePins
         };
         fetch(`/api/chats/${resolvedSpaceId}`, {
           method: 'POST',
@@ -726,7 +776,8 @@ export default function App() {
             sandboxUrl: activeSandboxUrl || sandboxUrl || '',
             sandboxFiles: mergedSpaceFiles,
             userEmail: userProfile?.email || '',
-            members: members
+            members: members,
+            pinnedArtifactIds: spacePins
           })
         }).catch(err => console.error("Failed to sync parent space manifest:", err));
       }
@@ -1833,7 +1884,7 @@ export default function App() {
           const childChatName = text.length > 30 ? text.substring(0, 30) + '...' : text;
           
           // Save child chat session with full files and activeSpaceId so it restores cleanly when clicked
-          await saveChatToDb(taskId, finalMessages, envId, sandboxUrl, targetProjectName, updatedFiles, targetSpaceId, childChatName);
+          await saveChatToDb(taskId, finalMessages, envId, sandboxUrl, targetProjectName, updatedFiles, targetSpaceId, childChatName, 'ai_summary');
           console.log(`[Firebase] Saved AI Summary chat "${taskId}" to Cloud Firestore successfully.`);
 
           if (isHomeChatId(targetSpaceId)) {
@@ -4033,6 +4084,12 @@ export default function App() {
 
     // Resolve parent Space ID (folderId)
     let folderId = typeof file === 'string' ? file : (file.activeSpaceId || file.parentSpaceId || file.spaceId || null);
+    if (!folderId && typeof file === 'object' && file?.id && typeof file.id === 'string' && file.id.includes('-chat-')) {
+      folderId = file.id.split('-chat-')[0];
+    }
+    if (!folderId && targetChatId && typeof targetChatId === 'string' && targetChatId.includes('-chat-')) {
+      folderId = targetChatId.split('-chat-')[0];
+    }
     if (!folderId && targetChatId) {
       const matchingTask = recentTasks.find(t => t.id === targetChatId);
       folderId = matchingTask?.activeSpaceId || matchingTask?.parentSpaceId || matchingTask?.spaceId || null;
@@ -4945,7 +5002,7 @@ export default function App() {
         envId,
         sandboxUrl,
         currentSpaceName,
-        [newArtifact],
+        [...sandboxFiles.filter((f: any) => f && f.name !== name), newArtifact],
         targetFolder,
         chatTitle,
         type,

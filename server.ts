@@ -552,22 +552,27 @@ async function startServer() {
       const sanitizedId = chatId.replace(/[^a-zA-Z0-9_\-]/g, "_");
       const { projectName, chatName, type, taskType, associatedFileId, associatedFileName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles, members, pinnedArtifactIds } = req.body;
 
+      const existingChat = await getChatAsync(sanitizedId);
+      const resolvedPins = pinnedArtifactIds !== undefined 
+        ? (Array.isArray(pinnedArtifactIds) ? pinnedArtifactIds : []) 
+        : (existingChat?.pinnedArtifactIds || []);
+
       const payload = {
         chatId: sanitizedId,
-        projectName: projectName || "New Workspace",
-        chatName: chatName || null,
-        type: type || null,
-        taskType: taskType || null,
-        associatedFileId: associatedFileId || null,
-        associatedFileName: associatedFileName || null,
-        messages: messages || [],
-        envId: envId || null,
-        activeSpaceId: activeSpaceId || null,
-        sandboxUrl: sandboxUrl || "",
-        sandboxFiles: sandboxFiles || [],
-        userEmail: userEmail || "",
-        members: members || [],
-        pinnedArtifactIds: pinnedArtifactIds || [],
+        projectName: projectName || existingChat?.projectName || "New Workspace",
+        chatName: chatName !== undefined ? chatName : (existingChat?.chatName || null),
+        type: type !== undefined ? type : (existingChat?.type || null),
+        taskType: taskType !== undefined ? taskType : (existingChat?.taskType || null),
+        associatedFileId: associatedFileId !== undefined ? associatedFileId : (existingChat?.associatedFileId || null),
+        associatedFileName: associatedFileName !== undefined ? associatedFileName : (existingChat?.associatedFileName || null),
+        messages: messages || existingChat?.messages || [],
+        envId: envId !== undefined ? envId : (existingChat?.envId || null),
+        activeSpaceId: activeSpaceId || existingChat?.activeSpaceId || null,
+        sandboxUrl: sandboxUrl !== undefined ? sandboxUrl : (existingChat?.sandboxUrl || ""),
+        sandboxFiles: sandboxFiles || existingChat?.sandboxFiles || [],
+        userEmail: userEmail || existingChat?.userEmail || "",
+        members: members || existingChat?.members || [],
+        pinnedArtifactIds: resolvedPins,
         updatedAt: new Date().toISOString()
       };
 

@@ -159,6 +159,15 @@ During creation and AI streaming generation in `/api/vibe-code`, `saveChatToDb` 
 ### Invariant 30: De-polymorphized Navigation Helpers (`openSpace`, `openChat`, `openFile`)
 `LeftNav.tsx` navigation callbacks (`onSelectSpace`, `onSelectChat`, `onSelectProject`, `onSelectTask`) MUST use explicit, strongly-typed helpers (`openSpace`, `openChat`, `openFile`) in `App.tsx` rather than passing generic, polymorphic objects directly to `handleFileClick`. This ensures that opening a space header (`openSpace(spaceId)`), switching authoring chats (`openChat(chatId)`), or viewing an artifact (`openFile(fileId)`) execute distinct, non-overlapping initialization steps.
 
+### Invariant 31: Mount Cache Pre-Seeding & Task Mapping Integrity (`fetchGeminiTasks`)
+When loading user chats on initial mount or page reload, `fetchGeminiTasks` MUST map and preserve `pinnedArtifactIds`, `sandboxFiles`, `associatedFileId`, `associatedFileName`, `taskType`, and `activeSpaceId` on every entry in `recentTasks`. Furthermore, `fetchGeminiTasks` MUST synchronously seed `workspaceCacheRef.current[c.chatId]` and `workspaceCacheRef.current[folderId]` during list processing so synchronous hooks (`getSpacePins`, `getAllSpaceFiles`, and `resolveArtifactForChat`) execute without cache misses upon initial page reload.
+
+### Invariant 32: Database Pin Preservation Guard (`saveChatToDb` & `server.ts`)
+Frontend persistence (`saveChatToDb`) MUST resolve current pinned IDs via `getSpacePins(...)` and include `pinnedArtifactIds` in POST payloads sent to `/api/chats/${chatIdVal}` and parent space syncs (`/api/chats/${resolvedSpaceId}`). The backend endpoint (`POST /api/chats/:chatId` in `server.ts`) MUST preserve existing backend document pins when `req.body.pinnedArtifactIds` is `undefined`, overwriting pins only when an explicit array (including `[]` for intentional unpinning) is supplied in `req.body`.
+
+### Invariant 33: Child Chat Parent Space ID Guard (`handleFileClick`)
+When navigating or switching context, `handleFileClick` MUST resolve parent space IDs (`folderId`) using string split fallback (`file.id.split('-chat-')[0]` or `targetChatId.split('-chat-')[0]`) if `activeSpaceId` is omitted. This guarantees `activeSpaceId` remains strictly bound to the parent Space ID and never mutates to a child chat session ID.
+
 ---
 
 ## 3. Verification & Maintenance
