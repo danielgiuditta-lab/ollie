@@ -692,7 +692,17 @@ export default function App() {
     const resolvedType = existing?.type || (resolvedTaskType === 'site' ? 'site' : 'workspace');
     
     const primaryFile = (customFiles && customFiles.length > 0)
-      ? (customFiles.find(f => f && (f.isDocJourney || f.name.endsWith('.doc') || f.name.endsWith('.gslides') || f.name.endsWith('.gsheet') || f.name === 'index.html')) || customFiles[0])
+      ? (
+          resolvedTaskType === 'site' || resolvedTaskType === 'tool'
+            ? (customFiles.find(f => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html'))) || customFiles[0])
+            : resolvedTaskType === 'doc'
+            ? (customFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.doc') || f.name.toLowerCase().endsWith('.docx') || f.isDocJourney)) || customFiles[0])
+            : resolvedTaskType === 'slide'
+            ? (customFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.gslides') || f.mimeType?.includes('presentation'))) || customFiles[0])
+            : resolvedTaskType === 'sheet'
+            ? (customFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.gsheet') || f.name.toLowerCase().endsWith('.csv') || f.mimeType?.includes('spreadsheet'))) || customFiles[0])
+            : (customFiles.find(f => f && f.name && (f.name.toLowerCase() === 'index.html' || f.isDocJourney || f.name.toLowerCase().endsWith('.doc'))) || customFiles[0])
+        )
       : undefined;
 
     const resolvedFileId = associatedFileId || existing?.associatedFileId || (customFiles?.length === 1 ? (customFiles[0].driveId || customFiles[0].id) : (primaryFile?.driveId || primaryFile?.id));
@@ -3706,8 +3716,11 @@ export default function App() {
   const handlePinArtifact = (file: any, targetSpaceId?: string) => {
     const targetId = targetSpaceId || activeSpaceId || getHomeChatId();
     if (!targetId || !file) return;
-    const fileId = file.id || file.driveId;
+    const fileId = file.id || file.driveId || (file.name ? (file.name.toLowerCase() === 'index.html' ? `${targetId}-tool` : `${targetId}-${file.name.toLowerCase()}`) : null);
     if (!fileId) return;
+    if (!file.id) {
+      file.id = fileId;
+    }
 
     if (!workspaceCacheRef.current[targetId]) {
       workspaceCacheRef.current[targetId] = { sandboxFiles: [], ingestedFiles: [], messages: [], envId: '', sandboxUrl: '', projectName: '', selectedFile: null, indexFileSelected: false } as any;
@@ -5513,6 +5526,11 @@ export default function App() {
                 animatingFileIds={animatingFileIds}
                 onCloseSidebar={() => setIsSourcesPanelOpen(false)}
                 forceSingleColumn={true}
+                onPinArtifact={handlePinArtifact}
+                onUnpinArtifact={handleUnpinArtifact}
+                getSpacePins={getSpacePins}
+                activeSpaceId={activeSpaceId}
+                getHomeChatId={getHomeChatId}
               />
             )}
           </AnimatePresence>

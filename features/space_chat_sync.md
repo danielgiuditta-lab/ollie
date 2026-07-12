@@ -212,6 +212,12 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 - **Backend Schema Preservation Guard**: The server endpoint (`POST /api/chats/:chatId` in `chats.ts`) fetches the existing chat JSON payload from disk before saving updates. If optional metadata (`associatedFileId`, `associatedFileName`, `taskType`, `chatName`, or `pinnedArtifactIds`) is omitted in streaming or partial client POST bodies, the endpoint preserves the existing on-disk values instead of writing `null`/`undefined`. This guarantees cold browser reloads (F5) rehydrate complete structural metadata.
 - **Verification**: Run `npx tsx scratch/test_permanent_architectural_solution.ts` to verify reverse-lookup resolution, stream save metadata preservation, and cold page reloads.
 
+### Invariant 38: TaskType-Aware `primaryFile` Binding & Universal Library Pinning
+- **TaskType-Aware `primaryFile` Resolution**: In `saveChatToDb`, when resolving `primaryFile` for a chat session, the resolution logic inspects `resolvedTaskType`. Custom Tool/Site chats (`resolvedTaskType === 'site' || 'tool'`) prioritize `index.html` or `.html` as their `associatedFileId`, strictly prohibiting taking on `.gslides` or `.doc` file IDs from Google Drive library items.
+- **Fallback ID Generation in `handlePinArtifact`**: When pinning a custom tool or document artifact that lacks an explicit `.id` or `.driveId` property on its React state object, `handlePinArtifact` generates a deterministic fallback ID (`${targetId}-tool` for custom tools or `${targetId}-${file.name}`). This attaches directly to the artifact object and `pinnedArtifactIds`, allowing custom tools to be pinned to Home and Space dashboards without error.
+- **Universal Library Pin Action**: Pin icon buttons are rendered directly on File Library rows (`CanvasSidebar.tsx`), allowing users to pin or unpin any library item directly to Home or Space with 1 click.
+
+
 
 
 

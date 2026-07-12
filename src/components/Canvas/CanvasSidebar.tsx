@@ -3,7 +3,8 @@ import { motion } from 'motion/react';
 import { 
   ChevronRight,
   ChevronLeft,
-  X
+  X,
+  Pin
 } from 'lucide-react';
 import { IconButton } from '../Shared/IconButton';
 import { FileRow } from '../Shared/FileRow';
@@ -26,6 +27,11 @@ interface CanvasSidebarProps {
   animatingFileIds?: string[];
   onCloseSidebar?: () => void;
   forceSingleColumn?: boolean;
+  onPinArtifact?: (file: any, targetSpaceId?: string) => void;
+  onUnpinArtifact?: (fileId: string, targetSpaceId?: string) => void;
+  getSpacePins?: (spaceId: string | null) => string[];
+  activeSpaceId?: string | null;
+  getHomeChatId?: () => string;
 }
 
 interface ExplorerItem {
@@ -52,7 +58,12 @@ export function CanvasSidebar({
   impactSpaceId,
   animatingFileIds = [],
   onCloseSidebar,
-  forceSingleColumn = false
+  forceSingleColumn = false,
+  onPinArtifact,
+  onUnpinArtifact,
+  getSpacePins,
+  activeSpaceId,
+  getHomeChatId
 }: CanvasSidebarProps) {
 
 
@@ -339,6 +350,15 @@ export function CanvasSidebar({
                   );
                 }
 
+                const fileObj = item.fileRef || { name: item.name };
+                const fileId = fileObj.id || fileObj.driveId;
+                const targetId = activeSpaceId || (getHomeChatId ? getHomeChatId() : 'home');
+                const spacePins = (getSpacePins && targetId) ? getSpacePins(targetId) : [];
+                const homePins = (getSpacePins && getHomeChatId) ? getSpacePins(getHomeChatId()) : [];
+                const isPinnedToTarget = !!(fileId && spacePins.includes(fileId));
+                const isPinnedToHome = !!(fileId && homePins.includes(fileId));
+                const isPinnedAnywhere = isPinnedToTarget || isPinnedToHome;
+
                 return (
                   <FileRow
                     key={item.name}
@@ -349,11 +369,38 @@ export function CanvasSidebar({
                     isAnimating={isAnimating}
                     theme={theme}
                     onClick={() => item.fileRef && onFileSelect(item.fileRef)}
-                    rightElement={isRunnable ? (
-                      <div className="ml-2 flex items-center justify-center w-6 h-6 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2B2D31] hover:bg-gray-50 dark:hover:bg-white/10 shadow-2xs shrink-0 select-none group/play transition-all">
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 group-hover/play:text-gray-800 dark:group-hover/play:text-white leading-none select-none pl-0.5" style={{ fontFamily: 'sans-serif' }}>▶</span>
+                    rightElement={
+                      <div className="ml-1 flex items-center gap-1 shrink-0">
+                        {isRunnable && (
+                          <div className="flex items-center justify-center w-6 h-6 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2B2D31] hover:bg-gray-50 dark:hover:bg-white/10 shadow-2xs shrink-0 select-none group/play transition-all">
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 group-hover/play:text-gray-800 dark:group-hover/play:text-white leading-none select-none pl-0.5" style={{ fontFamily: 'sans-serif' }}>▶</span>
+                          </div>
+                        )}
+                        {onPinArtifact && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isPinnedAnywhere) {
+                                if (onUnpinArtifact) {
+                                  if (isPinnedToTarget) onUnpinArtifact(fileId, targetId);
+                                  if (isPinnedToHome) onUnpinArtifact(fileId, getHomeChatId ? getHomeChatId() : 'home');
+                                }
+                              } else {
+                                onPinArtifact(fileObj, targetId);
+                              }
+                            }}
+                            className={`w-6 h-6 rounded-md flex items-center justify-center transition cursor-pointer border-none outline-none ${
+                              isPinnedAnywhere
+                                ? 'text-blue-500 fill-blue-500/20 bg-blue-50 dark:bg-blue-950/40 opacity-100'
+                                : 'text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800'
+                            }`}
+                            title={isPinnedAnywhere ? "Unpin artifact" : "Pin artifact to dashboard"}
+                          >
+                            <Pin size={12} className={isPinnedAnywhere ? "fill-blue-500/20" : ""} />
+                          </button>
+                        )}
                       </div>
-                    ) : undefined}
+                    }
                   />
                 );
               })

@@ -207,7 +207,7 @@ export function CanvasHeader({
                     e.stopPropagation();
                     setIsPinMenuOpen(prev => !prev);
                   }}
-                  className="opacity-0 group-hover/title:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center animate-fade-in"
+                  className="opacity-80 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center animate-fade-in ml-1"
                   title="Pin options"
                 >
                   <Pin size={14} className={isPinnedAnywhere ? "text-blue-500 dark:text-blue-400 fill-blue-500/20" : "text-slate-500 dark:text-slate-400"} />
