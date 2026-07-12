@@ -129,38 +129,79 @@ export function NativeViewer({
       return 'https://ssl.gstatic.com/docs/doclist/images/icon_11_document_list.png';
     };
 
-    const items = (todoItems && todoItems.length > 0) ? todoItems : (() => {
-      try {
-        if (file.content) {
-          const parsed = JSON.parse(file.content);
-          return Array.isArray(parsed) ? parsed : (parsed.immediateActions || parsed.items || []);
-        }
-      } catch (e) {}
-      return [];
+    let parsedConfig: any = {};
+    try {
+      if (file.content) {
+        parsedConfig = JSON.parse(file.content);
+      }
+    } catch (e) {}
+
+    const title = parsedConfig.title || 'To-dos';
+    const headerHeight = parsedConfig.headerHeight || parsedConfig.height;
+    const headerTitleSize = parsedConfig.headerTitleSize || parsedConfig.titleSize;
+    const sourceScope = parsedConfig.sourceScope || parsedConfig.sourceBadgeText || parsedConfig.sources;
+
+    const rawItems = (todoItems && todoItems.length > 0) ? todoItems : (() => {
+      if (Array.isArray(parsedConfig)) return parsedConfig;
+      return parsedConfig.immediateActions || parsedConfig.items || [];
     })();
+
+    let filteredItems = rawItems;
+    if (sourceScope) {
+      const scopeStr = String(typeof sourceScope === 'string' ? sourceScope : (Array.isArray(sourceScope) ? sourceScope.join(' ') : '')).toLowerCase();
+      if (scopeStr.includes('email') || scopeStr.includes('gmail') || scopeStr.includes('mail')) {
+        filteredItems = rawItems.filter((it: any) => {
+          const s = ((it.sourceName || '') + ' ' + (it.sourceMimeType || '') + ' ' + (it.type || '')).toLowerCase();
+          return s.includes('gmail') || s.includes('email') || s.includes('mail') || s.includes('thread');
+        });
+      } else if (scopeStr.includes('workspace') || scopeStr.includes('drive') || scopeStr.includes('doc')) {
+        filteredItems = rawItems.filter((it: any) => {
+          const s = ((it.sourceName || '') + ' ' + (it.sourceMimeType || '') + ' ' + (it.type || '')).toLowerCase();
+          return s.includes('doc') || s.includes('sheet') || s.includes('slide') || s.includes('drive');
+        });
+      }
+    }
+
+    if (parsedConfig.filterText || parsedConfig.filterWorkspace) {
+      const filterTerm = String(parsedConfig.filterText || parsedConfig.filterWorkspace).toLowerCase();
+      filteredItems = filteredItems.filter((it: any) => {
+        const text = ((it.title || '') + ' ' + (it.description || '') + ' ' + (it.workspace || '')).toLowerCase();
+        return text.includes(filterTerm);
+      });
+    }
 
     const isDark = theme === 'dark';
 
     return (
       <div className={`w-full h-full p-8 overflow-y-auto ${isDark ? 'bg-[#18191B] text-white' : 'bg-[#F8FAFD] text-slate-800'} select-text font-sans flex flex-col items-center`}>
         <div className="w-full max-w-3xl flex flex-col gap-6">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-neutral-800">
+          <div 
+            className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-neutral-800"
+            style={headerHeight ? { height: typeof headerHeight === 'number' ? `${headerHeight}px` : headerHeight } : undefined}
+          >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold tracking-tight">To-dos</h2>
+              <h2 className={`${headerTitleSize ? (headerTitleSize.startsWith('text-') ? headerTitleSize : `text-[${headerTitleSize}]`) : 'text-2xl'} font-bold tracking-tight`}>
+                {title}
+              </h2>
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-200/80 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300">
-                {items.length} items
+                {filteredItems.length} items
               </span>
+              {sourceScope && (
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800">
+                  {typeof sourceScope === 'string' ? sourceScope : 'Scoped Sources'}
+                </span>
+              )}
             </div>
             <span className="text-xs text-slate-400 dark:text-neutral-500 font-medium">Inferred Workspace Agenda</span>
           </div>
 
-          {items.length === 0 ? (
+          {filteredItems.length === 0 ? (
             <div className="text-center py-20 text-slate-400 dark:text-neutral-500 text-sm font-medium">
-              No active inferred tasks found for this workspace.
+              No matching inferred tasks found for this workspace.
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {items.map((item: any, idx: number) => (
+              {filteredItems.map((item: any, idx: number) => (
                 <InferredTaskCard
                   key={item.id || idx}
                   item={item}

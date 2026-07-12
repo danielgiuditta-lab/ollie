@@ -90,33 +90,27 @@ async function runVerification() {
     failures++;
   }
 
-  // Test 3: Simulate Vibe-Coding Turn in Child Chat (e.g. "only tell me about Google Workspace items")
-  console.log(`\n3. Simulating Vibe-Coding turn: User sends natural language customization prompt...`);
+  // Test 3: Simulate Parametric Vibe-Coding Turn in Child Chat (Modifying inferred_tasks.json directly)
+  console.log(`\n3. Simulating Parametric Vibe-Coding turn: User requests header & source scope adjustment...`);
   try {
-    const gentleHtmlTool = `<!DOCTYPE html>
-<html>
-<head>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>To-dos</title>
-</head>
-<body class="bg-[#F8FAFD] text-slate-800 p-6 font-sans">
-  <div class="max-w-3xl mx-auto flex flex-col gap-4">
-    <div class="flex items-center justify-between h-[40px] pb-2 border-b border-slate-200">
-      <h1 class="text-xl font-bold text-slate-900">Email-Sourced To-dos</h1>
-      <span class="text-xs bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full font-semibold">Emails Only</span>
-    </div>
-    <div class="space-y-3">
-      <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-        <div>
-          <h4 class="text-sm font-semibold text-slate-900">Review Pricing Strategy Email</h4>
-          <p class="text-xs text-slate-500">From Daniel via Gmail</p>
-        </div>
-        <span class="text-xs text-slate-400">Gmail</span>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
+    const updatedJsonContent = JSON.stringify({
+      title: "Email-Sourced To-dos",
+      headerHeight: 40,
+      sourceScope: "Emails Only",
+      summary: "Email agenda items",
+      immediateActions: [
+        {
+          id: "todo-email-1",
+          title: "Review Pricing Proposal Thread",
+          description: "Daniel requested feedback on the Q3 pricing deck",
+          sourceName: "Daniel (Gmail)",
+          sourceMimeType: "application/vnd.google-apps.mail",
+          personName: "Daniel Giuditta",
+          personAvatar: "",
+          status: "done"
+        }
+      ]
+    }, null, 2);
 
     const res = await request({
       hostname: 'localhost',
@@ -134,7 +128,7 @@ async function runVerification() {
       activeSpaceId: spaceId,
       messages: [
         { role: 'user', text: 'make the header 40px and scope sources to emails' },
-        { role: 'bot', text: 'I updated your To-dos header to 40px and scoped sources to emails only while preserving your single-column agenda list format.' }
+        { role: 'bot', text: 'I updated your To-dos configuration: set header height to 40px, title to "Email-Sourced To-dos", and scoped sources to emails.' }
       ],
       sandboxFiles: [
         {
@@ -142,31 +136,26 @@ async function runVerification() {
           name: 'inferred_tasks.json',
           type: 'code',
           mimeType: 'application/json',
-          isInferredTask: true
-        },
-        {
-          id: `${childChatId}-file-0`,
-          name: 'index.html',
-          type: 'code',
-          content: gentleHtmlTool,
-          mimeType: 'text/html'
+          content: updatedJsonContent,
+          isInferredTask: true,
+          taskType: 'inferred'
         }
       ]
     });
 
     if (res.status === 200) {
-      console.log("   ✅ Vibe-coded tool output (index.html) successfully saved to child chat session");
+      console.log("   ✅ Parametric JSON updates (title, headerHeight, sourceScope) successfully saved to child chat session");
     } else {
-      console.error(`   ❌ Failed to update vibe-coded child chat. Status: ${res.status}`);
+      console.error(`   ❌ Failed to update parametric child chat JSON. Status: ${res.status}`);
       failures++;
     }
   } catch (err) {
-    console.error("   ❌ Error during vibe coding turn test:", err.message);
+    console.error("   ❌ Error during parametric JSON turn test:", err.message);
     failures++;
   }
 
-  // Test 4: Retrieve updated chat and verify index.html artifact presence
-  console.log(`\n4. Verifying GET /api/chats/${childChatId} returns vibe-coded index.html tool...`);
+  // Test 4: Retrieve updated chat and verify inferred_tasks.json artifact content
+  console.log(`\n4. Verifying GET /api/chats/${childChatId} returns updated inferred_tasks.json content...`);
   try {
     const res = await request({
       hostname: 'localhost',
@@ -175,10 +164,11 @@ async function runVerification() {
       method: 'GET'
     });
 
-    if (res.status === 200 && res.data.sandboxFiles?.some(f => f.name === 'index.html')) {
-      console.log("   ✅ Verified: GET /api/chats returned updated sandboxFiles containing vibe-coded index.html tool!");
+    const file = res.data.sandboxFiles?.find(f => f.name === 'inferred_tasks.json');
+    if (res.status === 200 && file && file.content && file.content.includes('Email-Sourced To-dos') && file.content.includes('headerHeight')) {
+      console.log("   ✅ Verified: GET /api/chats returned updated inferred_tasks.json containing parametric metadata (title & headerHeight)!");
     } else {
-      console.error("   ❌ Failed: GET /api/chats missing vibe-coded index.html artifact:", res.data);
+      console.error("   ❌ Failed: GET /api/chats missing updated inferred_tasks.json content:", res.data);
       failures++;
     }
   } catch (err) {

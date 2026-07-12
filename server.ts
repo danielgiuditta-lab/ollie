@@ -1789,10 +1789,21 @@ To modify "${activeFileName}", you must output a markdown code block with the ex
       if (activeFileName && (activeFileName.toLowerCase().includes('inferred') || activeFileName.toLowerCase().includes('todo') || activeFileName.toLowerCase().includes('to-do'))) {
         systemInstruction += `\n\nINFERRED TASKS & TO-DOS TOOL CUSTOMIZATION CONTEXT:
 The user is modifying their Out-of-the-Box "To-dos" (Inferred Tasks) tool with natural language.
-- GENTLE MODIFICATIONS MANDATE: Gently apply the exact modifications requested by the user (e.g. adjust header size/text, scope or filter sources like emails/docs, adjust spacing/styling, or filter agenda items).
-- SINGLE-COLUMN LIST LAYOUT PRESERVATION: Keep the layout as a single-column task/agenda list (matching the native To-dos widget structure with a header, item count badge, and list cards showing task title, description, source badges, and assignee avatars).
-- CRITICAL RULE - NO UNSOLICITED KANBAN BOARDS: DO NOT turn the To-dos widget into a 3-column Kanban board (To Do, In Progress, Done) or multi-column layout unless the user EXPLICITLY uses the word "kanban" or explicitly asks to convert it into a Kanban board!
-- For visual/header/scope changes: Output an updated self-contained \`index.html\` web view displaying the gently modified single-column To-dos list or output updated \`inferred_tasks.json\` JSON content directly.`;
+- DEFAULT PARAMETRIC JSON MODIFICATION: For standard edits (e.g. adjust title, change header size/height, filter by source like emails/docs, sort items, or filter workspace tasks), you MUST output an updated \`inferred_tasks.json\` code block (\`<!-- inferred_tasks.json -->\` or \`\`\`json ... \`\`\`) updating the JSON schema directly!
+- Schema structure for \`inferred_tasks.json\`:
+  \`\`\`json
+  <!-- inferred_tasks.json -->
+  {
+    "title": "Email-Sourced To-dos",
+    "headerHeight": 40,
+    "headerTitleSize": "text-2xl",
+    "sourceScope": "Emails Only",
+    "summary": "1-sentence summary...",
+    "immediateActions": [...]
+  }
+  \`\`\`
+- ESCAPE HATCH FOR CUSTOM WEB APPS: ONLY output a standalone \`index.html\` web application (\`\`\`html ... \`\`\`) if the user EXPLICITLY asks to build a custom interactive web app, standalone tool, or Kanban board by name (e.g. "build a custom web app for this" or "convert to a Kanban board").
+- CRITICAL RULE - NO UNSOLICITED KANBAN BOARDS: Never convert To-dos into a multi-column Kanban board unless the user explicitly uses the word "kanban" or asks for columns!`;
       }
 
       if (ingestedContext && Array.isArray(ingestedContext) && ingestedContext.length > 0) {

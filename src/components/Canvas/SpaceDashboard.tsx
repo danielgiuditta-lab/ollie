@@ -228,7 +228,14 @@ export function SpaceDashboard({
         const isTodo = file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos';
         const isHtml = !isTodo && file.name && (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase() === 'index.html');
         const isDragOver = dragOverCardId === fileId;
-        const cardTitle = isTodo ? 'To-dos' : file.name;
+        let todoTitle = 'To-dos';
+        if (isTodo && file.content) {
+          try {
+            const parsed = JSON.parse(file.content);
+            if (parsed.title) todoTitle = parsed.title;
+          } catch (e) {}
+        }
+        const cardTitle = isTodo ? todoTitle : file.name;
 
         return (
           <div

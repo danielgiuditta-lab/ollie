@@ -2222,11 +2222,23 @@ export default function App() {
                       
                       const finalFileContent = cleanContent || content;
 
-                      if (lang === 'json') {
-                         // Check if this looks like JSON configuration or a broken block
-                         if (finalFileContent.includes('"index.html"') || finalFileContent.startsWith('{')) {
+                      const isJson = lang === 'json' || (inferredName && inferredName.toLowerCase().endsWith('.json'));
+                      if (isJson) {
+                         if (finalFileContent.includes('"index.html"') && !inferredName) {
                             continue;
                          }
+                         const idPrefix = targetChatId || activeChatId || 'sandbox';
+                         const isTodo = inferredName === 'inferred_tasks.json' || (selectedFile && selectedFile.isInferredTask);
+                         parsedFiles.push({ 
+                           name: inferredName || 'inferred_tasks.json', 
+                           type: 'code', 
+                           mimeType: 'application/json',
+                           content: finalFileContent, 
+                           id: isTodo ? 'todo-card' : `${idPrefix}-file-${parsedFiles.length}`,
+                           isInferredTask: isTodo,
+                           taskType: isTodo ? 'inferred' : undefined
+                         });
+                         continue;
                       }
 
                       // Check if it is a Google Workspace native document naming convention
