@@ -129,9 +129,10 @@ Inferred Tasks (`To-dos`) function as an out-of-the-box system widget artifact (
 
 ### 6.3 Natural Language Vibe Coding & Dual View Rendering
 - Prompts inside the To-dos child chat thread route to `/api/vibe-code` with focus file context (`activeFileName: 'inferred_tasks.json'`).
-- Users can modify the widget with natural language turns:
-  - **Filtering Instructions**: E.g. *"only tell me about Google Workspace items"* -> filters tasks list items.
-  - **Visual Layout Instructions**: E.g. *"change visual layout to a 2-column Kanban board with dark styling"* -> vibe codes a complete standalone `index.html` web tool for the widget.
+- Users can gently modify the widget with natural language turns:
+  - **Filtering & Scope Instructions**: E.g. *"only tell me about Google Workspace items"* or *"scope sources to emails only"* -> filters tasks list items or updates source scope criteria.
+  - **Visual Layout & Styling Instructions**: E.g. *"make header bigger and scope sources"* or *"make background dark slate"* -> gently modifies header styling, source pill scoping, and task item layout in a clean single-column format.
+  - **Kanban Board Restriction**: The system MUST NOT convert the widget into a multi-column Kanban board unless the user explicitly and literally asks for a *"Kanban board"* by name.
 - **Dual View Rendering**:
   - Out of the box: Renders high-fidelity interactive `InferredTaskCard` items.
   - Vibe-coded tool: Automatically mounts `<AppView>` inside both the full artifact viewport and the dashboard card when `index.html` is generated.

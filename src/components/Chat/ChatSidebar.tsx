@@ -93,8 +93,8 @@ export function ChatSidebar({
   const getSuggestions = () => {
     if (isTodoChat) {
       return [
+        { label: "Make header bigger & scope sources to emails", prompt: "Make the header bigger and scope the sources to emails only" },
         { label: "Only tell me about Google Workspace items", prompt: "Only tell me about Google Workspace items" },
-        { label: "Convert layout to a 2-column Kanban board", prompt: "Convert layout to a 2-column Kanban board" },
         { label: "Sort agenda items by urgency", prompt: "Sort agenda items by urgency" }
       ];
     }

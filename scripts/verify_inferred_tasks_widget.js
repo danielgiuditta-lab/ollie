@@ -93,18 +93,26 @@ async function runVerification() {
   // Test 3: Simulate Vibe-Coding Turn in Child Chat (e.g. "only tell me about Google Workspace items")
   console.log(`\n3. Simulating Vibe-Coding turn: User sends natural language customization prompt...`);
   try {
-    const updatedHtmlTool = `<!DOCTYPE html>
+    const gentleHtmlTool = `<!DOCTYPE html>
 <html>
 <head>
   <script src="https://cdn.tailwindcss.com"></script>
-  <title>Workspace To-Dos</title>
+  <title>To-dos</title>
 </head>
-<body class="bg-slate-900 text-white p-6 font-sans">
-  <h1 class="text-2xl font-bold mb-4">Google Workspace To-Dos</h1>
-  <div class="space-y-3">
-    <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700">
-      <span class="text-xs text-blue-400 font-semibold uppercase block mb-1">Emily's Comment</span>
-      <p class="text-sm font-medium">Brand Guidelines Layout Update</p>
+<body class="bg-[#F8FAFD] text-slate-800 p-6 font-sans">
+  <div class="max-w-3xl mx-auto flex flex-col gap-4">
+    <div class="flex items-center justify-between h-[40px] pb-2 border-b border-slate-200">
+      <h1 class="text-xl font-bold text-slate-900">Email-Sourced To-dos</h1>
+      <span class="text-xs bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full font-semibold">Emails Only</span>
+    </div>
+    <div class="space-y-3">
+      <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+        <div>
+          <h4 class="text-sm font-semibold text-slate-900">Review Pricing Strategy Email</h4>
+          <p class="text-xs text-slate-500">From Daniel via Gmail</p>
+        </div>
+        <span class="text-xs text-slate-400">Gmail</span>
+      </div>
     </div>
   </div>
 </body>
@@ -125,8 +133,8 @@ async function runVerification() {
       associatedFileName: 'inferred_tasks.json',
       activeSpaceId: spaceId,
       messages: [
-        { role: 'user', text: 'only tell me about google workspace items and change layout to dark cards' },
-        { role: 'bot', text: 'I updated your To-dos widget to display Google Workspace items in a dark theme layout.' }
+        { role: 'user', text: 'make the header 40px and scope sources to emails' },
+        { role: 'bot', text: 'I updated your To-dos header to 40px and scoped sources to emails only while preserving your single-column agenda list format.' }
       ],
       sandboxFiles: [
         {
@@ -140,7 +148,7 @@ async function runVerification() {
           id: `${childChatId}-file-0`,
           name: 'index.html',
           type: 'code',
-          content: updatedHtmlTool,
+          content: gentleHtmlTool,
           mimeType: 'text/html'
         }
       ]

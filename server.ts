@@ -1789,8 +1789,10 @@ To modify "${activeFileName}", you must output a markdown code block with the ex
       if (activeFileName && (activeFileName.toLowerCase().includes('inferred') || activeFileName.toLowerCase().includes('todo') || activeFileName.toLowerCase().includes('to-do'))) {
         systemInstruction += `\n\nINFERRED TASKS & TO-DOS TOOL CUSTOMIZATION CONTEXT:
 The user is modifying their Out-of-the-Box "To-dos" (Inferred Tasks) tool with natural language.
-- If the user asks to filter tasks (e.g., "only tell me about Google Workspace items"), modify the task list rules or output a custom index.html web view displaying only Google Workspace items.
-- If the user asks for layout or visual changes (e.g., "change layout visually", "make background dark slate", "display as a kanban board"), output a full, self-contained index.html file wrapped in an HTML markdown block (\`\`\`html ... \`\`\`) for the custom tool.`;
+- GENTLE MODIFICATIONS MANDATE: Gently apply the exact modifications requested by the user (e.g. adjust header size/text, scope or filter sources like emails/docs, adjust spacing/styling, or filter agenda items).
+- SINGLE-COLUMN LIST LAYOUT PRESERVATION: Keep the layout as a single-column task/agenda list (matching the native To-dos widget structure with a header, item count badge, and list cards showing task title, description, source badges, and assignee avatars).
+- CRITICAL RULE - NO UNSOLICITED KANBAN BOARDS: DO NOT turn the To-dos widget into a 3-column Kanban board (To Do, In Progress, Done) or multi-column layout unless the user EXPLICITLY uses the word "kanban" or explicitly asks to convert it into a Kanban board!
+- For visual/header/scope changes: Output an updated self-contained \`index.html\` web view displaying the gently modified single-column To-dos list or output updated \`inferred_tasks.json\` JSON content directly.`;
       }
 
       if (ingestedContext && Array.isArray(ingestedContext) && ingestedContext.length > 0) {
@@ -1813,8 +1815,9 @@ When creating tasks, trackers, boards, or collaborative tools (such as a Kanban 
 
       systemInstruction += `\n\nCRITICAL DESIGN MANDATE (POLARIS / M3 & RADICAL SIMPLICITY):
 You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and Material Design 3 (M3) specifications defined in the system rules.
-- DO NOT over-engineer or add unnecessary complexity, especially for Kanban boards or custom tools.
-- A Kanban board must be radically simple: 3 clean columns (To Do, In Progress, Done) with minimal text cards. DO NOT add priority badges, colored tag chips, due dates, filters, or complex popups unless explicitly asked. If the user asks for a board with tasks or people, ALWAYS populate it with initial realistic tasks assigned to actual workspace team members using their real names and real avatar photo URLs (rendered simply and cleanly as a small rounded avatar image next to their name).
+- DO NOT over-engineer or add unnecessary complexity for custom tools or widgets.
+- KANBAN BOARD MANDATE: ONLY build a multi-column Kanban board if the user EXPLICITLY requests a "Kanban" board or "Kanban layout" by name. For standard tools, to-do lists, or inferred tasks, default to a clean single-column agenda or list layout.
+- If the user explicitly asks for a Kanban board: keep it radically simple with 3 clean columns (To Do, In Progress, Done) and minimal text cards, assigning realistic workspace team members with real photo avatars.
 - Use only plain M3 colors (surface #ffffff, surface-container #f0f4f9, primary #0b57d0, outline #747775). No gradients, decorative badges, or unnecessary embellishments! Keep it clean, minimal, and elegant.`;
 
       res.setHeader('Content-Type', 'text/event-stream');
