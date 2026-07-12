@@ -3716,7 +3716,7 @@ export default function App() {
   const handlePinArtifact = (file: any, targetSpaceId?: string) => {
     const targetId = targetSpaceId || activeSpaceId || getHomeChatId();
     if (!targetId || !file) return;
-    const fileId = file.id || file.driveId || (file.name ? (file.name.toLowerCase() === 'index.html' ? `${targetId}-tool` : `${targetId}-${file.name.toLowerCase()}`) : null);
+    const fileId = file.id || file.driveId || file.associatedFileId || (file.chatId ? `${file.chatId}-${file.name || 'file'}` : (file.name ? `${targetId}-${file.name.toLowerCase()}` : null));
     if (!fileId) return;
     if (!file.id) {
       file.id = fileId;
@@ -4489,10 +4489,8 @@ export default function App() {
                   file.type?.includes('space') || 
                   file.type === 'workspace' || 
                   file.isProject || 
-                  file.chats || 
-                  file.chatId || 
-                  (typeof file.id === 'string' && (file.id.includes('-chat-') || file.id.startsWith('space-') || file.id.startsWith('local-')))
-                );
+                  Boolean(file.chats)
+                ) && !file.name?.includes('.');
                 const specificFileMatch = (typeof file === 'object' && file && (file.id || file.driveId) && !isSpaceObject)
                   ? allDbAvailableFiles.find((f: any) => f && ((file.id && (f.id === file.id || f.driveId === file.id)) || (file.driveId && (f.driveId === file.driveId || f.id === file.driveId))))
                   : null;
@@ -5050,9 +5048,7 @@ export default function App() {
         name
       );
 
-      if (!isHomeChatId(targetFolder)) {
-        handlePinArtifact(newArtifact, targetFolder);
-      }
+
     }
 
     setSelectedFile(newArtifact);

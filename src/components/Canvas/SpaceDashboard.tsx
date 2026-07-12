@@ -47,7 +47,12 @@ export function SpaceDashboard({
 
   // Resolve pinned file objects
   const pinnedFiles = pinnedArtifactIds
-    .map(id => sandboxFiles.find(f => f && (f.id === id || f.driveId === id)))
+    .map(id => sandboxFiles.find(f => f && (
+      f.id === id || 
+      f.driveId === id ||
+      (f.id && id && String(f.id).toLowerCase() === String(id).toLowerCase()) ||
+      (f.name && id && (String(id).toLowerCase().endsWith('-' + f.name.toLowerCase()) || String(id).toLowerCase().endsWith('_' + f.name.toLowerCase()) || String(id).toLowerCase() === f.name.toLowerCase()))
+    )))
     .filter(Boolean);
 
   // Close menu on click outside

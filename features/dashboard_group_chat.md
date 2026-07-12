@@ -25,9 +25,10 @@ interface SpaceManifest {
 ```
 When a space is rendered in `<AppView />`, if `targetChatId === spaceId`, the app renders `<SpaceDashboard pinnedIds={space.pinnedArtifactIds} />` instead of a standalone file editor.
 
-### 1.3 Dual-Collection Pinning Synchronization (`getSpacePins`)
+### 1.3 Dual-Collection Pinning & Explicit Pinning Mandate (`getSpacePins`)
 Because newly created spaces exist in `recentTasks` and may not immediately reside in `projects`:
 * **Dual Collection Updating:** All pinning modification handlers (`handlePinArtifact`, `handleUnpinArtifact`, `handleReorderPins`) must map and update both `setProjects(...)` and `setRecentTasks(...)` concurrently.
+* **Explicit User Pinning Only:** Document (`.doc`) and slide deck (`.gslides`) creation handlers MUST NOT auto-pin newly generated artifacts to space dashboards. Pinning occurs exclusively when the human user explicitly clicks the Pin action button in the breadcrumb toolbar (`CanvasHeader`) or right-hand File Library (`CanvasSidebar`).
 * **Unified Resolution (`getSpacePins`):** Whenever resolving `pinnedArtifactIds` for `<SpaceDashboard />` or pin toggle status in `<CanvasHeader />`, the application must use a unified `getSpacePins(spaceId)` helper searching both `projects` and `recentTasks`:
 ```ts
 const getSpacePins = (spaceId: string | null) => {
@@ -39,9 +40,10 @@ const getSpacePins = (spaceId: string | null) => {
 };
 ```
 
-### 1.4 Dashboard Child Chat Artifact Aggregation (`getAllSpaceFiles`), Session-Scoped IDs & Strict Unique ID Matching
-* **Child Chat Artifact Aggregation (`getAllSpaceFiles`):** When viewing the root Space Dashboard (`viewState === 'dashboard'`), custom tools and documents generated inside child authoring chats (`${spaceId}-chat-...`) are not present in the root space's direct `sandboxFiles` array. To ensure pinned custom tools and docs resolve and render live previews on the grid, the app must pass `getAllSpaceFiles(activeSpaceId)` to `<SpaceDashboard />`. This helper aggregates `sandboxFiles` across the root space and all child chats in `recentTasks`, `projects`, and `workspaceCacheRef`, preserving `.chatId` for authoring jumps.
-* **Strict Unique ID Resolution Guarantee:** Preview card lookups, unpin operations, card reordering, and direct edit jumps MUST operate strictly on unique identifiers (`file.id` or `file.driveId`). String name matching (`file.name === spaceName`) is strictly prohibited when resolving dashboard cards to eliminate name collisions with Google Drive files.
+### 1.4 Dashboard Child Chat Artifact Aggregation (`getAllSpaceFiles`), Session-Scoped IDs & Robust Card Matching
+* **Child Chat Artifact Aggregation (`getAllSpaceFiles`):** When viewing the root Space Dashboard or Home (`viewState === 'dashboard'` or `'home'`), custom tools and documents generated inside child authoring chats (`${spaceId}-chat-...`) are aggregated across `recentTasks`, `projects`, and `workspaceCacheRef`, preserving `.chatId` for authoring jumps.
+* **Robust Card Match Resolution:** In `<SpaceDashboard />`, matching `pinnedArtifactIds` against `sandboxFiles` checks `f.id === id || f.driveId === id`, with case-insensitive and suffix fallback checks (`id.endsWith('-' + f.name.toLowerCase())`). This guarantees custom tools pinned from spaces render live preview cards when viewed on Home.
+* **Strict Container Object Guard (`isSpaceObject`):** Navigation handler `handleFileClick` strictly checks container flags (`type === 'space'`, `type === 'workspace'`, `isProject`, `chats`) and excludes file objects with file extensions (`!file.name?.includes('.')`). Clicking **Edit** or the card header on a dashboard preview card resolves `specificFileMatch` directly to the custom tool file (`index.html`) without misclassifying it as a space container.
 * **Session-Scoped File IDs:** In `/api/vibe-code`, generated code files must never be assigned generic IDs like `'sandbox-file-0'`, as this causes ID collisions across multiple tools in the same space. All generated files must be scoped to their chat session: `id: `${targetChatId || activeChatId || 'sandbox'}-file-${i}``.
 
 ### 1.5 Canvas Container & Sidebar Visibility (`viewState === 'dashboard'`)

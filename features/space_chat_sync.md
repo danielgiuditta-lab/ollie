@@ -217,6 +217,14 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 - **Fallback ID Generation in `handlePinArtifact`**: When pinning a custom tool or document artifact that lacks an explicit `.id` or `.driveId` property on its React state object, `handlePinArtifact` generates a deterministic fallback ID (`${targetId}-tool` for custom tools or `${targetId}-${file.name}`). This attaches directly to the artifact object and `pinnedArtifactIds`, allowing custom tools to be pinned to Home and Space dashboards without error.
 - **Universal Library Pin Action**: Pin icon buttons are rendered directly on File Library rows (`CanvasSidebar.tsx`), allowing users to pin or unpin any library item directly to Home or Space with 1 click.
 
+### Invariant 39: Explicit Pin-Only Creation Mandate & Strict Container Object Guard
+- **Explicit Pinning Mandate**: `handleCreateArtifactApp` strictly omits automatic `handlePinArtifact` calls upon initializing new documents (`.doc`) or slide decks (`.gslides`). Pinning occurs exclusively when the human user explicitly clicks the Pin action button in the breadcrumb toolbar (`CanvasHeader`) or right-hand File Library (`CanvasSidebar`).
+- **Strict Container Object Separation (`isSpaceObject`)**: In `handleFileClick`, `isSpaceObject` exclusively verifies container flags (`type === 'space'`, `type === 'workspace'`, `isProject`, `chats`) and excludes objects with file extensions (`!file.name?.includes('.')`). Artifact files generated inside child chats carrying session-scoped IDs (`space-123-chat-...-file-0`) or `.chatId` properties are recognized as `specificFileMatch` and open directly in their native viewer/editor when clicked from dashboard preview cards.
+
+### Invariant 40: Canonical ID Preservation & Cross-Dashboard Resolution
+- **Canonical ID Preservation**: `handlePinArtifact` resolves `fileId` using existing canonical fields (`file.id || file.driveId || file.associatedFileId`) rather than generating synthetic space-prefixed IDs that overwrite the file's identity.
+- **Cross-Dashboard Card Resolution**: In `<SpaceDashboard />`, resolution of `pinnedArtifactIds` against `sandboxFiles` checks `f.id === id || f.driveId === id`, with case-insensitive and suffix fallback matching (`id.endsWith('-' + f.name.toLowerCase())`). This guarantees custom tools pinned from spaces render live preview cards on both Space and Home dashboards.
+
 
 
 
