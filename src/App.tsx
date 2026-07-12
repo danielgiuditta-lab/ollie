@@ -3593,7 +3593,7 @@ export default function App() {
   };
 
   const getAllSpaceFiles = (spaceId: string | null) => {
-    if (!spaceId) return [...sandboxFiles, ...driveFiles];
+    const isHome = !spaceId || isHomeChatId(spaceId);
     const allFilesMap = new Map<string, any>();
 
     driveFiles.forEach(f => {
@@ -3605,7 +3605,7 @@ export default function App() {
 
     const checkList = (list: any[]) => {
       list.forEach(item => {
-        if (item && (item.activeSpaceId === spaceId || item.id === spaceId || item.chatId === spaceId)) {
+        if (item && (isHome || item.activeSpaceId === spaceId || item.id === spaceId || item.chatId === spaceId)) {
           if (item.sandboxFiles && Array.isArray(item.sandboxFiles)) {
             item.sandboxFiles.forEach((f: any) => {
               if (f) {
@@ -3626,7 +3626,7 @@ export default function App() {
     checkList(projects);
 
     Object.entries(workspaceCacheRef.current).forEach(([k, cacheVal]: [string, any]) => {
-      if (k === spaceId || k.startsWith(spaceId + '-chat-') || cacheVal?.activeSpaceId === spaceId) {
+      if (isHome || k === spaceId || k.startsWith(spaceId + '-chat-') || cacheVal?.activeSpaceId === spaceId) {
         if (cacheVal?.sandboxFiles && Array.isArray(cacheVal.sandboxFiles)) {
           cacheVal.sandboxFiles.forEach((f: any) => {
             if (f) {
@@ -4008,15 +4008,15 @@ export default function App() {
 
   const openChat = async (chatId: string, spaceId?: string) => {
     const parentSpaceId = spaceId || recentTasks.find(t => t.id === chatId)?.activeSpaceId || activeSpaceId || getHomeChatId();
-    const spaceObj = { id: parentSpaceId, activeSpaceId: parentSpaceId, type: 'space' };
-    return handleFileClick(spaceObj, false, { isFromRecents: true, targetChatId: chatId });
+    const chatTaskObj = recentTasks.find(t => t.id === chatId) || { id: chatId, activeSpaceId: parentSpaceId, type: 'chat' };
+    return handleFileClick(chatTaskObj, false, { isFromRecents: true, targetChatId: chatId, isParentSpaceClick: false });
   };
 
   const openFile = async (fileObj: any) => {
-    return handleFileClick(fileObj, false, { isFromRecents: true });
+    return handleFileClick(fileObj, false, { isFromRecents: true, isParentSpaceClick: false });
   };
 
-  const handleFileClick = async (file: any, skipSelect = false, options?: { isFromRecents?: boolean, targetChatId?: string }) => {
+  const handleFileClick = async (file: any, skipSelect = false, options?: { isFromRecents?: boolean, targetChatId?: string, isParentSpaceClick?: boolean }) => {
     setActiveProactiveTask(null);
     console.log("[DEBUG] handleFileClick called with:", {
       fileName: typeof file === 'string' ? file : file?.name || file?.filename || file?.id,
@@ -4119,7 +4119,9 @@ export default function App() {
 
     const matchingTask = recentTasks.find(t => t.id === targetChatId);
     const shouldSkipSelect = skipSelect && targetChatId === folderId;
-    const isParentSpaceClick = targetChatId === folderId || shouldSkipSelect;
+    const isParentSpaceClick = options?.isParentSpaceClick !== undefined
+      ? options.isParentSpaceClick
+      : (targetChatId === folderId || shouldSkipSelect);
 
     const cached = workspaceCacheRef.current[targetChatId] || (isParentSpaceClick ? workspaceCacheRef.current[folderId] : undefined);
     const cachedChat = chatSessionsCacheRef.current[targetChatId];
@@ -5224,7 +5226,7 @@ export default function App() {
                       onReorderPins={handleReorderPins}
                       onSelectArtifact={(file) => {
                         const targetChatId = file?.chatId || recentTasks.find(t => t.associatedFileId === file?.id || t.associatedFileName === file?.name)?.id || activeSpaceId || getHomeChatId();
-                        handleFileClick(file, false, { isFromRecents: true, targetChatId });
+                        handleFileClick(file, false, { isFromRecents: true, targetChatId, isParentSpaceClick: false });
                       }}
                     />
                   </div>
@@ -5301,7 +5303,7 @@ export default function App() {
                       spaceName={projectName || 'Space'}
                       pinnedArtifactIds={getSpacePins(activeSpaceId)}
                       sandboxFiles={getAllSpaceFiles(activeSpaceId)}
-                      onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId || activeSpaceId || getHomeChatId() })}
+                      onSelectArtifact={(file) => handleFileClick(file, false, { targetChatId: file.chatId || activeSpaceId || getHomeChatId(), isParentSpaceClick: false })}
                       onRemovePin={handleUnpinArtifact}
                       onReorderPins={handleReorderPins}
                       sandboxUrl={sandboxUrl}

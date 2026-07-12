@@ -1,5 +1,5 @@
 {
-  "chatId": "home_guest",
+  "chatId": "home_danielgiuditta_google_com",
   "projectName": "New Workspace",
   "chatName": null,
   "type": null,
@@ -14,10 +14,7 @@
   "userEmail": "",
   "members": [],
   "pinnedArtifactIds": [
-    "artifact_doc_1783794694936",
-    "artifact_doc_1783794743016",
-    "artifact_doc_1783819798970",
-    "artifact_doc_1783819918764"
+    "space-1783774721256-chat-1783774731471-file-0"
   ],
-  "updatedAt": "2026-07-12T01:31:59.132Z"
+  "updatedAt": "2026-07-12T01:28:07.351Z"
 }

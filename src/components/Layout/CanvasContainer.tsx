@@ -73,7 +73,7 @@ export function CanvasContainer({
     );
   }
 
-  if (viewState === 'file_viewer' && selectedFile) {
+  if ((viewState === 'file_viewer' || viewState === 'files') && selectedFile) {
     return (
       <NativeViewer
         file={selectedFile}
