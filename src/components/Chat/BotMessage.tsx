@@ -7,6 +7,7 @@ import { Button } from '../Shared/Button';
 import { FileRow } from '../Shared/FileRow';
 import { FolderRow } from '../Shared/FolderRow';
 import { FileIcon } from '../Shared/FileIcon';
+import { themeTokens } from '../../utils/themeTokens';
 
 interface BotMessageProps {
   text: string;
@@ -50,7 +51,7 @@ const TeamAvatar = ({ avatar, name, size = 'md', isGroupChat = false }: { avatar
     ? 'bg-slate-200 dark:bg-slate-750 text-slate-600 dark:text-slate-350' 
     : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
 
-  const ringStyle = isGroupChat ? 'ring-2 ring-slate-300 dark:ring-[#2B2D31]' : 'ring-2 ring-slate-300 dark:ring-[#2B2D31]';
+  const ringStyle = isGroupChat ? themeTokens.groupChat.facepileRing : 'ring-2 ring-white dark:ring-[#1E1F22]';
 
   if (avatar && !error) {
     return (

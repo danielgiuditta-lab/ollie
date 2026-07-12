@@ -9,7 +9,7 @@ const AvatarCircle = ({ member }: { member: any }) => {
 
   return (
     <div
-      className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-3xs ring-2 ring-white dark:ring-[#1E1F22] shrink-0 overflow-hidden bg-blue-500"
+      className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-3xs ${themeTokens.groupChat.facepileRing} shrink-0 overflow-hidden bg-blue-500`}
       title={`${member.name} (${member.email})`}
     >
       {member.avatar && !error ? (

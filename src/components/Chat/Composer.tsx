@@ -166,7 +166,7 @@ export function Composer({
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
               className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none shrink-0 ${
                 isGroupChat
-                  ? (theme === 'dark' ? 'bg-[#282A2D] text-white hover:bg-[#35373A]' : 'bg-white hover:bg-slate-50 text-slate-700 border-0 shadow-none')
+                  ? (theme === 'dark' ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' : 'hover:bg-slate-200/80 text-slate-600 hover:text-slate-900')
                   : (theme === 'dark' ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' : 'hover:bg-slate-50 text-slate-500 hover:text-slate-800')
               }`}
               title={isDrawerOpen ? "Close drawer" : "Add or Create Options"}
@@ -201,7 +201,7 @@ export function Composer({
                   onClick={onDockToSide}
                   className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
                     isGroupChat
-                      ? (theme === 'dark' ? 'bg-[#282A2D] text-white hover:bg-[#35373A]' : 'bg-white hover:bg-slate-50 text-slate-700 border-0 shadow-none')
+                      ? (theme === 'dark' ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' : 'hover:bg-slate-200/80 text-slate-600 hover:text-slate-850')
                       : (theme === 'dark' ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' : 'hover:bg-slate-50 text-slate-500 hover:text-slate-850')
                   }`}
                   title="Dock to side"
@@ -217,7 +217,7 @@ export function Composer({
                   text.trim() && !disabled 
                     ? (theme === 'dark' ? 'bg-[#0B57D0] text-white hover:bg-blue-750 cursor-pointer' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer') 
                     : (isGroupChat 
-                        ? (theme === 'dark' ? 'bg-[#282A2D] text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-white text-slate-400 border-0 shadow-none cursor-not-allowed')
+                        ? (theme === 'dark' ? 'bg-transparent text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-transparent text-slate-400 cursor-not-allowed')
                         : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
                       )
                 }`}
@@ -247,7 +247,7 @@ export function Composer({
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
                 isGroupChat
-                  ? (theme === 'dark' ? 'bg-[#282A2D] text-white hover:bg-[#35373A]' : 'bg-white hover:bg-slate-50 text-slate-700 border-0 shadow-none')
+                  ? (theme === 'dark' ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' : 'hover:bg-slate-200/80 text-slate-600 hover:text-slate-900')
                   : (theme === 'dark' ? 'hover:bg-[#282A2D] text-[#9E9E9E] hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800')
               }`}
               title={isDrawerOpen ? "Close drawer" : "Add or Create Options"}
@@ -261,7 +261,7 @@ export function Composer({
             <div className="flex items-center gap-3">
               <button className={`h-10 px-4 rounded-full flex items-center gap-1.5 font-medium text-xs transition cursor-pointer border-none outline-none ${
                 isGroupChat
-                  ? (theme === 'dark' ? 'bg-[#282A2D] text-white hover:bg-[#35373A]' : 'bg-white hover:bg-slate-50 text-slate-700 border-0 shadow-none')
+                  ? (theme === 'dark' ? 'hover:bg-[#282A2D] text-white' : 'hover:bg-slate-200/80 text-slate-700 hover:text-slate-900')
                   : (theme === 'dark' ? 'hover:bg-[#282A2D] text-white' : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900')
               }`}>
                 <span className={theme === 'dark' ? 'font-semibold text-white' : 'font-semibold text-gray-700'}>Flash</span> Extended <ChevronDown size={14} />
@@ -273,7 +273,7 @@ export function Composer({
                   text.trim() && !disabled 
                     ? (theme === 'dark' ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer') 
                     : (isGroupChat 
-                        ? (theme === 'dark' ? 'bg-[#282A2D] text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-white text-slate-400 border-0 shadow-none cursor-not-allowed')
+                        ? (theme === 'dark' ? 'bg-transparent text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-transparent text-slate-400 cursor-not-allowed')
                         : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-[#f0f4f9]/50 text-gray-400 cursor-not-allowed')
                       )
                 }`}

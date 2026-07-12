@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Maximize2, ExternalLink } from 'lucide-react';
 import { IconButton } from '../Shared/IconButton';
+import { themeTokens } from '../../utils/themeTokens';
 
 interface CanvasTopBarProps {
   file: any;
@@ -39,7 +40,7 @@ export function CanvasTopBar({
         {list.map((peer: any) => (
           <div
             key={peer.id}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-3xs ring-2 ring-white dark:ring-[#1E1F22] shrink-0"
+            className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-3xs ${themeTokens.groupChat.facepileRing} shrink-0`}
             style={{ backgroundColor: peer.color || '#3B82F6' }}
             title={`${peer.name} is active in this space`}
           >

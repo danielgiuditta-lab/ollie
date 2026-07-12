@@ -1,6 +1,13 @@
 export const themeTokens = {
   // Combined light/dark tailwind classes
   
+  // Group chat tokens
+  groupChat: {
+    bg: 'bg-slate-100/90 dark:bg-[#18191B]',
+    border: 'border-slate-200/80 dark:border-[#2B2D31]',
+    facepileRing: 'ring-2 ring-slate-100/90 dark:ring-[#18191B]',
+  },
+
   // Hover background for transparent/borderless elements (e.g. Nav, transparent buttons)
   hoverBg: 'hover:bg-[#003BC4]/10 dark:hover:bg-[#35373A]',
   
