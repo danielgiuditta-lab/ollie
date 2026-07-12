@@ -3605,7 +3605,7 @@ export default function App() {
 
     const checkList = (list: any[]) => {
       list.forEach(item => {
-        if (item && (isHome || item.activeSpaceId === spaceId || item.id === spaceId || item.chatId === spaceId)) {
+        if (item && (isHome || item.activeSpaceId === spaceId || item.id === spaceId || item.chatId === spaceId || (typeof item.id === 'string' && spaceId && item.id.startsWith(spaceId + '-chat-')))) {
           if (item.sandboxFiles && Array.isArray(item.sandboxFiles)) {
             item.sandboxFiles.forEach((f: any) => {
               if (f) {
@@ -4216,10 +4216,12 @@ export default function App() {
           setIndexFileSelected(false);
           setViewState('files');
         } else {
-          const autoSelectFile = cached.selectedFile || cached.sandboxFiles?.[0] || null;
+          const resolved = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
+          const autoSelectFile = resolved || cached.selectedFile || cached.sandboxFiles?.[0] || null;
+          const isHtml = autoSelectFile?.name?.toLowerCase().endsWith('.html') || autoSelectFile?.name?.toLowerCase() === 'index.html';
           setSelectedFile(autoSelectFile);
-          setIndexFileSelected(autoSelectFile?.name?.toLowerCase().includes('index.html') ?? false);
-          setViewState(cached.viewState || (autoSelectFile?.name?.toLowerCase().includes('index.html') ? 'app' : 'files'));
+          setIndexFileSelected(isHtml);
+          setViewState(isHtml ? 'app' : (autoSelectFile ? 'files' : 'home'));
         }
       }
       cached.sandboxFiles.forEach((f: any) => {
@@ -4423,9 +4425,10 @@ export default function App() {
                   fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   nextViewState = 'files';
                 } else {
-                  const canonicalTool = chatData.sandboxFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
-                  fileToSelect = canonicalTool || chatData.sandboxFiles[0] || null;
-                  nextViewState = canonicalTool ? 'app' : (chatData.sandboxFiles.length > 0 ? 'files' : 'home');
+                  const resolved = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
+                  fileToSelect = resolved || chatData.sandboxFiles[0] || null;
+                  const isHtml = fileToSelect?.name?.toLowerCase().endsWith('.html') || fileToSelect?.name?.toLowerCase() === 'index.html';
+                  nextViewState = isHtml ? 'app' : (fileToSelect ? 'files' : 'home');
                 }
 
                 if (!skipSelect && fileToSelect) {
@@ -4942,7 +4945,7 @@ export default function App() {
         envId,
         sandboxUrl,
         currentSpaceName,
-        [...sandboxFiles.filter(f => f.name !== name), newArtifact],
+        [newArtifact],
         targetFolder,
         chatTitle,
         type,
