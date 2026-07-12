@@ -14,7 +14,7 @@ export function UserMessage({ text, theme = 'light', isGroupChat = false }: User
       className={`${
         isDark 
           ? 'bg-[#555a64] text-white' 
-          : (isGroupChat ? 'bg-white text-slate-800 border border-slate-200/50 shadow-2xs' : 'bg-[#f1f3f4] text-[#3c4043]')
+          : (isGroupChat ? 'bg-white text-slate-800 border-0 shadow-none' : 'bg-[#f1f3f4] text-[#3c4043]')
       } rounded-[24px] rounded-tr-sm p-4 text-xs sm:text-base font-normal leading-relaxed max-w-[90%] self-end`}
       style={{ fontFamily: '"Inter", sans-serif' }}
     >

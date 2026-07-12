@@ -20,7 +20,7 @@ export function IconButton({ children, variant = 'header', theme = 'light', isGr
     : variant === 'borderless'
       ? `bg-transparent ${themeTokens.hoverBg} ${themeTokens.text.idle} border-0`
       : isGroupChat
-        ? `bg-white hover:bg-slate-50 text-slate-700 dark:bg-[#282A2D] dark:hover:bg-[#35373A] dark:text-[#E3E3E3] border-0 shadow-2xs`
+        ? `bg-white hover:bg-slate-50 text-slate-700 dark:bg-[#282A2D] dark:hover:bg-[#35373A] dark:text-[#E3E3E3] border-0 shadow-none`
         : `${themeTokens.filledBg} ${themeTokens.filledHoverBg} ${themeTokens.text.idle} border-0`;
 
   return (

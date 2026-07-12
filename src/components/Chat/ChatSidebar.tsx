@@ -376,7 +376,7 @@ export function ChatSidebar({
                       }}
                       className={`w-fit max-w-full flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-250 text-left cursor-pointer border-none shadow-none pointer-events-auto ${
                         isGroupChat
-                          ? 'bg-white hover:bg-slate-50 border border-slate-200/60 shadow-2xs'
+                          ? 'bg-white hover:bg-slate-50 text-slate-800 border-0 shadow-none'
                           : 'bg-f8fafd hover:bg-f0f4f9'
                       }`}
                     >
