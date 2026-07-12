@@ -3670,17 +3670,20 @@ export default function App() {
   };
 
   const getSpacePins = (spaceId: string | null) => {
-    if (!spaceId) return [];
+    const defaultPins = ['todo-card'];
+    if (!spaceId) return defaultPins;
     if (isHomeChatId(spaceId)) {
       const cachePins = workspaceCacheRef.current[spaceId]?.pinnedArtifactIds;
-      return (cachePins && cachePins.length > 0) ? cachePins : homePins;
+      if (cachePins !== undefined) return cachePins;
+      return homePins.length > 0 ? homePins : defaultPins;
     }
     const pObj = projects.find(p => p && (p.id === spaceId || p.activeSpaceId === spaceId));
-    if (pObj && pObj.pinnedArtifactIds) return pObj.pinnedArtifactIds;
+    if (pObj && pObj.pinnedArtifactIds !== undefined) return pObj.pinnedArtifactIds;
     const tObj = recentTasks.find(t => t && (t.id === spaceId || (t.type === 'space' && t.activeSpaceId === spaceId)));
-    if (tObj && tObj.pinnedArtifactIds) return tObj.pinnedArtifactIds;
+    if (tObj && tObj.pinnedArtifactIds !== undefined) return tObj.pinnedArtifactIds;
     const cacheObj = workspaceCacheRef.current[spaceId];
-    return cacheObj?.pinnedArtifactIds || [];
+    if (cacheObj?.pinnedArtifactIds !== undefined) return cacheObj.pinnedArtifactIds;
+    return defaultPins;
   };
 
   const getAllSpaceFiles = (spaceId: string | null) => {
