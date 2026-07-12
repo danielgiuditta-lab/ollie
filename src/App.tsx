@@ -749,7 +749,7 @@ export default function App() {
         const mergedSpaceFiles = [...currentSpaceFiles];
         filesToSave.forEach(newF => {
           if (!newF) return;
-          const idx = mergedSpaceFiles.findIndex(existingF => existingF && ((existingF.id && existingF.id === newF.id) || (existingF.driveId && existingF.driveId === newF.driveId) || (existingF.name === newF.name)));
+          const idx = mergedSpaceFiles.findIndex(existingF => existingF && ((existingF.id && (existingF.id === newF.id || existingF.driveId === newF.id)) || (existingF.driveId && (existingF.driveId === newF.driveId || existingF.id === newF.driveId)) || (newF.driveId && (existingF.id === newF.driveId || existingF.driveId === newF.driveId))));
           if (idx >= 0) {
             mergedSpaceFiles[idx] = { ...mergedSpaceFiles[idx], ...newF };
           } else {
@@ -1510,13 +1510,13 @@ export default function App() {
 
               console.log(`[DocJourney Client] Updating doc title from generic to: ${finalDocName}`);
               updatedFiles = latestFiles.map(f => {
-                if (f.id === currentDoc.id || f.name === currentDoc.name) {
+                if ((currentDoc.id && (f.id === currentDoc.id || f.driveId === currentDoc.id)) || (currentDoc.driveId && (f.id === currentDoc.driveId || f.driveId === currentDoc.driveId))) {
                   return { ...f, name: finalDocName };
                 }
                 return f;
               });
               setDriveFiles(prev => prev.map(f => {
-                if (f.id === currentDoc.id || f.name === currentDoc.name || (currentDoc.driveId && (f.id === currentDoc.driveId || f.driveId === currentDoc.driveId))) {
+                if ((currentDoc.id && (f.id === currentDoc.id || f.driveId === currentDoc.id)) || (currentDoc.driveId && (f.id === currentDoc.driveId || f.driveId === currentDoc.driveId))) {
                   return { ...f, name: finalDocName };
                 }
                 return f;
@@ -2457,9 +2457,10 @@ export default function App() {
 
   const handleToggleDriveFile = (file: any) => {
     setSelectedDriveFiles(prev => {
-      const exists = prev.some(f => f.name === file.name || (file.id && f.id === file.id));
+      const fileId = file.id || file.driveId;
+      const exists = prev.some(f => (fileId && (f.id === fileId || f.driveId === fileId)));
       if (exists) {
-        return prev.filter(f => f.name !== file.name && (!file.id || f.id !== file.id));
+        return prev.filter(f => !fileId || (f.id !== fileId && f.driveId !== fileId));
       } else {
         return [...prev, file];
       }
@@ -2543,11 +2544,11 @@ export default function App() {
 
     if (!isHomeTask) {
       let matchingSpace: any = null;
-      if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
-        matchingSpace = projects.find(p => (p.id || p.activeSpaceId) === activeSpaceId) || recentTasks.find(s => (s.id || s.activeSpaceId) === activeSpaceId) || { id: activeSpaceId, name: spaceName };
-      } else {
-        matchingSpace = projects.find(p => p.name && p.name.toLowerCase() === spaceName.toLowerCase()) ||
-                        recentTasks.find(s => s.name && s.name.toLowerCase() === spaceName.toLowerCase() && !isHomeChatId(s.activeSpaceId || s.id));
+      const targetSpaceId = task.activeSpaceId || task.spaceId || task.parentSpaceId || activeSpaceId;
+      if (targetSpaceId && !isHomeChatId(targetSpaceId)) {
+        matchingSpace = projects.find(p => p.id === targetSpaceId || p.activeSpaceId === targetSpaceId) || 
+                        recentTasks.find(s => (s.id === targetSpaceId || s.activeSpaceId === targetSpaceId) && !isHomeChatId(s.activeSpaceId || s.id)) || 
+                        { id: targetSpaceId, name: spaceName };
       }
       resolvedSpaceId = matchingSpace ? (matchingSpace.activeSpaceId || matchingSpace.id) : 'home';
       resolvedSpaceName = matchingSpace ? matchingSpace.name : spaceName;
@@ -4247,9 +4248,16 @@ export default function App() {
         const allAvailableFiles = [...(cached.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
         const taskContext = { ...matchingTask, ...cached, ...cachedChat };
 
-        const isSpaceObject = typeof file === 'object' && file && Boolean(file.type?.includes('space') || file.type === 'workspace' || file.isProject || file.chats);
-        const specificFileMatch = (typeof file === 'object' && file && file.name && !isSpaceObject)
-          ? allAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || (file.isFromFileList && f.name === file.name))) || file
+        const isSpaceObject = typeof file === 'object' && file && Boolean(
+          file.type?.includes('space') || 
+          file.type === 'workspace' || 
+          file.isProject || 
+          file.chats || 
+          file.chatId || 
+          (typeof file.id === 'string' && (file.id.includes('-chat-') || file.id.startsWith('space-') || file.id.startsWith('local-')))
+        );
+        const specificFileMatch = (typeof file === 'object' && file && (file.id || file.driveId) && !isSpaceObject)
+          ? allAvailableFiles.find((f: any) => f && ((file.id && (f.id === file.id || f.driveId === file.id)) || (file.driveId && (f.driveId === file.driveId || f.id === file.driveId))))
           : null;
 
         if (specificFileMatch && !specificFileMatch.type?.includes('space') && specificFileMatch.name !== 'inferred_tasks.json') {
@@ -4464,9 +4472,16 @@ export default function App() {
                 let nextViewState: any = 'files';
 
                 const allDbAvailableFiles = [...(chatData.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
-                const isSpaceObject = typeof file === 'object' && file && Boolean(file.type?.includes('space') || file.type === 'workspace' || file.isProject || file.chats);
-                const specificFileMatch = (typeof file === 'object' && file && file.name && !isSpaceObject)
-                  ? allDbAvailableFiles.find((f: any) => f && ((file.id && f.id === file.id) || (file.driveId && f.driveId === file.driveId) || (file.isFromFileList && f.name === file.name))) || file
+                const isSpaceObject = typeof file === 'object' && file && Boolean(
+                  file.type?.includes('space') || 
+                  file.type === 'workspace' || 
+                  file.isProject || 
+                  file.chats || 
+                  file.chatId || 
+                  (typeof file.id === 'string' && (file.id.includes('-chat-') || file.id.startsWith('space-') || file.id.startsWith('local-')))
+                );
+                const specificFileMatch = (typeof file === 'object' && file && (file.id || file.driveId) && !isSpaceObject)
+                  ? allDbAvailableFiles.find((f: any) => f && ((file.id && (f.id === file.id || f.driveId === file.id)) || (file.driveId && (f.driveId === file.driveId || f.id === file.driveId))))
                   : null;
 
                 if (isParentSpaceClick && !isHomeChatId(folderId)) {

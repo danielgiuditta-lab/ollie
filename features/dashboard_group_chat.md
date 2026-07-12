@@ -39,8 +39,9 @@ const getSpacePins = (spaceId: string | null) => {
 };
 ```
 
-### 1.4 Dashboard Child Chat Artifact Aggregation (`getAllSpaceFiles`) & Session-Scoped IDs
+### 1.4 Dashboard Child Chat Artifact Aggregation (`getAllSpaceFiles`), Session-Scoped IDs & Strict Unique ID Matching
 * **Child Chat Artifact Aggregation (`getAllSpaceFiles`):** When viewing the root Space Dashboard (`viewState === 'dashboard'`), custom tools and documents generated inside child authoring chats (`${spaceId}-chat-...`) are not present in the root space's direct `sandboxFiles` array. To ensure pinned custom tools and docs resolve and render live previews on the grid, the app must pass `getAllSpaceFiles(activeSpaceId)` to `<SpaceDashboard />`. This helper aggregates `sandboxFiles` across the root space and all child chats in `recentTasks`, `projects`, and `workspaceCacheRef`, preserving `.chatId` for authoring jumps.
+* **Strict Unique ID Resolution Guarantee:** Preview card lookups, unpin operations, card reordering, and direct edit jumps MUST operate strictly on unique identifiers (`file.id` or `file.driveId`). String name matching (`file.name === spaceName`) is strictly prohibited when resolving dashboard cards to eliminate name collisions with Google Drive files.
 * **Session-Scoped File IDs:** In `/api/vibe-code`, generated code files must never be assigned generic IDs like `'sandbox-file-0'`, as this causes ID collisions across multiple tools in the same space. All generated files must be scoped to their chat session: `id: `${targetChatId || activeChatId || 'sandbox'}-file-${i}``.
 
 ### 1.5 Canvas Container & Sidebar Visibility (`viewState === 'dashboard'`)

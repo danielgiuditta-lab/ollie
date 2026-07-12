@@ -1,0 +1,31 @@
+{
+  "chatId": "space_perm_1783870899361",
+  "projectName": "Permanent Architecture Test Space",
+  "chatName": null,
+  "type": "space",
+  "taskType": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [],
+  "envId": null,
+  "activeSpaceId": "space_perm_1783870899361",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "space_perm_1783870899361-file-html",
+      "name": "index.html",
+      "content": "<html><body>Tool App</body></html>"
+    },
+    {
+      "id": "space_perm_1783870899361-file-doc",
+      "name": "PRD.doc",
+      "content": "## Product Requirements"
+    }
+  ],
+  "userEmail": "dan1@c.googlers.com",
+  "members": [],
+  "pinnedArtifactIds": [
+    "space_perm_1783870899361-file-html"
+  ],
+  "updatedAt": "2026-07-12T15:41:39.636Z"
+}

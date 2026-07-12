@@ -1,0 +1,43 @@
+{
+  "envId": "37aea943e883600434d3ade4836f2b07",
+  "key": "ollie_kanban_board_state_v1",
+  "data": [
+    {
+      "id": "1",
+      "title": "Implement Task Service Spanner DDL structures",
+      "assignee": "yadavajay@google.com",
+      "status": "In Progress"
+    },
+    {
+      "id": "2",
+      "title": "Design Sobi Harness capability-based routing logic",
+      "assignee": "belindapreno@google.com",
+      "status": "To Do"
+    },
+    {
+      "id": "3",
+      "title": "Draft Project Ollie Baseline Workflow UX Research Plan",
+      "assignee": "mirjamvanesch@google.com",
+      "status": "Done"
+    },
+    {
+      "id": "4",
+      "title": "Integrate Jetski Capsule compilation PTY watchdog",
+      "assignee": "simonsok@google.com",
+      "status": "To Do"
+    },
+    {
+      "id": "5",
+      "title": "Implement Feed Service SSE update stream broadcast",
+      "assignee": "yadavajay@google.com",
+      "status": "To Do"
+    },
+    {
+      "id": "6",
+      "title": "Configure Memory DB ScaNN Vector similarity index",
+      "assignee": "simonsok@google.com",
+      "status": "In Progress"
+    }
+  ],
+  "updatedAt": "2026-07-12T15:36:28.956Z"
+}

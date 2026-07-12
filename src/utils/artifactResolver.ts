@@ -29,18 +29,9 @@ export const inferChatName = (text: string): string => {
 export const findAssociatedChatForFile = (file: any, recentTasks: any[]): any | null => {
   if (!file || !recentTasks || recentTasks.length === 0) return null;
   const fileId = file.id || file.driveId;
-  const fileName = file.name;
 
   if (fileId) {
     const match = recentTasks.find(t => t && (t.associatedFileId === fileId || t.raw?.associatedFileId === fileId));
-    if (match) return match;
-  }
-
-  if (fileName) {
-    const match = recentTasks.find(t => {
-      const name = t?.associatedFileName || t?.raw?.associatedFileName;
-      return name && name.toLowerCase() === fileName.toLowerCase();
-    });
     if (match) return match;
   }
 
@@ -55,17 +46,12 @@ export const findAssociatedChatForFile = (file: any, recentTasks: any[]): any | 
 export const resolveArtifactForChat = (files: any[], task: any, taskType: string): any => {
   if (!files || files.length === 0) return null;
   
-  // 1. Try explicit ID/name association first
+  // 1. Try explicit unique ID association first
   const associatedId = task?.associatedFileId || task?.raw?.associatedFileId;
-  const associatedName = task?.associatedFileName || task?.raw?.associatedFileName;
   
   if (associatedId) {
     const byId = files.find(f => f && (f.id === associatedId || f.driveId === associatedId));
     if (byId) return byId;
-  }
-  if (associatedName) {
-    const byName = files.find(f => f && f.name && f.name.toLowerCase() === associatedName.toLowerCase());
-    if (byName) return byName;
   }
 
   // 2. Filter candidates strictly by taskType
