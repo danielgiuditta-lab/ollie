@@ -34,6 +34,7 @@ import {
   Music,
   FileJson
 } from 'lucide-react';
+import { InferredTaskCard } from '../Chat/InferredTaskCard';
 
 interface NativeViewerProps {
   file: any;
@@ -44,6 +45,8 @@ interface NativeViewerProps {
   mode?: 'file' | 'preview';
   isPreviewCard?: boolean;
   theme?: 'light' | 'dark';
+  todoItems?: any[];
+  onProactiveTaskClick?: (task: any) => void;
 }
 
 export function NativeViewer({ 
@@ -54,7 +57,9 @@ export function NativeViewer({
   hideHeader = false,
   mode: propMode,
   isPreviewCard = false,
-  theme = 'light'
+  theme = 'light',
+  todoItems,
+  onProactiveTaskClick
 }: NativeViewerProps) {
   const [internalMode, setInternalMode] = useState<'file' | 'preview'>('preview');
 
@@ -102,6 +107,69 @@ export function NativeViewer({
         <div className="text-center">
           <Info size={32} className="mx-auto mb-2 opacity-50" />
           <p className="text-sm font-medium">Select an artifact to view content</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isTodoArtifact = file && Boolean(
+    file.isInferredTask || 
+    file.taskType === 'inferred' || 
+    file.id === 'todo-card' || 
+    (file.name && file.name.toLowerCase() === 'inferred_tasks.json') || 
+    file.name === 'To-dos'
+  );
+
+  if (isTodoArtifact) {
+    const getTaskIcon = (mimeType?: string) => {
+      const m = (mimeType || '').toLowerCase();
+      if (m.includes('presentation') || m.includes('slide')) return 'https://ssl.gstatic.com/docs/doclist/images/icon_11_slides_list.png';
+      if (m.includes('spreadsheet') || m.includes('sheet') || m.includes('csv')) return 'https://ssl.gstatic.com/docs/doclist/images/icon_11_sheets_list.png';
+      if (m.includes('comment')) return 'https://ssl.gstatic.com/docs/doclist/images/icon_10_generic_list.png';
+      return 'https://ssl.gstatic.com/docs/doclist/images/icon_11_document_list.png';
+    };
+
+    const items = (todoItems && todoItems.length > 0) ? todoItems : (() => {
+      try {
+        if (file.content) {
+          const parsed = JSON.parse(file.content);
+          return Array.isArray(parsed) ? parsed : (parsed.immediateActions || parsed.items || []);
+        }
+      } catch (e) {}
+      return [];
+    })();
+
+    const isDark = theme === 'dark';
+
+    return (
+      <div className={`w-full h-full p-8 overflow-y-auto ${isDark ? 'bg-[#18191B] text-white' : 'bg-[#F8FAFD] text-slate-800'} select-text font-sans flex flex-col items-center`}>
+        <div className="w-full max-w-3xl flex flex-col gap-6">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-neutral-800">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold tracking-tight">To-dos</h2>
+              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-200/80 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300">
+                {items.length} items
+              </span>
+            </div>
+            <span className="text-xs text-slate-400 dark:text-neutral-500 font-medium">Inferred Workspace Agenda</span>
+          </div>
+
+          {items.length === 0 ? (
+            <div className="text-center py-20 text-slate-400 dark:text-neutral-500 text-sm font-medium">
+              No active inferred tasks found for this workspace.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {items.map((item: any, idx: number) => (
+                <InferredTaskCard
+                  key={item.id || idx}
+                  item={item}
+                  getFileIcon={getTaskIcon}
+                  onClick={() => onProactiveTaskClick && onProactiveTaskClick(item)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );

@@ -3878,6 +3878,16 @@ export default function App() {
     setRecentTasks(prev => prev.map(updatePins));
   };
 
+  const handleArtifactSelect = (file: any) => {
+    const isTodo = file && (file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos');
+    const resolvedSpace = (activeSpaceId && !isHomeChatId(activeSpaceId)) ? activeSpaceId : getHomeChatId();
+    const targetChatId = isTodo 
+      ? `${resolvedSpace}-chat-inferred`
+      : (file?.chatId || findAssociatedChatForFile(file, recentTasks)?.id || resolvedSpace);
+    console.log("[DEBUG] handleArtifactSelect triggered for file:", { file, targetChatId });
+    handleFileClick(file, false, { isFromRecents: true, targetChatId, isParentSpaceClick: false });
+  };
+
   const isValidDriveId = (id: any) => {
     if (!id || typeof id !== 'string') return false;
     const lower = id.toLowerCase();
@@ -4641,6 +4651,55 @@ export default function App() {
         }
       }
 
+      if (targetChatId !== folderId || (typeof file === 'object' && file && !options?.isParentSpaceClick)) {
+        const isSpaceObject = typeof file === 'object' && file && Boolean(
+          file.type?.includes('space') || 
+          file.type === 'workspace' || 
+          file.isProject || 
+          Boolean(file.chats)
+        ) && !file.name?.includes('.');
+
+        const isTodo = typeof file === 'object' && file && (file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos');
+        const targetArtifact = (typeof file === 'object' && file && !isSpaceObject ? file : null) ||
+          resolveArtifactForChat([...sandboxFiles, ...driveFiles], { activeSpaceId: folderId }, isTodo ? 'inferred' : 'site') ||
+          (isTodo ? {
+            id: 'todo-card',
+            name: 'inferred_tasks.json',
+            type: 'code',
+            mimeType: 'application/json',
+            isInferredTask: true,
+            taskType: 'inferred'
+          } : null);
+
+        if (targetArtifact) {
+          const isHtml = targetArtifact.name?.toLowerCase().endsWith('.html') || targetArtifact.name?.toLowerCase() === 'index.html';
+          setSelectedFile(targetArtifact);
+          setIndexFileSelected(isHtml);
+          setViewState(isHtml ? 'app' : 'files');
+          setMessages([]);
+
+          const newCacheEntry = {
+            ingestedFiles: [],
+            sandboxFiles: sandboxFiles.length > 0 ? sandboxFiles : [targetArtifact],
+            envId: envId || null,
+            sandboxUrl: sandboxUrl || '',
+            messages: [],
+            projectName: projectName,
+            selectedFile: targetArtifact,
+            indexFileSelected: isHtml,
+            viewState: isHtml ? 'app' : 'files',
+            taskType: isTodo ? 'inferred' : (targetArtifact.taskType || 'site'),
+            type: isTodo ? 'inferred' : (targetArtifact.type || 'site'),
+            associatedFileId: targetArtifact.id || targetArtifact.driveId,
+            associatedFileName: targetArtifact.name
+          };
+          workspaceCacheRef.current[targetChatId] = newCacheEntry;
+          chatSessionsCacheRef.current[targetChatId] = { messages: [] };
+          setLoadedFolderId(folderId);
+          return;
+        }
+      }
+
       if (!accessToken || !isValidDriveId(folderId)) return;
       // Cache miss - blocking load with ingestion spinner
       setIsIngesting(true);
@@ -5275,6 +5334,8 @@ export default function App() {
           onBypassAuth={() => setBypassAuth(true)}
           projectName={projectName}
           activeSpaceId={activeSpaceId}
+          activeChatId={activeChatId}
+          selectedFile={selectedFile}
           todoItems={todoItems}
           isNewSpaceCreation={activeSpaceId ? newlyCreatedSpaceIds.has(activeSpaceId) : false}
           spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
@@ -5363,7 +5424,7 @@ export default function App() {
                   currentUserId={localUser?.id}
                   selectedFile={selectedFile}
                 >
-                  <div className={(!isIngesting && (viewState === 'home' || selectedFile?.isInferredTask || selectedFile?.name?.toLowerCase() === 'inferred_tasks.json' || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                  <div className={(!isIngesting && ((viewState === 'home' && !selectedFile) || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
                     <HomeLanding 
                       accessToken={accessToken} 
                       userProfile={userProfile} 
@@ -5401,11 +5462,7 @@ export default function App() {
                       pinnedArtifactIds={getSpacePins(activeSpaceId || getHomeChatId())}
                       onRemovePin={handleUnpinArtifact}
                       onReorderPins={handleReorderPins}
-                      onSelectArtifact={(file) => {
-                        const targetChatId = file?.chatId || findAssociatedChatForFile(file, recentTasks)?.id || activeSpaceId || getHomeChatId();
-                        console.log("[DEBUG] HomeLanding onSelectArtifact triggered for file:", { file, targetChatId });
-                        handleFileClick(file, false, { isFromRecents: true, targetChatId, isParentSpaceClick: false });
-                      }}
+                      onSelectArtifact={handleArtifactSelect}
                     />
                   </div>
                   {isIngesting && (
@@ -5435,7 +5492,7 @@ export default function App() {
                       accessToken={accessToken}
                     />
                   )}
-                  {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && !selectedFile?.isInferredTask && selectedFile?.name?.toLowerCase() !== 'inferred_tasks.json' && (
+                  {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && (
                     <div 
                       className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200 p-4" 
                       id="canvas-unified-workspace"
@@ -5460,6 +5517,8 @@ export default function App() {
                             setSelectedFile(null);
                           }}
                           theme={appTheme}
+                          todoItems={todoItems}
+                          onProactiveTaskClick={handleProactiveTaskClick}
                         />
                       )}
                     </div>
@@ -5481,15 +5540,7 @@ export default function App() {
                       spaceName={projectName || 'Space'}
                       pinnedArtifactIds={getSpacePins(activeSpaceId)}
                       sandboxFiles={getAllSpaceFiles(activeSpaceId)}
-                      onSelectArtifact={(file) => {
-                        const isTodo = file && (file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos');
-                        const resolvedSpace = (activeSpaceId && !isHomeChatId(activeSpaceId)) ? activeSpaceId : getHomeChatId();
-                        const targetChatId = isTodo 
-                          ? `${resolvedSpace}-chat-inferred`
-                          : (file?.chatId || findAssociatedChatForFile(file, recentTasks)?.id || resolvedSpace);
-                        console.log("[DEBUG] SpaceDashboard onSelectArtifact triggered for file:", { file, targetChatId });
-                        handleFileClick(file, false, { isFromRecents: true, targetChatId, isParentSpaceClick: false });
-                      }}
+                      onSelectArtifact={handleArtifactSelect}
                       onRemovePin={handleUnpinArtifact}
                       onReorderPins={handleReorderPins}
                       sandboxUrl={sandboxUrl}
@@ -5672,6 +5723,9 @@ export default function App() {
                 onLogin={login}
                 onBypassAuth={() => setBypassAuth(true)}
                 projectName={projectName}
+                activeSpaceId={activeSpaceId}
+                activeChatId={activeChatId}
+                selectedFile={selectedFile}
                 todoItems={todoItems}
               />
             )}

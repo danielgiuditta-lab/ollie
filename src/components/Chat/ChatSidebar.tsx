@@ -40,6 +40,8 @@ interface ChatSidebarProps {
   spaceMode?: 'choice' | 'tracking' | 'tool';
   onSelectSpaceMode?: (mode: 'tracking' | 'tool') => void;
   activeSpaceId?: string | null;
+  activeChatId?: string | null;
+  selectedFile?: any;
   isGroupChat?: boolean;
   spaceName?: string;
 }
@@ -76,12 +78,26 @@ export function ChatSidebar({
   spaceMode,
   onSelectSpaceMode,
   activeSpaceId,
+  activeChatId,
+  selectedFile,
   isGroupChat = false,
   spaceName = ''
 }: ChatSidebarProps) {
   const isHome = !projectName || projectName === 'Home Dashboard' || projectName === 'Home';
 
+  const isTodoChat = Boolean(
+    (selectedFile && (selectedFile.isInferredTask || selectedFile.id === 'todo-card' || selectedFile.name?.toLowerCase() === 'inferred_tasks.json')) ||
+    (activeChatId && typeof activeChatId === 'string' && activeChatId.endsWith('-inferred'))
+  );
+
   const getSuggestions = () => {
+    if (isTodoChat) {
+      return [
+        { label: "Only tell me about Google Workspace items", prompt: "Only tell me about Google Workspace items" },
+        { label: "Convert layout to a 2-column Kanban board", prompt: "Convert layout to a 2-column Kanban board" },
+        { label: "Sort agenda items by urgency", prompt: "Sort agenda items by urgency" }
+      ];
+    }
     if (activeSpaceId && activeSpaceId.startsWith('space-creation-')) {
       return [];
     }
@@ -352,7 +368,10 @@ export function ChatSidebar({
                 {/* Centered Title top block matching canvas h-[33.33%] */}
                 <div className="w-full h-[33.33%] flex items-center justify-center shrink-0">
                   <NullTitle theme={theme}>
-                    {activeSpaceId && activeSpaceId.startsWith('space-creation-') ? "What's this Space about?" : (isHome ? 'How can I help?' : `How can I help on ${projectName || 'this space'}?`)}
+                    {isTodoChat 
+                      ? "How can I help modify your To-dos?" 
+                      : (activeSpaceId && activeSpaceId.startsWith('space-creation-') ? "What's this Space about?" : (isHome ? 'How can I help?' : `How can I help on ${projectName || 'this space'}?`))
+                    }
                   </NullTitle>
                 </div>
 
