@@ -698,6 +698,45 @@ export default function App() {
     setSandboxFiles(prev => prev.filter(f => !fileIdsToDelete.includes(f.id || f.driveId || f.name)));
   };
 
+  const getAllSpacesList = (projectsList: any[], tasksList: any[]) => {
+    const spacesMap = new Map<string, any>();
+
+    const addSpace = (item: any) => {
+      if (!item) return;
+      const spaceId = item.activeSpaceId || item.id || item.chatId || item.spaceId;
+      if (!spaceId) return;
+      const lowerId = String(spaceId).toLowerCase().trim();
+      if (lowerId === 'home' || lowerId === 'home_guest' || lowerId.startsWith('home_') || lowerId.startsWith('home-') || (item.name && String(item.name).trim().toLowerCase() === 'home')) {
+        return;
+      }
+      if (!spacesMap.has(spaceId)) {
+        const spaceName = item.projectName || item.name || item.chatName || `Space`;
+        spacesMap.set(spaceId, {
+          id: spaceId,
+          spaceId: spaceId,
+          name: spaceName,
+          chatName: spaceName,
+          projectName: spaceName,
+          type: 'space',
+          raw: item
+        });
+      } else {
+        const existing = spacesMap.get(spaceId);
+        if (item.type === 'space' || item.type === 'workspace' || item.isProject) {
+          const freshName = item.projectName || item.name || existing.name;
+          existing.name = freshName;
+          existing.chatName = freshName;
+          existing.projectName = freshName;
+        }
+      }
+    };
+
+    (projectsList || []).forEach(addSpace);
+    (tasksList || []).forEach(addSpace);
+
+    return Array.from(spacesMap.values());
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const shareSlug = params.get('share');
@@ -5314,6 +5353,8 @@ export default function App() {
     isSourcesPanelOpen
   });
 
+  const isGroupChat = Boolean(activeSpaceId && !isHomeChatId(activeSpaceId) && activeChatId === activeSpaceId);
+
   return (
     <div className="w-full h-screen bg-white dark:bg-[#0B0B0C] text-slate-800 dark:text-[#E3E3E3] flex font-sans overflow-hidden relative">
       <LeftNav 
@@ -5406,6 +5447,7 @@ export default function App() {
         activeSpaceId={activeSpaceId}
         onCreateSpace={handleCreateSpace}
         isChatSide={viewState !== 'ai_summary' && chatDockPosition === 'side'}
+        isGroupChat={isGroupChat}
       />
       {/* 2. Chat Sidebar (Docked to Side) */}
       {viewState !== 'ai_summary' && chatDockPosition === 'side' && (
@@ -5454,7 +5496,7 @@ export default function App() {
           isNewSpaceCreation={activeSpaceId ? newlyCreatedSpaceIds.has(activeSpaceId) : false}
           spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
           onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
-          isGroupChat={!!(activeSpaceId && !isHomeChatId(activeSpaceId) && activeChatId === activeSpaceId)}
+          isGroupChat={isGroupChat}
           spaceName={projectName}
         />
       )}
@@ -5774,7 +5816,7 @@ export default function App() {
                 getSpacePins={getSpacePins}
                 activeSpaceId={activeSpaceId}
                 getHomeChatId={getHomeChatId}
-                spaces={projects}
+                spaces={getAllSpacesList(projects, recentTasks)}
                 onShareSourcesToSpace={handleShareSourcesToSpace}
                 onDeleteFiles={handleDeleteSources}
               />

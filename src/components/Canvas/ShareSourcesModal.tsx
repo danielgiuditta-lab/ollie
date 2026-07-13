@@ -27,9 +27,11 @@ export function ShareSourcesModal({
   // Filter out active space
   const availableSpaces = spaces.filter(s => {
     if (!s) return false;
-    const spaceId = s.id || s.spaceId;
+    const spaceId = s.id || s.spaceId || s.activeSpaceId || s.chatId;
     if (!spaceId) return false;
-    if (activeSpaceId && spaceId === activeSpaceId) return false;
+    const lowerSpaceId = String(spaceId).toLowerCase().trim();
+    if (lowerSpaceId === 'home' || lowerSpaceId === 'home_guest' || lowerSpaceId.startsWith('home_') || lowerSpaceId.startsWith('home-')) return false;
+    if (activeSpaceId && (spaceId === activeSpaceId || lowerSpaceId === String(activeSpaceId).toLowerCase().trim())) return false;
     return true;
   });
 
@@ -46,7 +48,10 @@ export function ShareSourcesModal({
       setSelectedIds(allItemIds);
 
       if (availableSpaces.length > 0) {
-        setTargetSpaceId(availableSpaces[0].id || availableSpaces[0].spaceId);
+        setTargetSpaceId(prev => {
+          const isValid = availableSpaces.some(s => (s.id || s.spaceId || s.activeSpaceId) === prev);
+          return isValid ? prev : (availableSpaces[0].id || availableSpaces[0].spaceId || availableSpaces[0].activeSpaceId);
+        });
       } else {
         setTargetSpaceId('');
       }
