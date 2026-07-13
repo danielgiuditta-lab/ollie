@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Search, FolderKanban, Share2 } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import { getFileIcon } from '../Shared/FileIcon';
 import { Button } from '../Shared/Button';
 
@@ -13,6 +13,16 @@ interface ShareSourcesModalProps {
   onShare: (selectedItemIds: string[], targetSpaceId: string) => void;
   theme?: 'light' | 'dark';
 }
+
+const getItemId = (item: any): string => {
+  if (!item) return '';
+  return item.fileRef?.id || item.fileRef?.driveId || item.id || item.driveId || item.name || item.filename || '';
+};
+
+const getItemName = (item: any): string => {
+  if (!item) return '';
+  return item.name || item.filename || item.title || item.fileRef?.name || item.fileRef?.filename || item.fileRef?.title || 'Untitled';
+};
 
 export function ShareSourcesModal({
   isOpen,
@@ -40,13 +50,11 @@ export function ShareSourcesModal({
   const [targetSpaceId, setTargetSpaceId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Hydrate initial selection and default target space
+  // Unchecked by default when modal opens & hydrate default target space
   useEffect(() => {
     if (isOpen) {
-      const allItemIds = libraryItems
-        .map(item => item.id || item.driveId || item.name)
-        .filter(Boolean);
-      setSelectedIds(allItemIds);
+      setSelectedIds([]);
+      setSearchQuery('');
 
       if (availableSpaces.length > 0) {
         setTargetSpaceId(prev => {
@@ -57,32 +65,35 @@ export function ShareSourcesModal({
         setTargetSpaceId('');
       }
     }
-  }, [isOpen, libraryItems, spaces, activeSpaceId]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const toggleSelectItem = (id: string) => {
+    if (!id) return;
     setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
-  const toggleSelectAll = () => {
-    const allItemIds = libraryItems
-      .map(item => item.id || item.driveId || item.name)
-      .filter(Boolean);
-
-    if (selectedIds.length === allItemIds.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(allItemIds);
-    }
-  };
-
   const filteredItems = libraryItems.filter(item => {
-    const name = item.name || item.filename || '';
+    const name = getItemName(item);
     return name.toLowerCase().includes(searchQuery.toLowerCase());
   });
+
+  const allFilteredItemIds = filteredItems
+    .map(item => getItemId(item))
+    .filter(Boolean);
+
+  const isAllSelected = allFilteredItemIds.length > 0 && allFilteredItemIds.every(id => selectedIds.includes(id));
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(prev => prev.filter(id => !allFilteredItemIds.includes(id)));
+    } else {
+      setSelectedIds(prev => Array.from(new Set([...prev, ...allFilteredItemIds])));
+    }
+  };
 
   const handleShareClick = () => {
     if (selectedIds.length === 0 || !targetSpaceId) return;
@@ -133,16 +144,18 @@ export function ShareSourcesModal({
                 className="w-full bg-transparent border-none outline-none text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400"
               />
             </div>
-            <button
-              onClick={toggleSelectAll}
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline px-2 cursor-pointer border-none bg-transparent"
-              style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
-            >
-              {selectedIds.length === libraryItems.length ? 'Deselect All' : 'Select All'}
-            </button>
+            {filteredItems.length > 0 && (
+              <button
+                onClick={toggleSelectAll}
+                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline px-2 cursor-pointer border-none bg-transparent shrink-0"
+                style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+              >
+                {isAllSelected ? 'Deselect All' : 'Select All'}
+              </button>
+            )}
           </div>
 
-          {/* Library Items Checklist (transparent container, styled cells) */}
+          {/* Library Items Checklist */}
           <div className="max-h-56 overflow-y-auto bg-transparent p-0 flex flex-col gap-1.5 scrollbar-thin">
             {filteredItems.length === 0 ? (
               <div className="py-6 text-center text-xs text-slate-400 font-medium">
@@ -150,13 +163,13 @@ export function ShareSourcesModal({
               </div>
             ) : (
               filteredItems.map(item => {
-                const itemId = item.id || item.driveId || item.name;
+                const itemId = getItemId(item);
                 const isChecked = selectedIds.includes(itemId);
-                const itemName = item.name || item.filename || 'Untitled';
+                const itemName = getItemName(item);
 
                 return (
                   <div
-                    key={itemId}
+                    key={itemId || itemName}
                     onClick={() => toggleSelectItem(itemId)}
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl cursor-pointer transition-colors ${
                       isChecked 
@@ -179,7 +192,11 @@ export function ShareSourcesModal({
                     <input
                       type="checkbox"
                       checked={isChecked}
-                      onChange={() => {}}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        toggleSelectItem(itemId);
+                      }}
                       className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4 cursor-pointer shrink-0"
                     />
                   </div>
