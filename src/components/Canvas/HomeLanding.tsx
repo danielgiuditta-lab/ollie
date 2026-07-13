@@ -195,6 +195,7 @@ interface HomeLandingProps {
   onPinArtifact?: (file: any) => void;
   onReorderPins?: (newOrderedIds: string[]) => void;
   onSelectArtifact?: (file: any) => void;
+  envId?: string | null;
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -575,7 +576,8 @@ export function HomeLanding({
   onRemovePin,
   onPinArtifact,
   onReorderPins,
-  onSelectArtifact
+  onSelectArtifact,
+  envId
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localBypassAuth, setLocalBypassAuth] = useState(false);
@@ -1624,6 +1626,7 @@ export function HomeLanding({
           onPinArtifact={onPinArtifact}
           onReorderPins={onReorderPins || (() => {})}
           onCreateArtifact={onCreateArtifactProp}
+          envId={envId}
           theme={theme}
           todoItems={filteredTodoItems}
           getFileIcon={getFileIcon}

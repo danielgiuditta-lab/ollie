@@ -334,6 +334,7 @@ export function SpaceDashboard({
       className={`w-full h-full grid ${gridLayoutClass} gap-6 px-6 pt-4 pb-6 overflow-y-auto select-none items-stretch justify-stretch`}
     >
       {pinnedFiles.map((file, idx) => {
+        if (!file) return null;
         const fileId = file.id || file.driveId || 'file-' + idx;
         const isTodo = file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos';
         const isHtml = !isTodo && file.name && (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase() === 'index.html');
@@ -469,9 +470,9 @@ export function SpaceDashboard({
                   {isTodo ? (
                     isHtml ? (
                       <AppView
-                        sandboxUrl={sandboxUrl}
+                        sandboxUrl={file.sandboxUrl || sandboxUrl}
                         files={sandboxFiles}
-                        envId={envId}
+                        envId={file.envId || file.activeSpaceId || file.chatId || envId}
                         selectedFile={file}
                         theme={theme}
                       />
@@ -510,9 +511,9 @@ export function SpaceDashboard({
                     )
                   ) : isHtml ? (
                     <AppView
-                      sandboxUrl={sandboxUrl}
+                      sandboxUrl={file.sandboxUrl || sandboxUrl}
                       files={sandboxFiles}
-                      envId={envId}
+                      envId={file.envId || file.activeSpaceId || file.chatId || envId}
                       selectedFile={file}
                       theme={theme}
                     />

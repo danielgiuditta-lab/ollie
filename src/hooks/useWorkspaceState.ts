@@ -38,11 +38,19 @@ export function useWorkspaceState(userProfile: any) {
   });
 
   useEffect(() => {
-    localStorage.setItem('drive_recent_tasks', JSON.stringify(recentTasks));
+    try {
+      localStorage.setItem('drive_recent_tasks', JSON.stringify(recentTasks));
+    } catch (e) {
+      console.warn('Failed to save drive_recent_tasks to localStorage (quota exceeded):', e);
+    }
   }, [recentTasks]);
 
   useEffect(() => {
-    localStorage.setItem('drive_projects', JSON.stringify(projects));
+    try {
+      localStorage.setItem('drive_projects', JSON.stringify(projects));
+    } catch (e) {
+      console.warn('Failed to save drive_projects to localStorage (quota exceeded):', e);
+    }
   }, [projects]);
 
   const [activeSpaceId, setActiveSpaceId] = useState<string | null>('home_guest');

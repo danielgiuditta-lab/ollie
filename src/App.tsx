@@ -3875,10 +3875,13 @@ export default function App() {
             item.sandboxFiles.forEach((f: any) => {
               if (f) {
                 const key = f.id || f.driveId || (item.id + '_' + f.name);
+                const resolvedSpace = f.activeSpaceId || item?.activeSpaceId || (item?.type === 'space' || item?.isProject ? item.id : (spaceId !== 'home' ? spaceId : null));
+                const resolvedEnv = f.envId || item?.envId || resolvedSpace;
                 allFilesMap.set(key, { 
                   ...f, 
                   chatId: f.chatId || item.id,
-                  activeSpaceId: f.activeSpaceId || item.activeSpaceId || spaceId
+                  activeSpaceId: resolvedSpace,
+                  envId: resolvedEnv
                 });
               }
             });
@@ -3891,15 +3894,18 @@ export default function App() {
     checkList(projects);
 
     Object.entries(workspaceCacheRef.current).forEach(([k, cacheVal]: [string, any]) => {
-      if (isHome || k === spaceId || k.startsWith(spaceId + '-chat-') || cacheVal?.activeSpaceId === spaceId) {
+      if (isHome || k === spaceId || (spaceId && k.startsWith(spaceId + '-chat-')) || cacheVal?.activeSpaceId === spaceId) {
         if (cacheVal?.sandboxFiles && Array.isArray(cacheVal.sandboxFiles)) {
           cacheVal.sandboxFiles.forEach((f: any) => {
             if (f) {
               const key = f.id || f.driveId || (k + '_' + f.name);
+              const resolvedSpace = f.activeSpaceId || cacheVal?.activeSpaceId || (k.startsWith('space-') ? k : null);
+              const resolvedEnv = f.envId || cacheVal?.envId || resolvedSpace;
               allFilesMap.set(key, { 
                 ...f, 
                 chatId: f.chatId || k,
-                activeSpaceId: f.activeSpaceId || cacheVal.activeSpaceId || spaceId
+                activeSpaceId: resolvedSpace,
+                envId: resolvedEnv
               });
             }
           });
@@ -5292,6 +5298,7 @@ export default function App() {
       createdFromComposer: true,
       fontFamily: type === 'doc' ? 'Google Sans' : undefined,
       isDocJourney: type === 'doc' || type === 'slide',
+      createdFromSpace: !isHomeContext,
       id: createdDriveId || `created-artifact-${Date.now()}`
     };
     if (createdDriveId) {
@@ -5411,7 +5418,11 @@ export default function App() {
         chatModel={chatModel}
         onChangeChatModel={(model) => {
           setChatModel(model);
-          localStorage.setItem('chat-model', model);
+          try {
+            localStorage.setItem('chat-model', model);
+          } catch (e) {
+            console.warn('Failed to set chat-model in localStorage:', e);
+          }
         }}
         activeChatId={activeChatId}
         onSelectChat={async (space, chat) => {
@@ -5638,6 +5649,7 @@ export default function App() {
                       isLoadingDrive={isDriveSuggestLoading}
                       setIsLoadingDrive={setIsDriveSuggestLoading}
                       sandboxUrl={sandboxUrl}
+                      envId={envId}
                       setActiveSidebar={setActiveSidebar}
                       theme={appTheme}
                       journey={homeJourney}

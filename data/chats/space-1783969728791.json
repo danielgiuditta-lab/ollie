@@ -1,8 +1,8 @@
 {
   "chatId": "space-1783969728791",
   "projectName": "Ollie",
-  "chatName": null,
-  "type": null,
+  "chatName": "Ollie",
+  "type": "workspace",
   "taskType": null,
   "associatedFileId": null,
   "associatedFileName": null,
@@ -123,6 +123,8 @@
       "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjUJwa8yeHprZ88_pXXGVlN6TT1mDyU1T8GUcNOixdQ46wyCNDlcGA=s64"
     }
   ],
-  "pinnedArtifactIds": [],
-  "updatedAt": "2026-07-13T19:12:38.828Z"
+  "pinnedArtifactIds": [
+    "created-artifact-1783969757315"
+  ],
+  "updatedAt": "2026-07-13T19:43:01.692Z"
 }

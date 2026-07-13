@@ -4,38 +4,38 @@
   "data": {
     "tasks": [
       {
-        "id": "task-ollie-1",
-        "title": "Implement ScaNN vector index in Tasks table",
-        "description": "Set up the native approximate nearest neighbor vector index on Tasks table in Spanner with COSINE distance metrics.",
         "status": "todo",
-        "assignee": "yadavajay@google.com",
-        "priority": "P1"
+        "description": "Set up the native approximate nearest neighbor vector index on Tasks table in Spanner with COSINE distance metrics.",
+        "priority": "P1",
+        "title": "Implement ScaNN vector index in Tasks table",
+        "id": "task-ollie-1",
+        "assignee": "yadavajay@google.com"
       },
       {
-        "id": "task-ollie-2",
-        "title": "Design Wiz UI Task Board for Ollie FE",
         "description": "Build the interactive, real-time workspace board view on Google Wiz UI framework following WDS principles.",
+        "title": "Design Wiz UI Task Board for Ollie FE",
+        "priority": "P0",
+        "id": "task-ollie-2",
         "status": "in_progress",
-        "assignee": "belindapreno@google.com",
-        "priority": "P0"
+        "assignee": "belindapreno@google.com"
       },
       {
-        "id": "task-ollie-3",
-        "title": "Verify Task Service Protobuf gRPC APIs",
-        "description": "Develop integration tests for CreateTask, GetTaskTree, and IngestExternalEvents RPC contracts.",
         "status": "done",
-        "assignee": "simonsok@google.com",
-        "priority": "P2"
+        "description": "Develop integration tests for CreateTask, GetTaskTree, and IngestExternalEvents RPC contracts.",
+        "priority": "P2",
+        "title": "Verify Task Service Protobuf gRPC APIs",
+        "id": "task-ollie-3",
+        "assignee": "simonsok@google.com"
       },
       {
-        "id": "task-ollie-4",
-        "title": "Integrate Memory Reflection Hook in Sobi Harness",
-        "description": "Add background listener triggering Gemini distillation on finished trajectories to save permanent memory facts.",
-        "status": "in_progress",
         "assignee": "mirjamvanesch@google.com",
-        "priority": "P1"
+        "status": "in_progress",
+        "description": "Add background listener triggering Gemini distillation on finished trajectories to save permanent memory facts.",
+        "priority": "P1",
+        "title": "Integrate Memory Reflection Hook in Sobi Harness",
+        "id": "task-ollie-4"
       }
     ]
   },
-  "updatedAt": "2026-07-13T19:11:08.643Z"
+  "updatedAt": "2026-07-13T20:00:45.646Z"
 }

@@ -306,6 +306,18 @@ export function NativeViewer({
                            nameLower === 'document.doc' || 
                            nameLower === 'presentation.gslides' || 
                            nameLower === 'spreadsheet.gsheet');
+
+  const isCreatedDocFromSpace = Boolean(
+    !file.isProactiveDraft &&
+    !file.isInferredTask &&
+    (
+      file.createdFromComposer ||
+      file.isDocJourney ||
+      file.createdFromSpace ||
+      (file.id && String(file.id).startsWith('created-artifact-')) ||
+      (file.name && file.name.toLowerCase() === 'document.doc')
+    )
+  );
   
   // Google Docs, Slides, and Sheets block iframe embedding on localhost (X-Frame-Options/auth).
   // Always use our interactive high-fidelity simulated native viewers (renderGoogleDocSim, etc.).
@@ -428,6 +440,23 @@ export function NativeViewer({
           </h1>
           <div className="markdown-body prose max-w-none text-[16px] text-slate-700 space-y-4 font-sans">
             <ReactMarkdown>{parsedContent}</ReactMarkdown>
+          </div>
+        </div>
+      );
+    }
+
+    if (isCreatedDocFromSpace) {
+      return (
+        <div className="w-full h-full bg-white dark:bg-[#18191B] flex flex-col overflow-y-auto p-8 md:p-12 select-text font-sans">
+          <div className="w-full max-w-4xl mx-auto text-left leading-[1.8] text-[16px] text-2c3e50 font-sans">
+            <div className="markdown-body prose max-w-none text-slate-800 dark:text-slate-100 focus:outline-none font-sans">
+              <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white border-none pb-4 mb-6 leading-tight tracking-normal text-left font-sans">
+                {title}
+              </h1>
+              <div className="text-[16px] text-slate-700 dark:text-slate-200 space-y-6 font-sans">
+                <ReactMarkdown>{parsedContent}</ReactMarkdown>
+              </div>
+            </div>
           </div>
         </div>
       );
