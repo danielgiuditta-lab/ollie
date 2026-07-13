@@ -1,8 +1,8 @@
 {
   "chatId": "space-1783956866036",
   "projectName": "Ollie",
-  "chatName": null,
-  "type": null,
+  "chatName": "Ollie",
+  "type": "workspace",
   "taskType": null,
   "associatedFileId": null,
   "associatedFileName": null,
@@ -114,7 +114,8 @@
     }
   ],
   "pinnedArtifactIds": [
-    "todo-card"
+    "todo-card",
+    "created-artifact-1783961615994"
   ],
-  "updatedAt": "2026-07-13T16:55:11.401Z"
+  "updatedAt": "2026-07-13T18:02:08.886Z"
 }

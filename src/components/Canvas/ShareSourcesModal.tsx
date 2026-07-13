@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Search, FolderKanban, Share2 } from 'lucide-react';
 import { getFileIcon } from '../Shared/FileIcon';
 import { Button } from '../Shared/Button';
@@ -89,9 +90,9 @@ export function ShareSourcesModal({
     onClose();
   };
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200 select-none"
       onClick={onClose}
     >
       <div 
@@ -245,6 +246,7 @@ export function ShareSourcesModal({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
