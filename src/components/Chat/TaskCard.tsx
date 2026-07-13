@@ -260,7 +260,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         className={`w-full rounded-3xl border cursor-pointer transition-all duration-300 ${
           isDark 
             ? 'bg-[#18191B] border-[#2B2D31] text-white hover:border-[#3B3D42]' 
-            : 'bg-white border-slate-100 hover:border-slate-200 text-slate-800 shadow-sm'
+            : 'bg-white border-[#E9EEF6] hover:border-slate-200 text-slate-800 shadow-card'
         }`}
         style={{
           boxSizing: 'border-box'

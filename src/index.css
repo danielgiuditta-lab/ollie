@@ -99,6 +99,10 @@
   --color-slate-650: var(--theme-text-slate-650);
   --color-2c3e50: var(--theme-text-2c3e50);
   --color-11151a: var(--theme-text-11151a);
+
+  --shadow-card: var(--theme-shadow-card, 0 0 8px 4px #F8FAFD);
+  --color-border-card: var(--theme-border-card, #E9EEF6);
+  --color-e9eef6: #E9EEF6;
 }
 
 .google-rainbow-rim {
@@ -136,13 +140,17 @@ html.dark, html.dark body {
 .glass-panel {
   background: rgba(255, 255, 255, 1);
   border: 1px solid #E9EEF6;
-  box-shadow: none;
+  box-shadow: var(--theme-shadow-card, 0 0 8px 4px #F8FAFD);
 }
 
 .dark .glass-panel {
   background: rgba(30, 31, 34, 1) !important;
   border: 1px solid #2B2D31 !important;
-  box-shadow: none;
+  box-shadow: var(--theme-shadow-card, 0 0 8px 4px rgba(0, 0, 0, 0.4)) !important;
+}
+
+.shadow-card {
+  box-shadow: var(--theme-shadow-card, 0 0 8px 4px #F8FAFD);
 }
 
 /* CSS Variables for Theming - Native browser-level theme token resolution */
@@ -164,6 +172,10 @@ html.dark, html.dark body {
   --theme-fff2e0: #FFF2E0;
   --theme-fbbc05: #fbbc05;
   
+  --theme-shadow-card: 0 0 8px 4px #F8FAFD;
+  --theme-border-card: #E9EEF6;
+  --theme-border-e9eef6: #E9EEF6;
+
   --theme-border-e2e8f0: #e2e8f0;
   --theme-border-slate-100: #f1f5f9;
   --theme-border-slate-150: #EEF2F6;
@@ -284,6 +296,10 @@ html.dark, html.dark body {
   --theme-fff2e0: rgba(245, 158, 11, 0.1);
   --theme-fbbc05: #F59E0B;
   
+  --theme-shadow-card: 0 0 8px 4px rgba(0, 0, 0, 0.4);
+  --theme-border-card: #2B2D31;
+  --theme-border-e9eef6: #2B2D31;
+
   --theme-border-e2e8f0: #2B2D31;
   --theme-border-slate-100: #2B2D31;
   --theme-border-slate-150: #2B2D31;

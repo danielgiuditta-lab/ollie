@@ -302,8 +302,8 @@ export function BotMessage({
           {text}
         </div>
 
-        <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-xs ${
-          isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-slate-200/80'
+        <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-card ${
+          isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-[#E9EEF6]'
         }`}>
           <div className="mb-2">
             <span 
@@ -468,8 +468,8 @@ export function BotMessage({
           {text}
         </div>
 
-        <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-xs ${
-          isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-slate-200/80'
+        <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-card ${
+          isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-[#E9EEF6]'
         }`}>
           <div className="mb-1">
             <span 

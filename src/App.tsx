@@ -4699,7 +4699,7 @@ export default function App() {
             projectName: projectName,
             selectedFile: targetArtifact,
             indexFileSelected: isHtml,
-            viewState: isHtml ? 'app' : 'files',
+            viewState: (isHtml ? 'app' : 'files') as any,
             taskType: isTodo ? 'inferred' : (targetArtifact.taskType || 'site'),
             type: isTodo ? 'inferred' : (targetArtifact.type || 'site'),
             associatedFileId: targetArtifact.id || targetArtifact.driveId,
@@ -5358,7 +5358,7 @@ export default function App() {
       )}
 
       {/* 3. Canvas Container (Everything else) */}
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-white dark:bg-[#1E1F22] border-t-0 border-r-0 border-b-0 border-l border-slate-200 dark:border-[#2B2D31] rounded-none p-0 z-20 shadow-[-4px_0_12px_rgba(0,0,0,0.03),_0_0_8px_rgba(0,0,0,0.02)] dark:shadow-[0_0_15px_5px_rgba(0,0,0,0.5)]">
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-white dark:bg-[#1E1F22] border-t-0 border-r-0 border-b-0 border-l border-[#E9EEF6] dark:border-[#2B2D31] rounded-none p-0 z-20 shadow-card">
         <CanvasHeader 
           projectName={projectName}
           projects={projects}

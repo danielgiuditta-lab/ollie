@@ -33,7 +33,7 @@ function runCollisionTest() {
   };
 
   // Replicate handleFileClick logic
-  const file = clickedChatObj;
+  const file: any = clickedChatObj;
   const isSpaceObject = typeof file === 'object' && file && Boolean(
     file.type?.includes('space') || 
     file.type === 'workspace' || 

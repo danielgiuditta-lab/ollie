@@ -244,14 +244,14 @@ export function SpaceDashboard({
             className={`min-w-[320px] h-[460px] rounded-3xl border relative group flex flex-col overflow-hidden transition-all duration-200 ${
               theme === 'dark'
                 ? 'bg-[#1E1F22] border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
-                : 'bg-white border-slate-100/80 shadow-[0_8px_30px_rgba(220,225,235,0.45)]'
+                : 'bg-white border-[#E9EEF6] shadow-card'
             } ${isDragOver ? 'ring-2 ring-blue-500 scale-[1.01]' : ''}`}
             onDragOver={(e) => handleDragOver(e, fileId)}
             onDragLeave={() => setDragOverCardId(null)}
             onDrop={(e) => handleDrop(e, fileId)}
           >
             {/* Header toolbar overlay (pointer-events-auto) */}
-            <div className="h-11 px-4 border-b border-slate-100 dark:border-neutral-800/80 flex items-center justify-between shrink-0 bg-slate-50/80 dark:bg-[#18191B]/80 backdrop-blur-sm z-20 pointer-events-auto">
+            <div className="h-11 px-4 border-b border-[#E9EEF6] dark:border-neutral-800/80 flex items-center justify-between shrink-0 bg-slate-50/80 dark:bg-[#18191B]/80 backdrop-blur-sm z-20 pointer-events-auto rounded-t-3xl">
               <div 
                 className="flex items-center gap-1.5 min-w-0 cursor-pointer group/title"
                 onClick={(e) => {

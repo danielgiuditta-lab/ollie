@@ -158,8 +158,8 @@ export function Composer({
 
           <div className={`w-full h-[72px] ${
             isGroupChat
-              ? (theme === 'dark' ? 'bg-[#18191B]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' : 'bg-slate-100/95 border-slate-200/80 shadow-[0_8px_30px_rgba(220,225,235,0.45)]')
-              : (theme === 'dark' ? 'bg-[#1E1F22]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' : 'bg-white/95 border-slate-100/80 shadow-[0_8px_30px_rgba(220,225,235,0.45)]')
+              ? (theme === 'dark' ? 'bg-[#18191B]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' : 'bg-slate-100/95 border-[#E9EEF6] shadow-card')
+              : (theme === 'dark' ? 'bg-[#1E1F22]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' : 'bg-white/95 border-[#E9EEF6] shadow-card')
           } rounded-full px-5 border flex items-center gap-3.5 backdrop-blur-md transition-all duration-300`}>
             {/* Left Plus Button */}
             <button 
@@ -231,9 +231,9 @@ export function Composer({
         /* ORIGINAL SIDE STATE VISUALS (Group Chat background aware) */
         <div className={`w-full ${
           isGroupChat
-            ? (theme === 'dark' ? 'bg-[#18191B] border-[#2B2D31]' : 'bg-slate-100/90 border-slate-200/80')
-            : (theme === 'dark' ? 'bg-[#131416] border-[#2B2D31]' : 'bg-white border-gray-100')
-        } rounded-3xl p-3 px-4 shadow-sm border flex flex-col gap-2 transition-all duration-300`}>
+            ? (theme === 'dark' ? 'bg-[#18191B] border-[#2B2D31]' : 'bg-slate-100/90 border-[#E9EEF6]')
+            : (theme === 'dark' ? 'bg-[#131416] border-[#2B2D31]' : 'bg-white border-[#E9EEF6]')
+        } rounded-3xl p-3 px-4 shadow-card border flex flex-col gap-2 transition-all duration-300`}>
           <textarea
             placeholder={placeholder || "what do you want to build?"}
             className={`w-full bg-transparent resize-none outline-none text-sm ${theme === 'dark' ? 'text-[#E3E3E3] placeholder-[#9E9E9E]' : 'text-gray-800 placeholder-gray-500'} py-2 max-h-32 min-h-12 border-none ring-0 focus:ring-0 focus:border-none focus:outline-none`}
