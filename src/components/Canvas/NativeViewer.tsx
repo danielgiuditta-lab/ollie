@@ -1416,23 +1416,25 @@ export function NativeViewer({
     // 1b. Premium Native / High-Fidelity Simulated Editors for Google Workspace files
     if (mode === 'preview') {
       if (isGoogleSlide || isSlide) {
-        const slideDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '') : undefined);
-        const hasNativeUrl = slideDriveId && isRealDriveId(slideDriveId);
-        const nativeSlideUrl = hasNativeUrl 
-          ? `https://docs.google.com/presentation/d/${slideDriveId}/preview?rm=minimal` 
-          : (file.embedUrl || file.previewUrl || file.url);
+        if (!isPreviewCard) {
+          const slideDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '') : undefined);
+          const hasNativeUrl = slideDriveId && isRealDriveId(slideDriveId);
+          const nativeSlideUrl = hasNativeUrl 
+            ? `https://docs.google.com/presentation/d/${slideDriveId}/preview?rm=minimal` 
+            : (file.embedUrl || file.previewUrl || file.url);
 
-        if (nativeSlideUrl) {
-          return (
-            <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
-              <iframe 
-                src={nativeSlideUrl}
-                className="w-full h-full border-none bg-white shadow-none"
-                allow="autoplay; fullscreen"
-                title={file.name}
-              />
-            </div>
-          );
+          if (nativeSlideUrl) {
+            return (
+              <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+                <iframe 
+                  src={nativeSlideUrl}
+                  className="w-full h-full border-none bg-white shadow-none"
+                  allow="autoplay; fullscreen"
+                  title={file.name}
+                />
+              </div>
+            );
+          }
         }
 
         return renderGoogleSlidesSim();
@@ -1872,6 +1874,14 @@ export function NativeViewer({
   const isTargetIframe = isIframeViewer && driveId && mode === 'preview';
 
   if (isPreviewCard && !isTargetIframe) {
+    if (hideHeader) {
+      return (
+        <div className="w-full h-full relative overflow-hidden select-none pointer-events-none rounded-2xl">
+          {renderContent()}
+        </div>
+      );
+    }
+
     const virtualWidth = 600;
     const virtualHeight = 350;
     const activeWidth = previewDims.width > 0 ? previewDims.width : 240;
