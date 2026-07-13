@@ -1610,7 +1610,7 @@ export function HomeLanding({
   }
 
   return (
-    <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-y-auto pt-6 px-6 pb-16 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
+    <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-hidden p-4 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
       <div className="w-full h-full relative">
         <SpaceDashboard
           spaceId={activeSpaceId || 'home'}

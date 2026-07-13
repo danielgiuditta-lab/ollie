@@ -184,17 +184,21 @@ export function SpaceDashboard({
     e.preventDefault();
     e.stopPropagation();
     setDragOverCardId(null);
-    if (!draggedCardId || draggedCardId === targetId) return;
+    const sourceId = draggedCardId || activeMenuCardId;
+    if (!sourceId || sourceId === targetId) return;
 
-    const currentIndex = pinnedArtifactIds.indexOf(draggedCardId);
+    const currentIndex = pinnedArtifactIds.indexOf(sourceId);
     const targetIndex = pinnedArtifactIds.indexOf(targetId);
     if (currentIndex === -1 || targetIndex === -1) return;
 
     const newOrder = [...pinnedArtifactIds];
-    newOrder.splice(currentIndex, 1);
-    newOrder.splice(targetIndex, 0, draggedCardId);
+    const temp = newOrder[currentIndex];
+    newOrder[currentIndex] = newOrder[targetIndex];
+    newOrder[targetIndex] = temp;
+    
     onReorderPins(newOrder);
     setDraggedCardId(null);
+    setActiveMenuCardId(null);
   };
 
   const totalCardsCount = pinnedFiles.length;
@@ -219,17 +223,28 @@ export function SpaceDashboard({
     );
   }
 
+  let gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-1";
+  if (totalCardsCount === 1) {
+    gridLayoutClass = "grid-cols-1 grid-rows-1";
+  } else if (totalCardsCount === 2) {
+    gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-1";
+  } else if (totalCardsCount <= 4) {
+    gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-2";
+  } else {
+    gridLayoutClass = "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr";
+  }
+
   return (
     <div 
       ref={containerRef}
-      className="w-full h-full flex flex-wrap gap-4 p-6 overflow-y-auto content-start items-start select-none"
+      className={`w-full h-full grid ${gridLayoutClass} gap-4 p-4 overflow-y-auto select-none items-stretch justify-stretch`}
     >
       {pinnedFiles.map((file, idx) => {
         const fileId = file.id || file.driveId || 'file-' + idx;
-        const widthPct = cardWidths[fileId] || (totalCardsCount === 1 ? 100 : 48);
         const isTodo = file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos';
         const isHtml = !isTodo && file.name && (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase() === 'index.html');
         const isDragOver = dragOverCardId === fileId;
+        const isSelected = activeMenuCardId === fileId || draggedCardId === fileId;
         let todoTitle = 'To-dos';
         if (isTodo && file.content) {
           try {
@@ -260,78 +275,128 @@ export function SpaceDashboard({
         }
 
         return (
-          <Card
-            key={fileId}
-            style={{ width: `calc(${widthPct}% - 8px)` }}
-            theme={theme}
-            isDragOver={isDragOver}
-            onDragOver={(e) => handleDragOver(e, fileId)}
-            onDragLeave={() => setDragOverCardId(null)}
-            onDrop={(e) => handleDrop(e, fileId)}
-            header={
-              <CardHeader
-                title={cardTitle}
-                count={isTodo && todoItems && todoItems.length > 0 ? todoItems.length : undefined}
-                onTitleClick={(e) => {
-                  e.stopPropagation();
-                  onSelectArtifact(file);
-                }}
-                titleTooltip="Click to open artifact authoring chat"
-                theme={theme}
-                actions={
-                  <div className="relative">
-                    <button
-                      type="button"
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, fileId)}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveMenuCardId(activeMenuCardId === fileId ? null : fileId);
-                      }}
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-neutral-800 transition cursor-grab active:cursor-grabbing"
-                      title="Drag to reorder or click for options"
-                    >
-                      <MoreHorizontal size={16} />
-                    </button>
-
-                    {/* Dropdown Menu */}
-                    {activeMenuCardId === fileId && (
-                      <div 
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute right-0 top-9 w-36 rounded-xl bg-white dark:bg-[#2B2D31] border border-slate-200 dark:border-white/10 shadow-xl p-1 z-30 animate-in fade-in zoom-in-95 duration-100"
+          <div key={fileId} className="relative w-full h-full min-h-0 min-w-0 flex flex-col">
+            {/* Blue Destination Indicator Line when dragging over target card */}
+            {isDragOver && (
+              <div className="absolute -top-2 left-0 right-0 h-1 bg-[#3186FF] rounded-full shadow-[0_0_8px_rgba(49,134,255,0.8)] z-30 pointer-events-none animate-pulse" />
+            )}
+            <Card
+              theme={theme}
+              isSelected={isSelected}
+              isDragOver={isDragOver}
+              className="w-full h-full min-h-0 flex-1"
+              onDragOver={(e) => handleDragOver(e, fileId)}
+              onDragLeave={() => setDragOverCardId(null)}
+              onDrop={(e) => handleDrop(e, fileId)}
+              header={
+                <CardHeader
+                  title={cardTitle}
+                  count={isTodo && todoItems && todoItems.length > 0 ? todoItems.length : undefined}
+                  onTitleClick={(e) => {
+                    e.stopPropagation();
+                    onSelectArtifact(file);
+                  }}
+                  titleTooltip="Click to open artifact authoring chat"
+                  theme={theme}
+                  actions={
+                    <div className="relative">
+                      <button
+                        type="button"
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, fileId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenuCardId(activeMenuCardId === fileId ? null : fileId);
+                        }}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-grab active:cursor-grabbing ${
+                          isSelected
+                            ? 'text-[#3186FF] bg-blue-50 dark:bg-blue-950/50'
+                            : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-neutral-800'
+                        }`}
+                        title="Drag to reorder or click for options"
                       >
-                        <button
-                          onClick={() => {
-                            setActiveMenuCardId(null);
-                            onSelectArtifact(file);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer"
+                        <MoreHorizontal size={16} />
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {activeMenuCardId === fileId && (
+                        <div 
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-9 w-36 rounded-xl bg-white dark:bg-[#2B2D31] border border-slate-200 dark:border-white/10 shadow-xl p-1 z-30 animate-in fade-in zoom-in-95 duration-100"
                         >
-                          <Edit2 size={14} />
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setActiveMenuCardId(null);
-                            onRemovePin(fileId);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer"
-                        >
-                          <Trash2 size={14} />
-                          <span>Remove</span>
-                        </button>
+                          <button
+                            onClick={() => {
+                              setActiveMenuCardId(null);
+                              onSelectArtifact(file);
+                            }}
+                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer"
+                          >
+                            <Edit2 size={14} />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setActiveMenuCardId(null);
+                              onRemovePin(fileId);
+                            }}
+                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer"
+                          >
+                            <Trash2 size={14} />
+                            <span>Remove</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  }
+                />
+              }
+            >
+              {/* Interactive Live Viewport */}
+              <div className="flex-1 w-full h-full relative overflow-hidden pointer-events-auto select-auto bg-slate-50/30 dark:bg-black/20">
+                <div className="absolute inset-0 w-full h-full">
+                  {isTodo ? (
+                    isHtml ? (
+                      <AppView
+                        sandboxUrl={sandboxUrl}
+                        files={sandboxFiles}
+                        envId={envId}
+                        selectedFile={file}
+                        theme={theme}
+                      />
+                    ) : (
+                      <div className="w-full h-full overflow-y-auto p-4 space-y-3">
+                        {todoItems && todoItems.map((item) => (
+                          <InferredTaskCard 
+                            key={item.id}
+                            item={item}
+                            getFileIcon={getFileIcon || (() => '')}
+                            onClick={() => {
+                              if (onProactiveTaskClick) {
+                                onProactiveTaskClick(item);
+                              } else {
+                                if (item.filesToLoad && setSandboxFiles && setSelectedFile) {
+                                  setSandboxFiles(item.filesToLoad);
+                                  setSelectedFile(item.filesToLoad[0]);
+                                } else if (setSandboxFiles && setSelectedFile) {
+                                  setSandboxFiles([]);
+                                  setSelectedFile(null);
+                                }
+                                if (setProjectName) {
+                                  setProjectName(item.workspace.split(' · ')[0]);
+                                }
+                                if (setViewState) {
+                                  setViewState('files');
+                                }
+                                if (setActiveSidebar) {
+                                  setActiveSidebar('gemini');
+                                }
+                              }
+                            }}
+                          />
+                        ))}
                       </div>
-                    )}
-                  </div>
-                }
-              />
-            }
-          >
-            {/* Interactive Live Viewport */}
-            <div className="flex-1 w-full h-full relative overflow-hidden pointer-events-auto select-auto bg-slate-50/30 dark:bg-black/20">
-              <div className="absolute inset-0 w-full h-full">
-                {isTodo ? (
-                  isHtml ? (
+                    )
+                  ) : isHtml ? (
                     <AppView
                       sandboxUrl={sandboxUrl}
                       files={sandboxFiles}
@@ -340,73 +405,17 @@ export function SpaceDashboard({
                       theme={theme}
                     />
                   ) : (
-                    <div className="w-full h-full overflow-y-auto p-4 space-y-3">
-                      {todoItems && todoItems.map((item) => (
-                        <InferredTaskCard 
-                          key={item.id}
-                          item={item}
-                          getFileIcon={getFileIcon || (() => '')}
-                          onClick={() => {
-                            if (onProactiveTaskClick) {
-                              onProactiveTaskClick(item);
-                            } else {
-                              if (item.filesToLoad && setSandboxFiles && setSelectedFile) {
-                                setSandboxFiles(item.filesToLoad);
-                                setSelectedFile(item.filesToLoad[0]);
-                              } else if (setSandboxFiles && setSelectedFile) {
-                                setSandboxFiles([]);
-                                setSelectedFile(null);
-                              }
-                              if (setProjectName) {
-                                setProjectName(item.workspace.split(' · ')[0]);
-                              }
-                              if (setViewState) {
-                                setViewState('files');
-                              }
-                              if (setActiveSidebar) {
-                                setActiveSidebar('gemini');
-                              }
-                            }
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )
-                ) : isHtml ? (
-                  <AppView
-                    sandboxUrl={sandboxUrl}
-                    files={sandboxFiles}
-                    envId={envId}
-                    selectedFile={file}
-                    theme={theme}
-                  />
-                ) : (
-                  <NativeViewer
-                    file={file}
-                    hideHeader={true}
-                    mode="preview"
-                    theme={theme}
-                  />
-                )}
+                    <NativeViewer
+                      file={file}
+                      hideHeader={true}
+                      mode="preview"
+                      theme={theme}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-
-            {/* Vertical resize handles */}
-            {idx > 0 && (
-              <div
-                onMouseDown={(e) => startResizing(e, fileId, idx, 'left')}
-                className="absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-20 hover:bg-blue-500/40 transition-colors"
-                title="Drag to resize width"
-              />
-            )}
-            {idx < pinnedFiles.length - 1 && (
-              <div
-                onMouseDown={(e) => startResizing(e, fileId, idx, 'right')}
-                className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize z-20 hover:bg-blue-500/40 transition-colors"
-                title="Drag to resize width"
-              />
-            )}
-          </Card>
+            </Card>
+          </div>
         );
       })}
     </div>
