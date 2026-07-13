@@ -280,20 +280,14 @@ export function SpaceDashboard({
               setIsWidgetModalOpen(true);
             }
           }}
-          className="group max-w-lg p-10 rounded-3xl border border-dashed border-slate-200 dark:border-neutral-800 hover:border-[#3186FF] dark:hover:border-[#3186FF] bg-white/40 dark:bg-[#18191B]/40 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 backdrop-blur-sm flex flex-col items-center gap-5 shadow-xs transition-all duration-300 cursor-pointer"
+          className="group flex flex-col items-center justify-center cursor-pointer select-none"
         >
-          <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-950/40 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center text-[#3186FF] shadow-xs">
-            <Plus size={28} className="stroke-[2.5px]" />
-          </div>
-          <div className="space-y-2 text-center">
-            <NullTitle theme={theme}>
-              Add a Widget to your Dashboard
-            </NullTitle>
-            <p className="text-sm text-slate-500 dark:text-neutral-400 leading-relaxed font-sans max-w-md mx-auto">
-              {availableWidgets.length > 0 
-                ? "Select space-scoped widgets to display or build a new custom tool."
-                : "Create a custom tool or interactive widget with Ollie."}
-            </p>
+          <NullTitle theme={theme}>
+            Add a Widget to your Dashboard
+          </NullTitle>
+
+          <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 group-hover:scale-110 transition-transform duration-200 flex items-center justify-center text-[#3186FF] shadow-2xs mt-6">
+            <Plus size={24} className="stroke-[2.5px]" />
           </div>
         </div>
 

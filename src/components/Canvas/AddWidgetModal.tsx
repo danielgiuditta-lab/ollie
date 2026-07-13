@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { X, Search, Plus, Check, Sparkles, Pin } from 'lucide-react';
-import { FileIcon } from '../Shared/FileIcon';
+import React, { useState, useEffect } from 'react';
+import { X, Search } from 'lucide-react';
+import { getFileIcon } from '../Shared/FileIcon';
 import { Button } from '../Shared/Button';
 
 interface AddWidgetModalProps {
@@ -24,51 +24,92 @@ export function AddWidgetModal({
   onCreateCustomTool,
   theme = 'light'
 }: AddWidgetModalProps) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const isDark = theme === 'dark';
 
+  // Unchecked by default when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedIds([]);
+      setSearchQuery('');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  const filteredWidgets = availableWidgets.filter(item => {
+  // Filter out folders
+  const nonFolderWidgets = availableWidgets.filter(item => {
     if (!item) return false;
-    let name = item.name || item.title || item.chatName || '';
-    if (item.id === 'todo-card' || item.isInferredTask) name = 'To-dos';
-    return name.toLowerCase().includes(searchQuery.toLowerCase());
+    const mimeLower = (item.mimeType || item.type || '').toLowerCase();
+    if (mimeLower.includes('folder') || item.type === 'folder' || item.isFolder) {
+      return false;
+    }
+    return true;
   });
 
-  const getWidgetTitle = (item: any) => {
-    if (!item) return 'Widget';
-    if (item.id === 'todo-card' || item.isInferredTask || item.name === 'inferred_tasks.json') {
-      return 'To-dos Tracker';
-    }
-    if (item.title) return item.title;
-    if (item.chatName && item.chatName !== 'Custom Tool') return item.chatName;
-    if (item.name) {
-      return item.name.replace(/\.(html|htm|gdoc|gslides|gsheet|csv|doc|docx)$/i, '');
-    }
-    return 'Widget';
-  };
-
-  const isWidgetPinned = (item: any) => {
-    const fileId = item.id || item.driveId || (item.name ? item.name : null);
-    if (!fileId) return false;
-    return pinnedArtifactIds.some(id => 
-      id === fileId || 
-      String(id).toLowerCase() === String(fileId).toLowerCase() ||
-      (fileId === 'todo-card' && (id === 'todo-card' || id.includes('inferred')))
+  const isInteractiveArtifact = (item: any) => {
+    if (!item) return false;
+    const nameLower = (item.name || item.title || item.chatName || '').toLowerCase();
+    const mimeLower = (item.mimeType || item.type || '').toLowerCase();
+    
+    return (
+      item.id === 'todo-card' ||
+      item.isInferredTask ||
+      nameLower.endsWith('.html') ||
+      nameLower === 'index.html' ||
+      nameLower.includes('custom tool') ||
+      nameLower.includes('kanban') ||
+      nameLower.includes('inferred') ||
+      mimeLower.includes('site') ||
+      mimeLower.includes('inferred')
     );
   };
 
-  const handleTogglePin = (item: any) => {
-    const fileId = item.id || item.driveId || item.name;
-    if (isWidgetPinned(item)) {
-      onUnpinWidget(fileId);
+  // Filter by search and sort interactive artifacts at top
+  const filteredItems = nonFolderWidgets
+    .filter(item => {
+      const name = item.name || item.title || item.chatName || item.filename || '';
+      return name.toLowerCase().includes(searchQuery.toLowerCase());
+    })
+    .sort((a, b) => {
+      const aInteractive = isInteractiveArtifact(a);
+      const bInteractive = isInteractiveArtifact(b);
+      if (aInteractive && !bInteractive) return -1;
+      if (!aInteractive && bInteractive) return 1;
+      return 0;
+    });
+
+  const toggleSelectItem = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    const allFilteredIds = filteredItems
+      .map(item => item.id || item.driveId || item.name)
+      .filter(Boolean);
+
+    if (selectedIds.length === allFilteredIds.length) {
+      setSelectedIds([]);
     } else {
-      onPinWidget(item);
+      setSelectedIds(allFilteredIds);
     }
   };
 
-  const handleCreateToolClick = () => {
+  const handleAddSelected = () => {
+    if (selectedIds.length === 0) return;
+    selectedIds.forEach(id => {
+      const item = nonFolderWidgets.find(f => (f.id || f.driveId || f.name) === id);
+      if (item) {
+        onPinWidget(item);
+      }
+    });
+    onClose();
+  };
+
+  const handleCreateCustomTool = () => {
     if (onCreateCustomTool) {
       onCreateCustomTool();
     }
@@ -81,24 +122,19 @@ export function AddWidgetModal({
       onClick={onClose}
     >
       <div 
-        className={`w-full max-w-lg rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 border-none ${
+        className={`w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 border-none ${
           isDark ? 'bg-[#1E1F22] text-white' : 'bg-white text-slate-800'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 pt-5 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-white/10">
-          <div>
-            <h2 
-              className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white"
-              style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
-            >
-              Add a Widget to your Dashboard
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-neutral-400 font-sans mt-0.5">
-              Pin widgets from this space or build a custom interactive tool.
-            </p>
-          </div>
+        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+          <h2 
+            className="text-lg font-normal tracking-tight leading-snug"
+            style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+          >
+            Add a Widget to your Dashboard
+          </h2>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer border-none bg-transparent"
@@ -107,134 +143,101 @@ export function AddWidgetModal({
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
-          {/* Option: Create Custom Tool */}
-          <div
-            onClick={handleCreateToolClick}
-            className="group p-4 rounded-2xl border border-blue-200 dark:border-blue-900/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-purple-50/50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-purple-950/20 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-200 cursor-pointer flex items-center justify-between shadow-xs"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200">
-                <Sparkles size={20} />
-              </div>
-              <div>
-                <h4 
-                  className="text-sm font-semibold text-blue-950 dark:text-blue-200"
-                  style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
-                >
-                  Build a custom tool
-                </h4>
-                <p className="text-xs text-blue-800/70 dark:text-blue-300/70">
-                  Ask Ollie to generate a custom app or widget in a new chat
-                </p>
-              </div>
+        {/* Content Body */}
+        <div className="p-4 flex flex-col gap-3">
+          {/* Search bar & Select All toggle */}
+          <div className="flex items-center gap-2">
+            <div className={`flex-1 h-9 px-3 rounded-full flex items-center gap-2 ${
+              isDark ? 'bg-[#282A2D]' : 'bg-slate-100/80'
+            }`}>
+              <Search size={16} className="text-slate-400 shrink-0" />
+              <input
+                type="text"
+                placeholder="Filter items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent border-none outline-none text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400"
+              />
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-blue-600 group-hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1 transition-colors">
-              <Plus size={14} />
-              <span>Create</span>
-            </div>
+            {filteredItems.length > 0 && (
+              <button
+                onClick={toggleSelectAll}
+                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline px-2 cursor-pointer border-none bg-transparent"
+                style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+              >
+                {selectedIds.length === filteredItems.length ? 'Deselect All' : 'Select All'}
+              </button>
+            )}
           </div>
 
-          {/* Section Divider / Label */}
-          {availableWidgets.length > 0 && (
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
-                  Available Space Widgets ({availableWidgets.length})
-                </span>
-                {availableWidgets.length > 3 && (
-                  <div className={`h-8 px-3 rounded-full flex items-center gap-2 ${
-                    isDark ? 'bg-[#282A2D]' : 'bg-slate-100'
-                  }`}>
-                    <Search size={14} className="text-slate-400" />
+          {/* Library Items Checklist (same cells and styling as ShareSourcesModal) */}
+          <div className="max-h-64 overflow-y-auto bg-transparent p-0 flex flex-col gap-1.5 scrollbar-thin">
+            {filteredItems.length === 0 ? (
+              <div className="py-6 text-center text-xs text-slate-400 font-medium">
+                No matching artifacts found
+              </div>
+            ) : (
+              filteredItems.map(item => {
+                const itemId = item.id || item.driveId || item.name;
+                const isChecked = selectedIds.includes(itemId);
+                let itemName = item.name || item.title || item.chatName || item.filename || 'Untitled';
+                if (item.id === 'todo-card' || item.isInferredTask || item.name === 'inferred_tasks.json') {
+                  itemName = 'To-dos Tracker';
+                }
+
+                return (
+                  <div
+                    key={itemId}
+                    onClick={() => toggleSelectItem(itemId)}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl cursor-pointer transition-colors ${
+                      isChecked 
+                        ? (isDark ? 'bg-blue-950/40 text-blue-100' : 'bg-blue-50/80 text-blue-900')
+                        : (isDark ? 'bg-[#282A2D] hover:bg-[#35373A] text-slate-200' : 'bg-slate-100/80 hover:bg-slate-200/70 text-slate-800')
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                      <div className="shrink-0 flex items-center justify-center">
+                        {getFileIcon(itemName, item.mimeType || item.type, 18)}
+                      </div>
+                      <span 
+                        className="text-xs font-medium truncate"
+                        style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+                      >
+                        {itemName}
+                      </span>
+                    </div>
+
                     <input
-                      type="text"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-24 bg-transparent border-none outline-none text-xs font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400"
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => {}}
+                      className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4 cursor-pointer shrink-0"
                     />
                   </div>
-                )}
-              </div>
-
-              {/* Widgets List */}
-              <div className="flex flex-col gap-2">
-                {filteredWidgets.length === 0 ? (
-                  <div className="py-6 text-center text-xs text-slate-400 font-medium">
-                    No matching widgets found
-                  </div>
-                ) : (
-                  filteredWidgets.map((item, idx) => {
-                    const pinned = isWidgetPinned(item);
-                    const title = getWidgetTitle(item);
-                    const mimeType = item.mimeType || (item.name?.endsWith('.html') ? 'text/html' : undefined);
-
-                    return (
-                      <div
-                        key={item.id || item.driveId || idx}
-                        className={`flex items-center justify-between p-3.5 rounded-2xl transition-all ${
-                          isDark 
-                            ? 'bg-[#282A2D] hover:bg-[#323438]' 
-                            : 'bg-slate-50 hover:bg-slate-100/80 border border-slate-100'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0 pr-2">
-                          <div className="w-9 h-9 rounded-xl bg-white dark:bg-[#1E1F22] shadow-2xs border border-slate-200/50 dark:border-white/5 flex items-center justify-center shrink-0">
-                            <FileIcon fileName={item.name || title} mimeType={mimeType} size={18} />
-                          </div>
-                          <div className="min-w-0">
-                            <h4 
-                              className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate"
-                              style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}
-                            >
-                              {title}
-                            </h4>
-                            <span className="text-[11px] text-slate-400 dark:text-neutral-400 capitalize">
-                              {item.id === 'todo-card' || item.isInferredTask ? 'Task Tracker' : (item.mimeType ? item.mimeType.split('.').pop()?.replace('vnd.google-apps.', '') : 'Interactive Tool')}
-                            </span>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => handleTogglePin(item)}
-                          className={`h-8 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border-none ${
-                            pinned
-                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40'
-                              : 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/60 text-[#3186FF] dark:text-blue-400'
-                          }`}
-                        >
-                          {pinned ? (
-                            <>
-                              <Check size={14} className="stroke-[2.5px]" />
-                              <span>Pinned</span>
-                            </>
-                          ) : (
-                            <>
-                              <Pin size={14} />
-                              <span>Pin Widget</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 flex items-center justify-end border-t border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-[#18191B]/50">
+        {/* Stacked CTAs in Footer */}
+        <div className="px-4 pb-4 pt-1 flex flex-col gap-2 w-full">
+          <Button
+            variant="primary"
+            theme={theme}
+            onClick={handleCreateCustomTool}
+            className="w-full h-10 text-xs font-semibold"
+          >
+            Make a custom tool
+          </Button>
           <Button
             variant="secondary"
             theme={theme}
-            onClick={onClose}
-            className="h-9 px-4 text-xs font-semibold"
+            disabled={selectedIds.length === 0}
+            onClick={handleAddSelected}
+            className="w-full h-10 text-xs font-semibold"
           >
-            Done
+            Add selected
           </Button>
         </div>
       </div>
