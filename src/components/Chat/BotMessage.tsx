@@ -215,10 +215,29 @@ export function BotMessage({
   }
 
   if (isProactiveReview && proactiveTask) {
-    const isApproved = proactiveTask.status === 'done' || proactiveTask.status === 'approved';
+    const [localApproved, setLocalApproved] = React.useState(false);
+    const isApproved = localApproved || proactiveTask.status === 'done' || proactiveTask.status === 'approved';
     const sourceName = proactiveTask.sourceName || proactiveTask.workspace || 'Google Workspace';
     const proposalTitle = proactiveTask.titleDone || proactiveTask.title || 'proposed changes';
     
+    const handleApprove = () => {
+      setLocalApproved(true);
+      if (onApproveProactive) {
+        onApproveProactive();
+      }
+    };
+
+    const handleFeedback = () => {
+      if (onFeedbackProactive) {
+        onFeedbackProactive();
+      } else {
+        const composerInput = document.querySelector('textarea[placeholder*="Ask Gemini"], textarea[placeholder*="Ask anything"], textarea') as HTMLTextAreaElement | null;
+        if (composerInput) {
+          composerInput.focus();
+        }
+      }
+    };
+
     return (
       <div className="flex flex-col gap-3 w-full animate-fade-in-up">
         <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
@@ -231,24 +250,16 @@ export function BotMessage({
           isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-slate-200/80'
         }`}>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <FileText className="w-5 h-5 text-blue-500 shrink-0" />
-              <span 
-                className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
-                style={{ fontFamily: '"Product Sans", "Google Sans", sans-serif' }}
-              >
-                Proactive Agent Draft
-              </span>
-            </div>
-            {isApproved ? (
+            <span 
+              className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
+              style={{ fontFamily: '"Product Sans", "Google Sans", sans-serif' }}
+            >
+              Proactive Agent Draft
+            </span>
+            {isApproved && (
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-xs font-semibold border border-emerald-200 dark:border-emerald-800">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Approved</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-xs font-semibold border border-amber-200 dark:border-amber-800 animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                <span>Waiting for review</span>
               </div>
             )}
           </div>
@@ -263,29 +274,28 @@ export function BotMessage({
           <div className={`h-px w-full my-1 ${isDark ? 'bg-[#3B3D42]' : 'bg-slate-100'}`} />
 
           <div className="flex items-center justify-end gap-3 pt-3">
-            {isApproved ? (
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-xs font-semibold border border-emerald-200 dark:border-emerald-800">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Approved & Merged to {sourceName}</span>
-              </div>
-            ) : (
-              <>
-                <Button 
-                  variant="secondary" 
-                  theme={theme} 
-                  onClick={onFeedbackProactive}
-                >
-                  Give feedback
-                </Button>
-                <Button 
-                  variant="primary" 
-                  theme={theme} 
-                  onClick={onApproveProactive}
-                >
-                  Approve
-                </Button>
-              </>
-            )}
+            <Button 
+              variant="secondary" 
+              theme={theme} 
+              onClick={handleFeedback}
+            >
+              Give feedback
+            </Button>
+            <Button 
+              variant={isApproved ? "secondary" : "primary"} 
+              theme={theme} 
+              onClick={handleApprove}
+              className={isApproved ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 cursor-pointer flex items-center gap-1.5" : "cursor-pointer"}
+            >
+              {isApproved ? (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Approved</span>
+                </>
+              ) : (
+                "Approve"
+              )}
+            </Button>
           </div>
         </div>
       </div>

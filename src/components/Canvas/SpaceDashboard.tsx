@@ -283,7 +283,7 @@ export function SpaceDashboard({
           className="group flex flex-col items-center justify-center cursor-pointer select-none"
         >
           <NullTitle theme={theme}>
-            Add a Widget to your Dashboard
+            Add a Widget <br /> to your Dashboard
           </NullTitle>
 
           <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 group-hover:scale-110 transition-transform duration-200 flex items-center justify-center text-[#3186FF] shadow-2xs mt-6">

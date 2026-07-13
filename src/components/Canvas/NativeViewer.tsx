@@ -219,34 +219,40 @@ export function NativeViewer({
   const nameLower = file.name.toLowerCase();
   
   const isGoogleDoc = 
+    file.type === 'doc' ||
+    file.taskType === 'doc' ||
     (file.mimeType && (
       file.mimeType.toLowerCase().includes('vnd.google-apps.document') ||
-      file.mimeType.toLowerCase().includes('officedocument.wordprocessingml') ||
+      file.mimeType.toLowerCase().includes('wordprocessingml') ||
       file.mimeType.toLowerCase().includes('msword') ||
+      file.mimeType.toLowerCase().includes('text/plain') ||
       file.mimeType.toLowerCase().includes('gdoc')
     )) ||
     nameLower.endsWith('.gdoc') ||
     nameLower.endsWith('.docx') ||
     nameLower.endsWith('.doc') ||
+    nameLower.endsWith('.txt') ||
     nameLower.includes('suppliers') ||
     nameLower.includes('proposal') ||
     nameLower.includes('report') ||
-    nameLower.includes('contract');
+    nameLower.includes('contract') ||
+    nameLower.includes('document') ||
+    nameLower.includes('drive');
 
   const isGoogleSlide = 
-    (file.mimeType && (
-      file.mimeType.toLowerCase().includes('vnd.google-apps.presentation') ||
-      file.mimeType.toLowerCase().includes('officedocument.presentationml') ||
-      file.mimeType.toLowerCase().includes('ms-powerpoint') ||
-      file.mimeType.toLowerCase().includes('slides') ||
-      file.mimeType.toLowerCase().includes('presentation')
-    )) ||
-    nameLower.endsWith('.gslides') ||
-    nameLower.endsWith('.pptx') ||
-    nameLower.endsWith('.ppt') ||
-    nameLower.includes('deck') ||
-    nameLower.includes('pitch') ||
-    nameLower.includes('slides');
+    !isGoogleDoc && (
+      file.type === 'slide' ||
+      file.taskType === 'slide' ||
+      nameLower.endsWith('.gslides') ||
+      nameLower.endsWith('.pptx') ||
+      nameLower.endsWith('.ppt') ||
+      (file.mimeType && (
+        file.mimeType.toLowerCase().includes('vnd.google-apps.presentation') ||
+        file.mimeType.toLowerCase().includes('officedocument.presentationml') ||
+        file.mimeType.toLowerCase().includes('ms-powerpoint') ||
+        file.mimeType.toLowerCase().includes('presentation')
+      ))
+    );
 
   const isGoogleSheet = 
     (file.mimeType && (
@@ -277,9 +283,9 @@ export function NativeViewer({
     nameLower.includes('proposal') ||
     nameLower.includes('doc');
 
-  const isSlide = isGoogleSlide || nameLower.includes('presentation');
+  const isSlide = isGoogleSlide || nameLower.includes('presentation') || file.type === 'slide' || file.taskType === 'slide';
   
-  const isNativeGoogleFile = isGoogleDoc || isGoogleSlide || isGoogleSheet;
+  const isNativeGoogleFile = isGoogleDoc || isGoogleSlide || isSlide || isGoogleSheet;
   
   const mode = propMode !== undefined ? propMode : (isNativeGoogleFile ? 'preview' : internalMode);
   const setMode = propMode !== undefined || isNativeGoogleFile ? () => {} : setInternalMode;
@@ -409,7 +415,7 @@ export function NativeViewer({
 
     const parsedContent = bodyParagraphs.join('\n');
 
-    if (hideHeader) {
+    if (hideHeader && isPreviewCard) {
       return (
         <div className="w-full h-full bg-white p-6 text-left leading-[1.65] text-[16px] text-2c3e50 font-sans overflow-y-auto select-text">
           <h1 className="text-3xl font-extrabold text-slate-850 tracking-tight mb-4 font-sans">
@@ -423,119 +429,16 @@ export function NativeViewer({
     }
 
     return (
-      <div className="w-full h-full bg-f8f9fa flex flex-col overflow-hidden text-slate-800 select-text font-sans">
-        {/* Mock Docs Ribbon Header */}
-        <div className="shrink-0 bg-white border-b border-slate-200 px-4 py-2 flex flex-col gap-1 select-none">
-          {/* Row 1: Title and Actions */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {/* Docs Blue Icon */}
-              <div className="bg-[#1a73e8] p-1.5 rounded-sm shadow-sm shrink-0">
-                <FileText size={18} className="text-white" />
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm text-slate-900 leading-none">{file.name}</span>
-                  <div className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[9px] font-bold">Simulated Doc</div>
-                </div>
-                {/* Menu items */}
-                <div className="flex items-center gap-3 text-[10px] text-slate-500 font-medium mt-1">
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">File</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Edit</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">View</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Insert</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Format</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Tools</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Help</span>
-                </div>
-              </div>
+      <div className="w-full h-full bg-[#f8f9fa] dark:bg-[#161719] flex flex-col overflow-y-auto p-8 select-text font-sans">
+        {/* Centered White Document Page */}
+        <div className="w-[794px] min-h-[1024px] mx-auto bg-white dark:bg-[#1E1F22] shadow-[0_1px_3px_1px_rgba(60,64,67,0.15),0_1px_2px_0_rgba(60,64,67,0.3)] border border-slate-200 dark:border-[#2B2D31] rounded-[2px] p-[80px] text-left relative leading-[1.8] text-[16px] text-2c3e50 font-sans">
+          <div className="markdown-body prose max-w-none text-slate-800 dark:text-slate-100 focus:outline-none font-sans">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white border-none pb-4 mb-6 leading-tight tracking-normal text-left font-sans">
+              {title}
+            </h1>
+            <div className="text-[16px] text-slate-700 dark:text-slate-200 space-y-6 font-sans">
+              <ReactMarkdown>{parsedContent}</ReactMarkdown>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-green-600 flex items-center gap-1 bg-green-50 border border-green-100 px-2 py-0.5 rounded-full font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                Autosaved to workspace
-              </span>
-              {onSave && (
-                <button
-                  onClick={() => onSave(file)}
-                  className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#1a73e8] hover:bg-blue-700 rounded-full transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                >
-                  <HardDrive size={13} />
-                  Save to Drive
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Row 2: Standard Google Docs Toolbar */}
-          <div className="flex items-center gap-1 py-1 mt-1 border-t border-slate-100 text-slate-600 overflow-x-auto scrollbar-hide shrink-0">
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><Undo size={14} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><Redo size={14} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><Printer size={14} /></button>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <div className="flex items-center hover:bg-slate-100 px-1.5 py-1 rounded cursor-pointer text-[11px] gap-1 font-medium">
-              <span>100%</span>
-              <ChevronDown size={10} />
-            </div>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <div className="flex items-center hover:bg-slate-100 px-1.5 py-1 rounded cursor-pointer text-[11px] gap-1 font-medium">
-              <span>Normal text</span>
-              <ChevronDown size={10} />
-            </div>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <div className="flex items-center hover:bg-slate-100 px-1.5 py-1 rounded cursor-pointer text-[11px] gap-1 font-medium font-sans">
-              <span>Google Sans</span>
-              <ChevronDown size={10} />
-            </div>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-150 px-1 py-0.5 rounded">
-              <span className="text-[11px] font-bold px-1 select-none">12</span>
-            </div>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer font-bold bg-slate-100 border border-slate-200"><Bold size={13} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer italic"><Italic size={13} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer underline"><Underline size={13} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer flex items-center justify-center gap-0.5"><Highlighter size={13} /><div className="w-2.5 h-1 bg-yellow-400 rounded-xs"></div></button>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer bg-slate-100/50"><AlignLeft size={13} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><AlignCenter size={13} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><AlignRight size={13} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><AlignJustify size={13} /></button>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><List size={13} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><ListOrdered size={13} /></button>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><Link size={13} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><ImageIcon size={13} /></button>
-          </div>
-        </div>
-
-        {/* Ruler */}
-        <div className="shrink-0 h-5 bg-f8f9fa border-b border-slate-200 flex items-center relative select-none">
-          <div className="absolute left-[132px] right-[132px] h-full flex items-center">
-            {/* Margins Ruler UI */}
-            <div className="h-1 bg-slate-300 w-full rounded-sm relative">
-              <div className="absolute left-0 top-1/2 -mt-1.5 h-3 bg-blue-600 rounded-sm" style={{ width: '2px' }}></div>
-              <div className="absolute right-0 top-1/2 -mt-1.5 h-3 bg-blue-600 rounded-sm" style={{ width: '2px' }}></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Workspace Document Canvas Scroll Container */}
-        <div className="flex-1 overflow-y-auto px-6 py-8 bg-f8f9fa flex flex-col justify-start">
-          {/* Centered White Document Page */}
-          <div className="w-[794px] min-h-[1024px] mx-auto bg-white shadow-[0_1px_3px_1px_rgba(60,64,67,0.15),0_1px_2px_0_rgba(60,64,67,0.3)] border border-slate-200 rounded-[2px] p-[80px] text-left relative leading-[1.8] text-[16px] text-2c3e50 font-sans">
-            
-            <div className="markdown-body prose max-w-none text-slate-800 focus:outline-none pt-4 font-sans">
-              <h1 className="text-3xl font-extrabold text-slate-900 border-none pb-4 mb-6 leading-tight tracking-normal text-left font-sans">
-                {title}
-              </h1>
-              <div className="text-[16px] text-slate-700 space-y-6 font-sans">
-                <ReactMarkdown>{parsedContent}</ReactMarkdown>
-              </div>
-            </div>
-            
           </div>
         </div>
       </div>
@@ -598,7 +501,7 @@ export function NativeViewer({
 
     const { headers, rows } = parseSpreadsheetContent(file.content || '');
 
-    if (hideHeader) {
+    if (hideHeader && isPreviewCard) {
       return (
         <div className="w-full h-full bg-white flex flex-col overflow-hidden text-slate-800 select-none">
           <div 
@@ -888,7 +791,7 @@ export function NativeViewer({
 
     const activeSlide = slides[activeSlideIndex] || slides[0] || { title: title, bullets: [] };
 
-    if (hideHeader) {
+    if (hideHeader && isPreviewCard) {
       return (
         <div className="w-full h-full bg-transparent flex items-center justify-center overflow-hidden select-none relative">
           {/* Slide Stage Container with NO black borders or outlines */}
@@ -928,168 +831,64 @@ export function NativeViewer({
     }
 
     return (
-      <div className="w-full h-full bg-f8f9fa flex flex-col overflow-hidden text-slate-850 select-text font-sans">
-        {/* Mock Slides Ribbon Header */}
-        <div className="shrink-0 bg-white border-b border-slate-200 px-4 py-2 flex flex-col gap-1 select-none">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {/* Slides Yellow Icon */}
-              <div className="bg-fbbc05 p-1.5 rounded-sm shadow-sm shrink-0">
-                <FileText size={18} className="text-white" />
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm text-slate-900 leading-none">{file.name}</span>
-                  <div className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[9px] font-bold">Simulated Slides</div>
-                </div>
-                {/* Menu items */}
-                <div className="flex items-center gap-3 text-[10px] text-slate-500 font-medium mt-1">
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">File</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Edit</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">View</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Insert</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Format</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Slide</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Arrange</span>
-                  <span className="hover:bg-slate-100 px-1 py-0.5 rounded cursor-pointer">Help</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-fbbc05 flex items-center gap-1 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-fbbc05 animate-pulse"></span>
-                Autosaved to workspace
-              </span>
-              {onSave && (
-                <button
-                  onClick={() => onSave(file)}
-                  className="px-3.5 py-1.5 text-xs font-semibold text-white bg-fbbc05 hover:bg-amber-600 rounded-full transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                >
-                  <HardDrive size={13} />
-                  Save to Drive
-                </button>
-              )}
-            </div>
+      <div className="w-full h-full bg-[#f0f4f9] dark:bg-[#161719] p-8 flex flex-col items-center justify-center overflow-auto gap-6 select-text font-sans">
+        {/* Widescreen 16:9 Presentation slide container - NO fake chrome/toolbars */}
+        <div className="aspect-[16/9] w-full max-w-[880px] bg-white dark:bg-[#1E1F22] border border-slate-200 dark:border-[#2B2D31] rounded-xl shadow-xl p-12 pr-12 pb-10 flex flex-col justify-between text-left relative overflow-hidden text-neutral-850 select-none">
+          
+          <div className="absolute top-[28px] left-[48px] right-[48px] flex justify-between select-none border-b border-slate-100 dark:border-[#2B2D31] pb-1">
+            <span className="text-[9px] text-fbbc05 font-bold tracking-widest uppercase font-sans">Workspace Presentation</span>
+            <span className="text-[9px] text-slate-400 dark:text-slate-300 font-sans font-medium">Slide {activeSlideIndex + 1} of {slides.length}</span>
           </div>
 
-          {/* Row 2: Standard Google Slides Toolbar */}
-          <div className="flex items-center gap-1 py-1 mt-1 border-t border-slate-100 text-slate-600 overflow-x-auto scrollbar-hide shrink-0 animate-fade-in">
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><Undo size={14} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><Redo size={14} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><Printer size={14} /></button>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <button onClick={() => {}} className="p-1 hover:bg-[#FFF2E0] text-amber-700 font-semibold rounded cursor-pointer flex items-center gap-1 text-[11px]"><Plus size={12} /><span>New slide</span></button>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><Eye size={13} /></button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer text-xs font-bold font-sans">Background</button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer text-xs font-bold font-sans">Layout</button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer text-xs font-bold font-sans">Theme</button>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer text-xs font-bold font-sans">Transition</button>
-            <div className="h-4 w-px bg-slate-200 mx-1"></div>
-            <button className="p-1 hover:bg-slate-100 rounded cursor-pointer"><ImageIcon size={13} /></button>
-            <button className="px-3 py-1 text-xs font-bold text-slate-700 bg-[#FFF2E0] border border-[#f5b041]/45 rounded hover:bg-[#FCE6C6] select-none transition ml-auto flex items-center gap-1.5 cursor-pointer mr-12">
-              <span className="material-symbols-rounded" style={{ fontSize: '14px' }}>play_arrow</span>
-              Present
-            </button>
+          {/* Slide Content */}
+          <div className="flex-1 mt-6 flex flex-col justify-center">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white leading-tight border-none pb-0 mb-4 tracking-tight font-sans text-left" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
+              {activeSlide.title}
+            </h1>
+            
+            <ul className="space-y-3.5 text-sm text-slate-700 dark:text-slate-200 font-sans leading-relaxed text-left list-none pt-4 max-w-[90%] pl-2">
+              {activeSlide.bullets.map((bullet, idx) => (
+                <li key={idx} className="flex gap-3.5 items-start">
+                  <span className="w-1.5 h-1.5 rounded-full bg-fbbc05 shrink-0 mt-2 shadow-xs"></span>
+                  <span className="text-[14px] text-slate-700 dark:text-slate-200 leading-normal font-sans font-medium">{bullet}</span>
+                </li>
+              ))}
+              {activeSlide.bullets.length === 0 && (
+                <li className="text-xs text-slate-400 italic">No notes or bullets on this slide.</li>
+              )}
+            </ul>
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-slate-100 dark:border-[#2B2D31] pt-3 select-none flex justify-between items-center text-[9px] text-slate-400 dark:text-slate-300 leading-none">
+            <span>Created with Spaces</span>
+            <span className="text-amber-700 dark:text-amber-400 font-semibold tracking-wider text-[8px] uppercase">Confidential Internal Draft</span>
           </div>
         </div>
 
-        {/* Slides Workspace Split */}
-        <div className="flex-1 flex overflow-hidden pr-12 pb-12">
-          {/* Left Filmstrip Side-nav */}
-          <div className="w-48 bg-f1f3f4 border-r border-slate-200 p-3 flex flex-col gap-3 overflow-y-auto shrink-0 select-none">
-            {slides.map((slide, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setActiveSlideIndex(idx)}
-                className={`w-full text-left transition relative shrink-0 focus:outline-none flex gap-2 items-start p-1.5 rounded-lg border-2 cursor-pointer ${
-                  idx === activeSlideIndex 
-                    ? 'border-[#f5b041] bg-[#FFF2E0]/45 shadow-3xs' 
-                    : 'border-transparent hover:bg-slate-200'
-                }`}
-              >
-                {/* Index badge */}
-                <span className="text-[10px] font-bold text-slate-450 mt-1">{idx + 1}</span>
-                {/* Visual Thumbnail */}
-                <div className="flex-1 aspect-[16/9] bg-white border border-slate-300 rounded p-1.5 flex flex-col justify-between overflow-hidden">
-                  <span className="text-[7px] font-bold text-slate-800 line-clamp-1 truncate font-sans" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>{slide.title}</span>
-                  <div className="space-y-0.5 mt-0.5">
-                    {slide.bullets.slice(0, 2).map((b, i) => (
-                      <div key={i} className="flex gap-0.5 items-center">
-                        <span className="w-0.5 h-0.5 rounded-full bg-slate-400"></span>
-                        <div className="h-[2px] bg-slate-200 rounded-sm flex-1"></div>
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[5px] text-amber-600 font-semibold uppercase tracking-wider block text-right mt-1">Slides</span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Main Slide Stage */}
-          <div className="flex-1 bg-f0f4f9 dark:bg-[#161719] p-8 flex flex-col items-center justify-center overflow-auto gap-4">
-            {/* Widescreen 16:9 Presentation slide container */}
-            <div className="aspect-[16/9] w-full max-w-[840px] bg-white dark:bg-[#1E1F22] border-2 border-slate-900 dark:border-[#2B2D31] rounded-md shadow-2xl p-12 pr-12 pb-10 flex flex-col justify-between text-left relative overflow-hidden text-neutral-850 select-none">
-              
-              <div className="absolute top-[28px] left-[48px] right-[48px] flex justify-between select-none border-b border-slate-100 dark:border-[#2B2D31] pb-1">
-                <span className="text-[9px] text-fbbc05 font-bold tracking-widest uppercase font-sans">Workspace Presentation</span>
-                <span className="text-[9px] text-slate-400 dark:text-slate-300 font-sans font-medium">Slide {activeSlideIndex + 1} of {slides.length}</span>
-              </div>
-
-              {/* Slide Content */}
-              <div className="flex-1 mt-6 flex flex-col justify-center">
-                <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white leading-tight border-none pb-0 mb-4 tracking-tight font-sans text-left" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
-                  {activeSlide.title}
-                </h1>
-                
-                <ul className="space-y-3.5 text-sm text-slate-700 dark:text-slate-200 font-sans leading-relaxed text-left list-none pt-4 max-w-[90%] pl-2">
-                  {activeSlide.bullets.map((bullet, idx) => (
-                    <li key={idx} className="flex gap-3.5 items-start">
-                      <span className="w-1.5 h-1.5 rounded-full bg-fbbc05 shrink-0 mt-2 shadow-xs"></span>
-                      <span className="text-[14px] text-slate-700 dark:text-slate-200 leading-normal font-sans font-medium">{bullet}</span>
-                    </li>
-                  ))}
-                  {activeSlide.bullets.length === 0 && (
-                    <li className="text-xs text-slate-400 italic">No notes or bullets on this slide.</li>
-                  )}
-                </ul>
-              </div>
-
-              {/* Footer */}
-              <div className="border-t border-slate-100 dark:border-[#2B2D31] pt-3 select-none flex justify-between items-center text-[9px] text-slate-400 dark:text-slate-300 leading-none">
-                <span>Created with Spaces</span>
-                <span className="text-amber-700 dark:text-amber-400 font-semibold tracking-wider text-[8px] uppercase">Confidential Internal Draft</span>
-              </div>
-            </div>
-
-            {/* Bottom Bar: Slides Navigation Bar */}
-            <div className="flex items-center gap-3 bg-white dark:bg-[#1E1F22] border border-gray-200 dark:border-[#2B2D31] px-4 py-2 rounded-full shadow-sm select-none">
-              <button
-                type="button"
-                disabled={activeSlideIndex === 0}
-                onClick={() => setActiveSlideIndex(Math.max(0, activeSlideIndex - 1))}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/10 text-slate-700 dark:text-white disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer border-none bg-transparent"
-                title="Previous slide"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <span className="text-xs font-semibold text-slate-800 dark:text-white px-2">
-                Slide {activeSlideIndex + 1} of {slides.length}
-              </span>
-              <button
-                type="button"
-                disabled={activeSlideIndex >= slides.length - 1}
-                onClick={() => setActiveSlideIndex(Math.min(slides.length - 1, activeSlideIndex + 1))}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/10 text-slate-700 dark:text-white disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer border-none bg-transparent"
-                title="Next slide"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          </div>
+        {/* Bottom Bar: Clean Slides Navigation Bar */}
+        <div className="flex items-center gap-3 bg-white dark:bg-[#1E1F22] border border-gray-200 dark:border-[#2B2D31] px-4 py-2 rounded-full shadow-sm select-none">
+          <button
+            type="button"
+            disabled={activeSlideIndex === 0}
+            onClick={() => setActiveSlideIndex(Math.max(0, activeSlideIndex - 1))}
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/10 text-slate-700 dark:text-white disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer border-none bg-transparent"
+            title="Previous slide"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="text-xs font-semibold text-slate-800 dark:text-white px-2">
+            Slide {activeSlideIndex + 1} of {slides.length}
+          </span>
+          <button
+            type="button"
+            disabled={activeSlideIndex >= slides.length - 1}
+            onClick={() => setActiveSlideIndex(Math.min(slides.length - 1, activeSlideIndex + 1))}
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/10 text-slate-700 dark:text-white disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer border-none bg-transparent"
+            title="Next slide"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
       </div>
     );
@@ -1564,11 +1363,11 @@ export function NativeViewer({
 
     // 1b. Premium High-Fidelity Simulated Editors for Google Workspace files when offline/mock
     if (!isIframeViewer && mode === 'preview') {
+      if (isGoogleSlide || isSlide) {
+        return renderGoogleSlidesSim();
+      }
       if (isGoogleDoc) {
         return renderGoogleDocSim();
-      }
-      if (isGoogleSlide) {
-        return renderGoogleSlidesSim();
       }
       if (isGoogleSheet) {
         return renderGoogleSheetSim();
@@ -2121,35 +1920,6 @@ export function NativeViewer({
 
   return (
     <div className="w-full h-full relative flex flex-col overflow-hidden">
-      {file.isProactiveDraft && (
-        <div className="w-full bg-[#F8FAFD] dark:bg-[#1E1F22] border-b border-blue-200 dark:border-blue-900/50 px-6 py-3 flex items-center justify-between z-50 shadow-xs shrink-0 select-none">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-7 h-7 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              <span className="text-xs font-bold">⚡</span>
-            </div>
-            <div className="min-w-0 text-left">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Proactive Draft Ready</span>
-                <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[10px] font-semibold">Simulated Diff</span>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-neutral-400 truncate">{file.summaryOfChanges || "Incorporated recent comment feedback into file draft."}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {onClose && (
-              <button onClick={onClose} className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-neutral-700 hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-neutral-300 font-medium text-xs transition-all cursor-pointer">
-                Discard Draft
-              </button>
-            )}
-            {onSave && (
-              <button onClick={() => onSave(file)} className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all cursor-pointer shadow-sm flex items-center gap-1.5">
-                <HardDrive size={13} />
-                Approve & Save to Drive
-              </button>
-            )}
-          </div>
-        </div>
-      )}
       <style>{`
         .native-serif-viewer,
         .native-serif-viewer *,

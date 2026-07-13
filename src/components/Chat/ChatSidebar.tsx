@@ -44,6 +44,8 @@ interface ChatSidebarProps {
   selectedFile?: any;
   isGroupChat?: boolean;
   spaceName?: string;
+  onApproveProactive?: () => void;
+  onFeedbackProactive?: () => void;
 }
 
 export function ChatSidebar({ 
@@ -81,7 +83,9 @@ export function ChatSidebar({
   activeChatId,
   selectedFile,
   isGroupChat = false,
-  spaceName = ''
+  spaceName = '',
+  onApproveProactive,
+  onFeedbackProactive
 }: ChatSidebarProps) {
   const isHome = !projectName || projectName === 'Home Dashboard' || projectName === 'Home';
 
@@ -402,8 +406,8 @@ export function ChatSidebar({
                         onSelectSpacePeople={onSelectSpacePeople}
                         isProactiveReview={msg.isProactiveReview}
                         proactiveTask={msg.proactiveTask}
-                        onApproveProactive={msg.onApproveProactive}
-                        onFeedbackProactive={msg.onFeedbackProactive}
+                        onApproveProactive={msg.onApproveProactive || onApproveProactive}
+                        onFeedbackProactive={msg.onFeedbackProactive || onFeedbackProactive}
                       />
                     );
                   })}

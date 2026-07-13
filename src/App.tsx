@@ -2748,16 +2748,39 @@ export default function App() {
              fNameClean === spaceName.toLowerCase() ||
              searchString.includes(fNameClean);
     });
+    const isSlideTask = Boolean(
+      task.type === 'slide' ||
+      task.taskType === 'slide' ||
+      task.sourceMimeType?.includes('presentation') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('presentation') ||
+      matchedInDrive?.mimeType?.includes('presentation') ||
+      task.sourceName?.endsWith('.gslides') ||
+      task.sourceName?.endsWith('.pptx') ||
+      matchedInDrive?.name?.endsWith('.gslides')
+    );
+
     const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id;
-    const targetMime = task.filesToLoad?.[0]?.mimeType || task.sourceMimeType || matchedInDrive?.mimeType || 'application/vnd.google-apps.document';
-    const targetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || `${spaceName}.gdoc`;
+    const targetMime = task.filesToLoad?.[0]?.mimeType ||
+      task.sourceMimeType ||
+      matchedInDrive?.mimeType ||
+      (isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document');
+
+    let rawTargetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || spaceName;
+    let targetName = rawTargetName;
+    if (isSlideTask) {
+      if (!targetName.toLowerCase().endsWith('.gslides') && !targetName.toLowerCase().endsWith('.pptx')) {
+        targetName = targetName.replace(/\.[^/.]+$/, "") + '.gslides';
+      }
+    } else if (!targetName.toLowerCase().endsWith('.gdoc') && !targetName.toLowerCase().endsWith('.docx') && !targetName.toLowerCase().endsWith('.doc')) {
+      targetName = targetName + '.gdoc';
+    }
 
     if (task.draftData?.draftContent) {
       const draftFileObj = {
         name: targetName,
         type: 'code',
         content: task.draftData.draftContent,
-        driveId: targetId,
+        driveId: targetId || `mock-drive-${task.id}`,
         id: `draft-file-${task.id}`,
         mimeType: targetMime,
         isProactiveDraft: true,
@@ -2784,18 +2807,21 @@ export default function App() {
       setSelectedFile(commFileObj);
     } else if (task.filesToLoad && task.filesToLoad.length > 0) {
       const updatedFiles = task.filesToLoad.map((f: any, idx: number) => {
-        if (idx === 0 && targetId) {
-          return {
-            ...f,
-            name: matchedInDrive?.name || f.name,
-            driveId: targetId,
-            id: `real-file-${targetId}`,
-            mimeType: matchedInDrive?.mimeType || f.mimeType || targetMime,
-            isProactiveDraft: true,
-            summaryOfChanges: "Updated content layout and incorporated feedback from team comments."
-          };
+        let fileName = f.name || targetName;
+        const fileIsSlide = isSlideTask || fileName.toLowerCase().endsWith('.gslides') || f.mimeType?.includes('presentation');
+        if (fileIsSlide && !fileName.toLowerCase().endsWith('.gslides') && !fileName.toLowerCase().endsWith('.pptx')) {
+          fileName = fileName.replace(/\.[^/.]+$/, "") + '.gslides';
         }
-        return f;
+        const fileMime = fileIsSlide ? 'application/vnd.google-apps.presentation' : (f.mimeType || targetMime);
+        return {
+          ...f,
+          name: fileName,
+          mimeType: fileMime,
+          driveId: targetId || f.driveId || `real-file-${targetId || task.id}`,
+          id: f.id || `real-file-${targetId || task.id}`,
+          isProactiveDraft: true,
+          summaryOfChanges: task.descriptionDone || task.description || "Updated content layout and incorporated feedback from team comments."
+        };
       });
       setSandboxFiles(updatedFiles);
       setSelectedFile(updatedFiles[0]);
@@ -2803,16 +2829,31 @@ export default function App() {
       const newFileObj = {
         name: targetName,
         type: 'code',
-        content: '',
+        content: isSlideTask ? `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Slide Deck'}\n- Replaced palette per team feedback\n- Consolidated slides and visual design` : '',
         driveId: targetId,
         id: `real-file-${targetId}`,
-        mimeType: targetMime
+        mimeType: targetMime,
+        isProactiveDraft: true,
+        summaryOfChanges: task.descriptionDone || task.description || "Updated content layout."
       };
       setSandboxFiles([newFileObj]);
       setSelectedFile(newFileObj);
     } else {
-      setSandboxFiles([]);
-      setSelectedFile(null);
+      const slideContent = `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Slide Deck'}\n- Replaced palette per team feedback\n- Consolidated slides and visual design\n- Synchronized slide notes and assets`;
+      const docContent = `# ${targetName.replace(/\.gdoc$/, '')}\n\nAuthor: Workspace Operations\n\n## ${task.titleDone || task.title || 'Inferred Action'}\n${task.descriptionDone || task.description || 'Incorporated feedback and updated workspace draft.'}`;
+
+      const fallbackFileObj = {
+        name: targetName,
+        type: 'code',
+        content: isSlideTask ? slideContent : docContent,
+        driveId: `mock-drive-${task.id}`,
+        id: `task-file-${task.id}`,
+        mimeType: targetMime,
+        isProactiveDraft: true,
+        summaryOfChanges: task.descriptionDone || task.description || "Inferred task draft update."
+      };
+      setSandboxFiles([fallbackFileObj]);
+      setSelectedFile(fallbackFileObj);
     }
 
     if (targetId && accessToken) {
@@ -2952,6 +2993,29 @@ export default function App() {
     setActiveChatId(tempChatId);
     setMessages(proactiveMsgs);
     setActiveSidebar('gemini');
+  };
+
+  const handleApproveActiveProactiveTask = () => {
+    if (!activeProactiveTask) return;
+    const taskToApprove = activeProactiveTask;
+    setTodoItems(prev => {
+      const updated = prev.map(t => (t.id === taskToApprove.id || t.title === taskToApprove.title) ? { 
+        ...t, 
+        status: 'done', 
+        title: t.titleDone || t.title, 
+        description: t.descriptionDone || t.description 
+      } : t);
+      const spaceKey = activeSpaceId || 'home';
+      if (todoCacheRef.current) {
+        todoCacheRef.current[spaceKey] = updated;
+      }
+      return updated;
+    });
+    setActiveProactiveTask((prev: any) => prev ? { ...prev, status: 'done', title: prev.titleDone || prev.title, description: prev.descriptionDone || prev.description } : null);
+    setMessages(prev => prev.map(m => m.isProactiveReview ? {
+      ...m,
+      proactiveTask: { ...m.proactiveTask, status: 'done', title: m.proactiveTask?.titleDone || m.proactiveTask?.title, description: m.proactiveTask?.descriptionDone || m.proactiveTask?.description }
+    } : m));
   };
 
   const handleSelectSpacePeople = (name: string, selectedPeople: any[]) => {
@@ -4450,6 +4514,13 @@ export default function App() {
       
       const taskType = matchingTask?.taskType || matchingTask?.type || cached.taskType || cached.type || '';
 
+      const isSpaceObject = typeof file === 'object' && file && Boolean(
+        file.type?.includes('space') || 
+        file.type === 'workspace' || 
+        file.isProject || 
+        Boolean(file.chats)
+      ) && !file.name?.includes('.');
+
       if (isParentSpaceClick) {
         if (!isHomeChatId(folderId)) {
           setSelectedFile(null);
@@ -4476,13 +4547,6 @@ export default function App() {
       } else {
         const allAvailableFiles = [...(cached.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
         const taskContext = { ...matchingTask, ...cached, ...cachedChat };
-
-        const isSpaceObject = typeof file === 'object' && file && Boolean(
-          file.type?.includes('space') || 
-          file.type === 'workspace' || 
-          file.isProject || 
-          Boolean(file.chats)
-        ) && !file.name?.includes('.');
 
         const specificFileMatch = (typeof file === 'object' && file && (file.id || file.driveId) && !isSpaceObject)
           ? allAvailableFiles.find((f: any) => f && ((file.id && (f.id === file.id || f.driveId === file.id)) || (file.driveId && (f.driveId === file.driveId || f.id === file.driveId))))
@@ -4550,7 +4614,15 @@ export default function App() {
         lastSavedContentsRef.current[f.name.toLowerCase()] = f.content || '';
       });
       const totalCount = (cached.sandboxFiles?.length || 0) + (driveFiles?.length || 0);
-      setIsSourcesPanelOpen(!isHomeChatId(folderId) && totalCount > 0);
+      const isDashboardTarget = (isParentSpaceClick || isSpaceObject) && !isHomeChatId(folderId);
+      const targetSpacePins = getSpacePins(folderId);
+      const dashboardHasWidgets = isDashboardTarget && targetSpacePins && targetSpacePins.length > 0;
+
+      if (dashboardHasWidgets) {
+        setIsSourcesPanelOpen(false);
+      } else {
+        setIsSourcesPanelOpen(!isHomeChatId(folderId) && totalCount > 0);
+      }
       
       // Allow cache updates for the newly active folder
       setLoadedFolderId(folderId);
@@ -5403,8 +5475,13 @@ export default function App() {
             } else {
               setIsAiSummarySnapped(false);
               setActiveSidebar('gemini');
-              const hasFiles = (proj.sources?.length || proj.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
-              setIsSourcesPanelOpen(hasFiles);
+              const spacePins = getSpacePins(proj.id);
+              if (spacePins && spacePins.length > 0) {
+                setIsSourcesPanelOpen(false);
+              } else {
+                const hasFiles = (proj.sources?.length || proj.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
+                setIsSourcesPanelOpen(hasFiles);
+              }
               await openSpace(proj.id);
             }
           }
@@ -5424,14 +5501,21 @@ export default function App() {
             } else {
               setIsAiSummarySnapped(false);
               setActiveSidebar('gemini');
-              const hasFiles = (task.sources?.length || task.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
-              setIsSourcesPanelOpen(hasFiles);
               const targetChat = task.chatId || task.id;
               const isChildChat = targetChat !== task.id && targetChat !== task.activeSpaceId;
-              if (isChildChat) {
-                await openChat(targetChat, task.activeSpaceId || task.id);
-              } else {
+              if (!isChildChat) {
+                const spacePins = getSpacePins(task.id);
+                if (spacePins && spacePins.length > 0) {
+                  setIsSourcesPanelOpen(false);
+                } else {
+                  const hasFiles = (task.sources?.length || task.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
+                  setIsSourcesPanelOpen(hasFiles);
+                }
                 await openSpace(task.id);
+              } else {
+                const hasFiles = (task.sources?.length || task.sandboxFiles?.length || 0) + (driveFiles?.length || 0) > 0;
+                setIsSourcesPanelOpen(hasFiles);
+                await openChat(targetChat, task.activeSpaceId || task.id);
               }
             }
           } else {
@@ -5498,6 +5582,7 @@ export default function App() {
           onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
           isGroupChat={isGroupChat}
           spaceName={projectName}
+          onApproveProactive={handleApproveActiveProactiveTask}
         />
       )}
 
@@ -5889,6 +5974,7 @@ export default function App() {
                 activeChatId={activeChatId}
                 selectedFile={selectedFile}
                 todoItems={todoItems}
+                onApproveProactive={handleApproveActiveProactiveTask}
               />
             )}
           </div>
