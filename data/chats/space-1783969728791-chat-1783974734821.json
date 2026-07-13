@@ -1,41 +1,18 @@
 {
-  "chatId": "space-1783969728791",
+  "chatId": "space-1783969728791-chat-1783974734821",
   "projectName": "Ollie",
-  "chatName": "Ollie",
-  "type": "workspace",
-  "taskType": null,
-  "associatedFileId": null,
-  "associatedFileName": null,
+  "chatName": "Custom Tool",
+  "type": "site",
+  "taskType": "site",
+  "associatedFileId": "created-artifact-1783974734821",
+  "associatedFileName": "index.html",
   "messages": [
     {
       "role": "bot",
-      "text": "Ajay Yadav, Belinda Preno, and 2 others added to this chat, you can create a new private chat any time",
-      "isMembersAddedNotice": true,
-      "addedMembers": [
-        {
-          "name": "Ajay Yadav",
-          "email": "yadavajay@google.com",
-          "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjW5ytDzOzOxOMnVKGMTlZFIQFZGQE-F3hF9WT2C3_8rKFkSa6V4xQ=s64"
-        },
-        {
-          "name": "Belinda Preno",
-          "email": "belindapreno@google.com",
-          "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjW8kkayF4FN3ib50ZpJsNFIMcSF9CLOgEcXNjlG9yhQ2xy1dL2q=s64"
-        },
-        {
-          "name": "Mirjam van Esch",
-          "email": "mirjamvanesch@google.com",
-          "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjXTBbC9f6t0nk1AnwJs5rlbhjpfVQxK2sM8PqQXbNVAx3YKh4LMVA=s64"
-        },
-        {
-          "name": "Simon Sok",
-          "email": "simonsok@google.com",
-          "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjUJwa8yeHprZ88_pXXGVlN6TT1mDyU1T8GUcNOixdQ46wyCNDlcGA=s64"
-        }
-      ]
+      "text": "What custom tool would you like to build?"
     }
   ],
-  "envId": null,
+  "envId": "b0c607c500898fb63c88e0b58a4563f5",
   "activeSpaceId": "space-1783969728791",
   "sandboxUrl": "",
   "sandboxFiles": [
@@ -88,17 +65,6 @@
       "isDocJourney": false,
       "createdFromSpace": true,
       "id": "created-artifact-1783974734821"
-    },
-    {
-      "name": "document.doc",
-      "type": "code",
-      "content": "# New document\n\n## Tell me what you want to write",
-      "mimeType": "application/vnd.google-apps.document",
-      "createdFromComposer": true,
-      "fontFamily": "Google Sans",
-      "isDocJourney": true,
-      "createdFromSpace": true,
-      "id": "created-artifact-1783974854403"
     }
   ],
   "userEmail": "danielgiuditta@google.com",
@@ -124,8 +90,6 @@
       "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjUJwa8yeHprZ88_pXXGVlN6TT1mDyU1T8GUcNOixdQ46wyCNDlcGA=s64"
     }
   ],
-  "pinnedArtifactIds": [
-    "created-artifact-1783969757315"
-  ],
-  "updatedAt": "2026-07-13T20:34:14.611Z"
+  "pinnedArtifactIds": [],
+  "updatedAt": "2026-07-13T20:32:14.915Z"
 }

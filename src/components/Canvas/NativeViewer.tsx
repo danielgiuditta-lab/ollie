@@ -35,6 +35,7 @@ import {
   FileJson
 } from 'lucide-react';
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
+import { NullTitle } from '../Shared/NullTitle';
 
 interface NativeViewerProps {
   file: any;
@@ -431,6 +432,21 @@ export function NativeViewer({
     });
 
     const parsedContent = bodyParagraphs.join('\n');
+
+    const isNewUnauthoredDoc = !file.content || 
+      file.content.trim() === '' || 
+      file.content.includes('Tell me what') || 
+      file.content.includes('New document');
+
+    if (isNewUnauthoredDoc && !isPreviewCard) {
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-transparent text-center select-none animate-in fade-in duration-300">
+          <NullTitle theme={theme}>
+            Tell me what <br /> you want to create
+          </NullTitle>
+        </div>
+      );
+    }
 
     if (hideHeader && isPreviewCard) {
       return (

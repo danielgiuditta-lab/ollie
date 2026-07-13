@@ -2,11 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ContextMenu } from '../Shared/ContextMenu';
 import logoImg from '../../assets/logo.png';
-import docsIcon from '../../assets/docs.png';
-import htmlIcon from '../../assets/html.png';
-import formsIcon from '../../assets/forms.png';
-import sheetsIcon from '../../assets/sheets.png';
-import slidesIcon from '../../assets/slides.png';
 import { themeTokens } from '../../utils/themeTokens';
 
 interface LeftNavProps {
@@ -49,27 +44,6 @@ const getSpaceEmoji = (name: string): string => {
   const emojis = ['📁', '💼', '💡', '🚀', '🌟', '🛠', '⚙️', '📝', '🎯', '🌱'];
   const sum = Array.from(name).reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return emojis[sum % emojis.length];
-};
-
-const getChatIcon = (chat: any) => {
-  const name = (chat.chatName || chat.name || '').toLowerCase();
-  const type = chat.type || chat.taskType || chat.raw?.taskType || '';
-  if (type === 'site' || type === 'tool' || name.includes('tool') || name.includes('site') || name.includes('kanban') || name.includes('app')) {
-    return <img src={htmlIcon} className="w-3.5 h-3.5 object-contain shrink-0 mr-2" alt="tool" />;
-  }
-  if (type === 'doc' || name.includes('doc')) {
-    return <img src={docsIcon} className="w-3.5 h-3.5 object-contain shrink-0 mr-2" alt="doc" />;
-  }
-  if (type === 'slide' || name.includes('slide') || name.includes('presentation') || name.includes('deck')) {
-    return <img src={slidesIcon} className="w-3.5 h-3.5 object-contain shrink-0 mr-2" alt="slide" />;
-  }
-  if (type === 'sheet' || name.includes('sheet') || name.includes('spreadsheet') || name.includes('tracker')) {
-    return <img src={sheetsIcon} className="w-3.5 h-3.5 object-contain shrink-0 mr-2" alt="sheet" />;
-  }
-  if (type === 'inferred' || type === 'tracking' || name.includes('inferred') || name.includes('task') || name.includes('to do') || name.includes('roadmap')) {
-    return <img src={formsIcon} className="w-3.5 h-3.5 object-contain shrink-0 mr-2" alt="task" />;
-  }
-  return <span className="material-symbols-rounded text-slate-450 dark:text-neutral-400 text-[14px] shrink-0 mr-2">chat_bubble</span>;
 };
 
 export function LeftNav({ 
@@ -424,7 +398,6 @@ export function LeftNav({
                           style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
                           title={chat.name}
                         >
-                          {getChatIcon(chat)}
                           <span className="truncate min-w-0">{chat.name}</span>
                         </div>
                       );

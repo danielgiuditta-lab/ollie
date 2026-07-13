@@ -1502,7 +1502,7 @@ export function HomeLanding({
 
     if (type === 'doc') {
       name = 'document.doc';
-      content = `# New document\n\n## Tell me what you want to write`;
+      content = `# Tell me what <br> you want to create`;
       mimeType = 'application/vnd.google-apps.document';
       setProjectName('New Document');
     } else if (type === 'slide') {
@@ -1526,14 +1526,13 @@ export function HomeLanding({
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>New Site Workspace</title>
+  <title>Custom Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 p-8 min-h-screen flex items-center justify-center">
-  <div class="max-w-md w-full text-center space-y-4 bg-white p-8 rounded-3xl border shadow-sm">
-    <h1 class="text-3xl font-bold text-slate-950">My Web Workspace</h1>
-    <p class="text-xs text-slate-500">Ask Gemini to design pages or integrate widgets.</p>
-  </div>
+<body class="bg-transparent text-slate-800 p-8 min-h-screen flex items-center justify-center select-none">
+  <h1 class="text-[45px] tracking-tight font-normal text-[#3186FF] text-center select-none leading-[1.15]" style="font-family: 'Google Sans Flex', 'Google Sans', 'Product Sans', sans-serif;">
+    Tell me what <br> you want to create
+  </h1>
 </body>
 </html>`;
       mimeType = 'text/html';
