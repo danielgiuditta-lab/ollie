@@ -611,6 +611,97 @@ export default function App() {
     }
   };
 
+  const handleShareSourcesToSpace = async (selectedItemIds: string[], targetSpaceId: string) => {
+    if (!targetSpaceId || selectedItemIds.length === 0) return;
+
+    // Resolve target space from projects or recentTasks
+    const targetSpace = projects.find((p: any) => p.id === targetSpaceId) || recentTasks.find((t: any) => t.id === targetSpaceId);
+
+    // Extract source files to share
+    const currentSources = activeSpaceId?.startsWith('space-creation-') ? spaceCreationSources : [...sandboxFiles, ...driveFiles];
+    const itemsToShare = currentSources.filter(item => {
+      const id = item.id || item.driveId || item.name;
+      return selectedItemIds.includes(id);
+    });
+
+    if (itemsToShare.length === 0) return;
+
+    // 1. Fetch current target space payload/files from memory cache or server
+    let existingTargetFiles: any[] = workspaceCacheRef.current[targetSpaceId]?.sandboxFiles || [];
+    let existingTargetMessages: any[] = workspaceCacheRef.current[targetSpaceId]?.messages || [];
+
+    if (existingTargetFiles.length === 0 || existingTargetMessages.length === 0) {
+      try {
+        const res = await fetch(`/api/chats/${targetSpaceId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.sandboxFiles && Array.isArray(data.sandboxFiles)) {
+            existingTargetFiles = data.sandboxFiles;
+          }
+          if (data.messages && Array.isArray(data.messages)) {
+            existingTargetMessages = data.messages;
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching target space chat data:", e);
+      }
+    }
+
+    // 2. Merge items without duplicates
+    const newFiles = [...existingTargetFiles];
+    itemsToShare.forEach(item => {
+      const itemId = item.id || item.driveId || item.name;
+      const exists = newFiles.some(f => (f.id || f.driveId || f.name) === itemId);
+      if (!exists) {
+        newFiles.push(item);
+      }
+    });
+
+    // 3. Create notice message in target space
+    const sharedFileNames = itemsToShare.map(i => i.name || i.filename || 'Untitled').join(', ');
+    const noticeMessage = {
+      id: `msg-shared-${Date.now()}`,
+      role: 'bot',
+      text: `Shared ${itemsToShare.length} source file(s) to this Space: **${sharedFileNames}**`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    const updatedMessages = [...existingTargetMessages, noticeMessage];
+
+    // 4. Update in-memory workspace cache for target space
+    const targetCache = workspaceCacheRef.current[targetSpaceId] || {} as any;
+    workspaceCacheRef.current[targetSpaceId] = {
+      ...targetCache,
+      sandboxFiles: newFiles,
+      messages: updatedMessages
+    };
+
+    // 5. If target space is currently open, update React state live
+    if (activeSpaceId === targetSpaceId) {
+      setSandboxFiles(newFiles);
+      setMessages(updatedMessages);
+    }
+
+    // 6. Persist to backend database API
+    try {
+      await fetch(`/api/chats/${targetSpaceId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sandboxFiles: newFiles,
+          messages: updatedMessages
+        })
+      });
+    } catch (err) {
+      console.error("Error persisting shared files to target space:", err);
+    }
+  };
+
+  const handleDeleteSources = (fileIdsToDelete: string[]) => {
+    if (fileIdsToDelete.length === 0) return;
+    setSandboxFiles(prev => prev.filter(f => !fileIdsToDelete.includes(f.id || f.driveId || f.name)));
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const shareSlug = params.get('share');
@@ -5691,6 +5782,9 @@ export default function App() {
                 getSpacePins={getSpacePins}
                 activeSpaceId={activeSpaceId}
                 getHomeChatId={getHomeChatId}
+                spaces={projects}
+                onShareSourcesToSpace={handleShareSourcesToSpace}
+                onDeleteFiles={handleDeleteSources}
               />
             )}
           </AnimatePresence>

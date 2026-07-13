@@ -12,6 +12,7 @@ interface FolderRowProps {
   variant?: 'row' | 'badge';
   className?: string;
   dataId?: string;
+  leftElement?: React.ReactNode;
 }
 
 export function FolderRow({
@@ -24,7 +25,8 @@ export function FolderRow({
   onClick,
   variant = 'row',
   className = '',
-  dataId
+  dataId,
+  leftElement
 }: FolderRowProps) {
   const isDark = theme === 'dark';
 
@@ -68,6 +70,11 @@ export function FolderRow({
       } ${className}`}
     >
       <div className="flex items-center gap-2.5 truncate pr-2 flex-1 min-w-0">
+        {leftElement && (
+          <div className="shrink-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            {leftElement}
+          </div>
+        )}
         <div className="shrink-0 transition-transform group-hover:scale-105 flex items-center justify-center">
           <span 
             className="material-symbols-rounded select-none shrink-0 inline-flex items-center justify-center text-[#444746] dark:text-[#C4C7C5]" 

@@ -4,11 +4,16 @@ import {
   ChevronRight,
   ChevronLeft,
   X,
-  Pin
+  Pin,
+  MoreHorizontal,
+  Share2,
+  CheckSquare,
+  Trash2
 } from 'lucide-react';
 import { IconButton } from '../Shared/IconButton';
 import { FileRow } from '../Shared/FileRow';
 import { FolderRow } from '../Shared/FolderRow';
+import { ShareSourcesModal } from './ShareSourcesModal';
 
 interface CanvasSidebarProps {
   files: any[];
@@ -32,6 +37,9 @@ interface CanvasSidebarProps {
   getSpacePins?: (spaceId: string | null) => string[];
   activeSpaceId?: string | null;
   getHomeChatId?: () => string;
+  spaces?: any[];
+  onShareSourcesToSpace?: (selectedItemIds: string[], targetSpaceId: string) => void;
+  onDeleteFiles?: (fileIds: string[]) => void;
 }
 
 interface ExplorerItem {
@@ -63,8 +71,29 @@ export function CanvasSidebar({
   onUnpinArtifact,
   getSpacePins,
   activeSpaceId,
-  getHomeChatId
+  getHomeChatId,
+  spaces = [],
+  onShareSourcesToSpace,
+  onDeleteFiles
 }: CanvasSidebarProps) {
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [batchSelectedIds, setBatchSelectedIds] = useState<string[]>([]);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const toggleBatchSelect = (id: string) => {
+    setBatchSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBatchDelete = () => {
+    if (onDeleteFiles && batchSelectedIds.length > 0) {
+      onDeleteFiles(batchSelectedIds);
+      setBatchSelectedIds([]);
+      setIsEditMode(false);
+    }
+  };
 
 
 
@@ -286,10 +315,79 @@ export function CanvasSidebar({
           <div className="absolute left-0 top-4 bottom-4 w-[1px] bg-slate-200/60 dark:bg-slate-800" />
           
           {/* Header Panel */}
-          <div className="px-4 pt-4 pb-2 flex items-center justify-between shrink-0 select-none">
-            <h2 className="font-semibold tracking-tight text-gray-800 dark:text-white text-[16px]">
-              Library
+          <div className="px-4 pt-4 pb-2 flex items-center justify-between shrink-0 select-none relative">
+            <h2 className="font-semibold tracking-tight text-gray-800 dark:text-white text-[16px] flex items-center gap-2">
+              <span>Library</span>
+              {isEditMode && (
+                <span className="text-xs font-normal text-slate-400 font-mono">
+                  ({batchSelectedIds.length})
+                </span>
+              )}
             </h2>
+
+            {isEditMode ? (
+              <div className="flex items-center gap-1.5">
+                {batchSelectedIds.length > 0 && onDeleteFiles && (
+                  <button
+                    onClick={handleBatchDelete}
+                    className="p-1 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                    title="Delete selected files"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setIsEditMode(false);
+                    setBatchSelectedIds([]);
+                  }}
+                  className="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition-colors border-none cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <button
+                  onClick={() => setIsHeaderMenuOpen(!isHeaderMenuOpen)}
+                  className="w-7 h-7 rounded-md flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer border-none bg-transparent"
+                  title="Library options"
+                >
+                  <MoreHorizontal size={18} />
+                </button>
+
+                {isHeaderMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsHeaderMenuOpen(false)} />
+                    <div 
+                      className="absolute right-0 top-full mt-1 z-50 min-w-[140px] bg-white dark:bg-[#2B2D31] rounded-xl border border-slate-200 dark:border-[#3B3D42] shadow-xl p-1 animate-in fade-in zoom-in-95 duration-100 select-none"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => {
+                          setIsHeaderMenuOpen(false);
+                          setIsShareModalOpen(true);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer border-none bg-transparent"
+                      >
+                        <Share2 size={14} className="text-blue-500 shrink-0" />
+                        <span>Share</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsHeaderMenuOpen(false);
+                          setIsEditMode(true);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer border-none bg-transparent"
+                      >
+                        <CheckSquare size={14} className="text-slate-500 shrink-0" />
+                        <span>Edit</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Add Library Input Field */}
@@ -335,6 +433,16 @@ export function CanvasSidebar({
                   id === (item.name || '').split('/').filter(Boolean).pop()
                 );
 
+                const fileObj = item.fileRef || { name: item.name };
+                const fileId = fileObj.id || fileObj.driveId || fileObj.name || item.name;
+                const targetId = activeSpaceId || (getHomeChatId ? getHomeChatId() : 'home');
+                const spacePins = (getSpacePins && targetId) ? getSpacePins(targetId) : [];
+                const homePins = (getSpacePins && getHomeChatId) ? getSpacePins(getHomeChatId()) : [];
+                const isPinnedToTarget = !!(fileId && spacePins.includes(fileId));
+                const isPinnedToHome = !!(fileId && homePins.includes(fileId));
+                const isPinnedAnywhere = isPinnedToTarget || isPinnedToHome;
+                const isChecked = batchSelectedIds.includes(fileId);
+
                 if (item.type === 'folder') {
                   return (
                     <FolderRow
@@ -345,19 +453,24 @@ export function CanvasSidebar({
                       isImpacted={impactSpaceId === item.name}
                       isAnimating={isAnimating}
                       theme={theme}
-                      onClick={() => handleFolderClick(currentPath.length, item.name, item.fileRef)}
+                      onClick={() => {
+                        if (isEditMode) {
+                          toggleBatchSelect(fileId);
+                        } else {
+                          handleFolderClick(currentPath.length, item.name, item.fileRef);
+                        }
+                      }}
+                      leftElement={isEditMode ? (
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleBatchSelect(fileId)}
+                          className="rounded text-blue-500 h-3.5 w-3.5 cursor-pointer shrink-0"
+                        />
+                      ) : undefined}
                     />
                   );
                 }
-
-                const fileObj = item.fileRef || { name: item.name };
-                const fileId = fileObj.id || fileObj.driveId;
-                const targetId = activeSpaceId || (getHomeChatId ? getHomeChatId() : 'home');
-                const spacePins = (getSpacePins && targetId) ? getSpacePins(targetId) : [];
-                const homePins = (getSpacePins && getHomeChatId) ? getSpacePins(getHomeChatId()) : [];
-                const isPinnedToTarget = !!(fileId && spacePins.includes(fileId));
-                const isPinnedToHome = !!(fileId && homePins.includes(fileId));
-                const isPinnedAnywhere = isPinnedToTarget || isPinnedToHome;
 
                 return (
                   <FileRow
@@ -368,7 +481,21 @@ export function CanvasSidebar({
                     isSelected={isSelected}
                     isAnimating={isAnimating}
                     theme={theme}
-                    onClick={() => item.fileRef && onFileSelect(item.fileRef)}
+                    onClick={() => {
+                      if (isEditMode) {
+                        toggleBatchSelect(fileId);
+                      } else {
+                        item.fileRef && onFileSelect(item.fileRef);
+                      }
+                    }}
+                    leftElement={isEditMode ? (
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleBatchSelect(fileId)}
+                        className="rounded text-blue-500 h-3.5 w-3.5 cursor-pointer shrink-0"
+                      />
+                    ) : undefined}
                     rightElement={
                       <div className="ml-1 flex items-center gap-1 shrink-0">
                         {isRunnable && (
@@ -376,7 +503,7 @@ export function CanvasSidebar({
                             <span className="text-[10px] text-gray-500 dark:text-gray-400 group-hover/play:text-gray-800 dark:group-hover/play:text-white leading-none select-none pl-0.5" style={{ fontFamily: 'sans-serif' }}>▶</span>
                           </div>
                         )}
-                        {onPinArtifact && (
+                        {onPinArtifact && !isEditMode && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -412,6 +539,20 @@ export function CanvasSidebar({
           onMouseDown={startResizeSingleCol}
           title="Drag to resize file sidebar"
         />
+
+        <ShareSourcesModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          libraryItems={activeLevelItems}
+          spaces={spaces}
+          activeSpaceId={activeSpaceId}
+          theme={theme}
+          onShare={(selectedItemIds, targetSpaceId) => {
+            if (onShareSourcesToSpace) {
+              onShareSourcesToSpace(selectedItemIds, targetSpaceId);
+            }
+          }}
+        />
       </motion.div>
     );
   }
@@ -446,7 +587,7 @@ export function CanvasSidebar({
           return (
             <React.Fragment key={colIdx}>
               <div 
-                className="shrink-0 bg-white dark:bg-[#1E1F22] flex flex-col h-full overflow-hidden border-0 border-none outline-none"
+                className="shrink-0 bg-[#FFFFFF] dark:bg-[#1E1F22] flex flex-col h-full overflow-hidden border-0 border-none outline-none"
                 style={{ 
                   width: `${colWidth}px`,
                   borderRadius: borderRadiusValue,
@@ -455,8 +596,83 @@ export function CanvasSidebar({
                   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.03)'
                 }}
               >
-                {/* Column Header representing "Back" if not root */}
-                {colIdx > 0 && (
+                {/* Column Header */}
+                {colIdx === 0 ? (
+                  <div className="px-4 pt-4 pb-2 flex items-center justify-between shrink-0 select-none relative">
+                    <h2 className="font-semibold tracking-tight text-gray-800 dark:text-white text-[16px] flex items-center gap-2">
+                      <span>Library</span>
+                      {isEditMode && (
+                        <span className="text-xs font-normal text-slate-400 font-mono">
+                          ({batchSelectedIds.length})
+                        </span>
+                      )}
+                    </h2>
+
+                    {isEditMode ? (
+                      <div className="flex items-center gap-1.5">
+                        {batchSelectedIds.length > 0 && onDeleteFiles && (
+                          <button
+                            onClick={handleBatchDelete}
+                            className="p-1 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                            title="Delete selected files"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setIsEditMode(false);
+                            setBatchSelectedIds([]);
+                          }}
+                          className="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition-colors border-none cursor-pointer"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <button
+                          onClick={() => setIsHeaderMenuOpen(!isHeaderMenuOpen)}
+                          className="w-7 h-7 rounded-md flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer border-none bg-transparent"
+                          title="Library options"
+                        >
+                          <MoreHorizontal size={18} />
+                        </button>
+
+                        {isHeaderMenuOpen && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setIsHeaderMenuOpen(false)} />
+                            <div 
+                              className="absolute right-0 top-full mt-1 z-50 min-w-[140px] bg-white dark:bg-[#2B2D31] rounded-xl border border-slate-200 dark:border-[#3B3D42] shadow-xl p-1 animate-in fade-in zoom-in-95 duration-100 select-none"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={() => {
+                                  setIsHeaderMenuOpen(false);
+                                  setIsShareModalOpen(true);
+                                }}
+                                className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer border-none bg-transparent"
+                              >
+                                <Share2 size={14} className="text-blue-500 shrink-0" />
+                                <span>Share</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setIsHeaderMenuOpen(false);
+                                  setIsEditMode(true);
+                                }}
+                                className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer border-none bg-transparent"
+                              >
+                                <CheckSquare size={14} className="text-slate-500 shrink-0" />
+                                <span>Edit</span>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
                   <button 
                     onClick={() => {
                       setCurrentPath(currentPath.slice(0, colIdx));
@@ -501,40 +717,70 @@ export function CanvasSidebar({
                         id === item.fileRef?.name || 
                         id === (item.name || '').split('/').filter(Boolean).pop()
                       );
+                      const itemFileId = item.fileRef?.id || item.fileRef?.driveId || item.fileRef?.name || item.name;
+                      const isChecked = batchSelectedIds.includes(itemFileId);
 
-                        if (item.type === 'folder') {
-                          return (
-                            <FolderRow
-                              key={item.name}
-                              name={item.name}
-                              dataId={item.fileRef?.id || item.name}
-                              isSelected={isSelected}
-                              isImpacted={impactSpaceId === item.name}
-                              isAnimating={isAnimating}
-                              theme={theme}
-                              onClick={() => handleFolderClick(colIdx, item.name, item.fileRef)}
-                            />
-                          );
-                        }
-
+                      if (item.type === 'folder') {
                         return (
-                          <FileRow
+                          <FolderRow
                             key={item.name}
                             name={item.name}
-                            dataId={item.fileRef?.id || item.fileRef?.name || item.name}
-                            mimeType={item.mimeType}
+                            dataId={item.fileRef?.id || item.name}
                             isSelected={isSelected}
+                            isImpacted={impactSpaceId === item.name}
                             isAnimating={isAnimating}
                             theme={theme}
-                            onClick={() => item.fileRef && onFileSelect(item.fileRef)}
-                            rightElement={isRunnable ? (
-                              <div className="ml-2 flex items-center justify-center w-6 h-6 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2B2D31] hover:bg-gray-50 dark:hover:bg-white/10 shadow-2xs shrink-0 select-none group/play transition-all">
-                                <span className="text-[10px] text-gray-500 dark:text-gray-400 group-hover/play:text-gray-800 dark:group-hover/play:text-white leading-none select-none pl-0.5" style={{ fontFamily: 'sans-serif' }}>▶</span>
-                              </div>
+                            onClick={() => {
+                              if (isEditMode && colIdx === 0) {
+                                toggleBatchSelect(itemFileId);
+                              } else {
+                                handleFolderClick(colIdx, item.name, item.fileRef);
+                              }
+                            }}
+                            leftElement={isEditMode && colIdx === 0 ? (
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => toggleBatchSelect(itemFileId)}
+                                className="rounded text-blue-500 h-3.5 w-3.5 cursor-pointer shrink-0"
+                              />
                             ) : undefined}
                           />
                         );
-                      })
+                      }
+
+                      return (
+                        <FileRow
+                          key={item.name}
+                          name={item.name}
+                          dataId={item.fileRef?.id || item.fileRef?.name || item.name}
+                          mimeType={item.mimeType}
+                          isSelected={isSelected}
+                          isAnimating={isAnimating}
+                          theme={theme}
+                          onClick={() => {
+                            if (isEditMode && colIdx === 0) {
+                              toggleBatchSelect(itemFileId);
+                            } else {
+                              item.fileRef && onFileSelect(item.fileRef);
+                            }
+                          }}
+                          leftElement={isEditMode && colIdx === 0 ? (
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleBatchSelect(itemFileId)}
+                              className="rounded text-blue-500 h-3.5 w-3.5 cursor-pointer shrink-0"
+                            />
+                          ) : undefined}
+                          rightElement={isRunnable ? (
+                            <div className="ml-2 flex items-center justify-center w-6 h-6 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2B2D31] hover:bg-gray-50 dark:hover:bg-white/10 shadow-2xs shrink-0 select-none group/play transition-all">
+                              <span className="text-[10px] text-gray-500 dark:text-gray-400 group-hover/play:text-gray-800 dark:group-hover/play:text-white leading-none select-none pl-0.5" style={{ fontFamily: 'sans-serif' }}>▶</span>
+                            </div>
+                          ) : undefined}
+                        />
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -555,6 +801,20 @@ export function CanvasSidebar({
           title="Drag to resize file columns vs artifacts"
         />
       )}
+
+      <ShareSourcesModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        libraryItems={getItemsAtPath([])}
+        spaces={spaces}
+        activeSpaceId={activeSpaceId}
+        theme={theme}
+        onShare={(selectedItemIds, targetSpaceId) => {
+          if (onShareSourcesToSpace) {
+            onShareSourcesToSpace(selectedItemIds, targetSpaceId);
+          }
+        }}
+      />
     </div>
   );
 }

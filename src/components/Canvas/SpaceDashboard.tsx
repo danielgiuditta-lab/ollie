@@ -51,6 +51,8 @@ export function SpaceDashboard({
   const [activeMenuCardId, setActiveMenuCardId] = useState<string | null>(null);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
   const [dragOverCardId, setDragOverCardId] = useState<string | null>(null);
+  const [dragOverPosition, setDragOverPosition] = useState<'left' | 'right' | 'top' | 'bottom' | null>(null);
+  const [dashboardLayoutMode, setDashboardLayoutMode] = useState<'auto' | 'rows' | 'cols'>('auto');
   
   // Resizing state
   const resizingRef = useRef<{
@@ -175,28 +177,55 @@ export function SpaceDashboard({
   const handleDragOver = (e: React.DragEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (id !== draggedCardId) {
+    const sourceId = draggedCardId || activeMenuCardId;
+    if (id !== sourceId) {
       setDragOverCardId(id);
+      const rect = e.currentTarget.getBoundingClientRect();
+      const offsetY = e.clientY - rect.top;
+      const offsetX = e.clientX - rect.left;
+      const relY = offsetY / rect.height;
+      const relX = offsetX / rect.width;
+
+      if (relY < 0.25) {
+        setDragOverPosition('top');
+      } else if (relY > 0.75) {
+        setDragOverPosition('bottom');
+      } else if (relX < 0.5) {
+        setDragOverPosition('left');
+      } else {
+        setDragOverPosition('right');
+      }
     }
   };
 
   const handleDrop = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragOverCardId(null);
     const sourceId = draggedCardId || activeMenuCardId;
-    if (!sourceId || sourceId === targetId) return;
+    if (!sourceId || sourceId === targetId) {
+      setDragOverCardId(null);
+      setDragOverPosition(null);
+      return;
+    }
 
     const currentIndex = pinnedArtifactIds.indexOf(sourceId);
     const targetIndex = pinnedArtifactIds.indexOf(targetId);
-    if (currentIndex === -1 || targetIndex === -1) return;
+    if (currentIndex !== -1 && targetIndex !== -1) {
+      const newOrder = [...pinnedArtifactIds];
+      const temp = newOrder[currentIndex];
+      newOrder[currentIndex] = newOrder[targetIndex];
+      newOrder[targetIndex] = temp;
+      onReorderPins(newOrder);
+    }
 
-    const newOrder = [...pinnedArtifactIds];
-    const temp = newOrder[currentIndex];
-    newOrder[currentIndex] = newOrder[targetIndex];
-    newOrder[targetIndex] = temp;
-    
-    onReorderPins(newOrder);
+    if (dragOverPosition === 'top' || dragOverPosition === 'bottom') {
+      setDashboardLayoutMode('rows');
+    } else if (dragOverPosition === 'left' || dragOverPosition === 'right') {
+      setDashboardLayoutMode('cols');
+    }
+
+    setDragOverCardId(null);
+    setDragOverPosition(null);
     setDraggedCardId(null);
     setActiveMenuCardId(null);
   };
@@ -224,14 +253,20 @@ export function SpaceDashboard({
   }
 
   let gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-1";
-  if (totalCardsCount === 1) {
-    gridLayoutClass = "grid-cols-1 grid-rows-1";
-  } else if (totalCardsCount === 2) {
+  if (dashboardLayoutMode === 'rows') {
+    gridLayoutClass = "grid-cols-1 auto-rows-fr";
+  } else if (dashboardLayoutMode === 'cols') {
     gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-1";
-  } else if (totalCardsCount <= 4) {
-    gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-2";
   } else {
-    gridLayoutClass = "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr";
+    if (totalCardsCount === 1) {
+      gridLayoutClass = "grid-cols-1 grid-rows-1";
+    } else if (totalCardsCount === 2) {
+      gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-1";
+    } else if (totalCardsCount <= 4) {
+      gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-2";
+    } else {
+      gridLayoutClass = "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr";
+    }
   }
 
   return (
@@ -275,18 +310,30 @@ export function SpaceDashboard({
         }
 
         return (
-          <div key={fileId} className="relative w-full h-full min-h-0 min-w-0 flex flex-col">
-            {/* Blue Destination Indicator Line when dragging over target card */}
-            {isDragOver && (
-              <div className="absolute -top-2 left-0 right-0 h-1 bg-[#3186FF] rounded-full shadow-[0_0_8px_rgba(49,134,255,0.8)] z-30 pointer-events-none animate-pulse" />
+          <div key={fileId} className="relative w-full h-full min-h-[340px] flex flex-col">
+            {/* Dynamic Destination Line Indicators */}
+            {isDragOver && dragOverPosition === 'top' && (
+              <div className="absolute -top-2 left-0 right-0 h-1 bg-[#3186FF] rounded-full shadow-[0_0_10px_rgba(49,134,255,0.9)] z-30 pointer-events-none animate-pulse" />
+            )}
+            {isDragOver && dragOverPosition === 'bottom' && (
+              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-[#3186FF] rounded-full shadow-[0_0_10px_rgba(49,134,255,0.9)] z-30 pointer-events-none animate-pulse" />
+            )}
+            {isDragOver && dragOverPosition === 'left' && (
+              <div className="absolute -left-2 top-0 bottom-0 w-1 bg-[#3186FF] rounded-full shadow-[0_0_10px_rgba(49,134,255,0.9)] z-30 pointer-events-none animate-pulse" />
+            )}
+            {isDragOver && dragOverPosition === 'right' && (
+              <div className="absolute -right-2 top-0 bottom-0 w-1 bg-[#3186FF] rounded-full shadow-[0_0_10px_rgba(49,134,255,0.9)] z-30 pointer-events-none animate-pulse" />
             )}
             <Card
               theme={theme}
               isSelected={isSelected}
               isDragOver={isDragOver}
-              className="w-full h-full min-h-0 flex-1"
+              className="w-full h-full flex-1 flex flex-col overflow-hidden"
               onDragOver={(e) => handleDragOver(e, fileId)}
-              onDragLeave={() => setDragOverCardId(null)}
+              onDragLeave={() => {
+                setDragOverCardId(null);
+                setDragOverPosition(null);
+              }}
               onDrop={(e) => handleDrop(e, fileId)}
               header={
                 <CardHeader

@@ -9,6 +9,7 @@ interface FileRowProps {
   isAnimating?: boolean;
   theme?: 'light' | 'dark';
   onClick?: () => void;
+  leftElement?: React.ReactNode;
   rightElement?: React.ReactNode;
   className?: string;
   dataId?: string;
@@ -22,6 +23,7 @@ export function FileRow({
   isAnimating = false,
   theme = 'light',
   onClick,
+  leftElement,
   rightElement,
   className = '',
   dataId
@@ -43,6 +45,11 @@ export function FileRow({
       } ${className}`}
     >
       <div className="flex items-center gap-2.5 truncate pr-2 flex-1 min-w-0">
+        {leftElement && (
+          <div className="shrink-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            {leftElement}
+          </div>
+        )}
         <div className="shrink-0 transition-transform group-hover:scale-105">
           <FileIcon fileName={name} mimeType={mimeType} size={18} />
         </div>

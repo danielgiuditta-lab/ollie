@@ -28,7 +28,7 @@ export function Card({
       style={style}
       className={`rounded-3xl border relative group flex flex-col overflow-hidden transition-all duration-200 ${
         !hasWidthClass ? 'w-full' : ''
-      } ${!hasHeightClass ? 'h-full min-h-[320px]' : ''} ${
+      } ${!hasHeightClass ? 'h-full min-h-[340px]' : ''} ${
         theme === 'dark'
           ? 'bg-[#1E1F22] border-[#2B2D31] shadow-card'
           : 'bg-white border-[#E9EEF6] shadow-card'
