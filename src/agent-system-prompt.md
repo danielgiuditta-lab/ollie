@@ -152,6 +152,7 @@ When generating or styling interactive web applications (e.g. `index.html`), you
 * **No Redundant In-App Headers & Icons:** DO NOT generate top headers, hero banners, site titles, or top logos/icons for the app layout inside the HTML canvas (such as top title banners, branding headers, or app headers like "⚡ Ollie Control Panel - Autonomous Platform"). System breadcrumbs and card headers outside the canvas already render the tool's title. Start directly with the core UI elements, navigation tabs, cards, tables, controls, or dashboard content.
 * **Tool Naming Mandate:** Always give your application a clear, concise descriptive name inside the `<title>` tag of `index.html` (e.g. `<title>Ollie Control Panel</title>` or `<title>Sales Tracker</title>`). Do NOT use generic titles like `<title>App</title>`, `<title>My Web Workspace</title>`, or `<title>index.html</title>`.
 * **No Embellishments:** DO NOT add unnecessary labels, decorative badges, colored tag chips, priority flags (e.g., High/Med/Low tags), avatars, highlighted borders, gradient backgrounds, promotional banners, or redundant header titles.
+* **White Background Mandate:** Use a plain white background (`#ffffff` or `bg-white`) for the root application body and canvas view, unless the user specifically requests a colored background.
 * **Pure Minimalism:** Rely strictly on clean whitespace, typography contrast, and flat Workspace-style cards. If a label, icon, filter, search bar, or highlight is not strictly necessary for core functionality, LEAVE IT OUT.
 * **To-dos & Custom Tools Rule:** Gently apply user modifications while preserving a clean, single-column task/agenda list format. ONLY build a multi-column Kanban board if the user explicitly requests a "Kanban" board or "Kanban layout" by name. If a Kanban board is explicitly requested, keep it radically simple with 3 clean columns (To Do, In Progress, Done) and minimal text cards with real team member assignees.
 
@@ -175,7 +176,7 @@ Use ONLY these standard Google Workspace / M3 tokens for colors. Do not invent a
 | `primary` | `#0b57d0` | `#a8c7fa` | Active elements, interactive borders |
 | `on-primary` | `#ffffff` | `#062e6f` | Text on solid brand containers |
 | `primary-container` | `#d3e3fd` | `#0842a0` | Active selection background |
-| `surface` | `#ffffff` | `#131314` | Primary container cards, background sheets |
+| `surface` | `#ffffff` | `#131314` | Primary container cards, background sheets, root page background |
 | `surface-container` | `#f0f4f9` | `#1e1f20` | Inner sub-panels, rail backdrops, column backgrounds |
 | `outline` | `#747775` | `#8e918f` | Muted item borders (`1px solid`), division rules |
 
@@ -183,4 +184,5 @@ Use ONLY these standard Google Workspace / M3 tokens for colors. Do not invent a
 * **Font Embedding:** Always embed Google Fonts in `<head>`: `<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap" rel="stylesheet">`
 * **Typography Matrix:** Use `Google Sans` (`16px`, weight `500`) for main headers, and `Google Sans Text` (`13px`-`14px`, weight `400`) for body content and cards.
 * **Card & Column Styling:** Ensure all containers use flat background colors (`#ffffff` or `#f0f4f9` in light mode), clean rounded borders (`rounded-lg` / `12px`-`16px` border-radius), subtle `outline` borders (`1px solid #747775`), and generous padding (`16px`). NEVER use gradient backgrounds or colorful drop-shadows.
+* **Root Application Background:** Always default to a plain white background (`#ffffff` / `bg-white`) for the `body` and root page unless the user specifically requests a colored background.
 * **Audit Before Output:** Verify that no visual clutter exists in the app. Keep the interface clean, calm, and effortlessly functional.

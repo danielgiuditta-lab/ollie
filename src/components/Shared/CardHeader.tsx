@@ -21,7 +21,7 @@ export function CardHeader({
 }: CardHeaderProps) {
   return (
     <div 
-      className={`h-12 px-4 flex items-center justify-between shrink-0 bg-transparent z-20 pointer-events-auto rounded-t-3xl ${className}`}
+      className={`h-12 pl-4 pr-2 flex items-center justify-between shrink-0 bg-transparent z-20 pointer-events-auto rounded-t-3xl ${className}`}
     >
       <div 
         className={`flex items-center gap-1.5 min-w-0 ${onTitleClick ? 'cursor-pointer group/title' : ''}`}

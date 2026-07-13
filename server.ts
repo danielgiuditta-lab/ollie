@@ -1845,7 +1845,7 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
 - TOOL NAMING MANDATE: Always give your application a clear, concise descriptive name inside the <title> tag of index.html (e.g. <title>Ollie Control Panel</title> or <title>Sales Tracker</title>). Do NOT use generic titles like <title>App</title>, <title>My Web Workspace</title>, or <title>index.html</title>.
 - KANBAN BOARD MANDATE: ONLY build a multi-column Kanban board if the user EXPLICITLY requests a "Kanban" board or "Kanban layout" by name. For standard tools, to-do lists, or inferred tasks, default to a clean single-column agenda or list layout.
 - If the user explicitly asks for a Kanban board: keep it radically simple with 3 clean columns (To Do, In Progress, Done) and minimal text cards, assigning realistic workspace team members with real photo avatars.
-- Use only plain M3 colors (surface #ffffff, surface-container #f0f4f9, primary #0b57d0, outline #747775). No gradients, decorative badges, or unnecessary embellishments! Keep it clean, minimal, and elegant.`;
+- Use only plain M3 colors (surface #ffffff, surface-container #f0f4f9, primary #0b57d0, outline #747775). ALWAYS use a plain white background (surface #ffffff / bg-white) for the root application body and main layout unless the user specifically requests a colored background. No gradients, decorative badges, or unnecessary embellishments! Keep it clean, minimal, and elegant.`;
 
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
