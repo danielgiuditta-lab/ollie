@@ -111,6 +111,7 @@ Inferred Tasks (`To-dos`) function as an out-of-the-box system widget artifact (
 
 ### 6.1 Unified Pinned Card Frame & Header (`SpaceDashboard.tsx`)
 - The `To-dos` widget renders inside the exact same container frame as other pinned artifacts.
+- **Side-by-Side Dashboard Co-existence**: When pinning artifacts from a Space to Home (or a Space dashboard), `handlePinArtifact` resolves existing pins via `getSpacePins(targetId)` to preserve default system pins (`'todo-card'`). The out-of-the-box inferred task unit and newly pinned space artifacts render side-by-side next to each other on the dashboard grid without replacing one another.
 - Header toolbar features:
   - Title: **To-dos**
   - Item Count Badge: E.g., `todoItems.length`

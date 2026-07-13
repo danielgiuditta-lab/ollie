@@ -3772,50 +3772,48 @@ export default function App() {
       file.id = fileId;
     }
 
-    if (!workspaceCacheRef.current[targetId]) {
-      workspaceCacheRef.current[targetId] = { sandboxFiles: [], ingestedFiles: [], messages: [], envId: '', sandboxUrl: '', projectName: '', selectedFile: null, indexFileSelected: false } as any;
-    }
-    const curPins = workspaceCacheRef.current[targetId].pinnedArtifactIds || [];
+    const curPins = getSpacePins(targetId);
     if (!curPins.includes(fileId)) {
       const nextPins = [...curPins, fileId];
+      if (!workspaceCacheRef.current[targetId]) {
+        workspaceCacheRef.current[targetId] = { sandboxFiles: [], ingestedFiles: [], messages: [], envId: '', sandboxUrl: '', projectName: '', selectedFile: null, indexFileSelected: false } as any;
+      }
       workspaceCacheRef.current[targetId] = {
         ...workspaceCacheRef.current[targetId],
         pinnedArtifactIds: nextPins
       };
-    }
 
-    if (isHomeChatId(targetId)) {
-      const nextPins = workspaceCacheRef.current[targetId]?.pinnedArtifactIds || [];
-      setHomePins(nextPins);
-    }
+      if (isHomeChatId(targetId)) {
+        setHomePins(nextPins);
+      }
 
-    let updatedInLists = false;
-    const updatePins = (p: any) => {
-      if (p && (p.id === targetId || (p.type === 'space' && p.activeSpaceId === targetId))) {
-        updatedInLists = true;
-        const currentPins = p.pinnedArtifactIds || [];
-        if (currentPins.includes(fileId)) return p;
-        const nextPins = [...currentPins, fileId];
+      let updatedInLists = false;
+      const updatePins = (p: any) => {
+        if (p && (p.id === targetId || (p.type === 'space' && p.activeSpaceId === targetId))) {
+          updatedInLists = true;
+          const currentPins = p.pinnedArtifactIds !== undefined ? p.pinnedArtifactIds : curPins;
+          if (currentPins.includes(fileId)) return p;
+          const updatedNextPins = [...currentPins, fileId];
+          fetch(`/api/chats/${targetId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...p, pinnedArtifactIds: updatedNextPins })
+          }).catch(err => console.error("Failed to save pinned artifact:", err));
+          return { ...p, pinnedArtifactIds: updatedNextPins };
+        }
+        return p;
+      };
+
+      setProjects(prev => prev.map(updatePins));
+      setRecentTasks(prev => prev.map(updatePins));
+
+      if (!updatedInLists) {
         fetch(`/api/chats/${targetId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...p, pinnedArtifactIds: nextPins })
-        }).catch(err => console.error("Failed to save pinned artifact:", err));
-        return { ...p, pinnedArtifactIds: nextPins };
+          body: JSON.stringify({ id: targetId, pinnedArtifactIds: nextPins })
+        }).catch(err => console.error("Failed to save pinned artifact to target:", err));
       }
-      return p;
-    };
-
-    setProjects(prev => prev.map(updatePins));
-    setRecentTasks(prev => prev.map(updatePins));
-
-    if (!updatedInLists) {
-      const nextPins = workspaceCacheRef.current[targetId]?.pinnedArtifactIds || [fileId];
-      fetch(`/api/chats/${targetId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: targetId, pinnedArtifactIds: nextPins })
-      }).catch(err => console.error("Failed to save pinned artifact to target:", err));
     }
   };
 
@@ -3823,17 +3821,18 @@ export default function App() {
     const targetId = targetSpaceId || activeSpaceId || getHomeChatId();
     if (!targetId || !fileId) return;
 
-    if (workspaceCacheRef.current[targetId]) {
-      const curPins = workspaceCacheRef.current[targetId].pinnedArtifactIds || [];
-      const nextPins = curPins.filter((id: string) => id !== fileId);
-      workspaceCacheRef.current[targetId] = {
-        ...workspaceCacheRef.current[targetId],
-        pinnedArtifactIds: nextPins
-      };
+    const curPins = getSpacePins(targetId);
+    const nextPins = curPins.filter((id: string) => id !== fileId);
+
+    if (!workspaceCacheRef.current[targetId]) {
+      workspaceCacheRef.current[targetId] = { sandboxFiles: [], ingestedFiles: [], messages: [], envId: '', sandboxUrl: '', projectName: '', selectedFile: null, indexFileSelected: false } as any;
     }
+    workspaceCacheRef.current[targetId] = {
+      ...workspaceCacheRef.current[targetId],
+      pinnedArtifactIds: nextPins
+    };
 
     if (isHomeChatId(targetId)) {
-      const nextPins = workspaceCacheRef.current[targetId]?.pinnedArtifactIds || [];
       setHomePins(nextPins);
     }
 
@@ -3841,8 +3840,6 @@ export default function App() {
     const updatePins = (p: any) => {
       if (p && (p.id === targetId || (p.type === 'space' && p.activeSpaceId === targetId))) {
         updatedInLists = true;
-        const currentPins = p.pinnedArtifactIds || [];
-        const nextPins = currentPins.filter((id: string) => id !== fileId);
         fetch(`/api/chats/${targetId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3852,11 +3849,11 @@ export default function App() {
       }
       return p;
     };
+
     setProjects(prev => prev.map(updatePins));
     setRecentTasks(prev => prev.map(updatePins));
 
     if (!updatedInLists && workspaceCacheRef.current[targetId]) {
-      const nextPins = workspaceCacheRef.current[targetId]?.pinnedArtifactIds || [];
       fetch(`/api/chats/${targetId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3866,18 +3863,26 @@ export default function App() {
   };
 
   const handleReorderPins = (newOrderedIds: string[]) => {
-    if (!activeSpaceId) return;
+    const targetId = activeSpaceId || getHomeChatId();
+    if (!targetId) return;
 
-    if (workspaceCacheRef.current[activeSpaceId]) {
-      workspaceCacheRef.current[activeSpaceId] = {
-        ...workspaceCacheRef.current[activeSpaceId],
-        pinnedArtifactIds: newOrderedIds
-      };
+    if (!workspaceCacheRef.current[targetId]) {
+      workspaceCacheRef.current[targetId] = { sandboxFiles: [], ingestedFiles: [], messages: [], envId: '', sandboxUrl: '', projectName: '', selectedFile: null, indexFileSelected: false } as any;
+    }
+    workspaceCacheRef.current[targetId] = {
+      ...workspaceCacheRef.current[targetId],
+      pinnedArtifactIds: newOrderedIds
+    };
+
+    if (isHomeChatId(targetId)) {
+      setHomePins(newOrderedIds);
     }
 
+    let updatedInLists = false;
     const updatePins = (p: any) => {
-      if (p && (p.id === activeSpaceId || (p.type === 'space' && p.activeSpaceId === activeSpaceId))) {
-        fetch(`/api/chats/${activeSpaceId}`, {
+      if (p && (p.id === targetId || (p.type === 'space' && p.activeSpaceId === targetId))) {
+        updatedInLists = true;
+        fetch(`/api/chats/${targetId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...p, pinnedArtifactIds: newOrderedIds })
@@ -3886,8 +3891,17 @@ export default function App() {
       }
       return p;
     };
+
     setProjects(prev => prev.map(updatePins));
     setRecentTasks(prev => prev.map(updatePins));
+
+    if (!updatedInLists) {
+      fetch(`/api/chats/${targetId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: targetId, pinnedArtifactIds: newOrderedIds })
+      }).catch(err => console.error("Failed to save reordered pins to target:", err));
+    }
   };
 
   const handleArtifactSelect = (file: any) => {

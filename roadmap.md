@@ -32,7 +32,7 @@ This file tracks the development milestones for adding Google Workspace integrat
 - [x] Build sub-tabs and canvas views to list email threads, chat spaces, and docs comments in detail
 - [x] Enforce strict unique ID filtering (zero name-matching) across `recentTasks` and `projects` to allow concurrent child chats under a Space with distinct iconography (Sites, Doc, Forms)
 - [x] Enforce root space raw object preservation (`processChatSession`), dual-collection pinning synchronization (`getSpacePins`), and global `isParentSpaceClick` guards across memory cache hits, database restoration, and Drive context ingestion fallbacks
-- [x] Support pinning of vibe coded apps and artifacts directly on the Home dashboard (`HomeLanding.tsx`) alongside inferred to-do items
+- [x] Support pinning of vibe coded apps and artifacts directly on the Home dashboard (`HomeLanding.tsx`) alongside out-of-the-box inferred to-do items (`todo-card`), ensuring newly pinned space artifacts sit side-by-side with inferred task cards without replacing them
 
 ### 📍 Phase 6: Project Spaces & Multiplayer Collaboration
 - [x] Implement Private Spaces (Just Me) for isolated document and code authoring

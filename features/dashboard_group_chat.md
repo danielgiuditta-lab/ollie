@@ -51,7 +51,7 @@ const getSpacePins = (spaceId: string | null) => {
 * **Library Panel Visibility:** The right-hand `<CanvasSidebar />` (Library drawer) MUST also include `viewState === 'dashboard'` in its rendering condition so users can toggle and view space library files while on the dashboard.
 
 ### 1.6 Home Dashboard Pinning Support (`<HomeLanding />`)
-* **Home Pinning Grid:** In addition to custom space dashboards, the root Home dashboard (`viewState === 'home'`, via `<HomeLanding />`) supports pinning vibe coded apps and library artifacts. When `pinnedArtifactIds` is non-empty on Home, `<HomeLanding />` embeds `<SpaceDashboard />` directly above the "To Do:" section.
+* **Home Pinning Grid:** In addition to custom space dashboards, the root Home dashboard (`viewState === 'home'`, via `<HomeLanding />`) supports pinning vibe coded apps and library artifacts. When pinning artifacts from spaces to Home, `handlePinArtifact` resolves existing pins via `getSpacePins(targetId)` so that out-of-the-box inferred task units (`'todo-card'`) and newly pinned space artifacts render side-by-side in `<SpaceDashboard />` without replacing each other.
 * **Cache & Persistence Synchronization:** To guarantee immediate responsiveness on Home, all pinning operations update `workspaceCacheRef.current[activeSpaceId]` alongside `projects` and `recentTasks`, and the backend endpoint (`POST /api/chats/:chatId`) explicitly destructures and stores `pinnedArtifactIds`.
 
 ---
