@@ -420,14 +420,11 @@ export function NativeViewer({
       const trimmed = line.trim();
       const lower = trimmed.toLowerCase();
       if (!lower.startsWith('author:') && !lower.startsWith('contributors:') && !lower.startsWith('related files:')) {
-        if (trimmed.startsWith('# ') && !hasExtractedH1) {
-          title = trimmed.replace(/^#\s+/, '').trim();
+        if ((trimmed.startsWith('# ') || trimmed.startsWith('#')) && !hasExtractedH1) {
+          title = trimmed.replace(/^#+\s*/, '').trim();
           hasExtractedH1 = true;
-        } else if (idx === 0 && trimmed.length > 0 && !trimmed.startsWith('#') && trimmed.length < 100) {
-          title = trimmed;
-        } else {
-          bodyParagraphs.push(line);
         }
+        bodyParagraphs.push(line);
       }
     });
 
@@ -449,34 +446,11 @@ export function NativeViewer({
     }
 
     if (hideHeader && isPreviewCard) {
-      const cleanParagraphs = bodyParagraphs
-        .map((p: string) => p.replace(/^[#*\-\d.\s]+/, '').trim())
-        .filter((p: string) => p.length > 0);
+      const displayContent = file.content || parsedContent || title;
       return (
-        <div className="w-full h-full bg-white dark:bg-[#1E1F22] p-2 flex flex-col justify-between text-left select-none overflow-hidden border border-slate-100 dark:border-neutral-800 font-sans">
-          <div className="flex justify-between items-center w-full min-w-0">
-            <span className="text-[8.5px] font-bold text-slate-900 dark:text-white tracking-wide truncate pr-1">
-              {title}
-            </span>
-            <div className="w-2.5 h-2.5 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
-              <CheckCircle2 size={7} className="text-white" />
-            </div>
-          </div>
-          
-          <div className="space-y-0.5 my-auto overflow-hidden">
-            {cleanParagraphs.slice(0, 2).map((para: string, idx: number) => (
-              <p key={idx} className="text-[7.5px] leading-tight text-slate-600 dark:text-slate-300 truncate font-sans">
-                {para}
-              </p>
-            ))}
-            {cleanParagraphs.length === 0 && (
-              <p className="text-[7.5px] text-slate-400 italic">Document draft</p>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between w-full pt-1 border-t border-slate-100 dark:border-neutral-800 text-[7px] text-slate-400">
-            <span className="truncate">Google Doc</span>
-            <span className="shrink-0 text-blue-500 font-medium">Updated</span>
+        <div className="w-full h-full bg-white dark:bg-[#1E1F22] p-3 flex flex-col text-left select-none overflow-hidden font-sans">
+          <div className="markdown-body prose max-w-none text-[9px] leading-relaxed text-slate-700 dark:text-slate-200 font-sans overflow-hidden space-y-1">
+            <ReactMarkdown>{displayContent}</ReactMarkdown>
           </div>
         </div>
       );
@@ -865,34 +839,25 @@ export function NativeViewer({
     if (hideHeader && isPreviewCard) {
       const firstSlide = slides[0] || { title: title, bullets: [] };
       return (
-        <div className="w-full h-full bg-[#181A20] p-2 flex flex-col justify-between text-left relative overflow-hidden text-white select-none font-sans border border-slate-700/50 rounded-2xl shadow-inner">
-          <div className="flex justify-between items-center w-full min-w-0 border-b border-white/10 pb-1">
-            <div className="flex items-center gap-1 min-w-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#fbbc05] shrink-0"></span>
-              <span className="text-[8.5px] font-bold text-white tracking-wide truncate pr-1">
-                {firstSlide.title || title}
-              </span>
-            </div>
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-              <CheckCircle2 size={7} className="text-white" />
-            </div>
-          </div>
-          
-          <div className="space-y-0.5 w-full my-auto pl-0.5 pr-0.5">
-            {firstSlide.bullets.slice(0, 3).map((bullet: string, idx: number) => (
-              <div key={idx} className="flex items-center gap-1 min-w-0">
-                <span className="w-1 h-1 rounded-full bg-[#fbbc05] shrink-0"></span>
-                <span className="text-[7.5px] leading-tight text-slate-200 truncate font-normal">{bullet}</span>
-              </div>
-            ))}
-            {firstSlide.bullets.length === 0 && (
-              <div className="text-[7.5px] text-slate-400 italic">Slide 1 Overview</div>
-            )}
+        <div className="w-full h-full bg-[#18191B] text-white p-3 flex flex-col justify-between text-left select-none overflow-hidden font-sans">
+          <div>
+            <h1 className="text-[11px] leading-snug font-extrabold text-white mb-2 tracking-tight font-sans truncate shrink-0">
+              {firstSlide.title || title}
+            </h1>
+            
+            <ul className="space-y-1 text-[9.5px] text-slate-200 leading-snug list-none pl-0">
+              {firstSlide.bullets.slice(0, 4).map((bullet: string, idx: number) => (
+                <li key={idx} className="flex gap-1.5 items-start min-w-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#fbbc05] shrink-0 mt-1"></span>
+                  <span className="text-[9.5px] text-slate-200 font-normal truncate">{bullet}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="flex items-center justify-between w-full pt-1 border-t border-white/10 text-[7px] text-slate-400">
+          <div className="flex justify-between items-center text-[8px] text-slate-400 border-t border-slate-800 pt-1.5 mt-2">
             <span className="truncate font-medium">{title}</span>
-            <span className="shrink-0 text-amber-300 font-semibold px-1 py-0.2 rounded bg-amber-400/10">Slide 1</span>
+            <span className="text-[#fbbc05] font-semibold shrink-0">Slide 1</span>
           </div>
         </div>
       );

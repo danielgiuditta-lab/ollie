@@ -61,6 +61,10 @@ export default function App() {
     ingestedFiles, setIngestedFiles
   } = useDriveSync();
 
+  useEffect(() => {
+    (window as any).__DRIVE_FILES__ = driveFiles;
+  }, [driveFiles]);
+
   const {
     recentTasks, setRecentTasks,
     projects, setProjects,

@@ -17,6 +17,10 @@ interface InferredTaskCardProps {
     hasPreview?: boolean;
     previewContent?: string;
     filesToLoad?: any[];
+    driveId?: string;
+    fileId?: string;
+    draftData?: any;
+    content?: string;
   };
   getFileIcon: (mimeType?: string) => string;
   onClick: () => void;
@@ -50,23 +54,66 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
 
   const primaryFile = item.filesToLoad && item.filesToLoad.length > 0 ? item.filesToLoad[0] : null;
 
-  const previewFile = primaryFile ? {
-    ...primaryFile,
-    type: isSlideItem ? 'slide' : primaryFile.type,
-    taskType: isSlideItem ? 'slide' : primaryFile.taskType,
-    mimeType: isSlideItem ? 'application/vnd.google-apps.presentation' : primaryFile.mimeType,
-    name: isSlideItem && !primaryFile.name.endsWith('.gslides') && !primaryFile.name.endsWith('.pptx')
-      ? primaryFile.name.replace(/\.[^/.]+$/, "") + '.gslides'
-      : primaryFile.name
-  } : {
-    id: item.id + '-file',
-    name: isSlideItem 
-      ? (item.sourceName || item.title || 'Slide Deck').replace(/\.[^/.]+$/, "") + '.gslides' 
-      : (item.sourceName || item.title || 'Artifact'),
-    type: isSlideItem ? 'slide' : 'doc',
-    taskType: isSlideItem ? 'slide' : 'doc',
-    mimeType: isSlideItem ? 'application/vnd.google-apps.presentation' : (item.sourceMimeType || 'application/vnd.google-apps.document'),
-    content: item.previewContent || item.description || item.title
+  const driveFilesList: any[] = (window as any).__DRIVE_FILES__ || [];
+  const matchedInDrive = driveFilesList.find((f: any) => {
+    if (!f || !f.name) return false;
+    const fNameLower = f.name.toLowerCase();
+    const fNameClean = fNameLower.replace(/\.[^/.]+$/, '').trim();
+    const fId = String(f.id || f.driveId || '').toLowerCase();
+
+    const checkTerms = [
+      item.sourceName,
+      item.driveId,
+      item.fileId,
+      item.id,
+      item.title,
+      item.description
+    ].filter(Boolean).map((s: string) => String(s).toLowerCase());
+
+    return checkTerms.some(term => 
+      (fId && fId.length > 5 && term.includes(fId)) || 
+      (fNameClean && fNameClean.length > 2 && (term.includes(fNameClean) || fNameClean.includes(term)))
+    );
+  });
+
+  const fileToUse = matchedInDrive || primaryFile;
+
+  const rawContent = (
+    item.draftData?.draftContent ||
+    item.content ||
+    fileToUse?.content ||
+    fileToUse?.realDocText ||
+    item.previewContent ||
+    item.description ||
+    item.title ||
+    ''
+  );
+
+  const h1Match = typeof rawContent === 'string' ? rawContent.match(/^#\s+(.+)$/m) : null;
+  const extractedHeading = h1Match && h1Match[1] ? h1Match[1].trim() : null;
+
+  const extractedName = extractedHeading || 
+                        fileToUse?.name || 
+                        item.description?.match(/['"]([^'"]+)['"]/)?.[1] || 
+                        item.title?.match(/['"]([^'"]+)['"]/)?.[1] || 
+                        item.sourceName || 
+                        item.title || 
+                        'Slide Presentation';
+
+  const resolvedName = extractedName.replace(/\.[^/.]+$/, '');
+
+  const formattedContent = (rawContent && rawContent.trim().startsWith('#'))
+    ? rawContent
+    : `# ${resolvedName}\n\n${rawContent}`;
+
+  const previewFile = {
+    ...(fileToUse || {}),
+    id: (fileToUse?.id || item.id) + '-preview',
+    type: isSlideItem ? 'slide' : (fileToUse?.type || 'doc'),
+    taskType: isSlideItem ? 'slide' : (fileToUse?.taskType || 'doc'),
+    mimeType: isSlideItem ? 'application/vnd.google-apps.presentation' : (fileToUse?.mimeType || item.sourceMimeType || 'application/vnd.google-apps.document'),
+    name: isSlideItem ? `${resolvedName}.gslides` : resolvedName,
+    content: formattedContent
   };
 
   return (
