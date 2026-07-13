@@ -1,0 +1,44 @@
+{
+  "chatId": "space-qa-test-1783962585158",
+  "projectName": "New Workspace",
+  "chatName": "QA Target Space",
+  "type": "space",
+  "taskType": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [
+    {
+      "id": "msg-1",
+      "role": "bot",
+      "text": "Welcome to QA Space",
+      "timestamp": "10:00 AM"
+    },
+    {
+      "id": "msg-shared-1783962585473",
+      "role": "bot",
+      "text": "Shared 1 source file(s) to this Space: **Architecture_Overview.pdf**",
+      "timestamp": "10:05 AM"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": null,
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "file-1",
+      "name": "existing_doc.md",
+      "type": "file",
+      "mimeType": "text/markdown"
+    },
+    {
+      "id": "file-shared-99",
+      "name": "Architecture_Overview.pdf",
+      "type": "file",
+      "mimeType": "application/pdf"
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [],
+  "updatedAt": "2026-07-13T17:09:45.476Z"
+}

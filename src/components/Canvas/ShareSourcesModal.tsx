@@ -97,17 +97,12 @@ export function ShareSourcesModal({
       >
         {/* Header */}
         <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-          <div>
-            <h2 
-              className="text-lg font-semibold tracking-tight leading-snug"
-              style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
-            >
-              Share Sources
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
-              Select files to share with another space
-            </p>
-          </div>
+          <h2 
+            className="text-lg font-normal tracking-tight leading-snug"
+            style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+          >
+            Share Sources and Skills
+          </h2>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer border-none bg-transparent"
@@ -141,10 +136,8 @@ export function ShareSourcesModal({
             </button>
           </div>
 
-          {/* Library Items Checklist */}
-          <div className={`max-h-56 overflow-y-auto rounded-2xl p-2 flex flex-col gap-1 ${
-            isDark ? 'bg-[#121314]' : 'bg-slate-50'
-          }`}>
+          {/* Library Items Checklist (transparent container, styled cells) */}
+          <div className="max-h-56 overflow-y-auto bg-transparent p-0 flex flex-col gap-1.5 scrollbar-thin">
             {filteredItems.length === 0 ? (
               <div className="py-6 text-center text-xs text-slate-400 font-medium">
                 No matching sources found
@@ -159,10 +152,10 @@ export function ShareSourcesModal({
                   <div
                     key={itemId}
                     onClick={() => toggleSelectItem(itemId)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-colors ${
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl cursor-pointer transition-colors ${
                       isChecked 
-                        ? (isDark ? 'bg-blue-950/30 text-white' : 'bg-blue-50/70 text-slate-900')
-                        : (isDark ? 'hover:bg-white/5 text-slate-300' : 'hover:bg-white text-slate-700')
+                        ? (isDark ? 'bg-blue-950/40 text-blue-100' : 'bg-blue-50/80 text-blue-900')
+                        : (isDark ? 'bg-[#282A2D] hover:bg-[#35373A] text-slate-200' : 'bg-slate-100/80 hover:bg-slate-200/70 text-slate-800')
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 pr-2">

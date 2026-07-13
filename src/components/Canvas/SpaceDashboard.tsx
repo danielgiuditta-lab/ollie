@@ -234,7 +234,7 @@ export function SpaceDashboard({
 
   if (totalCardsCount === 0) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-transparent text-center select-none animate-in fade-in duration-300">
+      <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-transparent text-center select-none animate-in fade-in duration-300">
         <div className="max-w-md p-8 rounded-3xl border border-dashed border-slate-300 dark:border-neutral-800 bg-white/50 dark:bg-[#18191B]/50 backdrop-blur-sm flex flex-col items-center gap-4 shadow-sm">
           <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
             <Pin size={24} />
@@ -272,7 +272,7 @@ export function SpaceDashboard({
   return (
     <div 
       ref={containerRef}
-      className={`w-full h-full grid ${gridLayoutClass} gap-4 p-4 overflow-y-auto select-none items-stretch justify-stretch`}
+      className={`w-full h-full grid ${gridLayoutClass} gap-6 p-6 overflow-y-auto select-none items-stretch justify-stretch`}
     >
       {pinnedFiles.map((file, idx) => {
         const fileId = file.id || file.driveId || 'file-' + idx;
@@ -324,16 +324,16 @@ export function SpaceDashboard({
           >
             {/* Dynamic Destination Line Indicators */}
             {isDragOver && dragOverPosition === 'top' && (
-              <div className="absolute -top-3 -left-1 -right-1 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+              <div className="absolute -top-4 -left-1 -right-1 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             {isDragOver && dragOverPosition === 'bottom' && (
-              <div className="absolute -bottom-3 -left-1 -right-1 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+              <div className="absolute -bottom-4 -left-1 -right-1 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             {isDragOver && dragOverPosition === 'left' && (
-              <div className="absolute -left-3 -top-1 -bottom-1 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+              <div className="absolute -left-4 -top-1 -bottom-1 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             {isDragOver && dragOverPosition === 'right' && (
-              <div className="absolute -right-3 -top-1 -bottom-1 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+              <div className="absolute -right-4 -top-1 -bottom-1 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             <Card
               theme={theme}
