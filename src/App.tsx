@@ -1543,9 +1543,6 @@ export default function App() {
                 return f;
               }));
               setSelectedFile(prev => prev ? { ...prev, name: finalDocName } : null);
-              if (!initialSpaceId || isHomeChatId(initialSpaceId)) {
-                setProjectName(smartTitle);
-              }
             }
           }
 
@@ -1630,9 +1627,7 @@ export default function App() {
     if (viewState === 'home' && !activeAiMode) {
       setSandboxFiles([]);
       setSelectedFile(null);
-      if (!isHomeChatId(initialSpaceId)) {
-        setProjectName("Building project...");
-      }
+      // Maintain parent Space title in projectName
       setViewState('app');
       setActiveSidebar('gemini');
     }
@@ -1949,8 +1944,6 @@ export default function App() {
       .then(data => {
         if (data.summary && data.summary !== 'app') {
           setCurrentTask(data.summary);
-          const formatted = data.summary.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-          setProjectName(formatted);
         }
       })
       .catch(err => console.error("Failed to summarize:", err));
@@ -2145,7 +2138,6 @@ export default function App() {
 
               let parsedFilesOuter: any[] = [];
               if (parsedReport) {
-                if (parsedReport.title) { setProjectName(parsedReport.title); }
                 const appUrl = parsedReport.app_url || parsedReport.url;
                 if (appUrl) {
                   setSandboxUrl(appUrl);
@@ -2258,9 +2250,6 @@ export default function App() {
                       if (isHtml) {
                          finalContent = finalFileContent;
                          const titleMatch = finalFileContent.match(/<title>([^<]+)<\/title>/i);
-                         if (titleMatch && titleMatch[1]) {
-                             setProjectName(titleMatch[1].trim());
-                         }
                          const idPrefix = targetChatId || activeChatId || 'sandbox';
                          parsedFiles.push({ name: inferredName || 'index.html', type: 'code', content: finalContent, id: `${idPrefix}-file-${parsedFiles.length}` });
                       } else if (lang === 'css' || inferredName === 'styles.css') {
@@ -2405,9 +2394,7 @@ export default function App() {
                       ? (resolvedName || (currentTask !== 'app' ? currentTask : 'New Application'))
                       : projectName;
 
-                    if (!initialSpaceId || isHomeChatId(initialSpaceId)) {
-                      setProjectName(activeName);
-                    }
+                    // Keep parent Space title in projectName
                     
                     const sessionItem = {
                       id: activeFolder,
@@ -5071,24 +5058,20 @@ export default function App() {
       name = 'document.doc';
       content = `# New document\n\n## Tell me what you want to write`;
       mimeType = 'application/vnd.google-apps.document';
-      if (isHomeContext) setProjectName('New Document');
       setCurrentTask('doc');
     } else if (type === 'slide') {
       name = 'presentation.gslides';
       content = '# Slide 1\n\n- ';
       mimeType = 'application/vnd.google-apps.presentation';
-      if (isHomeContext) setProjectName('New Slide Deck');
       setCurrentTask('slide');
     } else if (type === 'sheet') {
       name = 'spreadsheet.gsheet';
       content = 'A,B,C,D,E';
       mimeType = 'application/vnd.google-apps.spreadsheet';
-      if (isHomeContext) setProjectName('New Spreadsheet');
     } else if (type === 'pix') {
       name = 'image.png';
       content = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%233186FF;stop-opacity:1"/><stop offset="100%" style="stop-color:%23DFF1FD;stop-opacity:1"/></linearGradient></defs><rect width="100%" height="100%" fill="url(%23g)"/><text x="50%" y="50%" font-family="sans-serif" font-size="32" font-weight="bold" fill="white" dominant-baseline="middle" text-anchor="middle">Ask Gemini to Generate Image</text></svg>`;
       mimeType = 'image/png';
-      if (isHomeContext) setProjectName('New Image');
     } else if (type === 'site') {
       name = 'index.html';
       content = `<!DOCTYPE html>
@@ -5106,7 +5089,6 @@ export default function App() {
 </body>
 </html>`;
       mimeType = 'text/html';
-      if (isHomeContext) setProjectName('New Website');
     }
 
     let createdDriveId = undefined;

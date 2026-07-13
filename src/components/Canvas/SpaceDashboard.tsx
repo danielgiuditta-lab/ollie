@@ -263,7 +263,7 @@ export function SpaceDashboard({
             style={{ width: `calc(${widthPct}% - 8px)` }}
             className={`min-w-[320px] h-[460px] rounded-3xl border relative group flex flex-col overflow-hidden transition-all duration-200 ${
               theme === 'dark'
-                ? 'bg-[#1E1F22] border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
+                ? 'bg-[#1E1F22] border-[#2B2D31] shadow-card'
                 : 'bg-white border-[#E9EEF6] shadow-card'
             } ${isDragOver ? 'ring-2 ring-blue-500 scale-[1.01]' : ''}`}
             onDragOver={(e) => handleDragOver(e, fileId)}

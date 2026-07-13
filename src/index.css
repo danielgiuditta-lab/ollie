@@ -100,7 +100,7 @@
   --color-2c3e50: var(--theme-text-2c3e50);
   --color-11151a: var(--theme-text-11151a);
 
-  --shadow-card: var(--theme-shadow-card, 0 0 8px 4px #F8FAFD);
+  --shadow-card: var(--theme-shadow-card, 0 2px 10px 0 rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04));
   --color-border-card: var(--theme-border-card, #E9EEF6);
   --color-e9eef6: #E9EEF6;
 }
@@ -140,17 +140,17 @@ html.dark, html.dark body {
 .glass-panel {
   background: rgba(255, 255, 255, 1);
   border: 1px solid #E9EEF6;
-  box-shadow: var(--theme-shadow-card, 0 0 8px 4px #F8FAFD);
+  box-shadow: var(--theme-shadow-card, 0 2px 10px 0 rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04));
 }
 
 .dark .glass-panel {
   background: rgba(30, 31, 34, 1) !important;
   border: 1px solid #2B2D31 !important;
-  box-shadow: var(--theme-shadow-card, 0 0 8px 4px rgba(0, 0, 0, 0.4)) !important;
+  box-shadow: var(--theme-shadow-card, 0 2px 12px 0 rgba(0, 0, 0, 0.35), 0 1px 3px 0 rgba(0, 0, 0, 0.25)) !important;
 }
 
 .shadow-card {
-  box-shadow: var(--theme-shadow-card, 0 0 8px 4px #F8FAFD);
+  box-shadow: var(--theme-shadow-card, 0 2px 10px 0 rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04));
 }
 
 /* CSS Variables for Theming - Native browser-level theme token resolution */
@@ -172,7 +172,7 @@ html.dark, html.dark body {
   --theme-fff2e0: #FFF2E0;
   --theme-fbbc05: #fbbc05;
   
-  --theme-shadow-card: 0 0 8px 4px #F8FAFD;
+  --theme-shadow-card: 0 2px 10px 0 rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04);
   --theme-border-card: #E9EEF6;
   --theme-border-e9eef6: #E9EEF6;
 
@@ -296,7 +296,7 @@ html.dark, html.dark body {
   --theme-fff2e0: rgba(245, 158, 11, 0.1);
   --theme-fbbc05: #F59E0B;
   
-  --theme-shadow-card: 0 0 8px 4px rgba(0, 0, 0, 0.4);
+  --theme-shadow-card: 0 2px 12px 0 rgba(0, 0, 0, 0.35), 0 1px 3px 0 rgba(0, 0, 0, 0.25);
   --theme-border-card: #2B2D31;
   --theme-border-e9eef6: #2B2D31;
 

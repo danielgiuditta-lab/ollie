@@ -4,7 +4,7 @@ export const themeTokens = {
   // Group chat tokens
   groupChat: {
     bg: 'bg-slate-100/90 dark:bg-[#18191B]',
-    border: 'border-slate-200/80 dark:border-[#2B2D31]',
+    border: 'border-[#E9EEF6] dark:border-[#2B2D31]',
     facepileRing: 'ring-2 ring-slate-100/90 dark:ring-[#18191B]',
   },
 

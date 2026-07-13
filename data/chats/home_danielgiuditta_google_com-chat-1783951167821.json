@@ -1,0 +1,35 @@
+{
+  "chatId": "home_danielgiuditta_google_com-chat-1783951167821",
+  "projectName": "Home Dashboard",
+  "chatName": "Custom Tool",
+  "type": "site",
+  "taskType": "site",
+  "associatedFileId": "created-artifact-1783951167821",
+  "associatedFileName": "index.html",
+  "messages": [
+    {
+      "role": "bot",
+      "text": "What custom tool would you like to build?"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "home_danielgiuditta_google_com",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "index.html",
+      "type": "code",
+      "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>New Site Workspace</title>\n  <script src=\"https://cdn.tailwindcss.com\"></script>\n</head>\n<body class=\"bg-slate-50 text-slate-800 p-8 min-h-screen flex items-center justify-center\">\n  <div class=\"max-w-md w-full text-center space-y-4 bg-white p-8 rounded-3xl border shadow-sm\">\n    <h1 class=\"text-3xl font-bold text-slate-950\">My Web Workspace</h1>\n    <p class=\"text-xs text-slate-500\">Ask Gemini to design pages or integrate widgets.</p>\n  </div>\n</body>\n</html>",
+      "mimeType": "text/html",
+      "createdFromComposer": true,
+      "isDocJourney": false,
+      "id": "created-artifact-1783951167821"
+    }
+  ],
+  "userEmail": "danielgiuditta@google.com",
+  "members": [],
+  "pinnedArtifactIds": [
+    "todo-card"
+  ],
+  "updatedAt": "2026-07-13T13:59:27.933Z"
+}

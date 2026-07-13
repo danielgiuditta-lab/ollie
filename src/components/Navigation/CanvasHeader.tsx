@@ -136,8 +136,8 @@ export function CanvasHeader({
 
     const parentSpaceObj = (projects || []).find((p: any) => p && (p.id === activeSpaceId || p.activeSpaceId === activeSpaceId)) ||
                            (recentTasks || []).find((t: any) => t && (t.id === activeSpaceId || (t.type === 'space' && t.activeSpaceId === activeSpaceId)));
-    const rawSpaceName = parentSpaceObj?.name || parentSpaceObj?.chatName || projectName;
-    const spaceName = rawSpaceName === 'New Space' ? 'New Space' : cleanWorkspaceName(rawSpaceName);
+    const rawSpaceName = isHomeSpace ? 'Home' : (parentSpaceObj?.name || parentSpaceObj?.chatName || projectName);
+    const spaceName = isHomeSpace ? 'Home' : (rawSpaceName === 'New Space' ? 'New Space' : cleanWorkspaceName(rawSpaceName));
 
     if (!selectedFile && viewState !== 'ai_summary' && !activeProactiveTask) {
       return (
@@ -157,12 +157,16 @@ export function CanvasHeader({
       let extractedTitle = selectedFile.title;
       if (!extractedTitle && selectedFile.content && typeof selectedFile.content === 'string') {
         const titleMatch = selectedFile.content.match(/<title>([^<]+)<\/title>/i);
-        if (titleMatch && titleMatch[1] && titleMatch[1].trim() !== 'App' && titleMatch[1].trim() !== 'My Web Workspace') {
+        if (titleMatch && titleMatch[1] && titleMatch[1].trim() !== 'App' && titleMatch[1].trim() !== 'My Web Workspace' && titleMatch[1].trim() !== 'New Site Workspace') {
           extractedTitle = titleMatch[1].trim();
         }
       }
       if (!extractedTitle && selectedFile.chatName && selectedFile.chatName !== 'Custom Tool' && selectedFile.chatName !== 'New Site Workspace') {
         extractedTitle = selectedFile.chatName;
+      }
+      const matchingTask = !extractedTitle ? (recentTasks || []).find((t: any) => t && (t.associatedFileId === selectedFile?.id || t.associatedFileId === selectedFile?.driveId || t.id === selectedFile?.chatId)) : null;
+      if (!extractedTitle && matchingTask?.chatName && matchingTask.chatName !== 'Custom Tool' && matchingTask.chatName !== 'New Site Workspace') {
+        extractedTitle = matchingTask.chatName;
       }
       if (extractedTitle) {
         artifactName = extractedTitle;
