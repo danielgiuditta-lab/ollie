@@ -138,7 +138,7 @@ export function LeftNav({
         }
       }
 
-      if (c.messages && c.messages.length > 0) {
+      if (c.messages && c.messages.length > 0 && chatIdVal !== spaceId) {
         const exists = spacesMap[spaceId].chats.some(item => item.id === chatIdVal);
         if (!exists) {
           spacesMap[spaceId].chats.push({
