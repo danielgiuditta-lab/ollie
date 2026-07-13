@@ -229,8 +229,8 @@ export function ChatSidebar({
         style={isBottom ? undefined : { width: `${width}px` }}
         className={`h-full w-full flex flex-col pt-0 shrink-0 ${
           isGroupChat
-            ? (theme === 'dark' ? 'bg-[#18191B] border-r border-[#2B2D31]' : 'bg-slate-100/90 border-r border-slate-200/80')
-            : (theme === 'dark' ? 'bg-[#1E1F22] border-r border-[#2B2D31]' : 'bg-white border-r border-slate-200')
+            ? (theme === 'dark' ? 'bg-[#18191B] border-r-0' : 'bg-slate-100/90 border-r-0')
+            : (theme === 'dark' ? 'bg-[#1E1F22] border-r-0' : 'bg-white border-r-0')
         } rounded-none relative overflow-hidden z-10 spring-transition shadow-none`}
       >
         {/* Header Panel */}

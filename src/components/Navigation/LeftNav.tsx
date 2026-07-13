@@ -247,7 +247,7 @@ export function LeftNav({
       }}
       transition={{ type: 'spring', stiffness: 320, damping: 32 }}
       className={`h-full pt-0 pb-6 flex flex-col gap-6 shrink-0 z-10 select-none border-t-0 border-b-0 border-l-0 ${
-        isChatSide ? 'border-r-0' : 'border-r border-slate-200 dark:border-[#2B2D31]'
+        isChatSide ? 'border-r-0' : 'border-r border-[#E9EEF6] dark:border-[#2B2D31]'
       } outline-none overflow-hidden relative bg-white dark:bg-[#0B0B0C] text-slate-800 dark:text-white`}
       id={isExpandedActive ? 'left-nav-expanded' : 'left-nav-collapsed'}
     >

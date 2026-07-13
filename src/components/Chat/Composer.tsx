@@ -158,8 +158,8 @@ export function Composer({
 
           <div className={`w-full h-[72px] ${
             isGroupChat
-              ? (theme === 'dark' ? 'bg-[#18191B]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' : 'bg-slate-100/95 border-[#E9EEF6] shadow-card')
-              : (theme === 'dark' ? 'bg-[#1E1F22]/95 border-neutral-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' : 'bg-white/95 border-[#E9EEF6] shadow-card')
+              ? (theme === 'dark' ? 'bg-[#18191B]/95 border-[#2B2D31] shadow-card' : 'bg-slate-100/95 border-[#E9EEF6] shadow-card')
+              : (theme === 'dark' ? 'bg-[#1E1F22]/95 border-[#2B2D31] shadow-card' : 'bg-white/95 border-[#E9EEF6] shadow-card')
           } rounded-full px-5 border flex items-center gap-3.5 backdrop-blur-md transition-all duration-300`}>
             {/* Left Plus Button */}
             <button 
