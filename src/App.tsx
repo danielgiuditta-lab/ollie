@@ -2382,17 +2382,29 @@ export default function App() {
                       }
                     }
 
-                    if (!resolvedName && combinedFilesForSync.length > 0) {
-                      const indexHTML = combinedFilesForSync.find((f: any) => f.name.toLowerCase() === 'index.html');
+                    let extractedHtmlTitle = '';
+                    if (combinedFilesForSync.length > 0) {
+                      const indexHTML = combinedFilesForSync.find((f: any) => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase() === 'index.html'));
                       if (indexHTML && indexHTML.content) {
                         const titleMatch = indexHTML.content.match(/<title>(.*?)<\/title>/i);
-                        if (titleMatch && titleMatch[1] && titleMatch[1].trim() !== 'App' && titleMatch[1].trim() !== 'My Web Workspace') {
-                          resolvedName = titleMatch[1].trim();
+                        if (titleMatch && titleMatch[1] && titleMatch[1].trim() !== 'App' && titleMatch[1].trim() !== 'My Web Workspace' && titleMatch[1].trim() !== 'New Site Workspace') {
+                          extractedHtmlTitle = titleMatch[1].trim();
+                          indexHTML.title = extractedHtmlTitle;
+                          if (!resolvedName) {
+                            resolvedName = extractedHtmlTitle;
+                          }
                         }
                       }
                     }
 
-                    const activeName = resolvedName || (currentTask !== 'app' ? currentTask : 'New Application');
+                    if (extractedHtmlTitle) {
+                      inferredChatNameVal = extractedHtmlTitle;
+                    }
+
+                    const activeName = (!initialSpaceId || isHomeChatId(initialSpaceId))
+                      ? (resolvedName || (currentTask !== 'app' ? currentTask : 'New Application'))
+                      : projectName;
+
                     if (!initialSpaceId || isHomeChatId(initialSpaceId)) {
                       setProjectName(activeName);
                     }
@@ -2416,11 +2428,12 @@ export default function App() {
                       const now = Date.now();
                       const targetIdToUpdate = targetChatId || activeFolder;
                       const existing = prev.find(t => t && t.id === targetIdToUpdate);
-                      const primaryFile = combinedFilesForSync.find(f => f && (f.name === 'index.html' || f.isDocJourney || f.name.endsWith('.doc'))) || combinedFilesForSync[0];
+                      const primaryFile = combinedFilesForSync.find(f => f && (f.name === 'index.html' || f.name.toLowerCase().endsWith('.html') || f.isDocJourney || f.name.endsWith('.doc'))) || combinedFilesForSync[0];
+                      const resolvedChatTitle = extractedHtmlTitle || (existing?.chatName && existing.chatName !== 'Custom Tool' && existing.chatName !== 'New Site Workspace' ? existing.chatName : (inferredChatNameVal || 'Custom Tool'));
                       const newTask = {
                         id: targetIdToUpdate,
                         name: activeName,
-                        chatName: existing?.chatName || inferredChatNameVal || 'Custom Tool',
+                        chatName: resolvedChatTitle,
                         type: existing?.type || (existing?.taskType === 'site' ? 'site' : 'workspace'),
                         taskType: existing?.taskType || 'site',
                         associatedFileId: existing?.associatedFileId || primaryFile?.driveId || primaryFile?.id,

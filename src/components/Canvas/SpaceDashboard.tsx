@@ -235,7 +235,27 @@ export function SpaceDashboard({
             if (parsed.title) todoTitle = parsed.title;
           } catch (e) {}
         }
-        const cardTitle = isTodo ? todoTitle : file.name;
+        let cardTitle = file.name;
+        if (isTodo) {
+          cardTitle = todoTitle;
+        } else if (isHtml) {
+          let extractedTitle = file.title;
+          if (!extractedTitle && file.content && typeof file.content === 'string') {
+            const titleMatch = file.content.match(/<title>([^<]+)<\/title>/i);
+            if (titleMatch && titleMatch[1] && titleMatch[1].trim() !== 'App' && titleMatch[1].trim() !== 'My Web Workspace') {
+              extractedTitle = titleMatch[1].trim();
+            }
+          }
+          if (!extractedTitle && file.chatName && file.chatName !== 'Custom Tool' && file.chatName !== 'New Site Workspace') {
+            extractedTitle = file.chatName;
+          }
+          if (extractedTitle) {
+            cardTitle = extractedTitle;
+          } else if (file.name) {
+            const cleaned = file.name.replace(/\.(html|htm)$/i, '');
+            cardTitle = (cleaned.toLowerCase() === 'index' || cleaned.toLowerCase() === 'custom tool') ? 'Custom Tool' : cleaned;
+          }
+        }
 
         return (
           <div

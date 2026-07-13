@@ -1,0 +1,198 @@
+{
+  "envId": "5dcefb62a053b9456f4a45f6d393c324",
+  "key": "ollie_control_panel_state",
+  "data": {
+    "services": [
+      {
+        "id": "task",
+        "name": "Task Service",
+        "grpc": "google.workspace.ollie.v1.TaskService",
+        "description": "Authoritative state gateway for task lifecycle transitions and Spanner updates",
+        "status": "Healthy",
+        "uptime": "21d 14h",
+        "latency": 8,
+        "cpu": 1.4,
+        "throughput": 11.2
+      },
+      {
+        "id": "fulfilment",
+        "name": "Task Fulfilment Service",
+        "grpc": "google.workspace.ollie.v1.TaskFulfilmentService",
+        "description": "Dispatches tasks and translates declarative scopes to either Sobi or Jetski harnesses",
+        "status": "Healthy",
+        "uptime": "14d 8h",
+        "latency": 12,
+        "cpu": 3.8,
+        "throughput": 4.1
+      },
+      {
+        "id": "feed",
+        "name": "Feed Service",
+        "grpc": "google.workspace.ollie.v1.FeedService",
+        "description": "Maintains feed timelines and streams Server-Sent Events/WebSockets directly to UI",
+        "status": "Healthy",
+        "uptime": "9d 2h",
+        "latency": 5,
+        "cpu": 0.8,
+        "throughput": 16.5
+      },
+      {
+        "id": "workstream",
+        "name": "Workstream Service",
+        "grpc": "google.workspace.ollie.v1.WorkstreamService",
+        "description": "Validates fine-grained RBAC identities and reconciles Google Group assets",
+        "status": "Healthy",
+        "uptime": "30d 1h",
+        "latency": 6,
+        "cpu": 0.5,
+        "throughput": 2.1
+      },
+      {
+        "id": "memory",
+        "name": "Memory Service",
+        "grpc": "google.workspace.ollie.v1.MemoryService",
+        "description": "Indexes knowledge into isolated stores and runs vector similarity checks",
+        "status": "Healthy",
+        "uptime": "24d 18h",
+        "latency": 15,
+        "cpu": 2.1,
+        "throughput": 14.8
+      },
+      {
+        "id": "sobi",
+        "name": "Sobi Harness (Agency)",
+        "grpc": "google.workspace.ollie.v1.agency.SobiHarness",
+        "description": "Gemini agent executing reasoning cycles against Workspace APIs with HITL bounds",
+        "status": "Idle",
+        "uptime": "4d 11h",
+        "latency": 0,
+        "cpu": 0.1,
+        "throughput": 0
+      },
+      {
+        "id": "jetski",
+        "name": "Jetski Harness (Capsules)",
+        "grpc": "google.workspace.ollie.v1.capsules.JetskiHarnessService",
+        "description": "Orchestrates container-capsules containing internal developer pipelines and PTY watchdogs",
+        "status": "Running",
+        "uptime": "4d 11h",
+        "latency": 145,
+        "cpu": 12.4,
+        "throughput": 1
+      },
+      {
+        "id": "cron",
+        "name": "Memory Dream Cron",
+        "grpc": "google.workspace.ollie.v1.agency.MemoryDreamCron",
+        "description": "Scheduled worker running DBSCAN sweeps, vector deduping, and morning rollups",
+        "status": "Idle",
+        "uptime": "30d 1h",
+        "latency": 0,
+        "cpu": 0,
+        "throughput": 0
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task-01",
+        "title": "Integrate Ingestion Listener webhook for Gmail threads",
+        "description": "Enables Ollie Ingestion Service to receive real-time push webhooks for high priority triage.",
+        "status": "TRIAGED",
+        "assignee": "yadavajay@google.com",
+        "delegation": "WORKSTREAM_AGENT"
+      },
+      {
+        "id": "task-02",
+        "title": "Design Task Service Spanner DDL & recursive sub-task CTEs",
+        "description": "Requires creating the Spanner DDL mapping for hierarchal Tasks table with cycle mitigation logic.",
+        "status": "IN_PROGRESS",
+        "assignee": "danielgiuditta@google.com",
+        "delegation": "HYBRID"
+      },
+      {
+        "id": "task-03",
+        "title": "Implement semantic duplicate detection via Vertex embeddings",
+        "description": "Computes 768-dimensional gecko embeddings to avoid redundant tasks within Workstream.",
+        "status": "UNTRIAGED",
+        "assignee": "belindapreno@google.com",
+        "delegation": "PERSONAL_AGENT"
+      },
+      {
+        "id": "task-04",
+        "title": "Draft dual-identity execution gating specs in Workstream Service",
+        "description": "Enforces RBAC verification filters before delegating autonomous tooling execute rights.",
+        "status": "COMPLETED",
+        "assignee": "simonsok@google.com",
+        "delegation": "HUMAN_ONLY"
+      }
+    ],
+    "facts": [
+      {
+        "id": "fact-1",
+        "title": "DBSCAN Vector Clustering Thresholds",
+        "content": "DBSCAN sweeps operate over 768-dim ScaNN vectors in Memory DB. A pairwise cosine distance epsilon of 0.25 (Cosine similarity >= 0.75) with a minPoints of 3 is utilized for offline clustering consolidation sweeps.",
+        "tier": "team",
+        "category": "ARCHITECTURE",
+        "author": "Daniel Giuditta",
+        "relevance": 1
+      },
+      {
+        "id": "fact-2",
+        "title": "Jetski PTY Watchdog Timeout Limits",
+        "content": "If a compilation process in a capsule hangs without emitting newline tokens for longer than 30 seconds, the PTY watchdog injects a SIGTERM, halts execution, and redirects the agent to run code search instead.",
+        "tier": "team",
+        "category": "GOTCHA",
+        "author": "Ajay Yadav",
+        "relevance": 1
+      },
+      {
+        "id": "fact-3",
+        "title": "Workstream Inference Auto-Routing Confidence Values",
+        "content": "When tasks arrive untriaged, cosine similarity >= 0.85 triggers auto-assignment to a workstream. Sim between 0.65 and 0.85 places tasks in creator's personal canvas with rationales.",
+        "tier": "workstream",
+        "category": "ARCHITECTURE",
+        "author": "Belinda Preno",
+        "relevance": 1
+      },
+      {
+        "id": "fact-4",
+        "title": "Double Identity RBAC Gating Bounds",
+        "content": "When an agent service account invokes external tools, the Workstream Service gatekeeper checks the initiating user's LDAP credentials. SAs are blocked if the human teammate does not have ROLE_AGENT_DELEGATOR.",
+        "tier": "workstream",
+        "category": "USER_PREFERENCE",
+        "author": "Simon Sok",
+        "relevance": 1
+      },
+      {
+        "id": "fact-5",
+        "title": "Workspace MCP Server Thread Synchronization",
+        "content": "Model Context Protocol (MCP) clients running in Sobi Harness must intercept tool definitions and cross-reference with Active Feed Comments before closing Buganizer issues to prevent split brain loops.",
+        "tier": "workstream",
+        "category": "GOTCHA",
+        "author": "Ajay Yadav",
+        "relevance": 1
+      },
+      {
+        "id": "fact-6",
+        "title": "Style Guidelines for Protobuf Interfaces",
+        "content": "All google.workspace.ollie gRPC services must cleanly utilize Spanner read-commit timestamps and explicitly map etag values within UpdateTask requests to prevent lost updates.",
+        "tier": "global",
+        "category": "ARCHITECTURE",
+        "author": "System Bot",
+        "relevance": 1
+      },
+      {
+        "id": "fact-7",
+        "title": "User Workflow Research Synthesis Notes - NYC Offices",
+        "content": "U.S. Workspace users co-edit documents frequently. Task management boards with integrated email triggers are preferred. Users seek 'Bottom HITL sign-off' options for outbound communication.",
+        "tier": "private",
+        "category": "USER_PREFERENCE",
+        "author": "Simon Sok",
+        "relevance": 1
+      }
+    ],
+    "selectedServiceId": "fulfilment",
+    "selectedTaskId": "task-02"
+  },
+  "updatedAt": "2026-07-13T02:44:18.418Z"
+}

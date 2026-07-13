@@ -102,77 +102,25 @@ export function ChatSidebar({
       return [];
     }
 
-    if (isHome) {
-      return [
-        { label: "Get a summary of my day", prompt: "Get a summary of my day", action: 'summary_day' as const },
-        { label: "Build a custom tool", prompt: "Build a custom tool with Ollie", mode: 'tool' as const },
-        { label: "Start a Doc", prompt: "Create a Doc", action: 'create_doc' as const }
-      ];
-    }
-
-    if (isNewSpaceCreation && (!spaceMode || spaceMode === 'choice')) {
-      return [
-        { label: "Let Ollie track your work", prompt: "Let Ollie track your work", mode: 'tracking' as const },
-        { label: "Build a custom tool with Ollie", prompt: "Build a custom tool with Ollie", mode: 'tool' as const },
-        { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
-        { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const }
-      ];
-    }
-
-    const list = todoItems || [];
-    
-    const getPillLabel = (title: string) => {
-      const lower = title.toLowerCase();
-      if (lower.includes('brand') || lower.includes('guidelines')) return 'Review Brand Guidelines';
-      if (lower.includes('marketing') || lower.includes('brief')) return 'Add Marketing Design Strategy';
-      if (lower.includes('pricing') || lower.includes('proposal')) return 'Draft Pricing Proposal Strategy';
-      if (lower.includes('sales') || lower.includes('performance')) return 'Update Sales Tracker';
-      if (lower.includes('operations') || lower.includes('leads')) return 'Update Operations Leads';
-      return title.length > 40 ? title.substring(0, 40) + '...' : title;
-    };
-
-    const currentProject = (projectName || '').toLowerCase().trim();
-    const filtered = list.filter(item => {
-      const itemWorkspace = (item.workspace || '').toLowerCase().trim();
-      return itemWorkspace === currentProject || currentProject.includes(itemWorkspace) || itemWorkspace.includes(currentProject);
-    });
-
-    if (filtered.length > 0) {
-      const base = filtered.map(item => ({
-        label: getPillLabel(item.title),
-        prompt: `Help me with: ${item.title}`
-      }));
-      return [
-        ...base,
-        { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
-        { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const }
-      ];
-    }
-
-    // Fallback default suggestions
-    const fallback = [
-      { label: "Make an interactive dashboard", prompt: "Make an interactive dashboard" },
-      { label: "Make a project tracker", prompt: "Make a project tracker" },
-      { label: "Make an interactive presentation", prompt: "Make an interactive presentation" },
-      ...(fileCount > 3 ? [{ label: "Organize files", prompt: "Organize files" }] : [])
-    ];
     return [
+      { label: "Have Ollie track your tasks", prompt: "Have Ollie track your tasks", mode: 'tracking' as const },
+      { label: "Create a custom tool", prompt: "Create a custom tool", action: 'create_site' as const },
       { label: "Create a Doc", prompt: "Create a Doc", action: 'create_doc' as const },
       { label: "Create a Slideshow", prompt: "Create a Slideshow", action: 'create_slide' as const },
-      ...fallback
+      { label: "Summarize my day", prompt: "Summarize my day", action: 'summary_day' as const }
     ];
   };
 
   const suggestions = getSuggestions();
 
   const getTaskIcon = (title: string) => {
-    if (title === "Get a summary of my day") {
+    if (title === "Summarize my day" || title === "Get a summary of my day") {
       return <Newspaper size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
-    if (title === "Let Ollie track your work") {
+    if (title === "Have Ollie track your tasks" || title === "Let Ollie track your work") {
       return <ListTodo size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
-    if (title === "Build a custom tool with Ollie") {
+    if (title === "Create a custom tool" || title === "Build a custom tool" || title === "Build a custom tool with Ollie") {
       return <Zap size={20} className="shrink-0 text-slate-500 dark:text-neutral-400" />;
     }
     if (title === "Create a Doc") {
@@ -383,6 +331,8 @@ export function ChatSidebar({
                       onClick={() => {
                         if ((pill as any).action === 'summary_day') {
                           onSendMessage(pill.prompt, true);
+                        } else if ((pill as any).action === 'create_site' && onCreateArtifact) {
+                          onCreateArtifact('site', true);
                         } else if ((pill as any).mode && onSelectSpaceMode) {
                           onSelectSpaceMode((pill as any).mode);
                         } else if ((pill as any).action === 'create_doc' && onCreateArtifact) {

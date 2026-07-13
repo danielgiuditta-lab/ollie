@@ -1,0 +1,30 @@
+{
+  "chatId": "space_multi_tool_1783910989734-chat-tool2-1783910989734",
+  "projectName": "Multi-Tool Engineering Space",
+  "chatName": "Sales Performance Tracker",
+  "type": null,
+  "taskType": "site",
+  "associatedFileId": "tool2_file_1783910989734",
+  "associatedFileName": "sales_tracker.html",
+  "messages": [
+    {
+      "role": "user",
+      "text": "Build sales tracker"
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space_multi_tool_1783910989734",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "tool2_file_1783910989734",
+      "title": "Sales Performance Tracker",
+      "name": "sales_tracker.html",
+      "content": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Sales Performance Tracker</title>\n</head>\n<body>\n  <div class=\"p-6\">\n    <h2>Quarterly Targets</h2>\n  </div>\n</body>\n</html>"
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [],
+  "updatedAt": "2026-07-13T02:49:49.938Z"
+}

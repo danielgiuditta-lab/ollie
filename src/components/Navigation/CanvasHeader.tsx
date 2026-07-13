@@ -149,9 +149,27 @@ export function CanvasHeader({
 
     let artifactName = selectedFile ? selectedFile.name : (viewState === 'ai_summary' ? 'Search Summary' : '');
     const isTodoArtifact = selectedFile && (selectedFile.isInferredTask || selectedFile.taskType === 'inferred' || selectedFile.id === 'todo-card' || selectedFile.name?.toLowerCase() === 'inferred_tasks.json' || selectedFile.name === 'To-dos');
-    
+    const isHtmlArtifact = selectedFile && selectedFile.name && (selectedFile.name.toLowerCase().endsWith('.html') || selectedFile.name.toLowerCase() === 'index.html');
+
     if (isTodoArtifact) {
       artifactName = 'To-dos';
+    } else if (isHtmlArtifact) {
+      let extractedTitle = selectedFile.title;
+      if (!extractedTitle && selectedFile.content && typeof selectedFile.content === 'string') {
+        const titleMatch = selectedFile.content.match(/<title>([^<]+)<\/title>/i);
+        if (titleMatch && titleMatch[1] && titleMatch[1].trim() !== 'App' && titleMatch[1].trim() !== 'My Web Workspace') {
+          extractedTitle = titleMatch[1].trim();
+        }
+      }
+      if (!extractedTitle && selectedFile.chatName && selectedFile.chatName !== 'Custom Tool' && selectedFile.chatName !== 'New Site Workspace') {
+        extractedTitle = selectedFile.chatName;
+      }
+      if (extractedTitle) {
+        artifactName = extractedTitle;
+      } else {
+        artifactName = selectedFile.name.replace(/\.(html|htm)$/i, '');
+        if (artifactName.toLowerCase() === 'index') artifactName = 'Custom Tool';
+      }
     } else if (activeProactiveTask) {
       const isDone = activeProactiveTask.status === 'done' || activeProactiveTask.status === 'approved';
       let rawTaskTitle = isDone ? (activeProactiveTask.titleDone || activeProactiveTask.title) : (activeProactiveTask.title || activeProactiveTask.description || 'Task');
@@ -164,10 +182,10 @@ export function CanvasHeader({
       if (artifactName.toLowerCase() === 'document') artifactName = 'Doc';
       if (artifactName.toLowerCase() === 'presentation') artifactName = 'Slide Deck';
       if (artifactName.toLowerCase() === 'spreadsheet') artifactName = 'Sheet';
-      if (artifactName.toLowerCase() === 'index' || artifactName.toLowerCase() === 'index.html') artifactName = 'Custom Tool';
-      if (artifactName.length > 28) {
-        artifactName = artifactName.substring(0, 26).trim() + '...';
-      }
+    }
+
+    if (artifactName && artifactName.length > 28) {
+      artifactName = artifactName.substring(0, 26).trim() + '...';
     }
 
     return (

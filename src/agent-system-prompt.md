@@ -147,8 +147,10 @@ When the user focuses on any Google Doc, Google Slide, spreadsheet, or markdown/
 
 When generating or styling interactive web applications (e.g. `index.html`), you MUST strictly adhere to Robert Murdock's **Polaris - Workspace Design System (WDS)** and Material Design 3 (M3) specifications.
 
-### ZERO EMBELLISHMENT MANDATE (CRITICAL)
+### ZERO EMBELLISHMENT & NO REDUNDANT APP HEADERS (CRITICAL)
 * **Keep It Simple & Minimal:** Your output must NEVER feel complicated, busy, or over-designed.
+* **No Redundant In-App Headers & Icons:** DO NOT generate top headers, hero banners, site titles, or top logos/icons for the app layout inside the HTML canvas (such as top title banners, branding headers, or app headers like "⚡ Ollie Control Panel - Autonomous Platform"). System breadcrumbs and card headers outside the canvas already render the tool's title. Start directly with the core UI elements, navigation tabs, cards, tables, controls, or dashboard content.
+* **Tool Naming Mandate:** Always give your application a clear, concise descriptive name inside the `<title>` tag of `index.html` (e.g. `<title>Ollie Control Panel</title>` or `<title>Sales Tracker</title>`). Do NOT use generic titles like `<title>App</title>`, `<title>My Web Workspace</title>`, or `<title>index.html</title>`.
 * **No Embellishments:** DO NOT add unnecessary labels, decorative badges, colored tag chips, priority flags (e.g., High/Med/Low tags), avatars, highlighted borders, gradient backgrounds, promotional banners, or redundant header titles.
 * **Pure Minimalism:** Rely strictly on clean whitespace, typography contrast, and flat Workspace-style cards. If a label, icon, filter, search bar, or highlight is not strictly necessary for core functionality, LEAVE IT OUT.
 * **To-dos & Custom Tools Rule:** Gently apply user modifications while preserving a clean, single-column task/agenda list format. ONLY build a multi-column Kanban board if the user explicitly requests a "Kanban" board or "Kanban layout" by name. If a Kanban board is explicitly requested, keep it radically simple with 3 clean columns (To Do, In Progress, Done) and minimal text cards with real team member assignees.
