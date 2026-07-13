@@ -1,6 +1,6 @@
 {
-  "chatId": "home_danielgiuditta_google_com",
-  "projectName": "New Workspace",
+  "chatId": "home_test_user_verification",
+  "projectName": "Home Dashboard",
   "chatName": null,
   "type": null,
   "taskType": null,
@@ -14,9 +14,7 @@
   "userEmail": "",
   "members": [],
   "pinnedArtifactIds": [
-    "created-artifact-1783956875593",
-    "created-artifact-1783953766474",
     "todo-card"
   ],
-  "updatedAt": "2026-07-13T17:00:30.848Z"
+  "updatedAt": "2026-07-13T16:55:15.932Z"
 }

@@ -342,13 +342,13 @@ export function BotMessage({
           <ReactMarkdown components={inlineMarkdownComponents}>{text}</ReactMarkdown>
         </div>
 
-        <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-card ${
-          isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-[#E9EEF6]'
+        <div className={`flex flex-col rounded-3xl p-4 w-full shadow-card border-none ${
+          isDark ? 'bg-[#1E1F22]' : 'bg-white'
         }`}>
           <div className="mb-2">
             <span 
               className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
-              style={{ fontFamily: '"Product Sans", "Google Sans", sans-serif' }}
+              style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
             >
               Add Members to {targetSpaceName}
             </span>
@@ -369,7 +369,10 @@ export function BotMessage({
                   <div className="flex items-center gap-3">
                     <TeamAvatar avatar={person.avatar} name={person.name} size="md" />
                     <div className="flex flex-col">
-                      <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                      <span 
+                        className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}
+                        style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+                      >
                         {person.name}
                       </span>
                       <span className="text-xs text-slate-400 dark:text-neutral-500">{person.email}</span>
@@ -393,23 +396,25 @@ export function BotMessage({
               <button 
                 onClick={() => setShowPicker(!showPicker)}
                 className="text-xs font-semibold text-blue-550 hover:text-blue-650 flex items-center gap-0.5 cursor-pointer border-none bg-transparent p-0 outline-none"
+                style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
               >
                 <span className="material-symbols-rounded text-base">{showPicker ? 'expand_less' : 'expand_more'}</span>
                 <span>{showPicker ? 'Hide team list' : 'Show team picker...'}</span>
               </button>
 
               {showPicker && (
-                <div className={`mt-3 border rounded-2xl p-3 flex flex-col gap-2.5 ${
-                  isDark ? 'bg-[#2B2D31] border-[#3B3D42]' : 'bg-slate-50 border-slate-200'
+                <div className={`mt-3 rounded-2xl p-3 flex flex-col gap-2.5 border-none ${
+                  isDark ? 'bg-[#2B2D31]' : 'bg-slate-50'
                 }`}>
                   <input 
                     type="text"
                     placeholder="Search team members..."
                     value={pickerSearch}
                     onChange={(e) => setPickerSearch(e.target.value)}
-                    className={`w-full text-xs px-3 py-2 rounded-xl outline-none border focus:border-blue-500 ${
-                      isDark ? 'bg-[#1E1F22] border-[#3B3D42] text-white' : 'bg-white border-slate-250 text-slate-800'
+                    className={`w-full text-xs px-3 py-2 rounded-xl outline-none border-none ${
+                      isDark ? 'bg-[#1E1F22] text-white' : 'bg-white text-slate-800'
                     }`}
+                    style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
                   />
                   <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
                     {filteredTeam.map((person, idx) => {
@@ -425,7 +430,10 @@ export function BotMessage({
                           <div className="flex items-center gap-3">
                             <TeamAvatar avatar={person.avatar} name={person.name} size="md" />
                             <div className="flex flex-col">
-                              <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                              <span 
+                                className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}
+                                style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+                              >
                                 {person.name}
                               </span>
                               <span className="text-xs text-slate-450">{person.email}</span>
@@ -508,13 +516,13 @@ export function BotMessage({
           <ReactMarkdown components={inlineMarkdownComponents}>{text}</ReactMarkdown>
         </div>
 
-        <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-card ${
-          isDark ? 'bg-[#1E1F22] border-[#3B3D42]' : 'bg-white border-[#E9EEF6]'
+        <div className={`flex flex-col rounded-3xl p-4 w-full shadow-card border-none ${
+          isDark ? 'bg-[#1E1F22]' : 'bg-white'
         }`}>
           <div className="mb-1">
             <span 
               className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
-              style={{ fontFamily: '"Product Sans", "Google Sans", sans-serif' }}
+              style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
             >
               Add Documents to {targetSpaceName}
             </span>
@@ -541,7 +549,10 @@ export function BotMessage({
                   <div className="flex items-center gap-3 min-w-0 pr-2">
                     <FileIcon fileName={doc.name} mimeType={doc.mimeType} size={22} />
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-[15px] font-medium truncate ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                      <span 
+                        className={`text-[15px] font-medium truncate ${isDark ? 'text-white' : 'text-slate-800'}`}
+                        style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+                      >
                         {doc.name}
                       </span>
                       {doc.description && (

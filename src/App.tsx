@@ -195,8 +195,8 @@ export default function App() {
               if (c.pinnedArtifactIds && Array.isArray(c.pinnedArtifactIds)) {
                 setHomePins(c.pinnedArtifactIds);
               }
-              if (c.messages && Array.isArray(c.messages) && c.messages.length > 0) {
-                setMessages(c.messages);
+              if (workspaceCacheRef.current[c.chatId]) {
+                workspaceCacheRef.current[c.chatId].messages = [];
               }
             }
 
@@ -248,34 +248,30 @@ export default function App() {
   useEffect(() => {
     const homeId = getHomeChatId();
     const loadHomeChat = async () => {
+      setMessages([]);
       const cached = workspaceCacheRef.current[homeId];
-      if (cached && cached.messages && cached.messages.length > 0) {
-        setMessages(cached.messages);
+      if (cached) {
         if (cached.pinnedArtifactIds && Array.isArray(cached.pinnedArtifactIds)) {
           setHomePins(cached.pinnedArtifactIds);
         }
-        return;
       }
       try {
         const chatRes = await fetch(`/api/chats/${homeId}`);
         if (chatRes.ok) {
           const chatData = await chatRes.json();
           if (chatData) {
-            if (chatData.messages) setMessages(chatData.messages);
             if (chatData.pinnedArtifactIds && Array.isArray(chatData.pinnedArtifactIds)) {
               setHomePins(chatData.pinnedArtifactIds);
-              workspaceCacheRef.current[homeId] = {
-                ...workspaceCacheRef.current[homeId],
-                pinnedArtifactIds: chatData.pinnedArtifactIds
-              };
             }
-            return;
           }
         }
-        setMessages([]);
       } catch (err) {
-        console.error("Failed to load home chat:", err);
+        console.error("Failed to load home pins:", err);
+      } finally {
         setMessages([]);
+        if (workspaceCacheRef.current[homeId]) {
+          workspaceCacheRef.current[homeId].messages = [];
+        }
       }
     };
 
@@ -838,7 +834,7 @@ export default function App() {
           taskType: resolvedTaskType,
           associatedFileId: resolvedFileId,
           associatedFileName: resolvedFileName,
-          messages: messagesList,
+          messages: isHomeChatId(chatIdVal) ? [] : messagesList,
           envId: activeEnv,
           activeSpaceId: resolvedSpaceId,
           sandboxUrl: activeSandboxUrl || sandboxUrl || '',
@@ -4336,28 +4332,21 @@ export default function App() {
       setSelectedFile(null);
       setMembers([]);
       
-      const cachedChat = chatSessionsCacheRef.current[folderId];
-      if (cachedChat && cachedChat.messages && !cachedChat.messages.some((m: any) => m.isProactiveReview)) {
-        setMessages(cachedChat.messages);
-      } else {
-        try {
-          const chatRes = await fetch(`/api/chats/${folderId}`);
-          if (chatRes.ok) {
-            const chatData = await chatRes.json();
-            if (chatData && chatData.messages && !chatData.messages.some((m: any) => m.isProactiveReview)) {
-              setMessages(chatData.messages);
-              chatSessionsCacheRef.current[folderId] = { messages: chatData.messages };
-            } else {
-              setMessages([]);
-              chatSessionsCacheRef.current[folderId] = { messages: [] };
-            }
-          } else {
-            setMessages([]);
+      setMessages([]);
+      chatSessionsCacheRef.current[folderId] = { messages: [] };
+      if (workspaceCacheRef.current[folderId]) {
+        workspaceCacheRef.current[folderId].messages = [];
+      }
+      try {
+        const chatRes = await fetch(`/api/chats/${folderId}`);
+        if (chatRes.ok) {
+          const chatData = await chatRes.json();
+          if (chatData && chatData.pinnedArtifactIds && Array.isArray(chatData.pinnedArtifactIds)) {
+            setHomePins(chatData.pinnedArtifactIds);
           }
-        } catch (err) {
-          console.error("Failed to load home chat:", err);
-          setMessages([]);
         }
+      } catch (err) {
+        console.error("Failed to load home pins on click:", err);
       }
       setIsSourcesPanelOpen(false);
       setViewState('home');

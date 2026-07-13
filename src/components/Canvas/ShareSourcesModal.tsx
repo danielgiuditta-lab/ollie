@@ -90,28 +90,23 @@ export function ShareSourcesModal({
       onClick={onClose}
     >
       <div 
-        className={`w-full max-w-md rounded-3xl border shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 ${
-          isDark ? 'bg-[#1E1F22] border-[#3B3D42] text-white' : 'bg-white border-slate-200 text-slate-800'
+        className={`w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 border-none ${
+          isDark ? 'bg-[#1E1F22] text-white' : 'bg-white text-slate-800'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 pt-5 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-[#2B2D31]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              <Share2 size={18} />
-            </div>
-            <div>
-              <h2 
-                className="text-lg font-semibold tracking-tight leading-snug"
-                style={{ fontFamily: '"Google Sans", "Product Sans", sans-serif' }}
-              >
-                Share Sources
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Select files to share with another space
-              </p>
-            </div>
+        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+          <div>
+            <h2 
+              className="text-lg font-semibold tracking-tight leading-snug"
+              style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+            >
+              Share Sources
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+              Select files to share with another space
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -122,11 +117,11 @@ export function ShareSourcesModal({
         </div>
 
         {/* Content Body */}
-        <div className="p-5 flex flex-col gap-4">
+        <div className="p-4 flex flex-col gap-3">
           {/* Search bar & Select All toggle */}
           <div className="flex items-center gap-2">
-            <div className={`flex-1 h-9 px-3 rounded-full flex items-center gap-2 border ${
-              isDark ? 'bg-[#282A2D] border-[#3B3D42]' : 'bg-slate-50 border-slate-200'
+            <div className={`flex-1 h-9 px-3 rounded-full flex items-center gap-2 ${
+              isDark ? 'bg-[#282A2D]' : 'bg-slate-100/80'
             }`}>
               <Search size={16} className="text-slate-400 shrink-0" />
               <input
@@ -140,14 +135,15 @@ export function ShareSourcesModal({
             <button
               onClick={toggleSelectAll}
               className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline px-2 cursor-pointer border-none bg-transparent"
+              style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
             >
               {selectedIds.length === libraryItems.length ? 'Deselect All' : 'Select All'}
             </button>
           </div>
 
           {/* Library Items Checklist */}
-          <div className={`max-h-56 overflow-y-auto rounded-2xl border p-2 flex flex-col gap-1 ${
-            isDark ? 'bg-[#121314] border-[#2B2D31]' : 'bg-slate-50/50 border-slate-150'
+          <div className={`max-h-56 overflow-y-auto rounded-2xl p-2 flex flex-col gap-1 ${
+            isDark ? 'bg-[#121314]' : 'bg-slate-50'
           }`}>
             {filteredItems.length === 0 ? (
               <div className="py-6 text-center text-xs text-slate-400 font-medium">
@@ -173,7 +169,10 @@ export function ShareSourcesModal({
                       <div className="shrink-0 flex items-center justify-center">
                         {getFileIcon(itemName, item.mimeType || item.type, 18)}
                       </div>
-                      <span className="text-xs font-medium truncate">
+                      <span 
+                        className="text-xs font-medium truncate"
+                        style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+                      >
                         {itemName}
                       </span>
                     </div>
@@ -192,23 +191,26 @@ export function ShareSourcesModal({
 
           {/* Spaces Dropdown Selector */}
           <div className="flex flex-col gap-1.5 pt-1">
-            <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-              <FolderKanban size={14} className="text-blue-500" />
-              <span>Share to Space:</span>
+            <label 
+              className="text-xs font-semibold text-slate-600 dark:text-slate-300"
+              style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
+            >
+              Share to Space:
             </label>
             {availableSpaces.length === 0 ? (
-              <div className="p-3 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 text-xs font-medium">
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 text-xs font-medium">
                 No other spaces available. Create a new Space first.
               </div>
             ) : (
               <select
                 value={targetSpaceId}
                 onChange={(e) => setTargetSpaceId(e.target.value)}
-                className={`w-full h-11 px-3.5 rounded-xl border outline-none text-xs font-semibold cursor-pointer transition-all ${
+                className={`w-full h-11 px-3.5 rounded-xl outline-none text-xs font-semibold cursor-pointer border-none transition-all ${
                   isDark 
-                    ? 'bg-[#282A2D] border-[#3B3D42] text-white focus:border-blue-500' 
-                    : 'bg-white border-slate-200 text-slate-800 focus:border-blue-500'
+                    ? 'bg-[#282A2D] text-white' 
+                    : 'bg-slate-100/80 text-slate-800'
                 }`}
+                style={{ fontFamily: '"Product Sans", "Google Sans", "Segoe UI", sans-serif' }}
               >
                 {availableSpaces.map(s => {
                   const spaceId = s.id || s.spaceId;
@@ -225,7 +227,7 @@ export function ShareSourcesModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-slate-100 dark:border-[#2B2D31] flex items-center justify-end gap-3">
+        <div className="px-4 pb-4 pt-1 flex items-center justify-end gap-3">
           <Button
             variant="secondary"
             theme={theme}

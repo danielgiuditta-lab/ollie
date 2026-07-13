@@ -1,0 +1,45 @@
+{
+  "envId": "9cec0b28840da29bcb6641d7cfe48bdf",
+  "key": "ollie_kanban_board_state",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-ollie-1",
+        "title": "Implement DBSCAN Vector Clustering in Memory Dream Cron",
+        "description": "Analyze active FactualFacts within MemoryStore using ScaNN vector similarities to merge redundant factual nodes.",
+        "status": "todo",
+        "assignee": "simonsok@google.com",
+        "priority": "P1",
+        "createTime": "2026-07-13T09:00:00Z"
+      },
+      {
+        "id": "task-ollie-2",
+        "title": "Set up Spanner ScaNN Vector Index on Tasks Table",
+        "description": "Apply approximate nearest neighbor indexing options to support sub-10ms similarity queries natively.",
+        "status": "inprogress",
+        "assignee": "yadavajay@google.com",
+        "priority": "P0",
+        "createTime": "2026-07-13T08:30:00Z"
+      },
+      {
+        "id": "task-ollie-3",
+        "title": "Review UX Research Plan for baseline Ollie workflow",
+        "description": "Review NYC Office baseline context alignment metrics for collaborative workspace agent delegations.",
+        "status": "inprogress",
+        "assignee": "belindapreno@google.com",
+        "priority": "P2",
+        "createTime": "2026-07-12T14:15:00Z"
+      },
+      {
+        "id": "task-ollie-4",
+        "title": "Draft Core Domain Microservices gRPC Contracts",
+        "description": "Protobuf declaration definitions for TaskService, TaskFulfilmentService, FeedService, and WorkstreamService.",
+        "status": "done",
+        "assignee": "danielgiuditta@google.com",
+        "priority": "P0",
+        "createTime": "2026-07-11T10:00:00Z"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-13T16:55:11.363Z"
+}
