@@ -682,24 +682,23 @@ async function startServer() {
       
       const getLocalChats = async () => {
         const chatsDir = path.join(process.cwd(), "data", "chats");
-        let localChats: any[] = [];
-        if (fs.existsSync(chatsDir)) {
-          const files = await fs.promises.readdir(chatsDir);
-          for (const f of files) {
-            if (f.endsWith('.json')) {
-              try {
-                const raw = await fs.promises.readFile(path.join(chatsDir, f), "utf-8");
-                const parsed = JSON.parse(raw);
-                if (!isFiltered || parsed.userEmail === email) {
-                  localChats.push(parsed);
-                }
-              } catch (e) {
-                // ignore
-              }
+        if (!fs.existsSync(chatsDir)) return [];
+        const files = await fs.promises.readdir(chatsDir);
+        const jsonFiles = files.filter(f => f.endsWith('.json'));
+        const readPromises = jsonFiles.map(async (f) => {
+          try {
+            const raw = await fs.promises.readFile(path.join(chatsDir, f), "utf-8");
+            const parsed = JSON.parse(raw);
+            if (!isFiltered || parsed.userEmail === email) {
+              return parsed;
             }
+          } catch (e) {
+            // ignore
           }
-        }
-        return localChats;
+          return null;
+        });
+        const results = await Promise.all(readPromises);
+        return results.filter(Boolean);
       };
 
       if (firebaseConfig) {
@@ -859,11 +858,24 @@ async function startServer() {
     }
   });
 
+  const digestCacheMap = new Map<string, { data: any; timestamp: number }>();
+  const DIGEST_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache TTL
+
   app.get("/api/workspace-digest", async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader) {
         return res.status(401).json({ error: "No authorization header" });
+      }
+
+      const cacheKey = authHeader.trim();
+      const now = Date.now();
+      const forceRefresh = req.query.refresh === 'true';
+      const cachedEntry = digestCacheMap.get(cacheKey);
+
+      if (!forceRefresh && cachedEntry && (now - cachedEntry.timestamp < DIGEST_CACHE_TTL_MS)) {
+        console.log(`[Digest] Serving cached workspace digest for user token (age: ${Math.round((now - cachedEntry.timestamp)/1000)}s)`);
+        return res.json(cachedEntry.data);
       }
 
       const headers = { Authorization: authHeader };
@@ -1073,7 +1085,9 @@ Ensure all IDs are unique. CRITICAL: All task titles, descriptions, and actions 
       }));
 
       const text = response.text || "{}";
-      res.json(JSON.parse(text));
+      const parsedData = JSON.parse(text);
+      digestCacheMap.set(cacheKey, { data: parsedData, timestamp: Date.now() });
+      res.json(parsedData);
     } catch (error) {
       console.error("Workspace digest synthesis error:", error);
       res.status(500).json({ error: String(error) });

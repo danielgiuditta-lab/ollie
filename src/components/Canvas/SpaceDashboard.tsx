@@ -3,6 +3,8 @@ import { MoreHorizontal, Edit2, Trash2, Pin } from 'lucide-react';
 import { AppView } from './AppView';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
+import { Card } from '../Shared/Card';
+import { CardHeader } from '../Shared/CardHeader';
 
 interface SpaceDashboardProps {
   spaceId: string;
@@ -258,86 +260,73 @@ export function SpaceDashboard({
         }
 
         return (
-          <div
+          <Card
             key={fileId}
             style={{ width: `calc(${widthPct}% - 8px)` }}
-            className={`min-w-[320px] h-[460px] rounded-3xl border relative group flex flex-col overflow-hidden transition-all duration-200 ${
-              theme === 'dark'
-                ? 'bg-[#1E1F22] border-[#2B2D31] shadow-card'
-                : 'bg-white border-[#E9EEF6] shadow-card'
-            } ${isDragOver ? 'ring-2 ring-blue-500 scale-[1.01]' : ''}`}
+            theme={theme}
+            isDragOver={isDragOver}
             onDragOver={(e) => handleDragOver(e, fileId)}
             onDragLeave={() => setDragOverCardId(null)}
             onDrop={(e) => handleDrop(e, fileId)}
-          >
-            {/* Header toolbar overlay (pointer-events-auto) */}
-            <div className="h-11 px-4 border-b border-[#E9EEF6] dark:border-neutral-800/80 flex items-center justify-between shrink-0 bg-slate-50/80 dark:bg-[#18191B]/80 backdrop-blur-sm z-20 pointer-events-auto rounded-t-3xl">
-              <div 
-                className="flex items-center gap-1.5 min-w-0 cursor-pointer group/title"
-                onClick={(e) => {
+            header={
+              <CardHeader
+                title={cardTitle}
+                count={isTodo && todoItems && todoItems.length > 0 ? todoItems.length : undefined}
+                onTitleClick={(e) => {
                   e.stopPropagation();
                   onSelectArtifact(file);
                 }}
-                title="Click to open artifact authoring chat"
-              >
-                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate group-hover/title:text-blue-600 dark:group-hover/title:text-blue-400 transition-colors">
-                  {cardTitle}
-                </span>
-                {isTodo && todoItems && todoItems.length > 0 && (
-                  <span className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400 bg-slate-200/60 dark:bg-neutral-800 px-2 py-0.5 rounded-full ml-1">
-                    {todoItems.length}
-                  </span>
-                )}
-                <span className="text-slate-400 opacity-0 group-hover/title:opacity-100 transition-opacity text-[10px]">↗</span>
-              </div>
-
-              {/* 3 dots reorder & menu handle */}
-              <div className="relative">
-                <button
-                  type="button"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, fileId)}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveMenuCardId(activeMenuCardId === fileId ? null : fileId);
-                  }}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-neutral-800 transition cursor-grab active:cursor-grabbing"
-                  title="Drag to reorder or click for options"
-                >
-                  <MoreHorizontal size={16} />
-                </button>
-
-                {/* Dropdown Menu */}
-                {activeMenuCardId === fileId && (
-                  <div 
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute right-0 top-8 w-36 rounded-xl bg-white dark:bg-[#2B2D31] border border-slate-200 dark:border-white/10 shadow-xl p-1 z-30 animate-in fade-in zoom-in-95 duration-100"
-                  >
+                titleTooltip="Click to open artifact authoring chat"
+                theme={theme}
+                actions={
+                  <div className="relative">
                     <button
-                      onClick={() => {
-                        setActiveMenuCardId(null);
-                        onSelectArtifact(file);
+                      type="button"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, fileId)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenuCardId(activeMenuCardId === fileId ? null : fileId);
                       }}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-neutral-800 transition cursor-grab active:cursor-grabbing"
+                      title="Drag to reorder or click for options"
                     >
-                      <Edit2 size={14} />
-                      <span>Edit</span>
+                      <MoreHorizontal size={16} />
                     </button>
-                    <button
-                      onClick={() => {
-                        setActiveMenuCardId(null);
-                        onRemovePin(fileId);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <Trash2 size={14} />
-                      <span>Remove</span>
-                    </button>
+
+                    {/* Dropdown Menu */}
+                    {activeMenuCardId === fileId && (
+                      <div 
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-0 top-9 w-36 rounded-xl bg-white dark:bg-[#2B2D31] border border-slate-200 dark:border-white/10 shadow-xl p-1 z-30 animate-in fade-in zoom-in-95 duration-100"
+                      >
+                        <button
+                          onClick={() => {
+                            setActiveMenuCardId(null);
+                            onSelectArtifact(file);
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <Edit2 size={14} />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setActiveMenuCardId(null);
+                            onRemovePin(fileId);
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-
+                }
+              />
+            }
+          >
             {/* Interactive Live Viewport */}
             <div className="flex-1 w-full h-full relative overflow-hidden pointer-events-auto select-auto bg-slate-50/30 dark:bg-black/20">
               <div className="absolute inset-0 w-full h-full">
@@ -417,7 +406,7 @@ export function SpaceDashboard({
                 title="Drag to resize width"
               />
             )}
-          </div>
+          </Card>
         );
       })}
     </div>

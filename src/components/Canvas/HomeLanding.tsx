@@ -1093,6 +1093,20 @@ export function HomeLanding({
       return;
     }
 
+    try {
+      const stored = sessionStorage.getItem('drive_suggested_items_cache');
+      if (stored) {
+        const { timestamp, items } = JSON.parse(stored);
+        if (Date.now() - timestamp < 5 * 60 * 1000 && Array.isArray(items) && items.length > 0) {
+          setSuggestedList(items);
+          setIsLoadingDrive?.(false);
+          return;
+        }
+      }
+    } catch (e) {
+      // ignore cache error
+    }
+
     const fetchRealDriveItems = async () => {
       setIsLoadingDrive(true);
       try {
@@ -1294,7 +1308,16 @@ export function HomeLanding({
 
           setSuggestedList(prev => {
             const sessionItems = prev.filter(item => !SUGGESTED_ITEMS.some(s => s.id === item.id) && !mappedItems.some(m => m.id === item.id));
-            return [...sessionItems, ...mappedItems];
+            const newList = [...sessionItems, ...mappedItems];
+            try {
+              sessionStorage.setItem('drive_suggested_items_cache', JSON.stringify({
+                timestamp: Date.now(),
+                items: newList
+              }));
+            } catch (e) {
+              // ignore storage errors
+            }
+            return newList;
           });
         } else {
           setSuggestedList(prev => {

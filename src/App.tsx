@@ -191,8 +191,13 @@ export default function App() {
                 };
               }
 
-            if (isHomeChatId(c.chatId) && c.pinnedArtifactIds && Array.isArray(c.pinnedArtifactIds)) {
-              setHomePins(c.pinnedArtifactIds);
+            if (isHomeChatId(c.chatId)) {
+              if (c.pinnedArtifactIds && Array.isArray(c.pinnedArtifactIds)) {
+                setHomePins(c.pinnedArtifactIds);
+              }
+              if (c.messages && Array.isArray(c.messages) && c.messages.length > 0) {
+                setMessages(c.messages);
+              }
             }
 
             if (folderId && folderId !== c.chatId && !isHomeChatId(folderId)) {
@@ -243,6 +248,14 @@ export default function App() {
   useEffect(() => {
     const homeId = getHomeChatId();
     const loadHomeChat = async () => {
+      const cached = workspaceCacheRef.current[homeId];
+      if (cached && cached.messages && cached.messages.length > 0) {
+        setMessages(cached.messages);
+        if (cached.pinnedArtifactIds && Array.isArray(cached.pinnedArtifactIds)) {
+          setHomePins(cached.pinnedArtifactIds);
+        }
+        return;
+      }
       try {
         const chatRes = await fetch(`/api/chats/${homeId}`);
         if (chatRes.ok) {
