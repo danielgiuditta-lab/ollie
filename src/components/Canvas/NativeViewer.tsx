@@ -449,13 +449,34 @@ export function NativeViewer({
     }
 
     if (hideHeader && isPreviewCard) {
+      const cleanParagraphs = bodyParagraphs
+        .map((p: string) => p.replace(/^[#*\-\d.\s]+/, '').trim())
+        .filter((p: string) => p.length > 0);
       return (
-        <div className="w-full h-full bg-white p-6 text-left leading-[1.65] text-[16px] text-2c3e50 font-sans overflow-y-auto select-text">
-          <h1 className="text-3xl font-extrabold text-slate-850 tracking-tight mb-4 font-sans">
-            {title}
-          </h1>
-          <div className="markdown-body prose max-w-none text-[16px] text-slate-700 space-y-4 font-sans">
-            <ReactMarkdown>{parsedContent}</ReactMarkdown>
+        <div className="w-full h-full bg-white dark:bg-[#1E1F22] p-2 flex flex-col justify-between text-left select-none overflow-hidden border border-slate-100 dark:border-neutral-800 font-sans">
+          <div className="flex justify-between items-center w-full min-w-0">
+            <span className="text-[8.5px] font-bold text-slate-900 dark:text-white tracking-wide truncate pr-1">
+              {title}
+            </span>
+            <div className="w-2.5 h-2.5 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+              <CheckCircle2 size={7} className="text-white" />
+            </div>
+          </div>
+          
+          <div className="space-y-0.5 my-auto overflow-hidden">
+            {cleanParagraphs.slice(0, 2).map((para: string, idx: number) => (
+              <p key={idx} className="text-[7.5px] leading-tight text-slate-600 dark:text-slate-300 truncate font-sans">
+                {para}
+              </p>
+            ))}
+            {cleanParagraphs.length === 0 && (
+              <p className="text-[7.5px] text-slate-400 italic">Document draft</p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between w-full pt-1 border-t border-slate-100 dark:border-neutral-800 text-[7px] text-slate-400">
+            <span className="truncate">Google Doc</span>
+            <span className="shrink-0 text-blue-500 font-medium">Updated</span>
           </div>
         </div>
       );
@@ -843,38 +864,31 @@ export function NativeViewer({
 
     if (hideHeader && isPreviewCard) {
       return (
-        <div className="w-full h-full bg-transparent flex items-center justify-center overflow-hidden select-none relative">
-          {/* Slide Stage Container with NO black borders or outlines */}
-          <div className="w-full h-full bg-white border-none rounded-none p-5 flex flex-col justify-between text-left relative overflow-hidden text-neutral-850">
-            <div className="absolute top-4 left-5 right-5 flex justify-between select-none border-b border-slate-100 pb-1">
-              <span className="text-[8px] text-fbbc05 font-bold tracking-widest uppercase">Slide Preview</span>
-              <span className="text-[8px] text-slate-400 font-medium">Slide {activeSlideIndex + 1} of {slides.length}</span>
+        <div className="w-full h-full bg-gradient-to-br from-[#12141D] to-[#1C1F2E] p-2 flex flex-col justify-between text-left relative overflow-hidden text-white select-none font-sans">
+          <div className="flex justify-between items-center w-full min-w-0">
+            <span className="text-[8.5px] font-bold text-white tracking-wide truncate pr-1">
+              {activeSlide.title || title}
+            </span>
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-500/90 flex items-center justify-center shrink-0">
+              <CheckCircle2 size={7} className="text-white" />
             </div>
+          </div>
+          
+          <ul className="space-y-0.5 w-full my-auto pl-0.5 list-none">
+            {activeSlide.bullets.slice(0, 3).map((bullet: string, idx: number) => (
+              <li key={idx} className="flex items-center gap-1 min-w-0">
+                <span className="w-1 h-1 rounded-full bg-[#fbbc05] shrink-0"></span>
+                <span className="text-[7.5px] leading-tight text-slate-200 truncate font-normal">{bullet}</span>
+              </li>
+            ))}
+            {activeSlide.bullets.length === 0 && (
+              <li className="text-[7.5px] text-slate-400 italic">No notes on slide</li>
+            )}
+          </ul>
 
-            {/* Slide Content */}
-            <div className="flex-1 mt-4 flex flex-col justify-center">
-              <h1 className="text-base font-extrabold text-slate-900 leading-tight mb-2 tracking-tight font-sans" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
-                {activeSlide.title}
-              </h1>
-              
-              <ul className="space-y-1 text-[11px] text-slate-700 leading-snug text-left list-none pl-1 max-w-[95%]">
-                {activeSlide.bullets.slice(0, 3).map((bullet, idx) => (
-                  <li key={idx} className="flex gap-2 items-start">
-                    <span className="w-1 h-1 rounded-full bg-fbbc05 shrink-0 mt-1.5 shadow-3xs"></span>
-                    <span className="text-[11px] text-slate-650 font-normal">{bullet}</span>
-                  </li>
-                ))}
-                {activeSlide.bullets.length === 0 && (
-                  <li className="text-[10px] text-slate-400 italic">No notes or bullets on this slide.</li>
-                )}
-              </ul>
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-slate-100 pt-1.5 select-none flex justify-between items-center text-[8px] text-slate-400">
-              <span>Spaces Platform</span>
-              <span className="text-amber-700 font-semibold uppercase tracking-wider text-[7px]">Confidential draft</span>
-            </div>
+          <div className="flex items-center justify-between w-full pt-1 border-t border-white/10 text-[7px] text-slate-400">
+            <span className="truncate">{title}</span>
+            <span className="shrink-0 text-amber-300 font-medium">Slide 1</span>
           </div>
         </div>
       );

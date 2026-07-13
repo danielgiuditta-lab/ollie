@@ -1,4 +1,4 @@
-import { React } from 'react';
+import React from 'react';
 
 // Verification script for space chat artifact mapping fix
 console.log("==========================================");

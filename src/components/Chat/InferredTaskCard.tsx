@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
 import { StatusIndicator } from './StatusIndicator';
+import { NativeViewer } from '../Canvas/NativeViewer';
 
 interface InferredTaskCardProps {
   item: {
@@ -15,6 +16,7 @@ interface InferredTaskCardProps {
     status: string;
     hasPreview?: boolean;
     previewContent?: string;
+    filesToLoad?: any[];
   };
   getFileIcon: (mimeType?: string) => string;
   onClick: () => void;
@@ -22,6 +24,15 @@ interface InferredTaskCardProps {
 
 export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFileIcon, onClick }) => {
   const [avatarFailed, setAvatarFailed] = useState(false);
+
+  const previewFile = item.filesToLoad && item.filesToLoad.length > 0
+    ? item.filesToLoad[0]
+    : {
+        id: item.id + '-file',
+        name: item.sourceName || item.title || 'Artifact',
+        mimeType: item.sourceMimeType || 'application/vnd.google-apps.presentation',
+        content: item.previewContent || item.description || item.title
+      };
 
   return (
     <div 
@@ -76,19 +87,13 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
               <span className="text-[8px] font-medium text-slate-450 tracking-tight uppercase leading-none">Drafting...</span>
             </div>
           ) : (
-            <div className="w-full h-full p-2.5 bg-gradient-to-br from-indigo-950 to-slate-900 text-white flex flex-col items-start justify-between text-left group-hover:scale-105 transition-transform duration-300">
-              <div className="flex justify-between items-center w-full">
-                <span className="text-[8px] font-bold text-white tracking-wide truncate pr-1">Q3 Roadmap</span>
-                <div className="w-2 h-2 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                  <CheckCircle2 size={6} className="text-white" />
-                </div>
-              </div>
-              <div className="space-y-1 w-full">
-                <div className="w-full h-1 bg-white/20 rounded-xs" />
-                <div className="w-4/5 h-1 bg-white/20 rounded-xs" />
-                <div className="w-3/5 h-1 bg-white/25 rounded-xs" />
-              </div>
-              <span className="text-[7px] text-slate-350 leading-none">Consolidated slides draft</span>
+            <div className="w-full h-full relative group-hover:scale-[1.03] transition-transform duration-300 pointer-events-none">
+              <NativeViewer
+                file={previewFile}
+                mode="preview"
+                hideHeader={true}
+                isPreviewCard={true}
+              />
             </div>
           )}
         </div>
