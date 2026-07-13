@@ -88,7 +88,7 @@ export function SpaceDashboard({
     const list: any[] = [];
     const seenIds = new Set<string>();
 
-    if (hasTodoCard || todoArtifact) {
+    if (hasTodoCard) {
       const todoId = todoArtifact.id || 'todo-card';
       seenIds.add(todoId);
       list.push(todoArtifact);
@@ -96,6 +96,8 @@ export function SpaceDashboard({
 
     sandboxFiles.forEach(file => {
       if (!file) return;
+      const isTodoFile = file.id === 'todo-card' || file.isInferredTask || file.name === 'inferred_tasks.json';
+      if (isTodoFile && !hasTodoCard) return;
       const fileId = file.id || file.driveId || file.name;
       if (!fileId || seenIds.has(fileId)) return;
       seenIds.add(fileId);
@@ -105,25 +107,30 @@ export function SpaceDashboard({
     return list;
   }, [sandboxFiles, hasTodoCard, todoArtifact]);
 
-  const isTodoPinned = (
+  const regularPinnedFiles = pinnedArtifactIds
+    .map(id => {
+      const isTodoId = id === 'todo-card' || id === 'inferred-tasks' || String(id).toLowerCase().includes('todo') || String(id).toLowerCase().includes('inferred');
+      if (isTodoId && !hasTodoCard) {
+        return null;
+      }
+      return sandboxFiles.find(f => f && (
+        f.id === id || 
+        f.driveId === id ||
+        (f.id && id && String(f.id).toLowerCase() === String(id).toLowerCase()) ||
+        (f.name && id && (String(id).toLowerCase().endsWith('-' + f.name.toLowerCase()) || String(id).toLowerCase().endsWith('_' + f.name.toLowerCase()) || String(id).toLowerCase() === f.name.toLowerCase()))
+      ));
+    })
+    .filter(Boolean);
+
+  const isTodoPinned = hasTodoCard && (
     pinnedArtifactIds.includes('todo-card') ||
     pinnedArtifactIds.includes('inferred-tasks') ||
     pinnedArtifactIds.some(id => String(id).toLowerCase().includes('todo') || String(id).toLowerCase().includes('inferred'))
   );
 
-  // Combine regular pinned files with todo card if pinned
-  const regularPinnedFiles = pinnedArtifactIds
-    .map(id => sandboxFiles.find(f => f && (
-      f.id === id || 
-      f.driveId === id ||
-      (f.id && id && String(f.id).toLowerCase() === String(id).toLowerCase()) ||
-      (f.name && id && (String(id).toLowerCase().endsWith('-' + f.name.toLowerCase()) || String(id).toLowerCase().endsWith('_' + f.name.toLowerCase()) || String(id).toLowerCase() === f.name.toLowerCase()))
-    )))
-    .filter(Boolean);
-
   const pinnedFiles = [
-    ...regularPinnedFiles,
-    ...(isTodoPinned && !regularPinnedFiles.some(f => f.id === todoArtifact.id || f.name === todoArtifact.name) ? [todoArtifact] : [])
+    ...regularPinnedFiles.filter(f => !(f.id === 'todo-card' || f.isInferredTask || f.name === 'inferred_tasks.json')),
+    ...(isTodoPinned ? [todoArtifact] : [])
   ];
 
   // Close menu on click outside
