@@ -5575,6 +5575,7 @@ export default function App() {
                       selectedFile={selectedFile}
                       pinnedArtifactIds={getSpacePins(activeSpaceId || getHomeChatId())}
                       onRemovePin={handleUnpinArtifact}
+                      onPinArtifact={handlePinArtifact}
                       onReorderPins={handleReorderPins}
                       onSelectArtifact={handleArtifactSelect}
                     />
@@ -5656,7 +5657,9 @@ export default function App() {
                       sandboxFiles={getAllSpaceFiles(activeSpaceId)}
                       onSelectArtifact={handleArtifactSelect}
                       onRemovePin={handleUnpinArtifact}
+                      onPinArtifact={handlePinArtifact}
                       onReorderPins={handleReorderPins}
+                      onCreateArtifact={handleCreateArtifactApp}
                       sandboxUrl={sandboxUrl}
                       envId={envId}
                       theme={appTheme}

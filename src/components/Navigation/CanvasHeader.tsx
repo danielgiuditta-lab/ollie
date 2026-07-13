@@ -288,7 +288,7 @@ export function CanvasHeader({
   };
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 w-full h-[64px] shrink-0 z-20 relative bg-transparent text-slate-800 dark:text-white select-none">
+    <div className="flex items-center justify-between px-6 pt-4 pb-2 w-full h-[64px] shrink-0 z-20 relative bg-transparent text-slate-800 dark:text-white select-none">
       <div className="flex items-center gap-2">
         {renderBreadcrumbs()}
       </div>

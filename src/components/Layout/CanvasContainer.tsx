@@ -23,7 +23,9 @@ interface CanvasContainerProps {
   onSnapAiSummary?: () => void;
   onSelectArtifact: (file: any) => void;
   onRemovePin: (fileId: string) => void;
+  onPinArtifact?: (file: any) => void;
   onReorderPins: (newOrderedIds: string[]) => void;
+  onCreateArtifact?: (type: 'doc' | 'slide' | 'sheet' | 'pix' | 'site' | 'upload') => void;
   onOpenApp?: () => void;
 }
 
@@ -44,7 +46,9 @@ export function CanvasContainer({
   onSnapAiSummary,
   onSelectArtifact,
   onRemovePin,
+  onPinArtifact,
   onReorderPins,
+  onCreateArtifact,
   onOpenApp
 }: CanvasContainerProps) {
   if (viewState === 'dashboard' && activeSpaceId) {
@@ -56,7 +60,9 @@ export function CanvasContainer({
         sandboxFiles={sandboxFiles}
         onSelectArtifact={onSelectArtifact}
         onRemovePin={onRemovePin}
+        onPinArtifact={onPinArtifact}
         onReorderPins={onReorderPins}
+        onCreateArtifact={onCreateArtifact}
         sandboxUrl={sandboxUrl}
         envId={envId}
         theme={appTheme}

@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Edit2, Trash2, Pin } from 'lucide-react';
+import { MoreHorizontal, Edit2, Trash2, Pin, Plus } from 'lucide-react';
 import { AppView } from './AppView';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
 import { Card } from '../Shared/Card';
 import { CardHeader } from '../Shared/CardHeader';
+import { NullTitle } from '../Shared/NullTitle';
+import { AddWidgetModal } from './AddWidgetModal';
 
 interface SpaceDashboardProps {
   spaceId: string;
@@ -13,7 +15,9 @@ interface SpaceDashboardProps {
   sandboxFiles: any[];
   onSelectArtifact: (file: any) => void;
   onRemovePin: (fileId: string) => void;
+  onPinArtifact?: (file: any) => void;
   onReorderPins: (newOrderedIds: string[]) => void;
+  onCreateArtifact?: (type: 'doc' | 'slide' | 'sheet' | 'pix' | 'site' | 'upload') => void;
   sandboxUrl?: string;
   envId?: string | null;
   theme?: 'light' | 'dark';
@@ -34,7 +38,9 @@ export function SpaceDashboard({
   sandboxFiles = [],
   onSelectArtifact,
   onRemovePin,
+  onPinArtifact,
   onReorderPins,
+  onCreateArtifact,
   sandboxUrl,
   envId,
   theme = 'light',
@@ -53,6 +59,7 @@ export function SpaceDashboard({
   const [dragOverCardId, setDragOverCardId] = useState<string | null>(null);
   const [dragOverPosition, setDragOverPosition] = useState<'left' | 'right' | 'top' | 'bottom' | null>(null);
   const [dashboardLayoutMode, setDashboardLayoutMode] = useState<'auto' | 'rows' | 'cols'>('auto');
+  const [isWidgetModalOpen, setIsWidgetModalOpen] = useState(false);
   
   // Resizing state
   const resizingRef = useRef<{
@@ -77,7 +84,28 @@ export function SpaceDashboard({
     taskType: 'inferred'
   };
 
-  const isTodoPinned = pinnedArtifactIds.length === 0 ? hasTodoCard : (
+  const availableWidgets = React.useMemo(() => {
+    const list: any[] = [];
+    const seenIds = new Set<string>();
+
+    if (hasTodoCard || todoArtifact) {
+      const todoId = todoArtifact.id || 'todo-card';
+      seenIds.add(todoId);
+      list.push(todoArtifact);
+    }
+
+    sandboxFiles.forEach(file => {
+      if (!file) return;
+      const fileId = file.id || file.driveId || file.name;
+      if (!fileId || seenIds.has(fileId)) return;
+      seenIds.add(fileId);
+      list.push(file);
+    });
+
+    return list;
+  }, [sandboxFiles, hasTodoCard, todoArtifact]);
+
+  const isTodoPinned = (
     pinnedArtifactIds.includes('todo-card') ||
     pinnedArtifactIds.includes('inferred-tasks') ||
     pinnedArtifactIds.some(id => String(id).toLowerCase().includes('todo') || String(id).toLowerCase().includes('inferred'))
@@ -235,19 +263,49 @@ export function SpaceDashboard({
   if (totalCardsCount === 0) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-transparent text-center select-none animate-in fade-in duration-300">
-        <div className="max-w-md p-8 rounded-3xl border border-dashed border-slate-300 dark:border-neutral-800 bg-white/50 dark:bg-[#18191B]/50 backdrop-blur-sm flex flex-col items-center gap-4 shadow-sm">
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
-            <Pin size={24} />
+        <div 
+          onClick={() => {
+            if (availableWidgets.length === 0) {
+              if (onCreateArtifact) {
+                onCreateArtifact('site');
+              }
+            } else {
+              setIsWidgetModalOpen(true);
+            }
+          }}
+          className="group max-w-lg p-10 rounded-3xl border border-dashed border-slate-200 dark:border-neutral-800 hover:border-[#3186FF] dark:hover:border-[#3186FF] bg-white/40 dark:bg-[#18191B]/40 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 backdrop-blur-sm flex flex-col items-center gap-5 shadow-xs transition-all duration-300 cursor-pointer"
+        >
+          <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-950/40 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center text-[#3186FF] shadow-xs">
+            <Plus size={28} className="stroke-[2.5px]" />
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white font-sans mb-1">
-              No pinned artifacts yet
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed font-sans">
-              Click the pin icon on any library item or inside an artifact's child chat to pin live previews directly to this dashboard.
+          <div className="space-y-2 text-center">
+            <NullTitle theme={theme}>
+              Add a Widget to your Dashboard
+            </NullTitle>
+            <p className="text-sm text-slate-500 dark:text-neutral-400 leading-relaxed font-sans max-w-md mx-auto">
+              {availableWidgets.length > 0 
+                ? "Select space-scoped widgets to display or build a new custom tool."
+                : "Create a custom tool or interactive widget with Ollie."}
             </p>
           </div>
         </div>
+
+        {isWidgetModalOpen && (
+          <AddWidgetModal
+            isOpen={isWidgetModalOpen}
+            onClose={() => setIsWidgetModalOpen(false)}
+            availableWidgets={availableWidgets}
+            pinnedArtifactIds={pinnedArtifactIds}
+            onPinWidget={(file) => {
+              if (onPinArtifact) onPinArtifact(file);
+            }}
+            onUnpinWidget={onRemovePin}
+            onCreateCustomTool={() => {
+              if (onCreateArtifact) onCreateArtifact('site');
+            }}
+            theme={theme}
+          />
+        )}
       </div>
     );
   }
@@ -272,7 +330,7 @@ export function SpaceDashboard({
   return (
     <div 
       ref={containerRef}
-      className={`w-full h-full grid ${gridLayoutClass} gap-6 p-6 overflow-y-auto select-none items-stretch justify-stretch`}
+      className={`w-full h-full grid ${gridLayoutClass} gap-6 px-6 pt-4 pb-6 overflow-y-auto select-none items-stretch justify-stretch`}
     >
       {pinnedFiles.map((file, idx) => {
         const fileId = file.id || file.driveId || 'file-' + idx;
@@ -314,7 +372,7 @@ export function SpaceDashboard({
         return (
           <div 
             key={fileId} 
-            className="card-container-item relative w-full h-full min-h-[340px] flex flex-col p-1 -m-1"
+            className="card-container-item relative w-full h-full min-h-[340px] flex flex-col min-w-0"
             onDragOver={(e) => handleDragOver(e, fileId)}
             onDragLeave={() => {
               setDragOverCardId(null);
@@ -324,16 +382,16 @@ export function SpaceDashboard({
           >
             {/* Dynamic Destination Line Indicators */}
             {isDragOver && dragOverPosition === 'top' && (
-              <div className="absolute -top-4 -left-1 -right-1 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+              <div className="absolute -top-3.5 left-0 right-0 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             {isDragOver && dragOverPosition === 'bottom' && (
-              <div className="absolute -bottom-4 -left-1 -right-1 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+              <div className="absolute -bottom-3.5 left-0 right-0 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             {isDragOver && dragOverPosition === 'left' && (
-              <div className="absolute -left-4 -top-1 -bottom-1 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+              <div className="absolute -left-3.5 top-0 bottom-0 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             {isDragOver && dragOverPosition === 'right' && (
-              <div className="absolute -right-4 -top-1 -bottom-1 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+              <div className="absolute -right-3.5 top-0 bottom-0 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             <Card
               theme={theme}
@@ -471,6 +529,23 @@ export function SpaceDashboard({
           </div>
         );
       })}
+
+      {isWidgetModalOpen && (
+        <AddWidgetModal
+          isOpen={isWidgetModalOpen}
+          onClose={() => setIsWidgetModalOpen(false)}
+          availableWidgets={availableWidgets}
+          pinnedArtifactIds={pinnedArtifactIds}
+          onPinWidget={(file) => {
+            if (onPinArtifact) onPinArtifact(file);
+          }}
+          onUnpinWidget={onRemovePin}
+          onCreateCustomTool={() => {
+            if (onCreateArtifact) onCreateArtifact('site');
+          }}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }

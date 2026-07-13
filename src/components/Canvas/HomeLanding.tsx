@@ -192,6 +192,7 @@ interface HomeLandingProps {
   selectedFile?: any;
   pinnedArtifactIds?: string[];
   onRemovePin?: (fileId: string) => void;
+  onPinArtifact?: (file: any) => void;
   onReorderPins?: (newOrderedIds: string[]) => void;
   onSelectArtifact?: (file: any) => void;
 }
@@ -572,6 +573,7 @@ export function HomeLanding({
   selectedFile,
   pinnedArtifactIds = [],
   onRemovePin,
+  onPinArtifact,
   onReorderPins,
   onSelectArtifact
 }: HomeLandingProps) {
@@ -1619,7 +1621,9 @@ export function HomeLanding({
           sandboxFiles={sandboxFiles}
           onSelectArtifact={onSelectArtifact || (() => {})}
           onRemovePin={onRemovePin || (() => {})}
+          onPinArtifact={onPinArtifact}
           onReorderPins={onReorderPins || (() => {})}
+          onCreateArtifact={onCreateArtifactProp}
           theme={theme}
           todoItems={filteredTodoItems}
           getFileIcon={getFileIcon}
