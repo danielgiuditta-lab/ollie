@@ -2765,96 +2765,28 @@ export default function App() {
       matchedInDrive?.mimeType ||
       (isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document');
 
-    let rawTargetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || spaceName;
-    let targetName = rawTargetName;
-    if (isSlideTask) {
-      if (!targetName.toLowerCase().endsWith('.gslides') && !targetName.toLowerCase().endsWith('.pptx')) {
-        targetName = targetName.replace(/\.[^/.]+$/, "") + '.gslides';
-      }
-    } else if (!targetName.toLowerCase().endsWith('.gdoc') && !targetName.toLowerCase().endsWith('.docx') && !targetName.toLowerCase().endsWith('.doc')) {
-      targetName = targetName + '.gdoc';
+    let targetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || spaceName || 'Proactive Output';
+    if (!targetName.toLowerCase().endsWith('.gslides') && !targetName.toLowerCase().endsWith('.pptx')) {
+      targetName = targetName.replace(/\.[^/.]+$/, "") + '.gslides';
     }
 
-    if (task.draftData?.draftContent) {
-      const draftFileObj = {
-        name: targetName,
-        type: 'code',
-        content: task.draftData.draftContent,
-        driveId: targetId || `mock-drive-${task.id}`,
-        id: `draft-file-${task.id}`,
-        mimeType: targetMime,
-        isProactiveDraft: true,
-        summaryOfChanges: task.draftData.summaryOfChanges
-      };
-      setSandboxFiles([draftFileObj]);
-      setSelectedFile(draftFileObj);
-    } else if (task.draftData?.emailDraft || task.draftData?.calDraft || task.type === 'email' || task.source?.toLowerCase().includes('email') || task.title?.toLowerCase().includes('email') || task.title?.toLowerCase().includes('cal')) {
-      const commFileObj = {
-        name: task.draftData?.calDraft ? 'Calendar Invite Update' : 'Email Reply Draft',
-        type: 'code',
-        content: JSON.stringify(task.draftData || { task }, null, 2),
-        id: `comm-draft-${task.id}`,
-        mimeType: 'application/json',
-        isCommDraft: true,
-        commData: task.draftData || { 
-          draftType: task.title?.toLowerCase().includes('cal') ? 'calendar' : 'email', 
-          emailDraft: { to: 'team@company.com', subject: `Re: ${task.source || task.title}`, body: `Hi Team,\n\nI have addressed the feedback regarding ${task.title}. Let me know if further adjustments are needed.\n\nBest,\nOllie` },
-          calDraft: { eventId: `evt_${Date.now()}`, title: `${task.source || 'Project Check-in'} (Rescheduled)`, proposedTime: '2026-07-10T15:00:00Z', agenda: `Agenda:\n- Review updates on ${task.title}\n- Alignment on next steps` },
-          summaryOfChanges: 'Prepared proactive draft communication based on workspace feedback.' 
-        }
-      };
-      setSandboxFiles([commFileObj]);
-      setSelectedFile(commFileObj);
-    } else if (task.filesToLoad && task.filesToLoad.length > 0) {
-      const updatedFiles = task.filesToLoad.map((f: any, idx: number) => {
-        let fileName = f.name || targetName;
-        const fileIsSlide = isSlideTask || fileName.toLowerCase().endsWith('.gslides') || f.mimeType?.includes('presentation');
-        if (fileIsSlide && !fileName.toLowerCase().endsWith('.gslides') && !fileName.toLowerCase().endsWith('.pptx')) {
-          fileName = fileName.replace(/\.[^/.]+$/, "") + '.gslides';
-        }
-        const fileMime = fileIsSlide ? 'application/vnd.google-apps.presentation' : (f.mimeType || targetMime);
-        return {
-          ...f,
-          name: fileName,
-          mimeType: fileMime,
-          driveId: targetId || f.driveId || `real-file-${targetId || task.id}`,
-          id: f.id || `real-file-${targetId || task.id}`,
-          isProactiveDraft: true,
-          summaryOfChanges: task.descriptionDone || task.description || "Updated content layout and incorporated feedback from team comments."
-        };
-      });
-      setSandboxFiles(updatedFiles);
-      setSelectedFile(updatedFiles[0]);
-    } else if (targetId) {
-      const newFileObj = {
-        name: targetName,
-        type: 'code',
-        content: isSlideTask ? `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Slide Deck'}\n- Replaced palette per team feedback\n- Consolidated slides and visual design` : '',
-        driveId: targetId,
-        id: `real-file-${targetId}`,
-        mimeType: targetMime,
-        isProactiveDraft: true,
-        summaryOfChanges: task.descriptionDone || task.description || "Updated content layout."
-      };
-      setSandboxFiles([newFileObj]);
-      setSelectedFile(newFileObj);
-    } else {
-      const slideContent = `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Slide Deck'}\n- Replaced palette per team feedback\n- Consolidated slides and visual design\n- Synchronized slide notes and assets`;
-      const docContent = `# ${targetName.replace(/\.gdoc$/, '')}\n\nAuthor: Workspace Operations\n\n## ${task.titleDone || task.title || 'Inferred Action'}\n${task.descriptionDone || task.description || 'Incorporated feedback and updated workspace draft.'}`;
+    const slideContent = task.draftData?.draftContent || `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Proactive Agent Output'}\n- ${task.descriptionDone || task.description || 'Incorporated feedback and updated presentation slides.'}\n- Aligned visual layout and content for team review.\n- Autosaved slide draft to workspace.`;
 
-      const fallbackFileObj = {
-        name: targetName,
-        type: 'code',
-        content: isSlideTask ? slideContent : docContent,
-        driveId: `mock-drive-${task.id}`,
-        id: `task-file-${task.id}`,
-        mimeType: targetMime,
-        isProactiveDraft: true,
-        summaryOfChanges: task.descriptionDone || task.description || "Inferred task draft update."
-      };
-      setSandboxFiles([fallbackFileObj]);
-      setSelectedFile(fallbackFileObj);
-    }
+    const proactiveSlideFile = {
+      name: targetName,
+      type: 'slide',
+      taskType: 'slide',
+      content: slideContent,
+      driveId: targetId || `mock-drive-${task.id}`,
+      id: `proactive-slide-${task.id}`,
+      mimeType: 'application/vnd.google-apps.presentation',
+      isProactiveDraft: true,
+      summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive slide presentation draft."
+    };
+
+    setSandboxFiles([proactiveSlideFile]);
+    setSelectedFile(proactiveSlideFile);
+    setViewState('file_viewer');
 
     if (targetId && accessToken) {
       (async () => {

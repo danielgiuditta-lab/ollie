@@ -240,19 +240,18 @@ export function NativeViewer({
     nameLower.includes('drive');
 
   const isGoogleSlide = 
-    !isGoogleDoc && (
-      file.type === 'slide' ||
-      file.taskType === 'slide' ||
-      nameLower.endsWith('.gslides') ||
-      nameLower.endsWith('.pptx') ||
-      nameLower.endsWith('.ppt') ||
-      (file.mimeType && (
-        file.mimeType.toLowerCase().includes('vnd.google-apps.presentation') ||
-        file.mimeType.toLowerCase().includes('officedocument.presentationml') ||
-        file.mimeType.toLowerCase().includes('ms-powerpoint') ||
-        file.mimeType.toLowerCase().includes('presentation')
-      ))
-    );
+    file.isProactiveDraft ||
+    file.type === 'slide' ||
+    file.taskType === 'slide' ||
+    nameLower.endsWith('.gslides') ||
+    nameLower.endsWith('.pptx') ||
+    nameLower.endsWith('.ppt') ||
+    (file.mimeType && (
+      file.mimeType.toLowerCase().includes('vnd.google-apps.presentation') ||
+      file.mimeType.toLowerCase().includes('officedocument.presentationml') ||
+      file.mimeType.toLowerCase().includes('ms-powerpoint') ||
+      file.mimeType.toLowerCase().includes('presentation')
+    ));
 
   const isGoogleSheet = 
     (file.mimeType && (
