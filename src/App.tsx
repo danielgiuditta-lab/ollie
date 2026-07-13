@@ -3782,12 +3782,12 @@ export default function App() {
   };
 
   const getSpacePins = (spaceId: string | null) => {
-    const defaultPins = ['todo-card'];
+    const defaultPins: string[] = [];
     if (!spaceId) return defaultPins;
     if (isHomeChatId(spaceId)) {
       const cachePins = workspaceCacheRef.current[spaceId]?.pinnedArtifactIds;
       if (cachePins !== undefined) return cachePins;
-      return homePins.length > 0 ? homePins : defaultPins;
+      return homePins;
     }
     const pObj = projects.find(p => p && (p.id === spaceId || p.activeSpaceId === spaceId));
     if (pObj && pObj.pinnedArtifactIds !== undefined) return pObj.pinnedArtifactIds;
