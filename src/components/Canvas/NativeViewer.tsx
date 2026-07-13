@@ -863,32 +863,36 @@ export function NativeViewer({
     const activeSlide = slides[activeSlideIndex] || slides[0] || { title: title, bullets: [] };
 
     if (hideHeader && isPreviewCard) {
+      const firstSlide = slides[0] || { title: title, bullets: [] };
       return (
-        <div className="w-full h-full bg-gradient-to-br from-[#12141D] to-[#1C1F2E] p-2 flex flex-col justify-between text-left relative overflow-hidden text-white select-none font-sans">
-          <div className="flex justify-between items-center w-full min-w-0">
-            <span className="text-[8.5px] font-bold text-white tracking-wide truncate pr-1">
-              {activeSlide.title || title}
-            </span>
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-500/90 flex items-center justify-center shrink-0">
+        <div className="w-full h-full bg-[#181A20] p-2 flex flex-col justify-between text-left relative overflow-hidden text-white select-none font-sans border border-slate-700/50 rounded-2xl shadow-inner">
+          <div className="flex justify-between items-center w-full min-w-0 border-b border-white/10 pb-1">
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#fbbc05] shrink-0"></span>
+              <span className="text-[8.5px] font-bold text-white tracking-wide truncate pr-1">
+                {firstSlide.title || title}
+              </span>
+            </div>
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
               <CheckCircle2 size={7} className="text-white" />
             </div>
           </div>
           
-          <ul className="space-y-0.5 w-full my-auto pl-0.5 list-none">
-            {activeSlide.bullets.slice(0, 3).map((bullet: string, idx: number) => (
-              <li key={idx} className="flex items-center gap-1 min-w-0">
+          <div className="space-y-0.5 w-full my-auto pl-0.5 pr-0.5">
+            {firstSlide.bullets.slice(0, 3).map((bullet: string, idx: number) => (
+              <div key={idx} className="flex items-center gap-1 min-w-0">
                 <span className="w-1 h-1 rounded-full bg-[#fbbc05] shrink-0"></span>
                 <span className="text-[7.5px] leading-tight text-slate-200 truncate font-normal">{bullet}</span>
-              </li>
+              </div>
             ))}
-            {activeSlide.bullets.length === 0 && (
-              <li className="text-[7.5px] text-slate-400 italic">No notes on slide</li>
+            {firstSlide.bullets.length === 0 && (
+              <div className="text-[7.5px] text-slate-400 italic">Slide 1 Overview</div>
             )}
-          </ul>
+          </div>
 
           <div className="flex items-center justify-between w-full pt-1 border-t border-white/10 text-[7px] text-slate-400">
-            <span className="truncate">{title}</span>
-            <span className="shrink-0 text-amber-300 font-medium">Slide 1</span>
+            <span className="truncate font-medium">{title}</span>
+            <span className="shrink-0 text-amber-300 font-semibold px-1 py-0.2 rounded bg-amber-400/10">Slide 1</span>
           </div>
         </div>
       );
