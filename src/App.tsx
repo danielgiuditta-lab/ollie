@@ -2752,11 +2752,20 @@ export default function App() {
       task.type === 'slide' ||
       task.taskType === 'slide' ||
       task.sourceMimeType?.includes('presentation') ||
+      task.sourceMimeType?.includes('slide') ||
       task.filesToLoad?.[0]?.mimeType?.includes('presentation') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('slide') ||
       matchedInDrive?.mimeType?.includes('presentation') ||
+      matchedInDrive?.mimeType?.includes('slide') ||
       task.sourceName?.endsWith('.gslides') ||
       task.sourceName?.endsWith('.pptx') ||
-      matchedInDrive?.name?.endsWith('.gslides')
+      matchedInDrive?.name?.endsWith('.gslides') ||
+      task.title?.toLowerCase().includes('slide') ||
+      task.title?.toLowerCase().includes('presentation') ||
+      task.description?.toLowerCase().includes('slide') ||
+      task.description?.toLowerCase().includes('presentation') ||
+      task.titleDone?.toLowerCase().includes('slide') ||
+      task.titleDone?.toLowerCase().includes('presentation')
     );
 
     const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id;
@@ -2766,22 +2775,24 @@ export default function App() {
       (isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document');
 
     let targetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || spaceName || 'Proactive Output';
-    if (!targetName.toLowerCase().endsWith('.gslides') && !targetName.toLowerCase().endsWith('.pptx')) {
-      targetName = targetName.replace(/\.[^/.]+$/, "") + '.gslides';
+    if (isSlideTask) {
+      if (!targetName.toLowerCase().endsWith('.gslides') && !targetName.toLowerCase().endsWith('.pptx')) {
+        targetName = targetName.replace(/\.[^/.]+$/, "") + '.gslides';
+      }
     }
 
     const slideContent = task.draftData?.draftContent || `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Proactive Agent Output'}\n- ${task.descriptionDone || task.description || 'Incorporated feedback and updated presentation slides.'}\n- Aligned visual layout and content for team review.\n- Autosaved slide draft to workspace.`;
 
     const proactiveSlideFile = {
       name: targetName,
-      type: 'slide',
-      taskType: 'slide',
+      type: isSlideTask ? 'slide' : 'doc',
+      taskType: isSlideTask ? 'slide' : 'doc',
       content: slideContent,
       driveId: targetId || `mock-drive-${task.id}`,
       id: `proactive-slide-${task.id}`,
-      mimeType: 'application/vnd.google-apps.presentation',
+      mimeType: isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document',
       isProactiveDraft: true,
-      summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive slide presentation draft."
+      summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive presentation draft."
     };
 
     setSandboxFiles([proactiveSlideFile]);
@@ -2813,15 +2824,28 @@ export default function App() {
             });
             if (contentRes.ok) {
               const textOrDataUrl = await contentRes.text();
+              const isResolvedSlide = isSlideTask || mType.includes('presentation') || mType.includes('slide');
+              const isResolvedDoc = !isResolvedSlide && (mType.includes('document') || mType.includes('text'));
+
+              let fileType = 'code';
+              if (isResolvedSlide) fileType = 'slide';
+              else if (isResolvedDoc) fileType = 'doc';
+
+              let finalName = meta.name || spaceName;
+              if (isResolvedSlide && !finalName.toLowerCase().endsWith('.gslides') && !finalName.toLowerCase().endsWith('.pptx')) {
+                finalName = finalName.replace(/\.[^/.]+$/, "") + '.gslides';
+              }
+
               const realFileObj: any = {
-                name: meta.name || spaceName,
-                type: 'code',
+                name: finalName,
+                type: fileType,
+                taskType: fileType,
                 content: task.draftData?.draftContent || textOrDataUrl,
                 driveId: targetId,
-                mimeType: meta.mimeType,
+                mimeType: isResolvedSlide ? 'application/vnd.google-apps.presentation' : meta.mimeType,
                 id: `real-file-${targetId}`,
-                isProactiveDraft: !!task.draftData?.draftContent,
-                summaryOfChanges: task.draftData?.summaryOfChanges
+                isProactiveDraft: true,
+                summaryOfChanges: task.draftData?.summaryOfChanges || task.descriptionDone || task.description
               };
               setSandboxFiles([realFileObj]);
               setSelectedFile(realFileObj);

@@ -218,29 +218,7 @@ export function NativeViewer({
 
   const nameLower = file.name.toLowerCase();
   
-  const isGoogleDoc = 
-    file.type === 'doc' ||
-    file.taskType === 'doc' ||
-    (file.mimeType && (
-      file.mimeType.toLowerCase().includes('vnd.google-apps.document') ||
-      file.mimeType.toLowerCase().includes('wordprocessingml') ||
-      file.mimeType.toLowerCase().includes('msword') ||
-      file.mimeType.toLowerCase().includes('text/plain') ||
-      file.mimeType.toLowerCase().includes('gdoc')
-    )) ||
-    nameLower.endsWith('.gdoc') ||
-    nameLower.endsWith('.docx') ||
-    nameLower.endsWith('.doc') ||
-    nameLower.endsWith('.txt') ||
-    nameLower.includes('suppliers') ||
-    nameLower.includes('proposal') ||
-    nameLower.includes('report') ||
-    nameLower.includes('contract') ||
-    nameLower.includes('document') ||
-    nameLower.includes('drive');
-
   const isGoogleSlide = 
-    file.isProactiveDraft ||
     file.type === 'slide' ||
     file.taskType === 'slide' ||
     nameLower.endsWith('.gslides') ||
@@ -250,8 +228,10 @@ export function NativeViewer({
       file.mimeType.toLowerCase().includes('vnd.google-apps.presentation') ||
       file.mimeType.toLowerCase().includes('officedocument.presentationml') ||
       file.mimeType.toLowerCase().includes('ms-powerpoint') ||
-      file.mimeType.toLowerCase().includes('presentation')
-    ));
+      file.mimeType.toLowerCase().includes('presentation') ||
+      file.mimeType.toLowerCase().includes('slide')
+    )) ||
+    (file.isProactiveDraft && (file.type === 'slide' || file.taskType === 'slide' || nameLower.endsWith('.gslides') || nameLower.includes('slide') || nameLower.includes('presentation')));
 
   const isGoogleSheet = 
     (file.mimeType && (
@@ -269,18 +249,41 @@ export function NativeViewer({
     nameLower.includes('breakdown') ||
     nameLower.includes('inventory');
 
+  const isGoogleDoc = 
+    !isGoogleSlide && 
+    !isGoogleSheet && (
+      file.type === 'doc' ||
+      file.taskType === 'doc' ||
+      (file.mimeType && (
+        file.mimeType.toLowerCase().includes('vnd.google-apps.document') ||
+        file.mimeType.toLowerCase().includes('wordprocessingml') ||
+        file.mimeType.toLowerCase().includes('msword') ||
+        file.mimeType.toLowerCase().includes('gdoc')
+      )) ||
+      nameLower.endsWith('.gdoc') ||
+      nameLower.endsWith('.docx') ||
+      nameLower.endsWith('.doc') ||
+      nameLower.endsWith('.txt') ||
+      nameLower.includes('suppliers') ||
+      nameLower.includes('proposal') ||
+      nameLower.includes('report') ||
+      nameLower.includes('contract') ||
+      nameLower.includes('document')
+    );
+
   const isDoc = 
     isGoogleDoc ||
-    nameLower.endsWith('.doc') || 
-    nameLower.endsWith('.docx') || 
-    nameLower.endsWith('.gdoc') ||
-    (file.mimeType && (
-      file.mimeType.toLowerCase().includes('document') || 
-      file.mimeType.toLowerCase().includes('gdoc') ||
-      file.mimeType.toLowerCase().includes('text')
-    )) ||
-    nameLower.includes('proposal') ||
-    nameLower.includes('doc');
+    (!isGoogleSlide && !isGoogleSheet && (
+      nameLower.endsWith('.doc') || 
+      nameLower.endsWith('.docx') || 
+      nameLower.endsWith('.gdoc') ||
+      (file.mimeType && (
+        file.mimeType.toLowerCase().includes('document') || 
+        file.mimeType.toLowerCase().includes('gdoc')
+      )) ||
+      nameLower.includes('proposal') ||
+      nameLower.includes('doc')
+    ));
 
   const isSlide = isGoogleSlide || nameLower.includes('presentation') || file.type === 'slide' || file.taskType === 'slide';
   
@@ -311,23 +314,26 @@ export function NativeViewer({
   const isRunnable = nameLower.endsWith('.html') || nameLower.endsWith('.md') || nameLower.endsWith('.markdown');
 
   const isDocFile = 
-    isDoc || 
-    nameLower.endsWith('.md') || 
-    nameLower.endsWith('.markdown') || 
-    nameLower.endsWith('.txt') || 
-    nameLower.includes('proposal') || 
-    nameLower.includes('spec') || 
-    nameLower.includes('notes') || 
-    nameLower.includes('report') || 
-    (file.mimeType && (
-      file.mimeType.includes('document') ||
-      file.mimeType.includes('text')
-    )) ||
-    (file.content && (
-      file.content.trim().startsWith('#') || 
-      file.content.includes('\n# ') ||
-      file.content.trim().startsWith('---')
-    ));
+    !isGoogleSlide &&
+    !isSlide &&
+    !isGoogleSheet && (
+      isDoc || 
+      nameLower.endsWith('.md') || 
+      nameLower.endsWith('.markdown') || 
+      nameLower.endsWith('.txt') || 
+      nameLower.includes('proposal') || 
+      nameLower.includes('spec') || 
+      nameLower.includes('notes') || 
+      nameLower.includes('report') || 
+      (file.mimeType && (
+        file.mimeType.includes('document')
+      )) ||
+      (file.content && (
+        file.content.trim().startsWith('#') || 
+        file.content.includes('\n# ') ||
+        file.content.trim().startsWith('---')
+      ))
+    );
 
   const isCsvFile = 
     !nameLower.endsWith('.md') &&
@@ -830,51 +836,52 @@ export function NativeViewer({
     }
 
     return (
-      <div className="w-full h-full bg-[#f0f4f9] dark:bg-[#161719] p-8 flex flex-col items-center justify-center overflow-auto select-text font-sans">
+      <div className="w-full h-full bg-white dark:bg-[#18191B] p-8 flex items-center justify-center relative select-none font-sans">
         {/* Pure Clean Widescreen 16:9 Presentation slide container - NO CHROME AT ALL */}
-        <div className="aspect-[16/9] w-full max-w-[880px] bg-white dark:bg-[#1E1F22] rounded-xl shadow-xl p-12 flex flex-col justify-between text-left relative overflow-hidden text-neutral-850 select-none">
+        <div className="aspect-[16/9] w-full max-w-[880px] bg-white dark:bg-[#1E1F22] rounded-2xl shadow-xl border border-slate-150 dark:border-neutral-800 p-12 flex flex-col justify-center text-left relative overflow-hidden text-neutral-850">
           
           {/* Slide Content */}
-          <div className="flex-1 flex flex-col justify-center">
-            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white leading-tight border-none pb-0 mb-4 tracking-tight font-sans text-left" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
+          <div className="flex-1 flex flex-col justify-center max-w-[90%]">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white leading-tight border-none pb-0 mb-6 tracking-tight font-sans text-left" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
               {activeSlide.title}
             </h1>
             
-            <ul className="space-y-3.5 text-sm text-slate-700 dark:text-slate-200 font-sans leading-relaxed text-left list-none pt-4 max-w-[90%] pl-2">
+            <ul className="space-y-4 text-sm text-slate-700 dark:text-slate-200 font-sans leading-relaxed text-left list-none pl-2">
               {activeSlide.bullets.map((bullet, idx) => (
                 <li key={idx} className="flex gap-3.5 items-start">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#fbbc05] shrink-0 mt-2 shadow-xs"></span>
-                  <span className="text-[14px] text-slate-700 dark:text-slate-200 leading-normal font-sans font-medium">{bullet}</span>
+                  <span className="w-2 h-2 rounded-full bg-[#fbbc05] shrink-0 mt-2 shadow-xs"></span>
+                  <span className="text-[15px] text-slate-700 dark:text-slate-200 leading-normal font-sans font-medium">{bullet}</span>
                 </li>
               ))}
               {activeSlide.bullets.length === 0 && (
-                <li className="text-xs text-slate-400 italic">No notes or bullets on this slide.</li>
+                <li className="text-sm text-slate-400 italic">No notes or bullets on this slide.</li>
               )}
             </ul>
           </div>
 
-          {/* Minimal Bottom Slide Switcher */}
-          <div className="pt-4 border-t border-slate-100 dark:border-[#2B2D31] flex items-center justify-between select-none text-xs text-slate-400">
-            <div className="flex items-center gap-2">
+          {/* Clean Overlay Navigation Arrows with NO extra chrome or text */}
+          {slides.length > 1 && (
+            <div className="absolute inset-y-0 left-3 right-3 flex items-center justify-between pointer-events-none">
               <button
                 type="button"
                 disabled={activeSlideIndex === 0}
                 onClick={() => setActiveSlideIndex(Math.max(0, activeSlideIndex - 1))}
-                className="p-1 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded disabled:opacity-30 cursor-pointer border-none bg-transparent"
+                className="pointer-events-auto p-2 rounded-full bg-slate-100/80 hover:bg-slate-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700 text-slate-700 dark:text-slate-200 disabled:opacity-0 transition cursor-pointer border-none shadow-sm"
+                aria-label="Previous Slide"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={20} />
               </button>
-              <span>Slide {activeSlideIndex + 1} of {slides.length}</span>
               <button
                 type="button"
                 disabled={activeSlideIndex >= slides.length - 1}
                 onClick={() => setActiveSlideIndex(Math.min(slides.length - 1, activeSlideIndex + 1))}
-                className="p-1 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded disabled:opacity-30 cursor-pointer border-none bg-transparent"
+                className="pointer-events-auto p-2 rounded-full bg-slate-100/80 hover:bg-slate-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700 text-slate-700 dark:text-slate-200 disabled:opacity-0 transition cursor-pointer border-none shadow-sm"
+                aria-label="Next Slide"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={20} />
               </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
@@ -1347,9 +1354,28 @@ export function NativeViewer({
       );
     }
 
-    // 1b. Premium High-Fidelity Simulated Editors for Google Workspace files when offline/mock
-    if (!isIframeViewer && mode === 'preview') {
+    // 1b. Premium Native / High-Fidelity Simulated Editors for Google Workspace files
+    if (mode === 'preview') {
       if (isGoogleSlide || isSlide) {
+        const slideDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '') : undefined);
+        const hasNativeUrl = slideDriveId && isRealDriveId(slideDriveId);
+        const nativeSlideUrl = hasNativeUrl 
+          ? `https://docs.google.com/presentation/d/${slideDriveId}/preview?rm=minimal` 
+          : (file.embedUrl || file.previewUrl || file.url);
+
+        if (nativeSlideUrl) {
+          return (
+            <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+              <iframe 
+                src={nativeSlideUrl}
+                className="w-full h-full border-none bg-white shadow-none"
+                allow="autoplay; fullscreen"
+                title={file.name}
+              />
+            </div>
+          );
+        }
+
         return renderGoogleSlidesSim();
       }
       if (isGoogleDoc) {
