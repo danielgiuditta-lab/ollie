@@ -301,6 +301,11 @@ export function LeftNav({
                   <div 
                     key={chat.id}
                     onClick={() => handleSelectChat({ id: 'home', name: 'Home', raw: 'home', isProject: false }, chat)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setContextMenu({ x: e.clientX, y: e.clientY, task: chat, isProject: false });
+                    }}
                     className={`h-[32px] px-3 rounded-[20px] flex items-center cursor-pointer text-[14px] transition-colors duration-200 truncate min-w-0 ${
                       isChatActive
                         ? `${themeTokens.selectedBg} ${themeTokens.text.selected}`
@@ -390,6 +395,11 @@ export function LeftNav({
                         <div 
                           key={chat.id}
                           onClick={() => handleSelectChat(space, chat)}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setContextMenu({ x: e.clientX, y: e.clientY, task: chat.raw, isProject: false });
+                          }}
                           className={`h-[32px] px-3 rounded-[20px] flex items-center cursor-pointer text-[14px] transition-colors duration-200 truncate min-w-0 ${
                             isChatActive
                               ? `${themeTokens.selectedBg} ${themeTokens.text.selected}`

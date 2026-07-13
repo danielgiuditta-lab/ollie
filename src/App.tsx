@@ -453,6 +453,13 @@ export default function App() {
     });
 
     if (taskId) {
+      if (activeChatId === taskId) {
+        if (spaceId && !isHomeChatId(spaceId)) {
+          await openSpace(spaceId);
+        } else {
+          handleFileClick(getHomeChatId(), true);
+        }
+      }
       try {
         await fetch(`/api/chats/${encodeURIComponent(taskId)}`, { method: 'DELETE' });
       } catch (err) {
