@@ -309,32 +309,38 @@ export function SpaceDashboard({
           }
         }
 
+        const isGhost = draggedCardId === fileId;
+
         return (
-          <div key={fileId} className="relative w-full h-full min-h-[340px] flex flex-col">
+          <div 
+            key={fileId} 
+            className="card-container-item relative w-full h-full min-h-[340px] flex flex-col p-1 -m-1"
+            onDragOver={(e) => handleDragOver(e, fileId)}
+            onDragLeave={() => {
+              setDragOverCardId(null);
+              setDragOverPosition(null);
+            }}
+            onDrop={(e) => handleDrop(e, fileId)}
+          >
             {/* Dynamic Destination Line Indicators */}
             {isDragOver && dragOverPosition === 'top' && (
-              <div className="absolute -top-2 left-0 right-0 h-1 bg-[#3186FF] rounded-full shadow-[0_0_10px_rgba(49,134,255,0.9)] z-30 pointer-events-none animate-pulse" />
+              <div className="absolute -top-3 -left-1 -right-1 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             {isDragOver && dragOverPosition === 'bottom' && (
-              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-[#3186FF] rounded-full shadow-[0_0_10px_rgba(49,134,255,0.9)] z-30 pointer-events-none animate-pulse" />
+              <div className="absolute -bottom-3 -left-1 -right-1 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             {isDragOver && dragOverPosition === 'left' && (
-              <div className="absolute -left-2 top-0 bottom-0 w-1 bg-[#3186FF] rounded-full shadow-[0_0_10px_rgba(49,134,255,0.9)] z-30 pointer-events-none animate-pulse" />
+              <div className="absolute -left-3 -top-1 -bottom-1 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             {isDragOver && dragOverPosition === 'right' && (
-              <div className="absolute -right-2 top-0 bottom-0 w-1 bg-[#3186FF] rounded-full shadow-[0_0_10px_rgba(49,134,255,0.9)] z-30 pointer-events-none animate-pulse" />
+              <div className="absolute -right-3 -top-1 -bottom-1 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
             )}
             <Card
               theme={theme}
               isSelected={isSelected}
+              isGhost={isGhost}
               isDragOver={isDragOver}
               className="w-full h-full flex-1 flex flex-col overflow-hidden"
-              onDragOver={(e) => handleDragOver(e, fileId)}
-              onDragLeave={() => {
-                setDragOverCardId(null);
-                setDragOverPosition(null);
-              }}
-              onDrop={(e) => handleDrop(e, fileId)}
               header={
                 <CardHeader
                   title={cardTitle}

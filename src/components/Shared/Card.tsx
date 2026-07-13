@@ -6,6 +6,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   theme?: 'light' | 'dark';
   isDragOver?: boolean;
   isSelected?: boolean;
+  isGhost?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -16,6 +17,7 @@ export function Card({
   theme = 'light',
   isDragOver = false,
   isSelected = false,
+  isGhost = false,
   className = '',
   style,
   ...props
@@ -33,7 +35,9 @@ export function Card({
           ? 'bg-[#1E1F22] border-[#2B2D31] shadow-card'
           : 'bg-white border-[#E9EEF6] shadow-card'
       } ${
-        isSelected
+        isGhost
+          ? 'opacity-60 ring-2 ring-[#3186FF] border-dashed border-[#3186FF] shadow-2xl scale-[0.99] z-10'
+          : isSelected
           ? 'border-[#3186FF] ring-2 ring-[#3186FF] shadow-[0_0_12px_rgba(49,134,255,0.25)] z-20'
           : ''
       } ${isDragOver ? 'scale-[1.005]' : ''} ${className}`}
