@@ -147,6 +147,46 @@ export function BotMessage({
 }: BotMessageProps) {
   const isDark = theme === 'dark';
 
+  const createMarkdownComponents = (isInline: boolean) => ({
+    a: ({ href, children }: any) => {
+      const isDriveLink = href && (href.includes('drive.google.com/open') || href.includes('drive.google.com/file'));
+      
+      const handleClick = (e: React.MouseEvent) => {
+        if (isDriveLink) {
+          e.preventDefault();
+          try {
+            const urlObj = new URL(href);
+            const fileId = urlObj.searchParams.get('id');
+            if (fileId && onSourceClick) {
+              onSourceClick(fileId);
+              return;
+            }
+          } catch (err) {
+            console.error("Error parsing link URL:", err);
+          }
+          window.open(href, '_blank', 'noopener,noreferrer');
+        }
+      };
+
+      if (isDriveLink) {
+        return (
+          <SourceChip href={href} onClick={handleClick} sources={sources}>
+            {children}
+          </SourceChip>
+        );
+      }
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+          {children}
+        </a>
+      );
+    },
+    p: ({ children }: any) => isInline ? <span className="inline">{children}</span> : <p className="mb-2 last:mb-0">{children}</p>
+  });
+
+  const inlineMarkdownComponents = createMarkdownComponents(true);
+  const fullMarkdownComponents = createMarkdownComponents(false);
+
   if (isMembersAddedNotice || (addedMembers && addedMembers.length > 0)) {
     const people = (addedMembers && addedMembers.length > 0) ? addedMembers : (selectedPeople || []);
     return (
@@ -154,7 +194,7 @@ export function BotMessage({
         <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
           isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
         }`} style={{ fontFamily: '"Inter", sans-serif' }}>
-          {text}
+          <ReactMarkdown components={inlineMarkdownComponents}>{text}</ReactMarkdown>
         </div>
 
         {people.length > 0 && (
@@ -299,7 +339,7 @@ export function BotMessage({
         <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
           isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
         }`} style={{ fontFamily: '"Inter", sans-serif' }}>
-          {text}
+          <ReactMarkdown components={inlineMarkdownComponents}>{text}</ReactMarkdown>
         </div>
 
         <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-card ${
@@ -465,7 +505,7 @@ export function BotMessage({
         <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
           isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
         }`} style={{ fontFamily: '"Inter", sans-serif' }}>
-          {text}
+          <ReactMarkdown components={inlineMarkdownComponents}>{text}</ReactMarkdown>
         </div>
 
         <div className={`flex flex-col border rounded-3xl p-4 w-full shadow-card ${
@@ -552,7 +592,7 @@ export function BotMessage({
         <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
           isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
         }`}>
-          {text}
+          <ReactMarkdown components={inlineMarkdownComponents}>{text}</ReactMarkdown>
         </div>
 
         <div className={`flex flex-col border rounded-3xl p-5 w-full shadow-sm ${
@@ -642,48 +682,12 @@ export function BotMessage({
   }
   
   if (variant === 'summary') {
-    const markdownComponents = {
-      a: ({ href, children }: any) => {
-        const isDriveLink = href && (href.includes('drive.google.com/open') || href.includes('drive.google.com/file'));
-        
-        const handleClick = (e: React.MouseEvent) => {
-          if (isDriveLink) {
-            e.preventDefault();
-            try {
-              const urlObj = new URL(href);
-              const fileId = urlObj.searchParams.get('id');
-              if (fileId && onSourceClick) {
-                onSourceClick(fileId);
-                return;
-              }
-            } catch (err) {
-              console.error("Error parsing link URL:", err);
-            }
-            window.open(href, '_blank', 'noopener,noreferrer');
-          }
-        };
-
-        if (isDriveLink) {
-          return (
-            <SourceChip href={href} onClick={handleClick} sources={sources}>
-              {children}
-            </SourceChip>
-          );
-        }
-        return (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-            {children}
-          </a>
-        );
-      }
-    };
-
     return (
       <div 
         className="markdown-body w-full text-slate-700 dark:text-[#E3E3E3]"
       >
         {text ? (
-          <ReactMarkdown components={markdownComponents}>
+          <ReactMarkdown components={fullMarkdownComponents}>
             {text}
           </ReactMarkdown>
         ) : (
@@ -705,7 +709,9 @@ export function BotMessage({
         <div className={`px-1 text-xs sm:text-base leading-relaxed font-normal ${
           isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
         }`} style={{ fontFamily: '"Inter", sans-serif' }}>
-          {displayDescription}
+          <ReactMarkdown components={inlineMarkdownComponents}>
+            {displayDescription}
+          </ReactMarkdown>
         </div>
       )}
 

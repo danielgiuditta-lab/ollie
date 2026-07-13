@@ -1,0 +1,21 @@
+{
+  "chatId": "home_danielgiuditta_google_com",
+  "projectName": "New Workspace",
+  "chatName": null,
+  "type": null,
+  "taskType": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [],
+  "envId": null,
+  "activeSpaceId": null,
+  "sandboxUrl": "",
+  "sandboxFiles": [],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [
+    "todo-card",
+    "created-artifact-1783953766474"
+  ],
+  "updatedAt": "2026-07-13T14:44:52.872Z"
+}

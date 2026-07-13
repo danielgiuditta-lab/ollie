@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface UserMessageProps {
   text: string;
@@ -18,7 +19,10 @@ export function UserMessage({ text, theme = 'light', isGroupChat = false }: User
       } rounded-[24px] rounded-tr-sm p-4 text-xs sm:text-base font-normal leading-relaxed max-w-[90%] self-end`}
       style={{ fontFamily: '"Inter", sans-serif' }}
     >
-      {text}
+      <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
+        {text}
+      </ReactMarkdown>
     </div>
   );
 }
+
