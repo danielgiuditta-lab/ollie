@@ -830,17 +830,12 @@ export function NativeViewer({
     }
 
     return (
-      <div className="w-full h-full bg-[#f0f4f9] dark:bg-[#161719] p-8 flex flex-col items-center justify-center overflow-auto gap-6 select-text font-sans">
-        {/* Widescreen 16:9 Presentation slide container - NO fake chrome/toolbars */}
-        <div className="aspect-[16/9] w-full max-w-[880px] bg-white dark:bg-[#1E1F22] border border-slate-200 dark:border-[#2B2D31] rounded-xl shadow-xl p-12 pr-12 pb-10 flex flex-col justify-between text-left relative overflow-hidden text-neutral-850 select-none">
+      <div className="w-full h-full bg-[#f0f4f9] dark:bg-[#161719] p-8 flex flex-col items-center justify-center overflow-auto select-text font-sans">
+        {/* Pure Clean Widescreen 16:9 Presentation slide container - NO CHROME AT ALL */}
+        <div className="aspect-[16/9] w-full max-w-[880px] bg-white dark:bg-[#1E1F22] rounded-xl shadow-xl p-12 flex flex-col justify-between text-left relative overflow-hidden text-neutral-850 select-none">
           
-          <div className="absolute top-[28px] left-[48px] right-[48px] flex justify-between select-none border-b border-slate-100 dark:border-[#2B2D31] pb-1">
-            <span className="text-[9px] text-fbbc05 font-bold tracking-widest uppercase font-sans">Workspace Presentation</span>
-            <span className="text-[9px] text-slate-400 dark:text-slate-300 font-sans font-medium">Slide {activeSlideIndex + 1} of {slides.length}</span>
-          </div>
-
           {/* Slide Content */}
-          <div className="flex-1 mt-6 flex flex-col justify-center">
+          <div className="flex-1 flex flex-col justify-center">
             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white leading-tight border-none pb-0 mb-4 tracking-tight font-sans text-left" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
               {activeSlide.title}
             </h1>
@@ -848,7 +843,7 @@ export function NativeViewer({
             <ul className="space-y-3.5 text-sm text-slate-700 dark:text-slate-200 font-sans leading-relaxed text-left list-none pt-4 max-w-[90%] pl-2">
               {activeSlide.bullets.map((bullet, idx) => (
                 <li key={idx} className="flex gap-3.5 items-start">
-                  <span className="w-1.5 h-1.5 rounded-full bg-fbbc05 shrink-0 mt-2 shadow-xs"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#fbbc05] shrink-0 mt-2 shadow-xs"></span>
                   <span className="text-[14px] text-slate-700 dark:text-slate-200 leading-normal font-sans font-medium">{bullet}</span>
                 </li>
               ))}
@@ -858,36 +853,28 @@ export function NativeViewer({
             </ul>
           </div>
 
-          {/* Footer */}
-          <div className="border-t border-slate-100 dark:border-[#2B2D31] pt-3 select-none flex justify-between items-center text-[9px] text-slate-400 dark:text-slate-300 leading-none">
-            <span>Created with Spaces</span>
-            <span className="text-amber-700 dark:text-amber-400 font-semibold tracking-wider text-[8px] uppercase">Confidential Internal Draft</span>
+          {/* Minimal Bottom Slide Switcher */}
+          <div className="pt-4 border-t border-slate-100 dark:border-[#2B2D31] flex items-center justify-between select-none text-xs text-slate-400">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={activeSlideIndex === 0}
+                onClick={() => setActiveSlideIndex(Math.max(0, activeSlideIndex - 1))}
+                className="p-1 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded disabled:opacity-30 cursor-pointer border-none bg-transparent"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span>Slide {activeSlideIndex + 1} of {slides.length}</span>
+              <button
+                type="button"
+                disabled={activeSlideIndex >= slides.length - 1}
+                onClick={() => setActiveSlideIndex(Math.min(slides.length - 1, activeSlideIndex + 1))}
+                className="p-1 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded disabled:opacity-30 cursor-pointer border-none bg-transparent"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
-        </div>
-
-        {/* Bottom Bar: Clean Slides Navigation Bar */}
-        <div className="flex items-center gap-3 bg-white dark:bg-[#1E1F22] border border-gray-200 dark:border-[#2B2D31] px-4 py-2 rounded-full shadow-sm select-none">
-          <button
-            type="button"
-            disabled={activeSlideIndex === 0}
-            onClick={() => setActiveSlideIndex(Math.max(0, activeSlideIndex - 1))}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/10 text-slate-700 dark:text-white disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer border-none bg-transparent"
-            title="Previous slide"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <span className="text-xs font-semibold text-slate-800 dark:text-white px-2">
-            Slide {activeSlideIndex + 1} of {slides.length}
-          </span>
-          <button
-            type="button"
-            disabled={activeSlideIndex >= slides.length - 1}
-            onClick={() => setActiveSlideIndex(Math.min(slides.length - 1, activeSlideIndex + 1))}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/10 text-slate-700 dark:text-white disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer border-none bg-transparent"
-            title="Next slide"
-          >
-            <ChevronRight size={18} />
-          </button>
         </div>
       </div>
     );
