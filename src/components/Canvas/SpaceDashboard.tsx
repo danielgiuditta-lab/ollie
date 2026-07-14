@@ -396,38 +396,7 @@ export function SpaceDashboard({
 
   return (
     <div className="w-full h-full flex flex-col min-h-0 relative select-none">
-      {/* Top Controls: Layout Mode Switcher */}
-      <div className="w-full flex justify-end px-6 pt-3 pb-1 shrink-0 z-20">
-        <div className="flex items-center gap-1 bg-slate-100/90 dark:bg-[#1C1D20]/90 p-1 rounded-full border border-slate-200/70 dark:border-white/10 text-xs shadow-2xs backdrop-blur-md">
-          <button 
-            type="button"
-            onClick={() => setDashboardLayoutMode('cols')}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${dashboardLayoutMode === 'cols' ? 'bg-white dark:bg-neutral-700 text-[#3186FF] dark:text-blue-400 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-            title="Columns Layout"
-          >
-            <Columns3 size={13} />
-            <span>Columns</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => setDashboardLayoutMode('rows')}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${dashboardLayoutMode === 'rows' ? 'bg-white dark:bg-neutral-700 text-[#3186FF] dark:text-blue-400 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-            title="Rows Layout"
-          >
-            <List size={13} />
-            <span>Rows</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => setDashboardLayoutMode('auto')}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${dashboardLayoutMode === 'auto' ? 'bg-white dark:bg-neutral-700 text-[#3186FF] dark:text-blue-400 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-            title="Auto Grid Layout"
-          >
-            <LayoutGrid size={13} />
-            <span>Auto</span>
-          </button>
-        </div>
-      </div>
+
 
       <div 
         ref={containerRef}

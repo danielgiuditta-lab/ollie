@@ -1373,14 +1373,6 @@ export function NativeViewer({
   const isTargetIframe = isIframeViewer && driveId && mode === 'preview';
 
   if (isPreviewCard && !isTargetIframe) {
-    if (hideHeader) {
-      return (
-        <div className="w-full h-full relative overflow-hidden select-none pointer-events-none rounded-2xl">
-          {renderContent()}
-        </div>
-      );
-    }
-
     const virtualWidth = 600;
     const virtualHeight = 350;
     const activeWidth = previewDims.width > 0 ? previewDims.width : 240;
