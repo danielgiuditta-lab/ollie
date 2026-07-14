@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useEffect, useCallback, memo } from 'react';
+import { INITIAL_HTML_LOADING_SKELETON } from '../../utils/constants';
 
 interface AppViewProps {
   sandboxUrl?: string;
@@ -22,15 +23,15 @@ export const AppView = memo(function AppView({ sandboxUrl, files, envId, project
   });
 
   const srcDoc = useMemo(() => {
-    if (files && files.length > 0) {
-      const isHtml = (f: any) => f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase().endsWith('.htm'));
-      const activeHtmlFile = (selectedFile && isHtml(selectedFile)) 
-        ? selectedFile 
-        : files.find(f => isHtml(f) || f.name === 'index.html');
+    const isHtml = (f: any) => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase().endsWith('.htm'));
+    const activeHtmlFile = (selectedFile && isHtml(selectedFile)) 
+      ? selectedFile 
+      : (files || []).find(f => isHtml(f) || f.name === 'index.html');
 
-      if (activeHtmlFile && activeHtmlFile.content) {
-        console.log(`[AppView] Assembling srcDoc for file: ${activeHtmlFile.name} (length: ${activeHtmlFile.content.length} chars)`);
-        let content = activeHtmlFile.content;
+    if (activeHtmlFile || (files && files.length > 0)) {
+      let content = (activeHtmlFile && activeHtmlFile.content) ? activeHtmlFile.content : INITIAL_HTML_LOADING_SKELETON;
+      console.log(`[AppView] Assembling srcDoc for file: ${activeHtmlFile?.name || 'index.html'} (length: ${content.length} chars)`);
+
         
         // Inject sandbox markers at the top of the head so any client scripts in the iframe can access them
         const injectScript = `\n<script id="sandbox-metadata">
@@ -223,7 +224,6 @@ export const AppView = memo(function AppView({ sandboxUrl, files, envId, project
 
 
         return content;
-      }
     }
     return undefined;
   }, [files, selectedFile]);

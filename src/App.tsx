@@ -22,6 +22,7 @@ import { FileIcon } from './components/Shared/FileIcon';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
 import { formatPeopleNames } from './components/Chat/BotMessage';
 import { inferChatName, resolveArtifactForChat, findAssociatedChatForFile } from './utils/artifactResolver';
+import { INITIAL_HTML_LOADING_SKELETON } from './utils/constants';
 
 
 import { useCanvasState } from './hooks/useCanvasState';
@@ -1855,12 +1856,12 @@ export default function App() {
     if ((viewState === 'home' || viewState === 'dashboard' || viewState === 'null') && !activeAiMode) {
       const initialIndexFile = { 
         name: 'index.html', 
-        content: '', 
+        content: INITIAL_HTML_LOADING_SKELETON, 
         type: 'code', 
         mimeType: 'text/html', 
         id: `${targetChatId || activeChatId || 'sandbox'}-file-0` 
       };
-      console.log("[VibeCode Debug] Transitioning to app view & pre-seeding index.html:", initialIndexFile.id);
+      console.log("[VibeCode Debug] Transitioning to app view & pre-seeding index.html with loading skeleton:", initialIndexFile.id);
       setSandboxFiles([initialIndexFile]);
       setSelectedFile(initialIndexFile);
       setIndexFileSelected(true);
@@ -2314,7 +2315,7 @@ export default function App() {
                  currentSteps[event.step_index] = { ...currentSteps[event.step_index], ...event.delta, type: currentSteps[event.step_index].type };
                  currentSteps[event.step_index]._streamText = (currentSteps[event.step_index]._streamText || '') + deltaText;
 
-                 if (currentSteps[event.step_index].type === 'model_output') {
+                 if (deltaText && (currentSteps[event.step_index].type === 'model_output' || !currentSteps[event.step_index].type || currentSteps[event.step_index].type === 'unknown' || deltaText.includes('<') || deltaText.includes('```'))) {
                     accumulatedOutput += deltaText;
                     const displayOutput = accumulatedOutput.replace(/```[A-Za-z]*\s*\n?[\s\S]*/i, '').trim();
                     currentText = displayOutput || "Generating assets...";
@@ -2394,9 +2395,13 @@ export default function App() {
               let fullModelOutput = "";
               if (finalInteraction.steps && Array.isArray(finalInteraction.steps)) {
                 for (const step of finalInteraction.steps) {
-                  if (step.type === 'model_output') {
-                    const txt = step.text || (step.content?.find((c: any) => c.type === 'text')?.text) || "";
-                    fullModelOutput += txt;
+                  const txt = step.text || 
+                              step.code || 
+                              step.output || 
+                              (Array.isArray(step.content) ? step.content.map((c: any) => c.text || c.code || '').join('\n') : (step.content?.text || step.content?.code || '')) || 
+                              "";
+                  if (txt && (step.type === 'model_output' || step.type === 'agent_response' || !step.type || step.type === 'unknown' || txt.includes('<') || txt.includes('```'))) {
+                    fullModelOutput += (fullModelOutput ? "\n" : "") + txt;
                   }
                 }
               }
@@ -4685,7 +4690,7 @@ export default function App() {
         } else if (taskType === 'site' || taskType === 'tool') {
           const toolFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           const canonicalHtml = toolFile || allAvailableFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
-          const selectedTool = canonicalHtml || { name: 'index.html', content: '' };
+          const selectedTool = canonicalHtml || { name: 'index.html', content: INITIAL_HTML_LOADING_SKELETON };
           setSelectedFile(selectedTool);
           setIndexFileSelected(true);
           setViewState('app');
@@ -4934,7 +4939,7 @@ export default function App() {
                 } else if (chatTaskType === 'site' || chatTaskType === 'tool') {
                   const toolFile = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   const canonicalHtml = toolFile || (chatData.sandboxFiles || []).find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
-                  fileToSelect = canonicalHtml || { name: 'index.html', content: '' };
+                  fileToSelect = canonicalHtml || { name: 'index.html', content: INITIAL_HTML_LOADING_SKELETON };
                   nextViewState = 'app';
                 } else if (chatTaskType === 'doc') {
                   fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
@@ -5867,7 +5872,7 @@ export default function App() {
                           envId={envId} 
                           projectName={projectName} 
                           onIframeRef={registerIframe}
-                          selectedFile={selectedFile || sandboxFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase() === 'index.html')) || { name: 'index.html', content: '' }}
+                          selectedFile={selectedFile || sandboxFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase() === 'index.html')) || { name: 'index.html', content: INITIAL_HTML_LOADING_SKELETON }}
                         />
                       ) : (
                         <NativeViewer 
