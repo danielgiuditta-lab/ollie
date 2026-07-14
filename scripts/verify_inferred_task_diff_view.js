@@ -37,7 +37,7 @@ function evaluateViewStateRule(file, taskType, activeProactiveTask, targetChatId
   );
 
   const isHtml = file?.name?.toLowerCase().endsWith('.html') || file?.name?.toLowerCase() === 'index.html';
-  return isHtml ? 'app' : (isInferredDiff ? 'projector' : 'files');
+  return isHtml ? 'app' : 'files';
 }
 
 async function runVerification() {
@@ -75,9 +75,9 @@ async function runVerification() {
     failures++;
   }
 
-  // 2. Test DB chat session persistence with viewState: 'projector'
+  // 2. Test DB chat session persistence with viewState: 'files'
   const testChatId = `test-proactive-chat-${Date.now()}`;
-  console.log(`\n2. Testing POST /api/chats/${testChatId} storing viewState = 'projector'...`);
+  console.log(`\n2. Testing POST /api/chats/${testChatId} storing viewState = 'files'...`);
   try {
     const proactiveFile = {
       id: 'proactive-slide-test',
@@ -103,7 +103,7 @@ async function runVerification() {
     }, {
       chatName: 'Review Proactive Action: Q3 Strategy',
       taskType: 'inferred',
-      viewState: 'projector',
+      viewState: 'files',
       associatedFileId: proactiveFile.id,
       associatedFileName: proactiveFile.name,
       sandboxFiles: [proactiveFile],
@@ -121,7 +121,7 @@ async function runVerification() {
     }
 
     // Hydrate chat from database and verify stored viewState
-    console.log(`\n3. Verifying GET /api/chats/${testChatId} hydration maintains viewState = 'projector'...`);
+    console.log(`\n3. Verifying GET /api/chats/${testChatId} hydration maintains viewState = 'files'...`);
     const getRes = await request({
       hostname: 'localhost',
       port: 3000,
@@ -131,10 +131,10 @@ async function runVerification() {
 
     if (getRes.status === 200 && getRes.data) {
       const chat = getRes.data;
-      if (chat.viewState === 'projector') {
-        console.log("   ✅ SUCCESS: Hydrated chat has stored viewState = 'projector'");
+      if (chat.viewState === 'files') {
+        console.log("   ✅ SUCCESS: Hydrated chat has stored viewState = 'files'");
       } else {
-        console.error(`   ❌ FAIL: Hydrated chat viewState is '${chat.viewState}', expected 'projector'`);
+        console.error(`   ❌ FAIL: Hydrated chat viewState is '${chat.viewState}', expected 'files'`);
         failures++;
       }
     } else {
@@ -151,19 +151,19 @@ async function runVerification() {
   
   const proactiveDraft = { id: 'proactive-1', name: 'draft.doc', isProactiveDraft: true };
   const viewStateProactive = evaluateViewStateRule(proactiveDraft, 'doc', null, 'space-proactive-123');
-  if (viewStateProactive === 'projector') {
-    console.log("   ✅ Proactive draft artifact -> evaluateViewStateRule = 'projector'");
+  if (viewStateProactive === 'files') {
+    console.log("   ✅ Proactive draft artifact -> evaluateViewStateRule = 'files'");
   } else {
-    console.error(`   ❌ FAIL: Proactive draft evaluated to '${viewStateProactive}', expected 'projector'`);
+    console.error(`   ❌ FAIL: Proactive draft evaluated to '${viewStateProactive}', expected 'files'`);
     failures++;
   }
 
   const inferredTaskFile = { id: 'todo-card', name: 'inferred_tasks.json', isInferredTask: true };
   const viewStateInferred = evaluateViewStateRule(inferredTaskFile, 'inferred', null, 'space-chat-inferred');
-  if (viewStateInferred === 'projector') {
-    console.log("   ✅ Inferred task system artifact -> evaluateViewStateRule = 'projector'");
+  if (viewStateInferred === 'files') {
+    console.log("   ✅ Inferred task system artifact -> evaluateViewStateRule = 'files'");
   } else {
-    console.error(`   ❌ FAIL: Inferred task artifact evaluated to '${viewStateInferred}', expected 'projector'`);
+    console.error(`   ❌ FAIL: Inferred task artifact evaluated to '${viewStateInferred}', expected 'files'`);
     failures++;
   }
 

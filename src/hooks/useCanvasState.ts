@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export type ViewState = 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard';
+export type ViewState = 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'ai_summary' | 'dashboard';
 
 export function useCanvasState() {
   const [activeSidebar, setActiveSidebar] = useState<'gemini' | 'comments' | 'history' | null>('gemini');

@@ -46,11 +46,11 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
   const col2Description = file?.summaryOfChanges || file?.draftData?.summaryOfChanges || file?.descriptionDone || 'I made the language more concise in the problem framing section.';
 
   return (
-    <div className={`w-full h-full flex flex-col items-center justify-start p-4 overflow-y-auto transition-colors duration-300 ${
+    <div className={`w-full h-full flex flex-col items-stretch justify-start p-4 sm:p-6 overflow-y-auto transition-colors duration-300 ${
       isDark ? 'bg-[#18191B] text-white' : 'bg-white text-slate-800'
     }`}>
-      {/* Centered container with 16px gap and 16px padding */}
-      <div className="w-full max-w-[1080px] grid grid-cols-2 gap-4 items-start py-4">
+      {/* Full-width container with 16px gap and padding filling available canvas */}
+      <div className="w-full grid grid-cols-2 gap-4 sm:gap-6 items-start py-4">
         
         {/* Column 1: Original */}
         <div className="flex flex-col min-w-0">

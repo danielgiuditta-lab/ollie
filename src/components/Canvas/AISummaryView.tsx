@@ -344,9 +344,6 @@ export function AISummaryView({
               onClose={() => {
                 setActiveFile(null);
               }}
-              onExpand={() => {
-                // Expanding from inside AI Summary sources is disabled/handled silently
-              }}
               appTheme={theme}
             />
             

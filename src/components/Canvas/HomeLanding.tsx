@@ -159,7 +159,7 @@ interface HomeLandingProps {
   accessToken?: string | null;
   userProfile?: any;
   onLogin?: () => void;
-  setViewState?: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard') => void;
+  setViewState?: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'ai_summary' | 'dashboard') => void;
   setSandboxFiles?: (files: any[]) => void;
   setSelectedFile?: (file: any) => void;
   setProjectName?: (name: string) => void;
@@ -1450,7 +1450,7 @@ export function HomeLanding({
       setSelectedFile(defaultSelect);
     }
 
-    setViewState('projector');
+    setViewState('files');
   };
 
   // Convert mimeType into corresponding file icon used elsewhere in NullState List views

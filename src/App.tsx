@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { AnimatePresence } from 'motion/react';
 import { LeftNav } from './components/Navigation/LeftNav';
-import { TopBar } from './components/Navigation/TopBar';
 import { CanvasHeader } from './components/Navigation/CanvasHeader';
 import { CanvasMain } from './components/Canvas/CanvasMain';
 import { AppView } from './components/Canvas/AppView';
@@ -316,7 +315,7 @@ export default function App() {
     projectName: string;
     selectedFile: any;
     indexFileSelected: boolean;
-    viewState?: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard';
+    viewState?: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'ai_summary' | 'dashboard';
     pinnedArtifactIds?: string[];
     taskType?: string;
     type?: string;
@@ -779,7 +778,7 @@ export default function App() {
               setSelectedFile(data.files[0]);
             }
           }
-          setViewState('public_projector');
+          setViewState('files');
         })
         .catch(err => {
           console.error("Failed to load shared workspace", err);
@@ -2911,7 +2910,7 @@ export default function App() {
   const handleProactiveTaskClick = (task: any) => {
     const spaceName = cleanWorkspaceName(task.workspace || task.sourceName || 'Workspace');
     setProjectName(spaceName);
-    setViewState('projector');
+    setViewState('files');
     setActiveProactiveTask(task);
 
     let resolvedSpaceId = 'home';
@@ -3127,7 +3126,7 @@ export default function App() {
       projectName: spaceName,
       selectedFile: proactiveSlideFile,
       indexFileSelected: false,
-      viewState: 'projector'
+      viewState: 'files'
     };
 
     setRecentTasks(prev => {
@@ -4702,7 +4701,7 @@ export default function App() {
           } else if (inferredTaskFile) {
             setSelectedFile(inferredTaskFile);
             setIndexFileSelected(false);
-            setViewState('projector');
+            setViewState('files');
           } else {
             setSelectedFile(null);
             setIndexFileSelected(false);
@@ -4729,26 +4728,11 @@ export default function App() {
           folderId
         });
 
-        const isInferredDiff = Boolean(
-          specificFileMatch?.isInferredTask ||
-          specificFileMatch?.isProactiveDraft ||
-          specificFileMatch?.isProactive ||
-          specificFileMatch?.taskType === 'inferred' ||
-          taskType === 'inferred' ||
-          taskType === 'tracking' ||
-          activeProactiveTask ||
-          (typeof file === 'object' && file && file.id && String(file.id).includes('-proactive-')) ||
-          file?.isProactiveDraft ||
-          file?.isProactive ||
-          file?.isInferredTask ||
-          targetChatId?.includes('-proactive-')
-        );
-
         if (specificFileMatch && !specificFileMatch.type?.includes('space')) {
           const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
           setSelectedFile(specificFileMatch);
           setIndexFileSelected(isHtml);
-          setViewState(isHtml ? 'app' : (isInferredDiff ? 'projector' : 'files'));
+          setViewState(isHtml ? 'app' : 'files');
         } else if (taskType === 'site' || taskType === 'tool') {
           const toolFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           const canonicalHtml = toolFile || allAvailableFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
@@ -4783,7 +4767,7 @@ export default function App() {
           const isHtml = taskFile?.name?.toLowerCase().endsWith('.html') || taskFile?.name?.toLowerCase() === 'index.html';
           setSelectedFile(taskFile);
           setIndexFileSelected(isHtml);
-          setViewState(isHtml ? 'app' : 'projector');
+          setViewState(isHtml ? 'app' : 'files');
         } else {
           const resolved = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           const autoSelectFile = resolved || cached.selectedFile || cached.sandboxFiles?.[0] || null;
@@ -4991,25 +4975,13 @@ export default function App() {
                   folderId
                 });
 
-                const isInferredDiff = Boolean(
-                  specificFileMatch?.isInferredTask ||
-                  specificFileMatch?.isProactiveDraft ||
-                  specificFileMatch?.isProactive ||
-                  specificFileMatch?.taskType === 'inferred' ||
-                  chatTaskType === 'inferred' ||
-                  chatTaskType === 'tracking' ||
-                  activeProactiveTask ||
-                  (typeof file === 'object' && file && file.id && String(file.id).includes('-proactive-')) ||
-                  targetChatId?.includes('-proactive-')
-                );
-
                 if (isParentSpaceClick && !isHomeChatId(folderId)) {
                   fileToSelect = null;
                   nextViewState = 'dashboard';
                 } else if (specificFileMatch && !specificFileMatch.type?.includes('space') && specificFileMatch.name !== 'inferred_tasks.json') {
                   fileToSelect = specificFileMatch;
                   const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
-                  nextViewState = isHtml ? 'app' : (isInferredDiff ? 'projector' : 'files');
+                  nextViewState = isHtml ? 'app' : 'files';
                 } else if (chatTaskType === 'site' || chatTaskType === 'tool') {
                   const toolFile = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   const canonicalHtml = toolFile || (chatData.sandboxFiles || []).find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
@@ -5026,7 +4998,7 @@ export default function App() {
                   nextViewState = 'files';
                 } else if (chatTaskType === 'inferred' || chatTaskType === 'tracking') {
                   fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
-                  nextViewState = 'projector';
+                  nextViewState = 'files';
                 } else {
                   const resolved = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   fileToSelect = resolved || chatData.sandboxFiles[0] || null;
@@ -5098,10 +5070,9 @@ export default function App() {
 
         if (targetArtifact) {
           const isHtml = targetArtifact.name?.toLowerCase().endsWith('.html') || targetArtifact.name?.toLowerCase() === 'index.html';
-          const isTodoDiff = Boolean(isTodo || targetArtifact.isProactiveDraft || targetArtifact.isProactive || targetArtifact.taskType === 'inferred' || targetArtifact.isInferredTask);
           setSelectedFile(targetArtifact);
           setIndexFileSelected(isHtml);
-          setViewState(isTodoDiff ? 'projector' : (isHtml ? 'app' : 'files'));
+          setViewState(isHtml ? 'app' : 'files');
           setMessages([]);
 
           const newCacheEntry = {
@@ -5113,7 +5084,7 @@ export default function App() {
             projectName: projectName,
             selectedFile: targetArtifact,
             indexFileSelected: isHtml,
-            viewState: (isTodoDiff ? 'projector' : (isHtml ? 'app' : 'files')) as any,
+            viewState: (isHtml ? 'app' : 'files') as any,
             taskType: isTodo ? 'inferred' : (targetArtifact.taskType || 'site'),
             type: isTodo ? 'inferred' : (targetArtifact.type || 'site'),
             associatedFileId: targetArtifact.id || targetArtifact.driveId,
@@ -5853,14 +5824,13 @@ export default function App() {
           {/* Main Viewport Content first (on the LEFT) */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative gap-4">
             <div className="flex-1 min-h-0 relative">
-              {(viewState === 'home' || viewState === 'dashboard' || viewState === 'ai_summary' || viewState === 'projector' || viewState === 'app' || viewState === 'files' || selectedFile) && (
+              {(viewState === 'home' || viewState === 'dashboard' || viewState === 'ai_summary' || viewState === 'app' || viewState === 'files' || selectedFile) && (
                 <CanvasMain 
                   viewState={viewState} 
                   setViewState={setViewState} 
                   isLoading={isLoading} 
                   currentTask={currentTask} 
                   appTheme={appTheme} 
-                  onExpand={() => setViewState('public_projector')}
                   peers={peers}
                   currentUserId={localUser?.id}
                   selectedFile={selectedFile}
@@ -5970,12 +5940,6 @@ export default function App() {
                         />
                       )}
                     </div>
-                  )}
-                  {(viewState === 'projector' || viewState === 'public_projector') && (
-                    <InferredTaskDiffView
-                      file={selectedFile || activeProactiveTask}
-                      theme={appTheme}
-                    />
                   )}
                   {viewState === 'dashboard' && (
                     <SpaceDashboard 
@@ -6110,77 +6074,6 @@ export default function App() {
           </AnimatePresence>
         </div>
       </div>
-
-      {/* Projector / Public Projector overlay mode */}
-      {(viewState === 'projector' || viewState === 'public_projector') && (
-        <div id="projector-overlay-viewport" className="fixed inset-0 z-40 bg-[#0B0B0C] flex flex-col font-sans overflow-hidden h-screen w-screen">
-          <TopBar 
-            projectName={projectName} 
-            envId={envId}
-            sandboxFiles={sandboxFiles}
-            activeSidebar={activeSidebar}
-            setActiveSidebar={setActiveSidebar}
-            theme="dark"
-            userProfile={userProfile}
-            isPublic={viewState === 'public_projector'}
-            onCloseProjector={() => setViewState(sandboxFiles.length > 0 ? 'app' : 'null')}
-            syncStatus={syncStatus}
-          />
-          <div className="flex-1 flex overflow-hidden pb-4 pr-4 pt-4 z-10 relative">
-            <LeftNav theme="dark" hideControls={true} />
-            <div className="flex-1 flex min-w-0 pr-4 pl-2">
-              <CanvasMain 
-                viewState={viewState} 
-                setViewState={setViewState} 
-                isLoading={isLoading} 
-                currentTask={currentTask} 
-                appTheme={appTheme} 
-                theme="dark"
-                onExpand={viewState === 'projector' ? () => setViewState('public_projector') : undefined}
-                peers={peers}
-                currentUserId={localUser?.id}
-                selectedFile={selectedFile}
-              >
-                <AppView 
-                  sandboxUrl={sandboxUrl} 
-                  files={sandboxFiles} 
-                  envId={envId} 
-                  projectName={projectName} 
-                  theme="dark"
-                  onIframeRef={registerIframe}
-                />
-              </CanvasMain>
-            </div>
-            {activeSidebar && (
-              <ChatSidebar 
-                messages={messages} 
-                onSendMessage={handleSendMessage} 
-                isLoading={isLoading} 
-                variant={activeSidebar}
-                onClose={() => setActiveSidebar(null)}
-                theme="dark"
-                onCreateArtifact={handleCreateArtifactApp}
-                currentTask={currentTask}
-                fileCount={sandboxFiles.length > 0 ? sandboxFiles.length : (selectedDriveFiles.length > 0 ? selectedDriveFiles.length : driveFiles.length)}
-                onApplyMoves={handleApplyOrganizeMoves}
-                onDoDifferently={handleDoDifferentlyOrganize}
-                isOrganizingFiles={isOrganizingFiles}
-                onFinalizeSpace={handleFinalizeSpace}
-                onSelectSpacePeople={handleSelectSpacePeople}
-                isLoggedIn={isLoggedIn}
-                onLogin={login}
-                onBypassAuth={() => setBypassAuth(true)}
-                projectName={projectName}
-                activeSpaceId={activeSpaceId}
-                activeChatId={activeChatId}
-                selectedFile={selectedFile}
-                todoItems={todoItems}
-                onApproveProactive={handleApproveActiveProactiveTask}
-              />
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Shared link hydration spinner */}
       {sharedLoading && (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Maximize2, ExternalLink } from 'lucide-react';
+import { X, ExternalLink } from 'lucide-react';
 import { IconButton } from '../Shared/IconButton';
 import { themeTokens } from '../../utils/themeTokens';
 
@@ -8,7 +8,6 @@ interface CanvasTopBarProps {
   viewMode: 'file' | 'preview';
   onViewModeChange: (mode: 'file' | 'preview') => void;
   onClose: () => void;
-  onExpand: () => void;
   onOpenInDrive?: (file: any) => void;
   appTheme?: 'light' | 'dark';
   peers?: Record<string, any>;
@@ -19,7 +18,6 @@ export function CanvasTopBar({
   viewMode,
   onViewModeChange,
   onClose,
-  onExpand,
   onOpenInDrive,
   appTheme = 'light',
   peers
@@ -79,18 +77,6 @@ export function CanvasTopBar({
     </button>
   );
 
-  // 4. Simple Expand Button component matching screenshot (round, dynamic bg, hover, Maximize2 icon)
-  const ExpandButton = () => (
-    <button
-      onClick={onExpand}
-      className="w-[40px] h-[40px] rounded-full flex items-center justify-center cursor-pointer transition select-none outline-none shrink-0 bg-[#003BC4]/5 dark:bg-[#282A2D] hover:bg-[#003BC4]/10 dark:hover:bg-[#35373A] text-slate-800 dark:text-white border-0"
-      title="Expand to projector fullscreen"
-      id="canvas-topbar-expand"
-    >
-      <Maximize2 size={16} className="stroke-[2.2] text-slate-800 dark:text-white" />
-    </button>
-  );
-
   // Layout 1: Previewable code (html / markdown)
   if (isPreviewable) {
     return (
@@ -130,7 +116,6 @@ export function CanvasTopBar({
         {/* Right: Expand (dual arrows pointing outwards) */}
         <div className="flex items-center gap-2">
           <PeerAvatarsList />
-          <ExpandButton />
         </div>
       </div>
     );
@@ -215,10 +200,9 @@ export function CanvasTopBar({
         </span>
       </div>
 
-      {/* Right: Expand to projector fullscreen */}
+      {/* Right: Action Controls */}
       <div className="flex items-center gap-2">
         <PeerAvatarsList />
-        <ExpandButton />
       </div>
     </div>
   );

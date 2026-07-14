@@ -625,7 +625,7 @@ export function SpaceDashboard({
                                   setProjectName(item.workspace.split(' · ')[0]);
                                 }
                                 if (setViewState) {
-                                  setViewState('projector');
+                                  setViewState('files');
                                 }
                                 if (setActiveSidebar) {
                                   setActiveSidebar('gemini');

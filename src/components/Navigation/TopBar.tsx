@@ -16,7 +16,6 @@ export function TopBar({
   setActiveSidebar,
   theme = 'light',
   onToggleTheme,
-  onCloseProjector,
   isPublic = false,
   syncStatus = 'idle',
   viewState = 'home',
@@ -33,7 +32,6 @@ export function TopBar({
   setActiveSidebar?: (tab: 'gemini' | 'comments' | 'history' | null) => void,
   theme?: 'light' | 'dark',
   onToggleTheme?: () => void,
-  onCloseProjector?: () => void,
   isPublic?: boolean,
   syncStatus?: 'idle' | 'syncing' | 'synced' | 'failed',
   viewState?: string,
@@ -46,8 +44,6 @@ export function TopBar({
   const [shareSlug, setShareSlug] = useState<string | null>(null);
   const [isCopiedPublic, setIsCopiedPublic] = useState(false);
   const [isCopiedDev, setIsCopiedDev] = useState(false);
-  const [showOpenMenu, setShowOpenMenu] = useState(false);
-  const isProjectorActive = !!onCloseProjector;
   const isSidebarVisible = viewState !== 'home' || isAiSummarySnapped;
 
   const handleGenerateShare = async () => {
@@ -122,85 +118,33 @@ export function TopBar({
   return (
     <div className="flex items-center justify-between px-4 pb-2 pt-4 w-full h-[72px] z-20 relative bg-transparent dark:bg-[#0B0B0C] text-slate-800 dark:text-white">
       <div className="flex items-center gap-4">
-        {isProjectorActive ? (
-          <>
-            {/* Close Button center-aligned with the LeftNav column (plus/search buttons) */}
-            <div className="w-[56px] flex items-center justify-center shrink-0">
-              {!isPublic && (
-                <button 
-                  id="btn-projector-close"
-                  onClick={onCloseProjector}
-                  className="w-12 h-12 flex items-center justify-center bg-[#282A2D] hover:bg-[#35373A] text-[#9E9E9E] hover:text-white rounded-full transition-all duration-300 cursor-pointer border-none outline-none"
-                  title="Exit Presentation Mode"
-                >
-                  <X size={20} className="stroke-[2.2]" />
-                </button>
-              )}
+        {viewState !== 'home' ? (
+          <div className="flex items-center text-slate-800 dark:text-white text-base font-normal select-none animate-in fade-in duration-200" style={{ fontFamily: '"Google Sans", "Product Sans", sans-serif' }}>
+            <span 
+              onClick={onHomeClick} 
+              className="cursor-pointer hover:text-slate-900 dark:hover:text-white hover:underline text-slate-700 dark:text-slate-200 font-medium"
+              title="Go back to My Drive"
+            >
+              My Drive
+            </span>
+            <ChevronRight size={16} className="mx-2 text-slate-400 dark:text-slate-400" />
+            <span className="flex items-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition px-2.5 py-1 rounded-xl text-slate-900 dark:text-white font-medium">
+              {projectName} <ChevronDown size={16} className="ml-1 text-slate-500 dark:text-slate-400" />
+            </span>
+
+            <div 
+              onClick={handleGenerateShare}
+              className="ml-4 hover:bg-black/5 dark:hover:bg-white/10 transition p-2 rounded-xl cursor-pointer flex items-center gap-1 text-slate-700 dark:text-[#E3E3E3] hover:text-slate-900 dark:hover:text-white"
+              title="Share Workspace"
+            >
+              <Users size={18} />
+              <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 dark:bg-[#2B2D31] text-slate-800 dark:text-[#E3E3E3] rounded-md">Share</span>
             </div>
-
-            {/* Same spacing gap as canvas on left side */}
-            {/* The name of the artifact: type style and size matching My Drive & new folder in light mode (font-medium text-lg) aligned left of the canvas */}
-            {viewState !== 'home' && (
-              <div className="flex items-center text-[#E3E3E3] text-lg font-medium font-sans ml-2">
-                <span className="truncate max-w-xs sm:max-w-md">
-                  {projectName}
-                </span>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            {viewState !== 'home' ? (
-              <div className="flex items-center text-slate-800 dark:text-white text-base font-normal select-none animate-in fade-in duration-200" style={{ fontFamily: '"Google Sans", "Product Sans", sans-serif' }}>
-                <span 
-                  onClick={onHomeClick} 
-                  className="cursor-pointer hover:text-slate-900 dark:hover:text-white hover:underline text-slate-700 dark:text-slate-200 font-medium"
-                  title="Go back to My Drive"
-                >
-                  My Drive
-                </span>
-                <ChevronRight size={16} className="mx-2 text-slate-400 dark:text-slate-400" />
-                <span className="flex items-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition px-2.5 py-1 rounded-xl text-slate-900 dark:text-white font-medium">
-                  {projectName} <ChevronDown size={16} className="ml-1 text-slate-500 dark:text-slate-400" />
-                </span>
-
-                <div 
-                  onClick={handleGenerateShare}
-                  className="ml-4 hover:bg-black/5 dark:hover:bg-white/10 transition p-2 rounded-xl cursor-pointer flex items-center gap-1 text-slate-700 dark:text-[#E3E3E3] hover:text-slate-900 dark:hover:text-white"
-                  title="Share Workspace"
-                >
-                  <Users size={18} />
-                  <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 dark:bg-[#2B2D31] text-slate-800 dark:text-[#E3E3E3] rounded-md">Share</span>
-                </div>
-              </div>
-            ) : null}
-          </>
-        )}
+          </div>
+        ) : null}
       </div>
 
       <div className="flex items-center gap-4 relative">
-        {isProjectorActive && !isPublic && (
-          <div className="relative">
-            <button 
-              onClick={() => setShowOpenMenu(!showOpenMenu)}
-              className="h-12 flex items-center gap-1.5 bg-[#282A2D] hover:bg-[#35373A] text-white px-5 rounded-full text-xs font-semibold tracking-wide transition duration-200 cursor-pointer border-none outline-none mr-1"
-            >
-              Open <ChevronDown size={14} className={`transition-transform duration-200 ${showOpenMenu ? 'rotate-180' : ''}`} />
-            </button>
-            
-            {showOpenMenu && (
-              <div className="absolute right-0 top-14 w-48 bg-[#1E1F22] border border-[#2B2D31] rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
-                <button 
-                  onClick={() => { onCloseProjector && onCloseProjector(); setShowOpenMenu(false); }}
-                  className="w-full text-left px-4 py-2.5 text-xs text-[#E3E3E3] hover:bg-[#2B2D31] transition font-medium border-none bg-transparent cursor-pointer"
-                >
-                  Return to Edit Panel
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
         <HeaderTabButton
           tabType="gemini"
           isSelected={isSidebarVisible && activeSidebar === 'gemini'}
@@ -338,7 +282,7 @@ export function TopBar({
                     <Globe className="text-emerald-500 shrink-0 mt-0.5" size={18} />
                     <div>
                       <h4 className="text-xs font-semibold text-slate-800">Anyone with Link</h4>
-                      <p className="text-xxs text-slate-500">Can view, interact, and run the compiled widget in real-time Projector Mode.</p>
+                      <p className="text-xxs text-slate-500">Can view, interact, and run the compiled widget in real-time Presentation View.</p>
                     </div>
                   </div>
 

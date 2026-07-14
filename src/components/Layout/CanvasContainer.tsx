@@ -88,23 +88,6 @@ export function CanvasContainer({
       selectedFile.taskType === 'inferred'
     );
 
-    if (viewState === 'projector' || viewState === 'public_projector') {
-      if (isDiffItem) {
-        return (
-          <InferredTaskDiffView
-            file={selectedFile}
-            theme={appTheme}
-          />
-        );
-      }
-      return (
-        <NativeViewer
-          file={selectedFile}
-          theme={appTheme}
-        />
-      );
-    }
-
     if (viewState === 'file_viewer' || viewState === 'files') {
       if (isDiffItem) {
         return (

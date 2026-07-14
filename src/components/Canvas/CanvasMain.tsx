@@ -4,14 +4,13 @@ import { RainbowRimOverlay } from '../Shared/RainbowRimOverlay';
 import { ShapeLoader } from '../Shared/ShapeLoader';
 
 interface CanvasMainProps {
-  viewState: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard';
-  setViewState: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'projector' | 'public_projector' | 'ai_summary' | 'dashboard') => void;
+  viewState: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'ai_summary' | 'dashboard';
+  setViewState: (state: 'home' | 'null' | 'app' | 'files' | 'file_viewer' | 'ai_summary' | 'dashboard') => void;
   isLoading?: boolean;
   currentTask?: string;
   appTheme?: 'light' | 'dark';
   children: React.ReactNode;
   theme?: 'light' | 'dark';
-  onExpand?: () => void;
   peers?: Record<string, any>;
   currentUserId?: string;
   selectedFile?: any;
@@ -25,7 +24,6 @@ export function CanvasMain({
   appTheme, 
   children, 
   theme = 'light', 
-  onExpand,
   peers,
   currentUserId,
   selectedFile

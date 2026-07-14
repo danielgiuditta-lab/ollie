@@ -105,7 +105,7 @@ export function ComponentsCatalog() {
           {renderItem('AppView', <div className="w-full h-[180px]"><AppView files={[mockFileHtml]} selectedFile={mockFileHtml} /></div>)}
           {renderItem('CanvasMain', <div className="w-full h-[180px]"><CanvasMain viewState="home" setViewState={() => {}}><div className="p-4 text-center text-gray-500">Canvas Main Content</div></CanvasMain></div>)}
           {renderItem('CanvasSidebar', <div className="w-full h-[220px]"><CanvasSidebar files={mockFiles} selectedFile={mockFileHtml} onFileSelect={() => {}} indexFileSelected={true} activeSidebar={null} currentPath={[]} setCurrentPath={() => {}} /></div>)}
-          {renderItem('CanvasTopBar', <div className="w-full"><CanvasTopBar file={mockFileHtml} viewMode="preview" onViewModeChange={() => {}} onClose={() => {}} onExpand={() => {}} /></div>)}
+          {renderItem('CanvasTopBar', <div className="w-full"><CanvasTopBar file={mockFileHtml} viewMode="preview" onViewModeChange={() => {}} onClose={() => {}} /></div>)}
           {renderItem('CoverSlide', <div className="w-[260px]"><CoverSlide item={{ id: '1', name: 'Sample Slide Deck', type: 'space', previewType: 'marketing', filesToLoad: [mockFileHtml] }} onClick={() => {}} /></div>)}
           {renderItem('CreationJourney', <div className="w-full"><CreationJourney /></div>)}
           {renderItem('FileViewer', <div className="w-full h-[220px]"><FileViewer selectedFile={mockFileDoc} files={mockFiles} onClose={() => {}} /></div>)}
