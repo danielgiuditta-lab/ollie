@@ -80,22 +80,47 @@ export function CanvasContainer({
     );
   }
 
-  if ((viewState === 'projector' || viewState === 'public_projector') && selectedFile) {
-    return (
-      <InferredTaskDiffView
-        file={selectedFile}
-        theme={appTheme}
-      />
+  if (selectedFile) {
+    const isDiffItem = Boolean(
+      selectedFile.isProactiveDraft || 
+      selectedFile.isInferredTask || 
+      selectedFile.isProactive || 
+      selectedFile.taskType === 'inferred'
     );
-  }
 
-  if ((viewState === 'file_viewer' || viewState === 'files') && selectedFile) {
-    return (
-      <NativeViewer
-        file={selectedFile}
-        theme={appTheme}
-      />
-    );
+    if (viewState === 'projector' || viewState === 'public_projector') {
+      if (isDiffItem) {
+        return (
+          <InferredTaskDiffView
+            file={selectedFile}
+            theme={appTheme}
+          />
+        );
+      }
+      return (
+        <NativeViewer
+          file={selectedFile}
+          theme={appTheme}
+        />
+      );
+    }
+
+    if (viewState === 'file_viewer' || viewState === 'files') {
+      if (isDiffItem) {
+        return (
+          <InferredTaskDiffView
+            file={selectedFile}
+            theme={appTheme}
+          />
+        );
+      }
+      return (
+        <NativeViewer
+          file={selectedFile}
+          theme={appTheme}
+        />
+      );
+    }
   }
 
   if (viewState === 'ai_summary') {

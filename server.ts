@@ -553,7 +553,7 @@ async function startServer() {
     try {
       const { chatId } = req.params;
       const sanitizedId = chatId.replace(/[^a-zA-Z0-9_\-]/g, "_");
-      const { projectName, chatName, type, taskType, associatedFileId, associatedFileName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles, members, pinnedArtifactIds } = req.body;
+      const { projectName, chatName, type, taskType, viewState, associatedFileId, associatedFileName, messages, envId, activeSpaceId, sandboxUrl, userEmail, sandboxFiles, members, pinnedArtifactIds } = req.body;
 
       const existingChat = await getChatAsync(sanitizedId);
       const resolvedPins = pinnedArtifactIds !== undefined 
@@ -566,6 +566,7 @@ async function startServer() {
         chatName: chatName !== undefined ? chatName : (existingChat?.chatName || null),
         type: type !== undefined ? type : (existingChat?.type || null),
         taskType: taskType !== undefined ? taskType : (existingChat?.taskType || null),
+        viewState: viewState !== undefined ? viewState : (existingChat?.viewState || null),
         associatedFileId: associatedFileId !== undefined ? associatedFileId : (existingChat?.associatedFileId || null),
         associatedFileName: associatedFileName !== undefined ? associatedFileName : (existingChat?.associatedFileName || null),
         messages: messages || existingChat?.messages || [],
@@ -1152,8 +1153,18 @@ Please generate an updated version of the file content incorporating the request
         config: { responseMimeType: "application/json" }
       }));
 
-      const text = response.text || "{}";
-      res.json(JSON.parse(text));
+      const rawText = (response.text || "{}").trim();
+      const cleanJson = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+      try {
+        res.json(JSON.parse(cleanJson));
+      } catch (pErr) {
+        console.warn("JSON parse fallback in proactive-draft:", pErr);
+        res.json({
+          draftType: isEmailOrCal ? "email" : "file_edit",
+          draftContent: cleanJson,
+          summaryOfChanges: task.descriptionDone || task.description || "Synthesized proactive draft updates."
+        });
+      }
     } catch (error) {
       console.error("Proactive draft synthesis error:", error);
       res.status(500).json({ error: String(error) });

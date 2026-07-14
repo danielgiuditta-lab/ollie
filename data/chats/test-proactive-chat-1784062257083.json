@@ -1,0 +1,46 @@
+{
+  "chatId": "test-proactive-chat-1784062257083",
+  "projectName": "New Workspace",
+  "chatName": "Review Proactive Action: Q3 Strategy",
+  "type": null,
+  "taskType": "inferred",
+  "viewState": "projector",
+  "associatedFileId": "proactive-slide-test",
+  "associatedFileName": "Q3 Strategy Deck.gslides",
+  "messages": [
+    {
+      "role": "user",
+      "text": "Review Proactive Action"
+    },
+    {
+      "role": "bot",
+      "text": "",
+      "isProactiveReview": true
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": null,
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "proactive-slide-test",
+      "name": "Q3 Strategy Deck.gslides",
+      "type": "slide",
+      "taskType": "slide",
+      "isProactiveDraft": true,
+      "isProactive": true,
+      "isInferredTask": true,
+      "summaryOfChanges": "Prepared proactive presentation draft.",
+      "title": "I updated Q3 Strategy Deck",
+      "description": "Incorporated feedback and updated slides",
+      "originalContent": "# Original Deck\nSlide 1 text.",
+      "content": "# Proposal Deck\nUpdated slide 1 text."
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [
+    "todo-card"
+  ],
+  "updatedAt": "2026-07-14T20:50:57.088Z"
+}

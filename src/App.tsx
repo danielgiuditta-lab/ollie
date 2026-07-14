@@ -3119,14 +3119,14 @@ export default function App() {
     chatSessionsCacheRef.current[tempChatId] = { messages: proactiveMsgs };
     workspaceCacheRef.current[tempChatId] = {
       ingestedFiles: [],
-      sandboxFiles: task.filesToLoad || [],
+      sandboxFiles: [proactiveSlideFile],
       envId: null,
       sandboxUrl: '',
       messages: proactiveMsgs,
       projectName: spaceName,
-      selectedFile: task.filesToLoad?.[0] || null,
+      selectedFile: proactiveSlideFile,
       indexFileSelected: false,
-      viewState: 'files'
+      viewState: 'projector'
     };
 
     setRecentTasks(prev => {
@@ -4728,20 +4728,26 @@ export default function App() {
           folderId
         });
 
+        const isInferredDiff = Boolean(
+          specificFileMatch?.isInferredTask ||
+          specificFileMatch?.isProactiveDraft ||
+          specificFileMatch?.isProactive ||
+          specificFileMatch?.taskType === 'inferred' ||
+          taskType === 'inferred' ||
+          taskType === 'tracking' ||
+          activeProactiveTask ||
+          (typeof file === 'object' && file && file.id && String(file.id).includes('-proactive-')) ||
+          file?.isProactiveDraft ||
+          file?.isProactive ||
+          file?.isInferredTask ||
+          targetChatId?.includes('-proactive-')
+        );
+
         if (specificFileMatch && !specificFileMatch.type?.includes('space')) {
           const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
-          const isInferredDiff = Boolean(
-            specificFileMatch.isInferredTask ||
-            specificFileMatch.isProactiveDraft ||
-            specificFileMatch.isProactive ||
-            specificFileMatch.taskType === 'inferred' ||
-            taskType === 'inferred' ||
-            taskType === 'tracking' ||
-            activeProactiveTask
-          );
           setSelectedFile(specificFileMatch);
           setIndexFileSelected(isHtml);
-          setViewState(isInferredDiff ? 'projector' : (isHtml ? 'app' : 'files'));
+          setViewState(isHtml ? 'app' : (isInferredDiff ? 'projector' : 'files'));
         } else if (taskType === 'site' || taskType === 'tool') {
           const toolFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           const canonicalHtml = toolFile || allAvailableFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
@@ -4984,13 +4990,25 @@ export default function App() {
                   folderId
                 });
 
+                const isInferredDiff = Boolean(
+                  specificFileMatch?.isInferredTask ||
+                  specificFileMatch?.isProactiveDraft ||
+                  specificFileMatch?.isProactive ||
+                  specificFileMatch?.taskType === 'inferred' ||
+                  chatTaskType === 'inferred' ||
+                  chatTaskType === 'tracking' ||
+                  activeProactiveTask ||
+                  (typeof file === 'object' && file && file.id && String(file.id).includes('-proactive-')) ||
+                  targetChatId?.includes('-proactive-')
+                );
+
                 if (isParentSpaceClick && !isHomeChatId(folderId)) {
                   fileToSelect = null;
                   nextViewState = 'dashboard';
                 } else if (specificFileMatch && !specificFileMatch.type?.includes('space') && specificFileMatch.name !== 'inferred_tasks.json') {
                   fileToSelect = specificFileMatch;
                   const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
-                  nextViewState = isHtml ? 'app' : 'files';
+                  nextViewState = isHtml ? 'app' : (isInferredDiff ? 'projector' : 'files');
                 } else if (chatTaskType === 'site' || chatTaskType === 'tool') {
                   const toolFile = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   const canonicalHtml = toolFile || (chatData.sandboxFiles || []).find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));

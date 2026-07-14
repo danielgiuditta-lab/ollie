@@ -62,6 +62,46 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
     ? 'application/vnd.google-apps.presentation' 
     : (isSheetItem ? 'application/vnd.google-apps.spreadsheet' : (baseFile?.mimeType || 'application/vnd.google-apps.document'));
 
+  // Content fallbacks for Original file
+  const originalContentResolved = 
+    file?.originalContent ||
+    file?.originalContext ||
+    file?.draftData?.originalContext ||
+    (baseFile?.content && baseFile.content !== file?.content ? baseFile.content : null) ||
+    (isSlideItem 
+      ? `# ${baseFile?.name || file?.name || 'Presentation'}
+
+## Original Version
+- ${taskDesc}
+- Unmodified slide layout before proposed updates.`
+      : (isSheetItem
+        ? `Data, Original Value, Status
+Section, ${taskDesc}, Pending`
+        : `# Original Version
+
+${taskDesc}
+
+Existing document content before feedback was incorporated.`));
+
+  // Content fallbacks for Proposal file
+  const proposalContentResolved = 
+    file?.draftData?.draftContent ||
+    file?.content ||
+    (isSlideItem
+      ? `# ${baseFile?.name || file?.name || 'Presentation'}
+
+## ${taskTitle}
+- ${file?.summaryOfChanges || file?.description || 'Incorporated feedback and updated presentation slides.'}
+- Aligned visual layout and content for team review.`
+      : (isSheetItem
+        ? `Data, Original Value, Status, Proposed Update
+Section, ${taskDesc}, Pending, ${taskTitle}`
+        : `# Proposed Update
+
+## ${taskTitle}
+
+${file?.summaryOfChanges || file?.description || 'Refined problem framing with concise language applied.'}`));
+
   // Construct Original file representation
   const originalFile = {
     ...(baseFile || {}),
@@ -70,7 +110,9 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
     taskType: isSlideItem ? 'slide' : (isSheetItem ? 'sheet' : 'doc'),
     mimeType: resolvedMime,
     name: isSlideItem ? 'Drive Refresh: Original' : 'Original Document',
-    content: baseFile?.content || `# Original Version\n\n${taskDesc}\n\nExisting section text before feedback incorporated.`
+    content: originalContentResolved,
+    isInferredTask: false,
+    isProactiveDraft: false
   };
 
   // Construct Proposal file representation
@@ -81,18 +123,13 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
     taskType: isSlideItem ? 'slide' : (isSheetItem ? 'sheet' : 'doc'),
     mimeType: resolvedMime,
     name: isSlideItem ? 'Drive Refresh: Proposal' : 'Proposed Document Update',
-    content: file?.content || file?.draftData?.draftContent || `# Proposed Update\n\n${taskTitle}\n\nRefined problem framing with concise language applied.`
+    content: proposalContentResolved,
+    isInferredTask: false,
+    isProactiveDraft: false
   };
 
-  const col1Description = file?.originalContext || file?.draftData?.originalContext ||
-    ((file?.description?.includes('Mirjam') || file?.title?.includes('Mirjam') || file?.name?.includes('Mirjam'))
-      ? "Mirjam asked a question about prototype testing in the Ollie UXR document."
-      : (file?.description || file?.originalContent || 'Simon gave feedback to make the problem framing more concise.'));
-
-  const col2Description = file?.summaryOfChanges || file?.draftData?.summaryOfChanges || file?.descriptionDone ||
-    ((file?.description?.includes('Mirjam') || file?.title?.includes('Mirjam') || file?.name?.includes('Mirjam'))
-      ? "I drafted a reply to Mirjam's mention regarding prototype feature exploration and feedback targets."
-      : (file?.title || 'I made the language more concise in the problem framing section.'));
+  const col1Description = file?.originalContext || file?.draftData?.originalContext || taskDesc || 'Simon gave feedback to make the problem framing more concise.';
+  const col2Description = file?.summaryOfChanges || file?.draftData?.summaryOfChanges || taskTitle || 'I made the language more concise in the problem framing section.';
 
   return (
     <div className={`w-full h-full flex flex-col items-center justify-start p-4 overflow-y-auto transition-colors duration-300 ${
