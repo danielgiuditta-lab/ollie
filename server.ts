@@ -1873,15 +1873,15 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
         return;
       }
 
-      const resolvedEnv = (env_id && env_id !== 'remote' && env_id !== 'null') ? env_id : undefined;
-      console.log(`[Server /api/vibe-code] Invoking ai.interactions.create with resolvedEnv: ${resolvedEnv || 'none (fresh creation)'}...`);
+      const resolvedEnv = (env_id && env_id !== 'remote' && env_id !== 'null' && env_id !== 'undefined') ? env_id : "remote";
+      console.log(`[Server /api/vibe-code] Invoking ai.interactions.create with environment: ${resolvedEnv}...`);
       
       const interaction = await retryWithBackoff(() => ai.interactions.create(
         {
           agent: "antigravity-preview-05-2026",
           input: prompt,
           system_instruction: systemInstruction,
-          ...(resolvedEnv ? { environment: resolvedEnv } : {}),
+          environment: resolvedEnv,
           stream: true,
         },
         { timeout: 300000 }
