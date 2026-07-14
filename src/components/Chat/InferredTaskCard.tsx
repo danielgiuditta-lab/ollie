@@ -210,7 +210,7 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
   return (
     <div 
       onClick={onClick}
-      className="w-full flex items-center justify-between gap-4 px-4 py-2 rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] hover:bg-[#F1F3F9] dark:hover:bg-[#2B2D31] cursor-pointer transition-all duration-200 select-none"
+      className="w-full flex items-center justify-between gap-4 px-4 py-4 rounded-[2px] first:rounded-t-[16px] first:rounded-b-[2px] last:rounded-b-[16px] last:rounded-t-[2px] only:rounded-[16px] bg-[#F8FAFD] dark:bg-[#1E1F22] hover:bg-[#F1F3F9] dark:hover:bg-[#2B2D31] cursor-pointer transition-all duration-200 select-none"
     >
       {/* Left Column: Status Indicator */}
       <div className="shrink-0 w-8 h-8 flex items-center justify-center">
@@ -229,11 +229,11 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
         </div>
         {/* Source and Person capsule chips */}
         <div className="flex flex-wrap items-center gap-2 mt-2">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/50 dark:border-[#3E4042] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
             <img src={getFileIcon(item.sourceMimeType)} alt="doc icon" className="w-3.5 h-3.5 object-contain shrink-0" />
             <span className="max-w-[100px] truncate block">{item.sourceName}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/50 dark:border-[#3E4042] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
             {!avatarFailed ? (
               <img 
                 src={item.personAvatar} 
@@ -253,7 +253,7 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
 
       {/* Right Column: Preview of referenced artifact (square for docs, rectangle for slides) */}
       {showThumbnail && (
-        <div className={`shrink-0 ${isSlideItem ? 'w-[110px]' : 'w-[72px]'} h-[72px] rounded-2xl overflow-hidden border border-slate-200/80 dark:border-[#3E4042] bg-white dark:bg-[#1E1F22] flex items-center justify-center shadow-sm relative group select-none transition-all duration-300`}>
+        <div className={`shrink-0 ${isSlideItem ? 'w-[110px]' : 'w-[72px]'} h-[72px] rounded-2xl overflow-hidden border border-slate-200/80 dark:border-[#3E4042] bg-white dark:bg-[#1E1F22] flex items-center justify-center relative group select-none transition-all duration-300`}>
           <div className="w-full h-full relative group-hover:scale-[1.03] transition-transform duration-300 pointer-events-none">
             <NativeViewer
               file={previewFile}

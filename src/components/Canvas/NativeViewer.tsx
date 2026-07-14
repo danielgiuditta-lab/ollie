@@ -278,7 +278,7 @@ export function NativeViewer({
               No matching inferred tasks found for this workspace.
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-[2px]">
               {filteredItems.map((item: any, idx: number) => (
                 <InferredTaskCard
                   key={item.id || idx}

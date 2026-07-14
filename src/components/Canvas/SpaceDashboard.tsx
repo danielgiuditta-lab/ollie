@@ -561,7 +561,7 @@ export function SpaceDashboard({
                         theme={theme}
                       />
                     ) : (
-                      <div className="w-full h-full overflow-y-auto p-4 space-y-3">
+                      <div className="w-full h-full overflow-y-auto p-4 flex flex-col gap-[2px]">
                         {todoItems && todoItems.map((item) => (
                           <InferredTaskCard 
                             key={item.id}
