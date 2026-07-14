@@ -29,7 +29,14 @@ interface InferredTaskCardProps {
 export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFileIcon, onClick }) => {
   const [avatarFailed, setAvatarFailed] = useState(false);
 
-  const isSlideItem = Boolean(
+  const explicitDoc = Boolean(
+    (item.sourceMimeType && (item.sourceMimeType.includes('document') || item.sourceMimeType.includes('text'))) ||
+    (item.sourceName && (item.sourceName.endsWith('.gdoc') || item.sourceName.endsWith('.docx') || item.sourceName.endsWith('.doc') || item.sourceName.endsWith('.txt'))) ||
+    (item.title && (item.title.toLowerCase().includes('document') || item.title.toLowerCase().includes('doc'))) ||
+    (item.description && (item.description.toLowerCase().includes('document') || item.description.toLowerCase().includes('doc')))
+  );
+
+  const explicitSlide = Boolean(
     (item.sourceMimeType && (item.sourceMimeType.includes('presentation') || item.sourceMimeType.includes('slide'))) ||
     (item.sourceName && (item.sourceName.endsWith('.gslides') || item.sourceName.endsWith('.pptx') || item.sourceName.endsWith('.ppt'))) ||
     (item.title && (
@@ -37,27 +44,24 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
       item.title.toLowerCase().includes('presentation') ||
       item.title.toLowerCase().includes('talking point') ||
       item.title.toLowerCase().includes('deck')
-    )) ||
-    (item.description && (
-      item.description.toLowerCase().includes('slide') ||
-      item.description.toLowerCase().includes('presentation') ||
-      item.description.toLowerCase().includes('talking point') ||
-      item.description.toLowerCase().includes('deck')
-    )) ||
-    (item.filesToLoad && item.filesToLoad.some((f: any) => 
-      f.type === 'slide' || 
-      f.taskType === 'slide' || 
-      (f.name && (f.name.endsWith('.gslides') || f.name.endsWith('.pptx'))) || 
-      (f.mimeType && (f.mimeType.includes('presentation') || f.mimeType.includes('slide')))
     ))
   );
+
+  const isSlideItem = explicitSlide && !explicitDoc;
+  const isDocItem = explicitDoc || !isSlideItem;
 
   const primaryFile = item.filesToLoad && item.filesToLoad.length > 0 ? item.filesToLoad[0] : null;
 
   const driveFilesList: any[] = (window as any).__DRIVE_FILES__ || [];
   const matchedInDrive = driveFilesList.find((f: any) => {
     if (!f || !f.name) return false;
+    const fMime = (f.mimeType || '').toLowerCase();
     const fNameLower = f.name.toLowerCase();
+
+    // Prevent cross-type matching
+    if (isDocItem && (fMime.includes('presentation') || fNameLower.endsWith('.gslides'))) return false;
+    if (isSlideItem && (fMime.includes('document') || fNameLower.endsWith('.gdoc'))) return false;
+
     const fNameClean = fNameLower.replace(/\.[^/.]+$/, '').trim();
     const fId = String(f.id || f.driveId || '').toLowerCase();
 
@@ -98,7 +102,7 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
                         item.title?.match(/['"]([^'"]+)['"]/)?.[1] || 
                         item.sourceName || 
                         item.title || 
-                        'Slide Presentation';
+                        (isSlideItem ? 'Slide Presentation' : 'Google Document');
 
   const resolvedName = extractedName.replace(/\.[^/.]+$/, '');
 
@@ -106,12 +110,16 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
     ? rawContent
     : `# ${resolvedName}\n\n${rawContent}`;
 
+  const resolvedMime = isSlideItem 
+    ? 'application/vnd.google-apps.presentation' 
+    : (isDocItem ? 'application/vnd.google-apps.document' : (fileToUse?.mimeType || item.sourceMimeType || 'application/vnd.google-apps.document'));
+
   const previewFile = {
     ...(fileToUse || {}),
     id: (fileToUse?.id || item.id) + '-preview',
-    type: isSlideItem ? 'slide' : (fileToUse?.type || 'doc'),
-    taskType: isSlideItem ? 'slide' : (fileToUse?.taskType || 'doc'),
-    mimeType: isSlideItem ? 'application/vnd.google-apps.presentation' : (fileToUse?.mimeType || item.sourceMimeType || 'application/vnd.google-apps.document'),
+    type: isSlideItem ? 'slide' : 'doc',
+    taskType: isSlideItem ? 'slide' : 'doc',
+    mimeType: resolvedMime,
     name: isSlideItem ? `${resolvedName}.gslides` : resolvedName,
     content: formattedContent
   };
