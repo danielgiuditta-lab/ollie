@@ -186,6 +186,27 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
     content: formattedContent
   };
 
+  const isNonNativeEmailOrChat = Boolean(
+    (item.sourceMimeType && (
+      item.sourceMimeType.includes('chat') || 
+      item.sourceMimeType.includes('email') || 
+      item.sourceMimeType.includes('mail')
+    )) ||
+    (item.sourceName && (
+      item.sourceName.toLowerCase().startsWith('email') ||
+      item.sourceName.toLowerCase().includes('rsvp') ||
+      item.sourceName.toLowerCase().includes('chat') ||
+      item.sourceName.toLowerCase().includes('message')
+    )) ||
+    (item.title && (
+      item.title.toLowerCase().includes('rsvp') ||
+      item.title.toLowerCase().includes('email') ||
+      item.title.toLowerCase().includes('manage your rsvp')
+    ))
+  );
+
+  const showThumbnail = !isNonNativeEmailOrChat;
+
   return (
     <div 
       onClick={onClick}
@@ -230,17 +251,19 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
         </div>
       </div>
 
-      {/* Right Column: Preview of referenced artifact */}
-      <div className="shrink-0 w-[110px] h-[72px] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-neutral-700 bg-neutral-900 flex items-center justify-center shadow-2xs relative group select-none">
-        <div className="w-full h-full relative group-hover:scale-[1.03] transition-transform duration-300 pointer-events-none">
-          <NativeViewer
-            file={previewFile}
-            mode="preview"
-            hideHeader={true}
-            isPreviewCard={true}
-          />
+      {/* Right Column: Preview of referenced artifact (only native doc/slide/sheet/image) */}
+      {showThumbnail && (
+        <div className="shrink-0 w-[110px] h-[72px] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-neutral-700 bg-neutral-900 flex items-center justify-center shadow-2xs relative group select-none">
+          <div className="w-full h-full relative group-hover:scale-[1.03] transition-transform duration-300 pointer-events-none">
+            <NativeViewer
+              file={previewFile}
+              mode="preview"
+              hideHeader={true}
+              isPreviewCard={true}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

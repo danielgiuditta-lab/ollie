@@ -301,11 +301,11 @@ export function NativeViewer({
   
   // Safe Drive ID resolution - strip internal wrapper prefixes
   const rawId = file.driveId || file.id;
-  const driveId = rawId ? String(rawId).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '') : undefined;
+  const driveId = rawId ? String(rawId).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '') : undefined;
 
   const isRealDriveId = (id: string | undefined | null) => {
     if (!id) return false;
-    const str = String(id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '');
+    const str = String(id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
     return str.length > 5 && !str.includes('local') && !str.includes('mock');
   };
   
@@ -1476,22 +1476,13 @@ export function NativeViewer({
     // 1b. Premium Native Editors / Embed Viewers for Google Workspace files
     if (mode === 'preview') {
       if (isGoogleSlide || isSlide) {
-        const slideDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/-preview$/, '') : undefined);
+        const slideDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = slideDriveId && isRealDriveId(slideDriveId);
         const nativeSlideUrl = hasNativeUrl 
           ? `https://docs.google.com/presentation/d/${slideDriveId}/preview?rm=minimal` 
           : (file.embedUrl || file.previewUrl || file.url);
 
         if (nativeSlideUrl) {
-          if (isPreviewCard) {
-            return (
-              <ScaledIframe 
-                src={nativeSlideUrl}
-                title={file.name}
-                type="slide"
-              />
-            );
-          }
           return (
             <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
               <iframe 
@@ -1508,22 +1499,13 @@ export function NativeViewer({
       }
 
       if (isGoogleDoc) {
-        const docDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/-preview$/, '') : undefined);
+        const docDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = docDriveId && isRealDriveId(docDriveId);
         const nativeDocUrl = hasNativeUrl 
           ? `https://docs.google.com/document/d/${docDriveId}/preview` 
           : (file.embedUrl || file.previewUrl || file.url);
 
         if (nativeDocUrl) {
-          if (isPreviewCard) {
-            return (
-              <ScaledIframe 
-                src={nativeDocUrl}
-                title={file.name}
-                type="doc"
-              />
-            );
-          }
           return (
             <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
               <iframe 
@@ -1540,22 +1522,13 @@ export function NativeViewer({
       }
 
       if (isGoogleSheet) {
-        const sheetDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/-preview$/, '') : undefined);
+        const sheetDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = sheetDriveId && isRealDriveId(sheetDriveId);
         const nativeSheetUrl = hasNativeUrl 
           ? `https://docs.google.com/spreadsheets/d/${sheetDriveId}/preview` 
           : (file.embedUrl || file.previewUrl || file.url);
 
         if (nativeSheetUrl) {
-          if (isPreviewCard) {
-            return (
-              <ScaledIframe 
-                src={nativeSheetUrl}
-                title={file.name}
-                type="sheet"
-              />
-            );
-          }
           return (
             <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
               <iframe 
