@@ -2309,8 +2309,17 @@ export default function App() {
                   pendingMessageUpdate = { steps: [...currentSteps], text: currentText };
                   scheduleMessagesUpdate();
                }
-            } else if (eventType === 'step.delta' || event.delta || event.text) {
-               const deltaText = event.delta?.text || event.delta?.code || event.delta?.thought || event.delta?.query || event.delta?.content?.text || event.delta?.content?.code || "";
+            } else if (eventType === 'step.delta' || event.delta || event.text || event.content) {
+               const deltaText = event.delta?.text || 
+                                 event.delta?.code || 
+                                 event.delta?.thought || 
+                                 event.delta?.query || 
+                                 event.delta?.content?.text || 
+                                 event.delta?.content?.code || 
+                                 event.text || 
+                                 event.code || 
+                                 (typeof event.content === 'string' ? event.content : (event.content?.text || event.content?.code || '')) || 
+                                 "";
                
                if (event.step_index !== undefined) {
                  if (!currentSteps[event.step_index]) {

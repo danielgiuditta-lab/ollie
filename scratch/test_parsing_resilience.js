@@ -79,5 +79,20 @@ if (res2.length > 0 && res2[0].content.includes("Raw HTML App")) {
 } else {
   throw new Error("Test 2 FAIL");
 }
+// Scenario 3: Event object with direct { text: "..." } property (without event.delta)
+function processEvent(event) {
+  const eventType = event.event_type || event.type || event.event || event.kind || (event.interaction ? 'interaction.completed' : (event.delta || event.text ? 'step.delta' : 'unknown'));
+  const deltaText = event.delta?.text || event.delta?.code || event.delta?.thought || event.delta?.query || event.delta?.content?.text || event.delta?.content?.code || event.text || event.code || (typeof event.content === 'string' ? event.content : (event.content?.text || event.content?.code || '')) || "";
+  return { eventType, deltaText };
+}
+
+const rawEvent = { text: "<!DOCTYPE html><html><body><h1>Direct Text Event</h1></body></html>" };
+const processed = processEvent(rawEvent);
+console.log("\nTest 3 (Direct text property resolution): eventType:", processed.eventType, "deltaText length:", processed.deltaText.length);
+if (processed.eventType === 'step.delta' && processed.deltaText.includes("Direct Text Event")) {
+  console.log("✔ Test 3 PASS");
+} else {
+  throw new Error("Test 3 FAIL");
+}
 
 console.log("\nALL STREAM EXTRACTION VERIFICATION TESTS PASSED!");
