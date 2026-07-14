@@ -1343,7 +1343,14 @@ export default function App() {
     ]);
   };
 
-  const handleSendMessage = async (text: string, aiMode?: boolean, contextFiles?: any[], isDirectExecution?: boolean) => {
+  const handleSendMessage = async (
+    text: string, 
+    aiMode?: boolean, 
+    contextFiles?: any[], 
+    isDirectExecution?: boolean,
+    directTargetDomain?: 'tool' | 'doc' | 'slide',
+    pillLabelText?: string
+  ) => {
     let resolvedFolderId = activeSpaceId;
     let targetChatId = activeChatId;
     if (isHomeChatId(resolvedFolderId)) {
@@ -1353,10 +1360,12 @@ export default function App() {
     }
     const initialSpaceId = resolvedFolderId;
 
-    if (activeSpaceId && activeSpaceId.startsWith('space-creation-')) {
-      setMessages(prev => [...prev, { role: 'user', text }]);
-      setIsLoading(true);
+    // Instant Split-Second UI Update: Render user message immediately (0ms delay)
+    const userTextToDisplay = pillLabelText || text;
+    setMessages(prev => [...prev, { role: 'user', text: userTextToDisplay }]);
+    setIsLoading(true);
 
+    if (activeSpaceId && activeSpaceId.startsWith('space-creation-')) {
       let detectedName = '';
       const nameMatch = text.match(/(?:name\s+the\s+space\s+|project\s+|for\s+|^)(Project\s+[A-Za-z0-9]+|[A-Z][a-zA-Z0-9\s_]+)/i);
       if (nameMatch && nameMatch[1]) {
@@ -1436,7 +1445,7 @@ export default function App() {
     const isOrganizeJourney = text.toLowerCase().includes('organize files') || text.toLowerCase().includes('organize the') || currentTask === 'organize';
 
     if (isOrganizeJourney) {
-      setMessages(prev => [...prev, { role: 'user', text }, { role: 'bot', text: 'Analyzing workspace files to prepare an organization proposal plan...' }]);
+      setMessages(prev => [...prev, { role: 'bot', text: 'Analyzing workspace files to prepare an organization proposal plan...' }]);
       setIsLoading(true);
       setCurrentTask('organize');
       if (viewState === 'home') {
@@ -1505,6 +1514,17 @@ export default function App() {
     let activeTaskMode = currentTask;
     let intentClassification: any = null;
 
+    if (isDirectExecution && directTargetDomain === 'tool') {
+      activeTaskMode = 'app';
+      setCurrentTask('app');
+    } else if (isDirectExecution && directTargetDomain === 'doc') {
+      activeTaskMode = 'doc';
+      setCurrentTask('doc');
+    } else if (isDirectExecution && directTargetDomain === 'slide') {
+      activeTaskMode = 'slide';
+      setCurrentTask('slide');
+    }
+
     if (!isDirectExecution && (!activeTaskMode || activeTaskMode === 'app' || activeTaskMode === 'general')) {
       try {
         const classRes = await fetch('/api/classify-intent', {
@@ -1528,9 +1548,9 @@ export default function App() {
       const buildPrompt = intentClassification.archetypePrompt || text;
       const pillText = intentClassification.pillLabel || 'Build Tool';
 
+      setIsLoading(false);
       setMessages(prev => [
         ...prev,
-        { role: 'user', text },
         {
           role: 'bot',
           text: intentClassification.proposalText,
@@ -1538,7 +1558,7 @@ export default function App() {
             {
               label: pillText,
               onClick: () => {
-                handleSendMessage(buildPrompt, false, contextFiles, true);
+                handleSendMessage(buildPrompt, false, contextFiles, true, 'tool', pillText);
               }
             }
           ]
@@ -1547,10 +1567,10 @@ export default function App() {
       return;
     }
 
-    const isDocJourneyMode = activeTaskMode === 'doc' || activeTaskMode === 'slide' || !!selectedFile?.isDocJourney || (sandboxFiles.length > 0 && sandboxFiles.some(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides'));
+    const isDocJourneyMode = (activeTaskMode === 'doc' || activeTaskMode === 'slide' || (activeTaskMode !== 'app' && (!!selectedFile?.isDocJourney || (sandboxFiles.length > 0 && sandboxFiles.some(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides')))));
 
     if (isDocJourneyMode) {
-      setMessages(prev => [...prev, { role: 'user', text }, { role: 'bot', text: '' }]);
+      setMessages(prev => [...prev, { role: 'bot', text: '' }]);
       setIsLoading(true);
       setCurrentTask(activeTaskMode === 'slide' ? 'slide' : 'doc');
       setViewState('files');
@@ -1780,8 +1800,6 @@ export default function App() {
     }
 
     const activeAiMode = aiMode ?? (currentTask === 'AI Search Summary');
-    setMessages(prev => [...prev, { role: 'user', text }]);
-    setIsLoading(true);
     setCurrentTask(activeAiMode ? 'AI Search Summary' : 'app');
 
     let inferredChatNameVal: string | undefined = undefined;

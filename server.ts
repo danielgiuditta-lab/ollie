@@ -2028,7 +2028,9 @@ OUTPUT ONLY VALID JSON:
         model: "gemini-3.5-flash",
         contents: `${systemPrompt}\n\nUser request: "${prompt}"`,
         config: {
-          responseMimeType: "application/json"
+          responseMimeType: "application/json",
+          maxOutputTokens: 256,
+          thinkingConfig: { thinkingBudget: 0 }
         }
       }));
 

@@ -1,5 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
 
+function sanitizeForLocalStorage(items: any[]) {
+  if (!Array.isArray(items)) return [];
+  return items.map(item => {
+    if (!item || typeof item !== 'object') return item;
+    const sanitized = { ...item };
+    
+    // Strip heavy file contents from localStorage cache
+    if (Array.isArray(sanitized.sandboxFiles)) {
+      sanitized.sandboxFiles = sanitized.sandboxFiles.map((f: any) => {
+        if (!f) return f;
+        const { content, ...restFile } = f;
+        return restFile;
+      });
+    }
+
+    // Trim heavy message array buffers if present
+    if (Array.isArray(sanitized.messages) && sanitized.messages.length > 10) {
+      sanitized.messages = sanitized.messages.slice(-5);
+    }
+
+    return sanitized;
+  });
+}
+
 export function useWorkspaceState(userProfile: any) {
   const [recentTasks, setRecentTasks] = useState<any[]>(() => {
     const saved = localStorage.getItem('drive_recent_tasks');
@@ -39,17 +63,45 @@ export function useWorkspaceState(userProfile: any) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('drive_recent_tasks', JSON.stringify(recentTasks));
+      const lightData = sanitizeForLocalStorage(recentTasks);
+      localStorage.setItem('drive_recent_tasks', JSON.stringify(lightData));
     } catch (e) {
-      console.warn('Failed to save drive_recent_tasks to localStorage (quota exceeded):', e);
+      try {
+        const minimal = recentTasks.map(t => ({
+          id: t?.id,
+          name: t?.name,
+          activeSpaceId: t?.activeSpaceId,
+          taskType: t?.taskType,
+          pinnedArtifactIds: t?.pinnedArtifactIds,
+          associatedFileId: t?.associatedFileId,
+          associatedFileName: t?.associatedFileName
+        }));
+        localStorage.setItem('drive_recent_tasks', JSON.stringify(minimal));
+      } catch (fallbackErr) {
+        // Safe silent catch if storage is completely full
+      }
     }
   }, [recentTasks]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('drive_projects', JSON.stringify(projects));
+      const lightData = sanitizeForLocalStorage(projects);
+      localStorage.setItem('drive_projects', JSON.stringify(lightData));
     } catch (e) {
-      console.warn('Failed to save drive_projects to localStorage (quota exceeded):', e);
+      try {
+        const minimal = projects.map(p => ({
+          id: p?.id,
+          name: p?.name,
+          activeSpaceId: p?.activeSpaceId,
+          taskType: p?.taskType,
+          pinnedArtifactIds: p?.pinnedArtifactIds,
+          associatedFileId: p?.associatedFileId,
+          associatedFileName: p?.associatedFileName
+        }));
+        localStorage.setItem('drive_projects', JSON.stringify(minimal));
+      } catch (fallbackErr) {
+        // Safe silent catch if storage is completely full
+      }
     }
   }, [projects]);
 
