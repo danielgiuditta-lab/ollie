@@ -1,0 +1,66 @@
+{
+  "chatId": "space-flatiron-ui-design",
+  "projectName": "UI Design",
+  "chatName": null,
+  "type": "space",
+  "taskType": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [
+    {
+      "role": "bot",
+      "text": "Elena Vance, Dr. Marcus Thorne, and Sarah Lin added to this space.",
+      "isMembersAddedNotice": true,
+      "addedMembers": [
+        "Elena Vance",
+        "Dr. Marcus Thorne",
+        "Sarah Lin"
+      ]
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space-flatiron-ui-design",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "space-flatiron-ui-design-file-0",
+      "name": "index.html",
+      "type": "code",
+      "mimeType": "text/html",
+      "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  \n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n  <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n  <link href=\"https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap\" rel=\"stylesheet\">\n  <script src=\"https://cdn.tailwindcss.com\"></script>\n  <style>\n    :root {\n      --gemini-rail-icon-gap: 0px;\n      --gemini-side-panel-padding-left: 16px;\n      --gemini-side-panel-padding-right: 16px;\n      --gemini-header-padding-left: 10px;\n      --gemini-header-padding-right: 12px;\n      --gemini-header-elements-gap: 8px;\n    }\n    body {\n      font-family: 'Google Sans Text', sans-serif;\n      background-color: #ffffff;\n      color: #1f1f1f;\n    }\n    h1, h2, h3, h4, h5, button {\n      font-family: 'Google Sans', sans-serif;\n    }\n  </style>\n\n  <title>Trial Matcher</title>\n</head>\n<body class=\"p-6 bg-white text-[#1f1f1f]\">\n  <div class=\"max-w-5xl mx-auto space-y-6\">\n    <!-- Action Controls -->\n    <div class=\"flex items-center justify-between border-b border-[#e2e8f0] pb-4\">\n      <div>\n        <h2 class=\"text-lg font-medium text-[#1f1f1f]\">Eleanor Vance (MRN #94821)</h2>\n        <p class=\"text-xs text-[#5f6368]\">62 y/o Female • Stage III NSCLC Adenocarcinoma • ECOG 1</p>\n      </div>\n      <div class=\"flex items-center gap-2\">\n        <span class=\"px-3 py-1 bg-[#d3e3fd] text-[#041e49] text-xs rounded-full font-medium\">12 Protocol Matches</span>\n        <button class=\"px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition shadow-xs cursor-pointer\">Flag Selected Patient</button>\n      </div>\n    </div>\n\n    <!-- Main Content Grid -->\n    <div class=\"grid grid-cols-1 md:grid-cols-3 gap-6\">\n      <!-- Genomic Panel Sidebar -->\n      <div class=\"md:col-span-1 bg-[#f0f4f9] border border-[#e2e8f0] rounded-xl p-4 space-y-4\">\n        <h3 class=\"text-xs font-semibold text-[#444746] uppercase tracking-wider\">Genomic Panel (FoundationOne® CDx)</h3>\n        <div class=\"flex flex-wrap gap-2\">\n          <span class=\"px-2.5 py-1 bg-white border border-[#c4c7c5] text-[#1f1f1f] rounded-md text-xs font-medium\">EGFR L858R (+)</span>\n          <span class=\"px-2.5 py-1 bg-white border border-[#c4c7c5] text-[#1f1f1f] rounded-md text-xs font-medium\">PD-L1 High (55%)</span>\n          <span class=\"px-2.5 py-1 bg-white border border-[#e2e8f0] text-[#5f6368] rounded-md text-xs\">KRAS Wildtype</span>\n        </div>\n        \n        <div class=\"border-t border-[#e2e8f0] pt-3\">\n          <span class=\"text-xs font-semibold text-[#444746] uppercase tracking-wider\">Treatment History</span>\n          <p class=\"text-xs text-[#444746] mt-1 leading-relaxed\">Completed Platinum-doublet chemotherapy (April 2026). No active CNS metastases.</p>\n        </div>\n      </div>\n\n      <!-- Protocol Match Cards -->\n      <div class=\"md:col-span-2 space-y-4\">\n        <!-- Match Filter Tabs -->\n        <div class=\"flex gap-2 border-b border-[#e2e8f0] pb-2 text-xs\">\n          <button class=\"px-3 py-1.5 bg-[#d3e3fd] text-[#041e49] font-medium rounded-md\">All Matches (3)</button>\n          <button class=\"px-3 py-1.5 text-[#5f6368] hover:text-[#1f1f1f]\">High Confidence (2)</button>\n          <button class=\"px-3 py-1.5 text-[#5f6368] hover:text-[#1f1f1f]\">Pending CRC Check (1)</button>\n        </div>\n\n        <!-- Card 1 -->\n        <div class=\"bg-white border border-[#e2e8f0] rounded-xl p-4 space-y-3 shadow-xs hover:border-[#a8c7fa] transition\">\n          <div class=\"flex justify-between items-start\">\n            <div>\n              <span class=\"text-[11px] font-medium text-[#0b57d0] uppercase tracking-wide\">Phase 3 Protocol FL-LUNG-304</span>\n              <h4 class=\"text-sm font-medium text-[#1f1f1f] mt-0.5\">Targeted EGFR Tyrosine Kinase Inhibitor vs Standard SOC in Advanced NSCLC</h4>\n            </div>\n            <span class=\"text-sm font-bold text-[#0b57d0] bg-[#d3e3fd] px-2.5 py-1 rounded-md\">98% Match</span>\n          </div>\n          <div class=\"bg-[#f0f4f9] p-3 rounded-lg text-xs text-[#444746] space-y-1\">\n            <div><strong>Inclusion Criteria:</strong> EGFR L858R mutation confirmed • ECOG 0-1</div>\n            <div><strong>Site Access:</strong> OncoTrials Partner Practice (2.4 miles)</div>\n          </div>\n          <div class=\"flex justify-between items-center text-xs pt-1\">\n            <span class=\"text-[#5f6368]\">Sponsor: Global Bio Oncology</span>\n            <button class=\"px-3 py-1.5 bg-[#0b57d0] hover:bg-[#0842a0] text-white font-medium rounded-md cursor-pointer\">Flag Patient</button>\n          </div>\n        </div>\n\n        <!-- Card 2 -->\n        <div class=\"bg-white border border-[#e2e8f0] rounded-xl p-4 space-y-3 shadow-xs hover:border-[#a8c7fa] transition\">\n          <div class=\"flex justify-between items-start\">\n            <div>\n              <span class=\"text-[11px] font-medium text-[#5f6368] uppercase tracking-wide\">Phase 2 Protocol FL-IMMUNO-201</span>\n              <h4 class=\"text-sm font-medium text-[#1f1f1f] mt-0.5\">Novel Anti-PD-1 Combination Therapy for Solid Tumors</h4>\n            </div>\n            <span class=\"text-sm font-medium text-[#1f1f1f] bg-[#f0f4f9] px-2.5 py-1 rounded-md\">85% Match</span>\n          </div>\n          <div class=\"flex justify-between items-center text-xs pt-1\">\n            <span class=\"text-[#5f6368]\">Requires biomarker re-confirmation</span>\n            <button class=\"px-3 py-1.5 bg-white border border-[#747775] text-[#1f1f1f] hover:bg-[#f0f4f9] font-medium rounded-md cursor-pointer\">View Protocol</button>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</body>\n</html>"
+    },
+    {
+      "id": "space-flatiron-ui-design-file-1",
+      "name": "patient_eligibility_uxr_readout.doc",
+      "type": "code",
+      "mimeType": "application/vnd.google-apps.document",
+      "content": "# OncoEMR Clinical Trial Screening - UXR Readout & Synthesis\n\n**Author:** Sarah Lin (UX Research Lead, Flatiron Health)  \n**Participants:** 14 Clinical Research Coordinators (CRCs) & 8 Community Oncologists  \n**Context:** Evaluating point-of-care trial matching UI within routine OncoEMR chart workflows.\n\n---\n\n### Core Findings & User Needs\n\n1. **Screening Fatigue is the #1 Barrier to Trial Enrollment**\n   * Community CRCs review an average of 45 patient charts per week manually.\n   * Finding biomarker-eligible patients takes 20-30 minutes per chart when cross-referencing external lab portals.\n   * *Quote:* \"If trial eligibility isn't visible right on the main chart summary when the oncologist orders lab tests, the patient gets started on standard chemo before we even know they qualified for a protocol.\"\n\n2. **Desire for Automated Biomarker Highlights**\n   * Oncologists strongly prefer inline pill badges for genomic markers (e.g. EGFR, ALK, PD-L1) rather than multi-page pathology PDFs.\n   * High-confidence match scores (90%+) drive immediate flag requests to research teams.\n\n3. **Design Recommendations for Sprint 4**\n   * Embed eligibility match cards directly adjacent to OncoEMR treatment plan selection.\n   * Provide one-click \"Flag Patient for CRC Review\" action with automated protocol pre-check."
+    },
+    {
+      "id": "space-flatiron-ui-design-file-2",
+      "name": "oncology_component_specs.md",
+      "type": "code",
+      "mimeType": "text/markdown",
+      "content": "# Flatiron Design System Specs: Point-of-Care Trial Indicators\n\n## Visual Hierarchy & Token Standards\n\n- **Primary Brand Accent:** Polaris Blue (`#0b57d0`)\n- **Trial Phase Badges:**\n  - Standard Container: `#f0f4f9`\n  - Active Selection: `#d3e3fd`\n- **Accessibility & Contrast:**\n  - Text contrast ratio against plain white background (`#ffffff`) must exceed 4.5:1.\n  - Biomarker status indicators must convey positive/negative state via explicit textual labels (+ / -)."
+    },
+    {
+      "id": "space-flatiron-ui-design-file-3",
+      "name": "trial_matcher_deck.gslides",
+      "type": "code",
+      "mimeType": "application/vnd.google-apps.presentation",
+      "content": "# Presentation: OncoEMR Trial Matcher UI Design Review & Sprint Readout\n\nType: Google Slides\nFile ID: flatiron-deck-ui-design-01"
+    }
+  ],
+  "userEmail": "mock-user@example.com",
+  "members": [
+    "Elena Vance",
+    "Dr. Marcus Thorne",
+    "Sarah Lin"
+  ],
+  "pinnedArtifactIds": [
+    "todo-card",
+    "space-flatiron-ui-design-file-0",
+    "space-flatiron-ui-design-file-1"
+  ],
+  "updatedAt": "2026-07-14T23:19:08.442Z"
+}

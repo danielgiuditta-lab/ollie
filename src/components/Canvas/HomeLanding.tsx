@@ -21,6 +21,7 @@ import imageIcon from '../../assets/image.png';
 export function cleanWorkspaceName(raw: string): string {
   if (!raw) return 'Workspace';
   let cleaned = raw;
+  cleaned = cleaned.replace(/^Space:\s*/i, '').replace(/^Space\s+-\s*/i, '').replace(/\bSpace\b/gi, '').trim();
   const commentOnMatch = cleaned.match(/(?:commented|tagged|mentioned|replied|comment)\s+(?:you\s+|by\s+.*?\s+)?(?:in|on|at)\s+['"]?([^'".]+?)['"]?(?:\s+regarding|\s+to|\s+for|\s+with|\s*\.\s*|$)/i);
   if (commentOnMatch && commentOnMatch[1]) {
     cleaned = commentOnMatch[1];
@@ -41,6 +42,7 @@ export function cleanWorkspaceName(raw: string): string {
   }
   cleaned = cleaned.split(' · ')[0].split(' / ')[0].replace(/\s*\/\s*Calendar Invite.*$/i, '').replace(/(?:from|by|at)\s+.*$/i, '').trim();
   cleaned = cleaned.replace(/^['"]|['"]$/g, '').trim();
+  cleaned = cleaned.replace(/\bSpace\b/gi, '').trim();
   return cleaned || 'Workspace';
 }
 

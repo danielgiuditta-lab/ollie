@@ -1,0 +1,23 @@
+{
+  "chatId": "home_mock_user_example_com",
+  "projectName": "Home Dashboard",
+  "chatName": null,
+  "type": "space",
+  "taskType": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [],
+  "envId": null,
+  "activeSpaceId": "home_mock_user_example_com",
+  "sandboxUrl": "",
+  "sandboxFiles": [],
+  "userEmail": "mock-user@example.com",
+  "members": [],
+  "pinnedArtifactIds": [
+    "todo-card",
+    "space-flatiron-ui-design",
+    "space-flatiron-gtm",
+    "space-flatiron-new-app-launch"
+  ],
+  "updatedAt": "2026-07-14T23:19:08.442Z"
+}

@@ -422,7 +422,7 @@ export function LeftNav({
           <div 
             onClick={onCreateSpace}
             className={`h-[40px] px-2 rounded-[20px] flex items-center cursor-pointer transition-colors duration-200 shrink-0 mt-2 ${themeTokens.text.idle} ${themeTokens.hoverBg}`}
-            title="Create space"
+            title="New workspace"
           >
             <div className="flex items-center gap-3.5 min-w-0">
               <div className="w-6 h-6 flex items-center justify-center shrink-0">
@@ -440,7 +440,7 @@ export function LeftNav({
                 className={`text-[14px] leading-none font-medium whitespace-nowrap transition-opacity duration-200 ${isExpandedActive ? 'opacity-100' : 'opacity-0'}`}
                 style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
               >
-                Create space
+                New workspace
               </span>
             </div>
           </div>
