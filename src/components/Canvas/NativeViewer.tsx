@@ -62,6 +62,45 @@ export function NativeViewer({
   todoItems,
   onProactiveTaskClick
 }: NativeViewerProps) {
+  if (isPreviewCard) {
+    const rawId = file.driveId || file.id || '';
+    const cleanId = String(rawId)
+      .replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '')
+      .replace(/(-preview)+$/, '');
+
+    const nameLower = (file.name || '').toLowerCase();
+    const mimeLower = (file.mimeType || '').toLowerCase();
+    const typeLower = (file.type || file.taskType || '').toLowerCase();
+
+    const isSlide = typeLower === 'slide' || mimeLower.includes('presentation') || mimeLower.includes('slide') || nameLower.endsWith('.gslides') || nameLower.endsWith('.pptx');
+    const isSheet = typeLower === 'sheet' || mimeLower.includes('spreadsheet') || mimeLower.includes('excel') || mimeLower.includes('csv') || nameLower.endsWith('.csv') || nameLower.endsWith('.gsheet') || nameLower.endsWith('.xlsx');
+
+    let liveEmbedUrl = file.embedUrl || file.previewUrl || file.url;
+
+    if (cleanId && cleanId.length > 5 && !cleanId.includes('local') && !cleanId.includes('mock')) {
+      if (isSlide) {
+        liveEmbedUrl = `https://docs.google.com/presentation/d/${cleanId}/preview?rm=minimal`;
+      } else if (isSheet) {
+        liveEmbedUrl = `https://docs.google.com/spreadsheets/d/${cleanId}/preview`;
+      } else {
+        liveEmbedUrl = `https://docs.google.com/document/d/${cleanId}/preview`;
+      }
+    } else if (file.content && !liveEmbedUrl) {
+      liveEmbedUrl = `data:text/html;charset=utf-8,${encodeURIComponent(file.content)}`;
+    }
+
+    return (
+      <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+        <iframe 
+          src={liveEmbedUrl}
+          className="w-full h-full border-none bg-white shadow-none pointer-events-none"
+          allow="autoplay; fullscreen"
+          title={file.name || 'Live Artifact Preview'}
+        />
+      </div>
+    );
+  }
+
   const [internalMode, setInternalMode] = useState<'file' | 'preview'>('preview');
 
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
