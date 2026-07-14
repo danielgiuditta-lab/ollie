@@ -408,6 +408,7 @@ export function ChatSidebar({
                         proactiveTask={msg.proactiveTask}
                         onApproveProactive={msg.onApproveProactive || onApproveProactive}
                         onFeedbackProactive={msg.onFeedbackProactive || onFeedbackProactive}
+                        actionPills={msg.actionPills}
                       />
                     );
                   })}

@@ -42,6 +42,7 @@ interface BotMessageProps {
   proactiveTask?: any;
   onApproveProactive?: () => void;
   onFeedbackProactive?: () => void;
+  actionPills?: Array<{ label: string; onClick: () => void }>;
 }
 
 const TeamAvatar = ({ avatar, name, size = 'md', isGroupChat = false }: { avatar?: string; name?: string; size?: 'sm' | 'md' | 'lg'; isGroupChat?: boolean }) => {
@@ -143,7 +144,8 @@ export function BotMessage({
   isProactiveReview = false,
   proactiveTask,
   onApproveProactive,
-  onFeedbackProactive
+  onFeedbackProactive,
+  actionPills = []
 }: BotMessageProps) {
   const isDark = theme === 'dark';
 
@@ -748,6 +750,23 @@ export function BotMessage({
             <div className="font-semibold text-sm">Project Tracker</div>
             <div className="text-xs text-slate-400 dark:text-slate-500">Workspace sync completed</div>
           </div>
+        </div>
+      )}
+
+      {/* Dynamic proposal action pills */}
+      {actionPills && actionPills.length > 0 && (
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          {actionPills.map((pill, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={pill.onClick}
+              className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full transition-all border border-blue-200/60 dark:border-blue-700/50 shadow-2xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+            >
+              <span>⚡</span>
+              <span>{pill.label}</span>
+            </button>
+          ))}
         </div>
       )}
     </div>

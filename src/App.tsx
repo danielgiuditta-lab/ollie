@@ -1502,12 +1502,57 @@ export default function App() {
       return;
     }
 
-    const isDocJourneyMode = currentTask === 'doc' || currentTask === 'slide' || !!selectedFile?.isDocJourney || (sandboxFiles.length > 0 && sandboxFiles.some(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides'));
+    let activeTaskMode = currentTask;
+    let intentClassification: any = null;
+
+    if (!activeTaskMode || activeTaskMode === 'app' || activeTaskMode === 'general') {
+      try {
+        const classRes = await fetch('/api/classify-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: text, activeFileName: selectedFile?.name })
+        });
+        if (classRes.ok) {
+          intentClassification = await classRes.json();
+          if (intentClassification.domain === 'doc' || intentClassification.domain === 'slide') {
+            activeTaskMode = intentClassification.domain;
+            setCurrentTask(intentClassification.domain);
+          }
+        }
+      } catch (err) {
+        console.warn("Intent classification API error:", err);
+      }
+    }
+
+    if (intentClassification?.domain === 'tool' && intentClassification.proposalText) {
+      const buildPrompt = intentClassification.archetypePrompt || text;
+      const pillText = intentClassification.pillLabel || 'Build Tool';
+
+      setMessages(prev => [
+        ...prev,
+        { role: 'user', text },
+        {
+          role: 'bot',
+          text: intentClassification.proposalText,
+          actionPills: [
+            {
+              label: pillText,
+              onClick: () => {
+                handleSendMessage(buildPrompt, false, contextFiles);
+              }
+            }
+          ]
+        }
+      ]);
+      return;
+    }
+
+    const isDocJourneyMode = activeTaskMode === 'doc' || activeTaskMode === 'slide' || !!selectedFile?.isDocJourney || (sandboxFiles.length > 0 && sandboxFiles.some(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides'));
 
     if (isDocJourneyMode) {
       setMessages(prev => [...prev, { role: 'user', text }, { role: 'bot', text: '' }]);
       setIsLoading(true);
-      setCurrentTask(currentTask === 'slide' ? 'slide' : 'doc');
+      setCurrentTask(activeTaskMode === 'slide' ? 'slide' : 'doc');
       setViewState('files');
       setActiveSidebar('gemini');
 

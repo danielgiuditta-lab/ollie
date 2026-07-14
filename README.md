@@ -50,6 +50,14 @@ This guide is written specifically for **designers and builders**. It puts our *
 
 ---
 
+### 🎯 8. Problem-Driven Intent Routing & Custom Tool Selection
+* **What Happens**: Users describe high-level workflow problems or document requests directly in chat (e.g. *"help me track the team's work"*, *"help me manage bug reports"*, or *"write a PRD for this space"*). The platform autonomously classifies the intent:
+  - Document & roadmap requests route directly to **Doc Journey** (`.doc`/`.gslides`) in native paper card layout. *No app is vibecoded.*
+  - Workflow problems infer tailor-made tool solutions (Kanban Board, Bug Tracker, Decision & Risk Log, Approval Queue) and present an interactive proposal pill (e.g., `[⚡ Build Kanban Board]`). Tapping the pill streams the custom tool into the live preview canvas.
+* **Views & Components Used**: `/api/classify-intent` (Gemini 3.5 Flash intent & archetype classifier route), `handleSendMessage` in [`App.tsx`](src/App.tsx), [`BotMessage.tsx`](src/components/Chat/BotMessage.tsx) (interactive action pills), `/api/vibe-code` (custom app stream generator).
+
+---
+
 ## 🎨 2. Core Architecture & Terminology
 
 Here are the core domain terms used throughout the code and design system so you can vibe-code with precision.

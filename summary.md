@@ -102,6 +102,11 @@ When assessing the AI intelligence powering this environment, it is critical to 
 * **System Prompt Constraints**: The behavior of the In-App Agent is strictly governed on the server side. During the `/api/vibe-code` post request, the server reads the local markdown file `/src/agent-system-prompt.md` and passes it as the `system_instruction` to `ai.interactions.create()`.
 * **Environment State Persistence**: Rather than initiating empty stateless prompts, the server returning the SSE streams extracts the `environment_id` returned on the final interaction completed hook. This ID is saved on the client as `envId`. For subsequent user chats, the React app forwards the exact same ID back to `/api/vibe-code`, preserving the state of the remote Linux filesystem.
 
+### Problem-Driven Intent Router (`/api/classify-intent`)
+* **Structured Intent Classification**: Before executing code stream or document generation, unhandled chat messages hit `/api/classify-intent` running `gemini-3.5-flash` with JSON schema enforcement.
+* **Document Request Guard**: Requests to write PRDs, specifications, roadmaps, or articles route directly to **Doc Journey** (`/api/doc-journey`), generating native Google Docs (`.doc`) / Google Slides (`.gslides`) in paper card layout. *No app is vibecoded.*
+* **Tailored Tool Archetype Proposals**: Workflow problems (e.g. *"help me track the team's work"*, *"manage software bugs"*, *"track decisions & risks"*) infer optimal specialized archetypes (`kanban`, `bug_tracker`, `decision_risk_log`, `approval_queue`) and present an interactive proposal pill (e.g. `[⚡ Build Kanban Board]`) in the bot message bubble before executing code stream.
+
 ---
 
 ## 4. Sandbox Execution vs. Client-Side Parsing (Current State & Analysis)
