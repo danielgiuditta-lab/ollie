@@ -3,7 +3,7 @@
 The building state UI has been enhanced with the following features when `isLoading` is active:
 
 - **Undulating Glow & Animated Step Cards**: Replaced static progress indicators with undulating background accents and expandable step execution cards in the chat sidebar.
-- **Dynamic Task Title**: The canvas displays a centered title using the text `Building your [task]...`, where `[task]` is dynamically populated from the last user message.
-- **Single Unified Loading State**: Eliminates duplicate competing loading animations. While the AI model generates code, `<AppView/>` displays a single clean centered indicator ("Assembling application code..."). As soon as output arrives, `srcDoc` evaluates to true and mounts the interactive web application iframe directly.
-- **Resilient Stream Delta Extraction**: Real-time SSE streaming (`/api/vibe-code`) continuously appends text deltas and parses complete HTML output across all interaction steps, seamlessly updating the running iframe when code generation completes.
+- **Single Loading State UX**: Eliminates competing duplicate loading animations. While code generation proceeds, the main canvas viewport remains cleanly on the user's Space Dashboard or Home view, while the Left Chat sidebar renders the single active step card.
+- **Resilient Universal Stream Delta Extraction**: Real-time SSE streaming (`/api/vibe-code`) dynamically inspects root `.text`, `.code`, `.content`, and `.delta` properties across event payloads. As soon as live HTML content (>30 chars) is parsed or generation finishes, `viewState` transitions to `'app'` mode with `srcDoc` fully populated, mounting the interactive web application iframe directly without blank or hanging states.
+- **Mandated Environment Sanitation**: Guarantees `environment: "remote"` (or persistent `env_id`) is always supplied in `server.ts` during backend `ai.interactions.create` calls, preventing API 400 rejections.
 
