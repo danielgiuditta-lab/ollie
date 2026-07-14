@@ -91,15 +91,15 @@ export function NativeViewer({
 
     if (isSlide) {
       return (
-        <div className="w-full h-full bg-white flex items-center justify-center overflow-hidden relative select-none">
-          <div style={{ width: '108px', height: '70px', position: 'relative', overflow: 'hidden' }}>
+        <div className="w-full h-full bg-white dark:bg-[#1E1F22] flex items-center justify-center overflow-hidden relative select-none">
+          <div style={{ width: '110px', height: '72px', position: 'relative', overflow: 'hidden' }}>
             <iframe 
               src={liveEmbedUrl}
-              className="border-none bg-white shadow-none pointer-events-none"
+              className="border-none bg-white dark:bg-[#1E1F22] shadow-none pointer-events-none"
               style={{
                 width: '960px',
-                height: '540px',
-                transform: 'scale(0.1125)',
+                height: '628px',
+                transform: 'scale(0.1146)',
                 transformOrigin: 'top left',
                 position: 'absolute',
                 top: 0,
@@ -115,11 +115,11 @@ export function NativeViewer({
 
     // Docs & Sheets: Square container scaling
     return (
-      <div className="w-full h-full bg-white flex items-center justify-center overflow-hidden relative select-none">
+      <div className="w-full h-full bg-white dark:bg-[#1E1F22] flex items-center justify-center overflow-hidden relative select-none">
         <div style={{ width: '72px', height: '72px', position: 'relative', overflow: 'hidden' }}>
           <iframe 
             src={liveEmbedUrl}
-            className="border-none bg-white shadow-none pointer-events-none"
+            className="border-none bg-white dark:bg-[#1E1F22] shadow-none pointer-events-none"
             style={{
               width: '600px',
               height: '600px',
