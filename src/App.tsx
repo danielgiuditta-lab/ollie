@@ -2314,7 +2314,7 @@ export default function App() {
                  currentSteps[event.step_index] = { ...currentSteps[event.step_index], ...event.delta, type: currentSteps[event.step_index].type };
                  currentSteps[event.step_index]._streamText = (currentSteps[event.step_index]._streamText || '') + deltaText;
 
-                 if (deltaText && (currentSteps[event.step_index].type === 'model_output' || !currentSteps[event.step_index].type || currentSteps[event.step_index].type === 'unknown' || deltaText.includes('<') || deltaText.includes('```'))) {
+                 if (deltaText) {
                     accumulatedOutput += deltaText;
                     const displayOutput = accumulatedOutput.replace(/```[A-Za-z]*\s*\n?[\s\S]*/i, '').trim();
                     currentText = displayOutput || "Generating assets...";
@@ -2399,7 +2399,7 @@ export default function App() {
                               step.output || 
                               (Array.isArray(step.content) ? step.content.map((c: any) => c.text || c.code || '').join('\n') : (step.content?.text || step.content?.code || '')) || 
                               "";
-                  if (txt && (step.type === 'model_output' || step.type === 'agent_response' || !step.type || step.type === 'unknown' || txt.includes('<') || txt.includes('```'))) {
+                  if (txt) {
                     fullModelOutput += (fullModelOutput ? "\n" : "") + txt;
                   }
                 }
@@ -2555,17 +2555,18 @@ export default function App() {
                 }
                 
                 if (parsedFiles.length === 0) {
-                   const fallbackMatch = finalHtmlText.match(/(<!(?:DOCTYPE )?html[\s\S]*?(?:<\/html>|$))/i) || 
-                                        finalHtmlText.match(/(<html[\s\S]*?(?:<\/html>|$))/i) || 
-                                        finalHtmlText.match(/(<div[\s\S]*?(?:<\/div>|$))/i) || 
-                                        finalHtmlText.match(/(<main[\s\S]*?(?:<\/main>|$))/i);
+                   const textToSearch = finalHtmlText.trim().length > 0 ? finalHtmlText : accumulatedOutput;
+                   const fallbackMatch = textToSearch.match(/(<!(?:DOCTYPE )?html[\s\S]*?(?:<\/html>|$))/i) || 
+                                        textToSearch.match(/(<html[\s\S]*?(?:<\/html>|$))/i) || 
+                                        textToSearch.match(/(<div[\s\S]*?(?:<\/div>|$))/i) || 
+                                        textToSearch.match(/(<main[\s\S]*?(?:<\/main>|$))/i);
                    if (fallbackMatch) {
                       finalContent = fallbackMatch[1].trim();
                       const idPrefix = targetChatId || activeChatId || 'sandbox';
                       parsedFiles.push({ name: 'index.html', type: 'code', content: finalContent, id: `${idPrefix}-file-0` });
-                   } else if (finalHtmlText.trim().length > 0 && !finalHtmlText.includes('<doc>') && !finalHtmlText.includes('<chat>')) {
+                   } else if (textToSearch.trim().length > 0 && !textToSearch.includes('<doc>') && !textToSearch.includes('<chat>')) {
                       // Final safety fallback: Wrap unformatted UI output in an index.html template
-                      finalContent = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8"/>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="p-6 bg-white text-slate-800 font-sans">\n${finalHtmlText.trim()}\n</body>\n</html>`;
+                      finalContent = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8"/>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="p-6 bg-white text-slate-800 font-sans">\n${textToSearch.trim()}\n</body>\n</html>`;
                       const idPrefix = targetChatId || activeChatId || 'sandbox';
                       parsedFiles.push({ name: 'index.html', type: 'code', content: finalContent, id: `${idPrefix}-file-0` });
                    }
