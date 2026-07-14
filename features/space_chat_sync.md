@@ -238,4 +238,9 @@ When adding new navigation tabs, space onboarding flows, or sidecar chats:
 - **Backend Deletion (`DELETE /api/chats/:chatId`)**: Clicking "Remove" delegates to `handleRemoveTask`, which filters the chat ID out of `recentTasks` and sends a `DELETE` request to `/api/chats/${encodeURIComponent(taskId)}` to delete its JSON payload from disk/database storage.
 - **Active Navigation Rerouting**: If the deleted chat is currently active (`activeChatId === taskId`), `handleRemoveTask` checks `activeSpaceId`. If the chat belonged to a Space (`!isHomeChatId(spaceId)`), it automatically invokes `openSpace(spaceId)` to land on the parent Space Dashboard; if it belonged to Home, it invokes `handleFileClick(getHomeChatId(), true)` to return cleanly to the Home landing page.
 
+### Invariant 45: Vibe-Code Single Unified Loading State & Stream Delta Resilience
+- **Single Unified Loading State**: When transitioning to app view (`viewState === 'app'`), `index.html` is pre-seeded with empty content (`content: ''`). In `AppView.tsx`, `srcDoc` requires non-empty `activeHtmlFile.content` to evaluate to true. While code generation is in progress, `<AppView>` displays a single, clean centered loading state ("Assembling application code..."), eliminating redundant competing loading animations and duplicate fake iframe skeleton pages.
+- **Resilient SSE Delta & Completed Output Extraction**: Streaming event handlers in `App.tsx` append `deltaText` to `accumulatedOutput` across all delta types and extract generated HTML across all step outputs in `interaction.completed`, guaranteeing seamless re-rendering when code generation finishes.
+
+
 

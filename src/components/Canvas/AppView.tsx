@@ -1,5 +1,4 @@
 import React, { useMemo, useRef, useEffect, useCallback, memo } from 'react';
-import { INITIAL_HTML_LOADING_SKELETON } from '../../utils/constants';
 
 interface AppViewProps {
   sandboxUrl?: string;
@@ -28,9 +27,10 @@ export const AppView = memo(function AppView({ sandboxUrl, files, envId, project
       ? selectedFile 
       : (files || []).find(f => isHtml(f) || f.name === 'index.html');
 
-    if (activeHtmlFile || (files && files.length > 0)) {
-      let content = (activeHtmlFile && activeHtmlFile.content) ? activeHtmlFile.content : INITIAL_HTML_LOADING_SKELETON;
-      console.log(`[AppView] Assembling srcDoc for file: ${activeHtmlFile?.name || 'index.html'} (length: ${content.length} chars)`);
+    if (activeHtmlFile && activeHtmlFile.content && activeHtmlFile.content.trim().length > 0) {
+      console.log(`[AppView] Assembling srcDoc for file: ${activeHtmlFile.name} (length: ${activeHtmlFile.content.length} chars)`);
+      let content = activeHtmlFile.content;
+
 
         
         // Inject sandbox markers at the top of the head so any client scripts in the iframe can access them

@@ -1,54 +1,40 @@
-import { INITIAL_HTML_LOADING_SKELETON } from '../src/utils/constants.ts';
-
 function simulateAppViewSrcDoc(selectedFile, files) {
   const isHtml = (f) => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase().endsWith('.htm'));
   const activeHtmlFile = (selectedFile && isHtml(selectedFile)) 
     ? selectedFile 
     : (files || []).find(f => isHtml(f) || f.name === 'index.html');
 
-  if (activeHtmlFile || (files && files.length > 0)) {
-    let content = (activeHtmlFile && activeHtmlFile.content) ? activeHtmlFile.content : INITIAL_HTML_LOADING_SKELETON;
+  if (activeHtmlFile && activeHtmlFile.content && activeHtmlFile.content.trim().length > 0) {
+    let content = activeHtmlFile.content;
     return content;
   }
   return undefined;
 }
 
-console.log("=== Testing Unit State Scenarios for AppView srcDoc ===");
+console.log("=== Testing Single Unified Loading State for AppView srcDoc ===");
 
-// Scenario A: Pre-seeding index.html with empty string (legacy behavior vs new behavior)
+// Test 1: Unpopulated / pre-seeded empty index.html
 const preSeededFile = { name: 'index.html', content: '', type: 'code' };
 const srcDocPreSeeded = simulateAppViewSrcDoc(preSeededFile, [preSeededFile]);
-console.log("Scenario A (Pre-seeded index.html with empty content):");
-console.log("srcDoc is defined?", srcDocPreSeeded !== undefined);
-console.log("srcDoc contains skeleton loader?", srcDocPreSeeded.includes("Assembling Application Code"));
+console.log("Test 1 (Pre-seeded empty index.html):");
+console.log("srcDoc is undefined?", srcDocPreSeeded === undefined);
 
-if (srcDocPreSeeded !== undefined && srcDocPreSeeded.includes("Assembling Application Code")) {
-  console.log("✔ Scenario A PASS: srcDoc immediately evaluates to Skeleton HTML instead of undefined!");
+if (srcDocPreSeeded === undefined) {
+  console.log("✔ Test 1 PASS: srcDoc evaluates to undefined so AppView renders single clean loading indicator without duplicate iframe skeleton!");
 } else {
-  throw new Error("Scenario A FAIL!");
+  throw new Error("Test 1 FAIL!");
 }
 
-// Scenario B: Selected file is null, but files has index.html with empty content
-const srcDocFallback = simulateAppViewSrcDoc(null, [{ name: 'index.html', content: '' }]);
-console.log("\nScenario B (null selectedFile, fallback files array):");
-console.log("srcDoc is defined?", srcDocFallback !== undefined);
-
-if (srcDocFallback !== undefined && srcDocFallback.includes("Assembling Application Code")) {
-  console.log("✔ Scenario B PASS: Fallback to skeleton HTML verified!");
-} else {
-  throw new Error("Scenario B FAIL!");
-}
-
-// Scenario C: Populated code generation arrives from server
-const generatedFile = { name: 'index.html', content: '<!DOCTYPE html><html><body><h1>Decision Tracker App</h1></body></html>' };
+// Test 2: Real generated tool output arrives
+const generatedFile = { name: 'index.html', content: '<!DOCTYPE html><html><body><h1>Decision & Risk Log Tool</h1></body></html>' };
 const srcDocGenerated = simulateAppViewSrcDoc(generatedFile, [generatedFile]);
-console.log("\nScenario C (Generated HTML output arrives):");
+console.log("\nTest 2 (Generated tool code arrives):");
 console.log("srcDoc content length:", srcDocGenerated.length);
 
-if (srcDocGenerated.includes("Decision Tracker App")) {
-  console.log("✔ Scenario C PASS: srcDoc seamlessly switches to real generated application HTML!");
+if (srcDocGenerated && srcDocGenerated.includes("Decision & Risk Log Tool")) {
+  console.log("✔ Test 2 PASS: srcDoc evaluates to true and mounts the interactive web app!");
 } else {
-  throw new Error("Scenario C FAIL!");
+  throw new Error("Test 2 FAIL!");
 }
 
-console.log("\nALL APPVIEW RE-RENDER & SKELETON UNIT TESTS PASSED!");
+console.log("\nUNIFIED LOADING STATE VERIFICATION PASSED!");

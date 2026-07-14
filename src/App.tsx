@@ -22,7 +22,6 @@ import { FileIcon } from './components/Shared/FileIcon';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
 import { formatPeopleNames } from './components/Chat/BotMessage';
 import { inferChatName, resolveArtifactForChat, findAssociatedChatForFile } from './utils/artifactResolver';
-import { INITIAL_HTML_LOADING_SKELETON } from './utils/constants';
 
 
 import { useCanvasState } from './hooks/useCanvasState';
@@ -1856,12 +1855,12 @@ export default function App() {
     if ((viewState === 'home' || viewState === 'dashboard' || viewState === 'null') && !activeAiMode) {
       const initialIndexFile = { 
         name: 'index.html', 
-        content: INITIAL_HTML_LOADING_SKELETON, 
+        content: '', 
         type: 'code', 
         mimeType: 'text/html', 
         id: `${targetChatId || activeChatId || 'sandbox'}-file-0` 
       };
-      console.log("[VibeCode Debug] Transitioning to app view & pre-seeding index.html with loading skeleton:", initialIndexFile.id);
+      console.log("[VibeCode Debug] Transitioning to app view & pre-seeding index.html:", initialIndexFile.id);
       setSandboxFiles([initialIndexFile]);
       setSelectedFile(initialIndexFile);
       setIndexFileSelected(true);
@@ -2330,11 +2329,11 @@ export default function App() {
                  scheduleMessagesUpdate();
                }
             if (accumulatedOutput && accumulatedOutput.length > 50) {
-                  const rawHtmlMatch = accumulatedOutput.match(/(<!(?:DOCTYPE )?html[\s\S]*)/i) || 
+                  const rawHtmlMatch = accumulatedOutput.match(/```(?:html|xml)?\s*(<!--[\s\S]*?-->\s*)?(<!(?:DOCTYPE )?html[\s\S]*)/i) || 
+                                       accumulatedOutput.match(/(<!(?:DOCTYPE )?html[\s\S]*)/i) || 
                                        accumulatedOutput.match(/(<html[\s\S]*)/i) || 
-                                       accumulatedOutput.match(/(<div[\s\S]*)/i) ||
-                                       accumulatedOutput.match(/```html\s*([\s\S]*)/i);
-                  let liveHtmlContent = rawHtmlMatch ? rawHtmlMatch[1].replace(/```$/g, '').trim() : "";
+                                       accumulatedOutput.match(/(<div[\s\S]*)/i);
+                  let liveHtmlContent = rawHtmlMatch ? (rawHtmlMatch[2] || rawHtmlMatch[1] || rawHtmlMatch[0]).replace(/```$/g, '').trim() : "";
                   if (!liveHtmlContent && accumulatedOutput.includes('<') && accumulatedOutput.includes('>')) {
                     liveHtmlContent = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8"/>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="p-6 bg-white text-slate-800 font-sans">\n${accumulatedOutput}\n</body>\n</html>`;
                   }
@@ -4690,7 +4689,7 @@ export default function App() {
         } else if (taskType === 'site' || taskType === 'tool') {
           const toolFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           const canonicalHtml = toolFile || allAvailableFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
-          const selectedTool = canonicalHtml || { name: 'index.html', content: INITIAL_HTML_LOADING_SKELETON };
+          const selectedTool = canonicalHtml || { name: 'index.html', content: '' };
           setSelectedFile(selectedTool);
           setIndexFileSelected(true);
           setViewState('app');
@@ -4939,7 +4938,7 @@ export default function App() {
                 } else if (chatTaskType === 'site' || chatTaskType === 'tool') {
                   const toolFile = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   const canonicalHtml = toolFile || (chatData.sandboxFiles || []).find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
-                  fileToSelect = canonicalHtml || { name: 'index.html', content: INITIAL_HTML_LOADING_SKELETON };
+                  fileToSelect = canonicalHtml || { name: 'index.html', content: '' };
                   nextViewState = 'app';
                 } else if (chatTaskType === 'doc') {
                   fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
@@ -5872,7 +5871,7 @@ export default function App() {
                           envId={envId} 
                           projectName={projectName} 
                           onIframeRef={registerIframe}
-                          selectedFile={selectedFile || sandboxFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase() === 'index.html')) || { name: 'index.html', content: INITIAL_HTML_LOADING_SKELETON }}
+                          selectedFile={selectedFile || sandboxFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase() === 'index.html')) || { name: 'index.html', content: '' }}
                         />
                       ) : (
                         <NativeViewer 
