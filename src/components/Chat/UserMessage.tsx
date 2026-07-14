@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { themeTokens } from '../../utils/themeTokens';
 
 interface UserMessageProps {
   text: string;
@@ -12,11 +13,9 @@ export function UserMessage({ text, theme = 'light', isGroupChat = false }: User
   const isDark = theme === 'dark';
   return (
     <div 
-      className={`${
-        isDark 
-          ? 'bg-[#555a64] text-white' 
-          : (isGroupChat ? 'bg-white text-slate-800 border-0 shadow-none' : 'bg-[#f1f3f4] text-[#3c4043]')
-      } rounded-[24px] rounded-tr-sm p-4 text-xs sm:text-base font-normal leading-relaxed max-w-[90%] self-end`}
+      className={`${themeTokens.filledBg} ${
+        isDark ? 'text-[#E3E3E3]' : 'text-slate-800'
+      } rounded-[24px] p-4 text-xs sm:text-base font-normal leading-relaxed max-w-[90%] self-end`}
       style={{ fontFamily: '"Inter", sans-serif' }}
     >
       <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>

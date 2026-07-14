@@ -13,6 +13,14 @@ interface AppViewProps {
 export const AppView = memo(function AppView({ sandboxUrl, files, envId, projectName, theme = 'light', onIframeRef, selectedFile }: AppViewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  console.log("[AppView Component Debug] Rendering AppView with props:", {
+    sandboxUrl,
+    filesCount: files?.length,
+    selectedFile: selectedFile?.name,
+    envId,
+    projectName
+  });
+
   const srcDoc = useMemo(() => {
     if (files && files.length > 0) {
       const isHtml = (f: any) => f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase().endsWith('.htm'));

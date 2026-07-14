@@ -1362,6 +1362,15 @@ export default function App() {
 
     // Instant Split-Second UI Update: Render user message immediately (0ms delay)
     const userTextToDisplay = pillLabelText || text;
+    console.log("[HandleSendMessage Debug] Message received:", {
+      text,
+      userTextToDisplay,
+      isDirectExecution,
+      directTargetDomain,
+      viewState,
+      activeSpaceId,
+      activeChatId
+    });
     setMessages(prev => [...prev, { role: 'user', text: userTextToDisplay }]);
     setIsLoading(true);
 
@@ -1517,16 +1526,20 @@ export default function App() {
     if (isDirectExecution && directTargetDomain === 'tool') {
       activeTaskMode = 'app';
       setCurrentTask('app');
+      console.log("[HandleSendMessage Debug] Direct execution: Mode forced to 'app'");
     } else if (isDirectExecution && directTargetDomain === 'doc') {
       activeTaskMode = 'doc';
       setCurrentTask('doc');
+      console.log("[HandleSendMessage Debug] Direct execution: Mode forced to 'doc'");
     } else if (isDirectExecution && directTargetDomain === 'slide') {
       activeTaskMode = 'slide';
       setCurrentTask('slide');
+      console.log("[HandleSendMessage Debug] Direct execution: Mode forced to 'slide'");
     }
 
     if (!isDirectExecution && (!activeTaskMode || activeTaskMode === 'app' || activeTaskMode === 'general')) {
       try {
+        console.log("[HandleSendMessage Debug] Invoking /api/classify-intent for prompt:", text);
         const classRes = await fetch('/api/classify-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1534,6 +1547,7 @@ export default function App() {
         });
         if (classRes.ok) {
           intentClassification = await classRes.json();
+          console.log("[HandleSendMessage Debug] Intent classification response:", intentClassification);
           if (intentClassification.domain === 'doc' || intentClassification.domain === 'slide') {
             activeTaskMode = intentClassification.domain;
             setCurrentTask(intentClassification.domain);
@@ -2186,6 +2200,7 @@ export default function App() {
     }
 
     try {
+      console.log("[HandleSendMessage Debug] Posting to /api/vibe-code with prompt:", text, { activeEnvId, activeFileName: selectedFile?.name });
       const response = await fetch('/api/vibe-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2199,6 +2214,7 @@ export default function App() {
           members: members.length > 0 ? members : getTeamMembers()
         })
       });
+      console.log("[HandleSendMessage Debug] /api/vibe-code HTTP status:", response.status);
       // Do not clear ingestedFiles so drive saving works later
       
       const reader = response.body?.getReader();
