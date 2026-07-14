@@ -89,14 +89,50 @@ export function NativeViewer({
       liveEmbedUrl = `data:text/html;charset=utf-8,${encodeURIComponent(file.content)}`;
     }
 
+    if (isSlide) {
+      return (
+        <div className="w-full h-full bg-white flex items-center justify-center overflow-hidden relative select-none">
+          <div style={{ width: '108px', height: '70px', position: 'relative', overflow: 'hidden' }}>
+            <iframe 
+              src={liveEmbedUrl}
+              className="border-none bg-white shadow-none pointer-events-none"
+              style={{
+                width: '960px',
+                height: '540px',
+                transform: 'scale(0.1125)',
+                transformOrigin: 'top left',
+                position: 'absolute',
+                top: 0,
+                left: 0
+              }}
+              allow="autoplay; fullscreen"
+              title={file.name || 'Live Slide Preview'}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Docs & Sheets: Square container scaling
     return (
-      <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
-        <iframe 
-          src={liveEmbedUrl}
-          className="w-full h-full border-none bg-white shadow-none pointer-events-none"
-          allow="autoplay; fullscreen"
-          title={file.name || 'Live Artifact Preview'}
-        />
+      <div className="w-full h-full bg-white flex items-center justify-center overflow-hidden relative select-none">
+        <div style={{ width: '72px', height: '72px', position: 'relative', overflow: 'hidden' }}>
+          <iframe 
+            src={liveEmbedUrl}
+            className="border-none bg-white shadow-none pointer-events-none"
+            style={{
+              width: '600px',
+              height: '600px',
+              transform: 'scale(0.12)',
+              transformOrigin: 'top left',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
+            allow="autoplay; fullscreen"
+            title={file.name || 'Live Doc Preview'}
+          />
+        </div>
       </div>
     );
   }
