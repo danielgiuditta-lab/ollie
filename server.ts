@@ -125,7 +125,7 @@ async function startServer() {
     return aiClient;
   }
 
-  async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 3, delay = 1500): Promise<T> {
+  async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 4, delay = 2000): Promise<T> {
     try {
       return await fn();
     } catch (error: any) {
@@ -140,12 +140,15 @@ async function startServer() {
           error.message.includes("high demand") || 
           error.message.includes("overloaded") ||
           error.message.includes("ResourceExhausted") ||
-          error.message.includes("Unavailable")
+          error.message.includes("Unavailable") ||
+          error.message.includes("quota")
         ));
       
       if (retries > 0 && isRateLimitOrTransient) {
-        console.warn(`[Gemini API] Transient error encountered (status: ${status}). Retrying in ${delay}ms... Error: ${error.message || error}`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        const jitter = Math.floor(Math.random() * 800);
+        const actualDelay = delay + jitter;
+        console.warn(`[Gemini API] Rate limit / transient error encountered (status: ${status}). Retrying in ${actualDelay}ms... (${retries} attempts left)`);
+        await new Promise(resolve => setTimeout(resolve, actualDelay));
         return retryWithBackoff(fn, retries - 1, delay * 2);
       }
       throw error;
@@ -1751,13 +1754,18 @@ Example output format:
       if (!res.writableEnded && !res.destroyed) {
         res.end();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("[DocJourney Server] CRITICAL ERROR in doc-journey handler:", error);
+      const isQuotaError = String(error?.message || error).includes('429') || String(error?.message || error).includes('Quota') || String(error?.message || error).includes('ResourceExhausted');
+      const friendlyMsg = isQuotaError 
+        ? "The Gemini API rate limit or quota has been temporarily reached. Please wait a moment and try again."
+        : `An error occurred: ${error?.message || String(error)}`;
+
       if (!res.headersSent) {
-        res.status(500).json({ error: String(error) });
+        res.status(isQuotaError ? 429 : 500).json({ error: friendlyMsg });
       } else if (!res.writableEnded && !res.destroyed) {
         try {
-          res.write(`data: ${JSON.stringify({ error: String(error) })}\n\n`);
+          res.write(`data: ${JSON.stringify({ text: `<chat>${friendlyMsg}</chat>` })}\n\n`);
           res.end();
         } catch (e) {
           console.error("[DocJourney Server] Failed writing error to stream:", e);
@@ -1881,13 +1889,18 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
       if (!res.writableEnded && !res.destroyed) {
         res.end();
       }
-    } catch (error) {
-      console.error("Error calling Gemini API:", error);
+    } catch (error: any) {
+      console.error("Error calling Gemini API in vibe-code:", error);
+      const isQuotaError = String(error?.message || error).includes('429') || String(error?.message || error).includes('Quota') || String(error?.message || error).includes('ResourceExhausted');
+      const friendlyMsg = isQuotaError 
+        ? "The Gemini API rate limit or quota has been temporarily reached. Please wait a moment and try again."
+        : `An error occurred: ${error?.message || String(error)}`;
+
       if (!res.headersSent) {
-        res.status(500).json({ error: "Internal Server Error", details: String(error) });
+        res.status(isQuotaError ? 429 : 500).json({ error: friendlyMsg });
       } else if (!res.writableEnded && !res.destroyed) {
         try {
-          res.write(`data: ${JSON.stringify({ error: String(error) })}\n\n`);
+          res.write(`data: ${JSON.stringify({ text: `<chat>${friendlyMsg}</chat>` })}\n\n`);
           res.end();
         } catch (e) {
           console.error("Failed writing error to stream:", e);
