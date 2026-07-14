@@ -1,8 +1,14 @@
 import { useState, useMemo } from 'react';
 import { SUGGESTED_ITEMS } from '../components/Canvas/HomeLanding';
 
+export const MOCK_USER_PROFILE = {
+  email: 'mock-user@example.com',
+  name: 'Mock User',
+  picture: ''
+};
+
 export function useDriveSync() {
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfileState, setUserProfile] = useState<any>(null);
   const [driveFiles, setDriveFiles] = useState<any[]>([]);
   const [isDriveLoading, setIsDriveLoading] = useState(false);
   const [selectedDriveFiles, setSelectedDriveFiles] = useState<any[]>([]);
@@ -15,6 +21,12 @@ export function useDriveSync() {
 
   const [isIngesting, setIsIngesting] = useState(false);
   const [ingestedFiles, setIngestedFiles] = useState<any[]>([]);
+
+  const userProfile = useMemo(() => {
+    if (userProfileState) return userProfileState;
+    if (bypassAuth) return MOCK_USER_PROFILE;
+    return null;
+  }, [userProfileState, bypassAuth]);
 
   const isLoggedIn = useMemo(() => accessToken !== null || bypassAuth, [accessToken, bypassAuth]);
 

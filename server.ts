@@ -682,7 +682,7 @@ async function startServer() {
   app.get("/api/user-chats/:email", async (req, res) => {
     try {
       const { email } = req.params;
-      const isFiltered = email && email !== 'all' && email !== 'guest' && email !== 'undefined';
+      const cleanEmail = email ? email.trim().toLowerCase() : '';
       
       const getLocalChats = async () => {
         const chatsDir = path.join(process.cwd(), "data", "chats");
@@ -693,7 +693,8 @@ async function startServer() {
           try {
             const raw = await fs.promises.readFile(path.join(chatsDir, f), "utf-8");
             const parsed = JSON.parse(raw);
-            if (!isFiltered || parsed.userEmail === email) {
+            const chatEmail = (parsed.userEmail || '').trim().toLowerCase();
+            if (chatEmail === cleanEmail) {
               return parsed;
             }
           } catch (e) {
@@ -708,20 +709,16 @@ async function startServer() {
       if (firebaseConfig) {
         try {
           const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${firebaseConfig.firestoreDatabaseId}/documents:runQuery?key=${firebaseConfig.apiKey}`;
-          const queryBody = isFiltered ? {
+          const queryBody = {
             structuredQuery: {
               from: [{ collectionId: "chats" }],
               where: {
                 fieldFilter: {
                   field: { fieldPath: "userEmail" },
                   op: "EQUAL",
-                  value: { stringValue: email }
+                  value: { stringValue: cleanEmail }
                 }
               }
-            }
-          } : {
-            structuredQuery: {
-              from: [{ collectionId: "chats" }]
             }
           };
 

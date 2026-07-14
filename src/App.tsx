@@ -147,7 +147,7 @@ export default function App() {
       }
 
       let firestoreTasks: any[] = [];
-      const targetEmail = email || 'all';
+      const targetEmail = email || userProfile?.email || (bypassAuth ? 'mock-user@example.com' : 'mock-user@example.com');
       try {
         const fRes = await fetch(`/api/user-chats/${encodeURIComponent(targetEmail)}`);
         if (fRes.ok) {
@@ -249,8 +249,12 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Flush client cache and reset workspace arrays on session transition
+    workspaceCacheRef.current = {};
+    setRecentTasks([]);
+    setProjects([]);
     fetchGeminiTasks(accessToken, userProfile?.email);
-  }, [accessToken, userProfile?.email]);
+  }, [accessToken, userProfile?.email, bypassAuth]);
 
   useEffect(() => {
     const homeId = getHomeChatId();
