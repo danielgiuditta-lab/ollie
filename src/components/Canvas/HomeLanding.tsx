@@ -1450,7 +1450,7 @@ export function HomeLanding({
       setSelectedFile(defaultSelect);
     }
 
-    setViewState('files');
+    setViewState('projector');
   };
 
   // Convert mimeType into corresponding file icon used elsewhere in NullState List views

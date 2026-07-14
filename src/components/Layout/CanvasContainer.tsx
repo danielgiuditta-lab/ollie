@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppView } from '../Canvas/AppView';
 import { NativeViewer } from '../Canvas/NativeViewer';
+import { InferredTaskDiffView } from '../Canvas/InferredTaskDiffView';
 import { SpaceDashboard } from '../Canvas/SpaceDashboard';
 import { AISummaryView } from '../Canvas/AISummaryView';
 import { HomeLanding } from '../Canvas/HomeLanding';
@@ -75,6 +76,15 @@ export function CanvasContainer({
       <AppView
         sandboxUrl={sandboxUrl}
         envId={envId}
+      />
+    );
+  }
+
+  if ((viewState === 'projector' || viewState === 'public_projector') && selectedFile) {
+    return (
+      <InferredTaskDiffView
+        file={selectedFile}
+        theme={appTheme}
       />
     );
   }

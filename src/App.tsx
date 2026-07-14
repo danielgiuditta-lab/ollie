@@ -17,6 +17,7 @@ import { SpaceDashboard } from './components/Canvas/SpaceDashboard';
 import { HomeLanding, SUGGESTED_ITEMS, DEFAULT_TODO_ITEMS, cleanWorkspaceName } from './components/Canvas/HomeLanding';
 import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
+import { InferredTaskDiffView } from './components/Canvas/InferredTaskDiffView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
@@ -2908,7 +2909,7 @@ export default function App() {
   const handleProactiveTaskClick = (task: any) => {
     const spaceName = cleanWorkspaceName(task.workspace || task.sourceName || 'Workspace');
     setProjectName(spaceName);
-    setViewState('files');
+    setViewState('projector');
     setActiveProactiveTask(task);
 
     let resolvedSpaceId = 'home';
@@ -4766,7 +4767,7 @@ export default function App() {
           const isHtml = taskFile?.name?.toLowerCase().endsWith('.html') || taskFile?.name?.toLowerCase() === 'index.html';
           setSelectedFile(taskFile);
           setIndexFileSelected(isHtml);
-          setViewState(isHtml ? 'app' : 'files');
+          setViewState(isHtml ? 'app' : 'projector');
         } else {
           const resolved = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           const autoSelectFile = resolved || cached.selectedFile || cached.sandboxFiles?.[0] || null;
@@ -5936,16 +5937,11 @@ export default function App() {
                       )}
                     </div>
                   )}
-                  {viewState === 'projector' && (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-[#1E1F22] rounded-[32px] p-6 text-center">
-                       <p className="text-gray-500 dark:text-neutral-400 mb-4">Workspace is in presentation view. Open projector overlay to interact.</p>
-                       <button 
-                         onClick={() => setViewState('app')}
-                         className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold cursor-pointer transition-colors duration-250 border-none outline-none"
-                       >
-                         Open Edit Panel
-                       </button>
-                    </div>
+                  {(viewState === 'projector' || viewState === 'public_projector') && (
+                    <InferredTaskDiffView
+                      file={selectedFile || activeProactiveTask}
+                      theme={appTheme}
+                    />
                   )}
                   {viewState === 'dashboard' && (
                     <SpaceDashboard 
