@@ -1857,6 +1857,8 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
 - If the user explicitly asks for a Kanban board: keep it radically simple with 3 clean columns (To Do, In Progress, Done) and minimal text cards, assigning realistic workspace team members with real photo avatars.
 - Use only plain M3 colors (surface #ffffff, surface-container #f0f4f9, primary #0b57d0, outline #747775). ALWAYS use a plain white background (surface #ffffff / bg-white) for the root application body and main layout unless the user specifically requests a colored background. No gradients, decorative badges, or unnecessary embellishments! Keep it clean, minimal, and elegant.`;
 
+      console.log(`[Server /api/vibe-code] Received prompt (${prompt.length} chars). Env ID: ${env_id || 'remote'}. Context files: ${ingestedContext?.length || 0}`);
+      
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
@@ -1865,11 +1867,13 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
 
       const ai = getGenAI();
       if (!ai) {
+        console.error("[Server /api/vibe-code] ERROR: GEMINI_API_KEY is missing!");
         res.write(`data: ${JSON.stringify({ error: { message: "GEMINI_API_KEY is missing on this server instance." } })}\n\n`);
         res.end();
         return;
       }
 
+      console.log("[Server /api/vibe-code] Invoking ai.interactions.create with antigravity-preview-05-2026...");
       const interaction = await retryWithBackoff(() => ai.interactions.create(
         {
           agent: "antigravity-preview-05-2026",
@@ -1881,11 +1885,21 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
         { timeout: 300000 }
       ));
 
+      let eventCount = 0;
+      let totalBytesEmitted = 0;
       for await (const event of interaction) {
-        if (res.writableEnded || res.destroyed) break;
-        res.write(`data: ${JSON.stringify(event)}\n\n`);
+        if (res.writableEnded || res.destroyed) {
+          console.warn("[Server /api/vibe-code] Response stream closed by client mid-stream.");
+          break;
+        }
+        eventCount++;
+        const eventJson = JSON.stringify(event);
+        totalBytesEmitted += eventJson.length;
+        console.log(`[Server /api/vibe-code] Emitting event #${eventCount}: type=${(event as any).event_type || 'unknown'}, length=${eventJson.length} bytes`);
+        res.write(`data: ${eventJson}\n\n`);
       }
       
+      console.log(`[Server /api/vibe-code] Streaming completed. Emitted ${eventCount} events, total ${totalBytesEmitted} bytes.`);
       if (!res.writableEnded && !res.destroyed) {
         res.end();
       }

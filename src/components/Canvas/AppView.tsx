@@ -225,6 +225,7 @@ export const AppView = memo(function AppView({ sandboxUrl, files, envId, project
 
         return content;
     }
+    console.log(`[AppView] activeHtmlFile is missing or content is empty. activeHtmlFile: ${activeHtmlFile?.name || 'none'}, content length: ${activeHtmlFile?.content?.length || 0}. Returning undefined srcDoc.`);
     return undefined;
   }, [files, selectedFile]);
 

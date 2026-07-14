@@ -2283,8 +2283,9 @@ export default function App() {
           const dataStr = line.replace('data: ', '');
           try {
             const event = JSON.parse(dataStr);
+            console.log(`[VibeCode Stream] Event received: ${event.event_type || 'unknown_event'} (step_index: ${event.step_index})`);
             if (event.error) {
-              console.error("Stream event error:", event.error);
+              console.error("[VibeCode Stream] Event contained error:", event.error);
               flushMessagesUpdate(true);
               setMessages(prev => [...prev, { role: 'bot', text: 'Error from server: ' + JSON.stringify(event.error) }]);
               continue;
@@ -2316,6 +2317,7 @@ export default function App() {
 
                  if (deltaText) {
                     accumulatedOutput += deltaText;
+                    console.log(`[VibeCode Stream] Step ${event.step_index} delta (+${deltaText.length} chars). Total accumulated: ${accumulatedOutput.length} chars`);
                     const displayOutput = accumulatedOutput.replace(/```[A-Za-z]*\s*\n?[\s\S]*/i, '').trim();
                     currentText = displayOutput || "Generating assets...";
                  }
@@ -2323,6 +2325,7 @@ export default function App() {
                  scheduleMessagesUpdate();
                } else if (deltaText) {
                  accumulatedOutput += deltaText;
+                 console.log(`[VibeCode Stream] Unindexed delta (+${deltaText.length} chars). Total accumulated: ${accumulatedOutput.length} chars`);
                  const displayOutput = accumulatedOutput.replace(/```[A-Za-z]*\s*\n?[\s\S]*/i, '').trim();
                  currentText = displayOutput || "Generating assets...";
                  pendingMessageUpdate = { steps: [...currentSteps], text: currentText };
@@ -2339,6 +2342,7 @@ export default function App() {
                   }
 
                   if (liveHtmlContent && liveHtmlContent.length > 30) {
+                    console.log(`[VibeCode Stream] Live HTML pattern matched! Live content length: ${liveHtmlContent.length} chars. Updating sandboxFiles & selectedFile...`);
                     const targetId = targetChatId || activeChatId || 'sandbox';
                     setSandboxFiles(prev => {
                       const idx = prev.findIndex(f => f && f.name && f.name.toLowerCase() === 'index.html');
