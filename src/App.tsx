@@ -4701,7 +4701,7 @@ export default function App() {
           } else if (inferredTaskFile) {
             setSelectedFile(inferredTaskFile);
             setIndexFileSelected(false);
-            setViewState('files');
+            setViewState('projector');
           } else {
             setSelectedFile(null);
             setIndexFileSelected(false);
@@ -4730,9 +4730,18 @@ export default function App() {
 
         if (specificFileMatch && !specificFileMatch.type?.includes('space')) {
           const isHtml = specificFileMatch.name?.toLowerCase().endsWith('.html') || specificFileMatch.name?.toLowerCase() === 'index.html';
+          const isInferredDiff = Boolean(
+            specificFileMatch.isInferredTask ||
+            specificFileMatch.isProactiveDraft ||
+            specificFileMatch.isProactive ||
+            specificFileMatch.taskType === 'inferred' ||
+            taskType === 'inferred' ||
+            taskType === 'tracking' ||
+            activeProactiveTask
+          );
           setSelectedFile(specificFileMatch);
           setIndexFileSelected(isHtml);
-          setViewState(isHtml ? 'app' : 'files');
+          setViewState(isInferredDiff ? 'projector' : (isHtml ? 'app' : 'files'));
         } else if (taskType === 'site' || taskType === 'tool') {
           const toolFile = resolveArtifactForChat(allAvailableFiles, taskContext, taskType);
           const canonicalHtml = toolFile || allAvailableFiles.find((f: any) => f && f.name && (f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('.html')));
@@ -4998,7 +5007,7 @@ export default function App() {
                   nextViewState = 'files';
                 } else if (chatTaskType === 'inferred' || chatTaskType === 'tracking') {
                   fileToSelect = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
-                  nextViewState = 'files';
+                  nextViewState = 'projector';
                 } else {
                   const resolved = resolveArtifactForChat(allDbAvailableFiles, { ...matchingTask, ...chatData }, chatTaskType);
                   fileToSelect = resolved || chatData.sandboxFiles[0] || null;
@@ -5070,9 +5079,10 @@ export default function App() {
 
         if (targetArtifact) {
           const isHtml = targetArtifact.name?.toLowerCase().endsWith('.html') || targetArtifact.name?.toLowerCase() === 'index.html';
+          const isTodoDiff = Boolean(isTodo || targetArtifact.isProactiveDraft || targetArtifact.isProactive || targetArtifact.taskType === 'inferred' || targetArtifact.isInferredTask);
           setSelectedFile(targetArtifact);
           setIndexFileSelected(isHtml);
-          setViewState(isHtml ? 'app' : 'files');
+          setViewState(isTodoDiff ? 'projector' : (isHtml ? 'app' : 'files'));
           setMessages([]);
 
           const newCacheEntry = {
@@ -5084,7 +5094,7 @@ export default function App() {
             projectName: projectName,
             selectedFile: targetArtifact,
             indexFileSelected: isHtml,
-            viewState: (isHtml ? 'app' : 'files') as any,
+            viewState: (isTodoDiff ? 'projector' : (isHtml ? 'app' : 'files')) as any,
             taskType: isTodo ? 'inferred' : (targetArtifact.taskType || 'site'),
             type: isTodo ? 'inferred' : (targetArtifact.type || 'site'),
             associatedFileId: targetArtifact.id || targetArtifact.driveId,

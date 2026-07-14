@@ -84,8 +84,15 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
     content: file?.content || file?.draftData?.draftContent || `# Proposed Update\n\n${taskTitle}\n\nRefined problem framing with concise language applied.`
   };
 
-  const col1Description = taskDesc.includes('Simon') ? taskDesc : 'Simon gave feedback to make the problem framing more concise.';
-  const col2Description = taskTitle.includes('concise') ? taskTitle : 'I made the language more concise in the problem framing section.';
+  const col1Description = file?.originalContext || file?.draftData?.originalContext ||
+    ((file?.description?.includes('Mirjam') || file?.title?.includes('Mirjam') || file?.name?.includes('Mirjam'))
+      ? "Mirjam asked a question about prototype testing in the Ollie UXR document."
+      : (file?.description || file?.originalContent || 'Simon gave feedback to make the problem framing more concise.'));
+
+  const col2Description = file?.summaryOfChanges || file?.draftData?.summaryOfChanges || file?.descriptionDone ||
+    ((file?.description?.includes('Mirjam') || file?.title?.includes('Mirjam') || file?.name?.includes('Mirjam'))
+      ? "I drafted a reply to Mirjam's mention regarding prototype feature exploration and feedback targets."
+      : (file?.title || 'I made the language more concise in the problem framing section.'));
 
   return (
     <div className={`w-full h-full flex flex-col items-center justify-start p-4 overflow-y-auto transition-colors duration-300 ${
@@ -127,7 +134,7 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
           </p>
         </div>
 
-        {/* Column 2: Proposal */}
+        {/* Column 2: Suggested Update */}
         <div className="flex flex-col min-w-0">
           {/* Header Title: Google Sans Light 22/28 */}
           <h2 
@@ -135,7 +142,7 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
               isDark ? 'text-white' : 'text-[#1B1C1D]'
             }`}
           >
-            Proposal
+            Suggested Update
           </h2>
 
           {/* Artifact Container: 16px top & bottom margin padding surround */}
