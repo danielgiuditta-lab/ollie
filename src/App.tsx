@@ -1343,7 +1343,7 @@ export default function App() {
     ]);
   };
 
-  const handleSendMessage = async (text: string, aiMode?: boolean, contextFiles?: any[]) => {
+  const handleSendMessage = async (text: string, aiMode?: boolean, contextFiles?: any[], isDirectExecution?: boolean) => {
     let resolvedFolderId = activeSpaceId;
     let targetChatId = activeChatId;
     if (isHomeChatId(resolvedFolderId)) {
@@ -1505,7 +1505,7 @@ export default function App() {
     let activeTaskMode = currentTask;
     let intentClassification: any = null;
 
-    if (!activeTaskMode || activeTaskMode === 'app' || activeTaskMode === 'general') {
+    if (!isDirectExecution && (!activeTaskMode || activeTaskMode === 'app' || activeTaskMode === 'general')) {
       try {
         const classRes = await fetch('/api/classify-intent', {
           method: 'POST',
@@ -1524,7 +1524,7 @@ export default function App() {
       }
     }
 
-    if (intentClassification?.domain === 'tool' && intentClassification.proposalText) {
+    if (!isDirectExecution && intentClassification?.domain === 'tool' && intentClassification.proposalText) {
       const buildPrompt = intentClassification.archetypePrompt || text;
       const pillText = intentClassification.pillLabel || 'Build Tool';
 
@@ -1538,7 +1538,7 @@ export default function App() {
             {
               label: pillText,
               onClick: () => {
-                handleSendMessage(buildPrompt, false, contextFiles);
+                handleSendMessage(buildPrompt, false, contextFiles, true);
               }
             }
           ]

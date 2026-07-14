@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Folder, FolderPlus, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { FileText, Folder, FolderPlus, ArrowRight, CheckCircle2, Zap } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import ReactMarkdown from 'react-markdown';
 import { SourceChip } from '../Shared/SourceChip';
@@ -753,18 +753,27 @@ export function BotMessage({
         </div>
       )}
 
-      {/* Dynamic proposal action pills */}
+      {/* Dynamic proposal action pills matching signature pill design */}
       {actionPills && actionPills.length > 0 && (
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
           {actionPills.map((pill, i) => (
             <button
               key={i}
               type="button"
               onClick={pill.onClick}
-              className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full transition-all border border-blue-200/60 dark:border-blue-700/50 shadow-2xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+              className={`w-fit max-w-full flex items-center gap-3 py-3 px-5 rounded-full transition-colors duration-200 text-left cursor-pointer border-none shadow-none pointer-events-auto active:scale-95 ${
+                isGroupChat
+                  ? 'bg-white hover:bg-slate-50 text-slate-800 border-0 shadow-xs'
+                  : 'bg-[#f8fafd] hover:bg-[#f0f4f9] dark:bg-[#2B2D31] dark:hover:bg-[#35373C]'
+              }`}
             >
-              <span>⚡</span>
-              <span>{pill.label}</span>
+              <Zap size={18} className="shrink-0 text-slate-500 dark:text-neutral-400" />
+              <span 
+                className="text-sm font-medium text-slate-800 dark:text-neutral-200 truncate"
+                style={{ fontFamily: '"Google Sans Flex", "Google Sans", "Product Sans", "Inter", sans-serif' }}
+              >
+                {pill.label}
+              </span>
             </button>
           ))}
         </div>
