@@ -1839,8 +1839,17 @@ export default function App() {
 
     // If typing/submitting on the Home screen or Space Dashboard, transition immediately to the workspace canvas
     if ((viewState === 'home' || viewState === 'dashboard' || viewState === 'null') && !activeAiMode) {
-      setSandboxFiles([]);
-      setSelectedFile(null);
+      const initialIndexFile = { 
+        name: 'index.html', 
+        content: '', 
+        type: 'code', 
+        mimeType: 'text/html', 
+        id: `${targetChatId || activeChatId || 'sandbox'}-file-0` 
+      };
+      console.log("[VibeCode Debug] Transitioning to app view & pre-seeding index.html:", initialIndexFile.id);
+      setSandboxFiles([initialIndexFile]);
+      setSelectedFile(initialIndexFile);
+      setIndexFileSelected(true);
       setViewState('app');
       setActiveSidebar('gemini');
     }
@@ -5786,19 +5795,19 @@ export default function App() {
                       accessToken={accessToken}
                     />
                   )}
-                  {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && selectedFile && (
+                  {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (selectedFile || viewState === 'app' || isLoading) && (
                     <div 
                       className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200 p-4" 
                       id="canvas-unified-workspace"
                     >
-                      {(((selectedFile?.name?.toLowerCase().endsWith('.html') || selectedFile?.name?.toLowerCase().endsWith('.htm')) && viewMode === 'preview') || (indexFileSelected && viewMode === 'preview')) ? (
+                      {(((selectedFile?.name?.toLowerCase().endsWith('.html') || selectedFile?.name?.toLowerCase().endsWith('.htm')) && viewMode === 'preview') || (indexFileSelected && viewMode === 'preview') || (viewState === 'app' && viewMode === 'preview')) ? (
                         <AppView 
                           sandboxUrl={sandboxUrl} 
                           files={sandboxFiles} 
                           envId={envId} 
                           projectName={projectName} 
                           onIframeRef={registerIframe}
-                          selectedFile={selectedFile}
+                          selectedFile={selectedFile || sandboxFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase() === 'index.html')) || { name: 'index.html', content: '' }}
                         />
                       ) : (
                         <NativeViewer 
