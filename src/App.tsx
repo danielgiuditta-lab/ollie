@@ -1520,10 +1520,18 @@ export default function App() {
       return;
     }
 
-    let activeTaskMode = currentTask;
+    const currentChatSession = recentTasks.find(t => t.id === (targetChatId || activeChatId));
+    const isToolOrSiteSession = directTargetDomain === 'tool' || currentChatSession?.taskType === 'site' || currentChatSession?.taskType === 'tool' || currentChatSession?.type === 'site';
+
+    let activeTaskMode: any = currentTask;
+    if (isToolOrSiteSession) {
+      activeTaskMode = 'app';
+      setCurrentTask('app');
+    }
+
     let intentClassification: any = null;
 
-    if (isDirectExecution && directTargetDomain === 'tool') {
+    if (isDirectExecution && (directTargetDomain === 'tool')) {
       activeTaskMode = 'app';
       setCurrentTask('app');
       console.log("[HandleSendMessage Debug] Direct execution: Mode forced to 'app'");
@@ -1537,7 +1545,7 @@ export default function App() {
       console.log("[HandleSendMessage Debug] Direct execution: Mode forced to 'slide'");
     }
 
-    if (!isDirectExecution && (!activeTaskMode || activeTaskMode === 'app' || activeTaskMode === 'general')) {
+    if (!isDirectExecution && !isToolOrSiteSession && (!activeTaskMode || activeTaskMode === 'app' || activeTaskMode === 'general')) {
       try {
         console.log("[HandleSendMessage Debug] Invoking /api/classify-intent for prompt:", text);
         const classRes = await fetch('/api/classify-intent', {
@@ -1551,6 +1559,9 @@ export default function App() {
           if (intentClassification.domain === 'doc' || intentClassification.domain === 'slide') {
             activeTaskMode = intentClassification.domain;
             setCurrentTask(intentClassification.domain);
+          } else if (intentClassification.domain === 'tool' || intentClassification.domain === 'app' || intentClassification.domain === 'site') {
+            activeTaskMode = 'app';
+            setCurrentTask('app');
           }
         }
       } catch (err) {
@@ -1558,7 +1569,15 @@ export default function App() {
       }
     }
 
-    if (!isDirectExecution && intentClassification?.domain === 'tool' && intentClassification.proposalText) {
+    const textLower = text.toLowerCase();
+    const isToolBuildingPrompt = ['kanban', 'board', 'custom tool', 'build a tool', 'build a site', 'build an app', 'create an app', 'create a tool', 'tracker tool', 'vibe code'].some(kw => textLower.includes(kw));
+
+    if (isToolBuildingPrompt) {
+      activeTaskMode = 'app';
+      setCurrentTask('app');
+    }
+
+    if (!isDirectExecution && intentClassification?.domain === 'tool' && intentClassification.proposalText && !isToolBuildingPrompt && !isToolOrSiteSession) {
       const buildPrompt = intentClassification.archetypePrompt || text;
       const pillText = intentClassification.pillLabel || 'Build Tool';
 
@@ -1581,7 +1600,7 @@ export default function App() {
       return;
     }
 
-    const isDocJourneyMode = (activeTaskMode === 'doc' || activeTaskMode === 'slide' || (activeTaskMode !== 'app' && (!!selectedFile?.isDocJourney || (sandboxFiles.length > 0 && sandboxFiles.some(f => f.isDocJourney || f.name === 'document.doc' || f.name === 'presentation.gslides')))));
+    const isDocJourneyMode = (activeTaskMode === 'doc' || activeTaskMode === 'slide') && !isToolOrSiteSession && !isToolBuildingPrompt;
 
     if (isDocJourneyMode) {
       setMessages(prev => [...prev, { role: 'bot', text: '' }]);
@@ -2376,8 +2395,8 @@ export default function App() {
                       return [liveFile, ...prev];
                     });
                     setSelectedFile(prev => {
-                      if (!prev || prev.name?.toLowerCase() === 'index.html') {
-                        if (prev?.content === liveHtmlContent) return prev;
+                      if (!prev || prev.name?.toLowerCase() === 'index.html' || prev.name?.toLowerCase() === 'document.doc' || !prev.content || isToolBuildingPrompt || isToolOrSiteSession) {
+                        if (prev?.content === liveHtmlContent && prev?.name?.toLowerCase() === 'index.html') return prev;
                         return {
                           name: 'index.html',
                           type: 'code',
@@ -2615,16 +2634,7 @@ export default function App() {
                   });
                   const indexHtmlFile = deduplicatedParsedFiles.find(f => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase().endsWith('/index.html'));
 
-                  if (gWorkspaceFile) {
-                    const mappedFile = {
-                      ...gWorkspaceFile,
-                      mimeType: getMimeTypeFromFileName(gWorkspaceFile.name, gWorkspaceFile.mimeType),
-                    };
-                    console.log("[VibeCode] Focus selected workspace file:", mappedFile.name);
-                    setSelectedFile(mappedFile);
-                    setIndexFileSelected(false);
-                    setViewState('app');
-                  } else if (indexHtmlFile) {
+                  if (indexHtmlFile) {
                     const mappedFile = {
                       ...indexHtmlFile,
                       mimeType: getMimeTypeFromFileName(indexHtmlFile.name, indexHtmlFile.mimeType),
@@ -2632,6 +2642,15 @@ export default function App() {
                     console.log("[VibeCode] Focus selected index.html file:", mappedFile.name, `(length: ${mappedFile.content?.length})`);
                     setSelectedFile(mappedFile);
                     setIndexFileSelected(true);
+                    setViewState('app');
+                  } else if (gWorkspaceFile) {
+                    const mappedFile = {
+                      ...gWorkspaceFile,
+                      mimeType: getMimeTypeFromFileName(gWorkspaceFile.name, gWorkspaceFile.mimeType),
+                    };
+                    console.log("[VibeCode] Focus selected workspace file:", mappedFile.name);
+                    setSelectedFile(mappedFile);
+                    setIndexFileSelected(false);
                     setViewState('app');
                   } else {
                     const mappedFile = {

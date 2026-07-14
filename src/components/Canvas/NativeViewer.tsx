@@ -50,6 +50,8 @@ interface NativeViewerProps {
   onProactiveTaskClick?: (task: any) => void;
 }
 
+const isIframeViewer = false;
+
 export function NativeViewer({ 
   file, 
   onSave, 
@@ -62,7 +64,7 @@ export function NativeViewer({
   todoItems,
   onProactiveTaskClick
 }: NativeViewerProps) {
-  if (isPreviewCard) {
+  if (isPreviewCard && isIframeViewer) {
     const rawId = file.driveId || file.id || '';
     const cleanId = String(rawId)
       .replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '')
@@ -401,8 +403,6 @@ export function NativeViewer({
     )
   );
   
-  const isIframeViewer = false;
-
   const isRunnable = nameLower.endsWith('.html') || nameLower.endsWith('.md') || nameLower.endsWith('.markdown');
 
   const isDocFile = 
@@ -818,19 +818,89 @@ export function NativeViewer({
           ? `https://docs.google.com/presentation/d/${slideDriveId}/preview?rm=minimal` 
           : (file.embedUrl || file.previewUrl || file.url);
 
+        if (isIframeViewer && nativeSlideUrl) {
+          return (
+            <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+              <iframe 
+                src={nativeSlideUrl}
+                className="w-full h-full border-none bg-white shadow-none pointer-events-none"
+                allow="autoplay; fullscreen"
+                title={file.name}
+              />
+            </div>
+          );
+        }
+
+        const contentStr = file.content || '';
+        let rawSlides = contentStr.split(/(?=\n# )|(?=^# )|\n---/g).filter((s: string) => s.trim().length > 0);
+        if (rawSlides.length === 0) {
+          rawSlides = [contentStr || `# ${file.name}\n\n- Presentation slide deck` + (file.description ? `\n- ${file.description}` : '')];
+        }
+
+        const safeIndex = Math.min(activeSlideIndex, rawSlides.length - 1);
+        const currentSlideContent = rawSlides[safeIndex] || rawSlides[0] || '';
+
         return (
-          <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
-            <iframe 
-              src={nativeSlideUrl}
-              className="w-full h-full border-none bg-white shadow-none pointer-events-none"
-              allow="autoplay; fullscreen"
-              title={file.name}
-            />
+          <div className="w-full h-full bg-[#18191B] flex flex-col overflow-hidden relative select-text font-sans text-white">
+            {!hideHeader && (
+              <div className="shrink-0 flex items-center justify-between px-6 py-3.5 border-b border-neutral-800 bg-[#1E1F22] text-white">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded bg-amber-500/20 text-amber-400">
+                    <FileText size={16} />
+                  </div>
+                  <span className="font-semibold text-xs text-gray-200">{file.name}</span>
+                  <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">Google Slides</span>
+                </div>
+                {onSave && (
+                  <button
+                    onClick={() => onSave(file)}
+                    className="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition flex items-center gap-2 cursor-pointer"
+                  >
+                    <HardDrive size={13} />
+                    Save to Drive
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className="flex-1 w-full h-full p-8 flex flex-col items-center justify-center overflow-auto bg-[#121315]">
+              <div className="w-full max-w-4xl aspect-[16/9] bg-white text-slate-900 rounded-2xl shadow-2xl p-12 flex flex-col justify-between border border-neutral-800 relative overflow-hidden">
+                <div className="markdown-body prose prose-slate max-w-none text-slate-800 text-[18px] leading-relaxed">
+                  <ReactMarkdown>{currentSlideContent}</ReactMarkdown>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-400 font-medium">
+                  <span>{file.name}</span>
+                  <span>Slide {safeIndex + 1} of {rawSlides.length}</span>
+                </div>
+              </div>
+
+              {rawSlides.length > 1 && (
+                <div className="flex items-center gap-4 mt-6 bg-[#1E1F22] px-6 py-2.5 rounded-full border border-neutral-800 shadow-lg">
+                  <button
+                    disabled={safeIndex === 0}
+                    onClick={() => setActiveSlideIndex(Math.max(0, safeIndex - 1))}
+                    className="p-1.5 rounded-full hover:bg-neutral-800 text-neutral-300 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <span className="text-xs font-semibold text-neutral-300 px-2">
+                    {safeIndex + 1} / {rawSlides.length}
+                  </span>
+                  <button
+                    disabled={safeIndex >= rawSlides.length - 1}
+                    onClick={() => setActiveSlideIndex(Math.min(rawSlides.length - 1, safeIndex + 1))}
+                    className="p-1.5 rounded-full hover:bg-neutral-800 text-neutral-300 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         );
       }
 
-      if (isGoogleDoc) {
+      if (isGoogleDoc && isIframeViewer) {
         const docDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = docDriveId && isRealDriveId(docDriveId);
         const nativeDocUrl = hasNativeUrl 
@@ -849,35 +919,27 @@ export function NativeViewer({
             </div>
           );
         }
-
-        return (
-          <div className="w-full h-full bg-[#f8f9fa] dark:bg-[#161719] flex flex-col overflow-y-auto p-8 select-text font-sans">
-            <div className="w-[794px] min-h-[1024px] mx-auto bg-white dark:bg-[#1E1F22] shadow-md border border-slate-200 dark:border-[#2B2D31] rounded-[2px] p-[80px] text-left leading-[1.8] text-[16px] text-2c3e50 font-sans">
-              <div className="markdown-body prose max-w-none text-slate-800 dark:text-slate-100 focus:outline-none font-sans">
-                <ReactMarkdown>{file.content || ''}</ReactMarkdown>
-              </div>
-            </div>
-          </div>
-        );
       }
 
-      if (isGoogleSheet) {
+      if (isGoogleSheet && isIframeViewer) {
         const sheetDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = sheetDriveId && isRealDriveId(sheetDriveId);
         const nativeSheetUrl = hasNativeUrl 
           ? `https://docs.google.com/spreadsheets/d/${sheetDriveId}/preview` 
           : (file.embedUrl || file.previewUrl || file.url);
 
-        return (
-          <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
-            <iframe 
-              src={nativeSheetUrl}
-              className="w-full h-full border-none bg-white shadow-none pointer-events-none"
-              allow="autoplay"
-              title={file.name}
-            />
-          </div>
-        );
+        if (nativeSheetUrl) {
+          return (
+            <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+              <iframe 
+                src={nativeSheetUrl}
+                className="w-full h-full border-none bg-white shadow-none pointer-events-none"
+                allow="autoplay"
+                title={file.name}
+              />
+            </div>
+          );
+        }
       }
     }
 
@@ -1089,8 +1151,8 @@ export function NativeViewer({
     }
 
     // 5. Document/Markdown Premium Reader View
-    if (isDocFile && file.content && mode === 'preview') {
-      const lines = file.content.split('\n');
+    if (isDocFile && mode === 'preview') {
+      const lines = (file.content || '').split('\n');
       let title = file.name.replace(/\.[a-zA-Z]+$/, '');
       title = title.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 

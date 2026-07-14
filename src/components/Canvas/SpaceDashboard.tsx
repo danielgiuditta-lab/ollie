@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Edit2, Trash2, Pin, Plus } from 'lucide-react';
+import { MoreHorizontal, Edit2, Trash2, Pin, Plus, Columns3, LayoutGrid, List } from 'lucide-react';
 import { AppView } from './AppView';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
@@ -218,19 +218,80 @@ export function SpaceDashboard({
       const rect = e.currentTarget.getBoundingClientRect();
       const offsetY = e.clientY - rect.top;
       const offsetX = e.clientX - rect.left;
-      const relY = offsetY / rect.height;
-      const relX = offsetX / rect.width;
+      const relY = Math.max(0, Math.min(1, offsetY / rect.height));
+      const relX = Math.max(0, Math.min(1, offsetX / rect.width));
 
-      if (relY < 0.25) {
-        setDragOverPosition('top');
-      } else if (relY > 0.75) {
-        setDragOverPosition('bottom');
-      } else if (relX < 0.5) {
-        setDragOverPosition('left');
+      const distLeft = relX;
+      const distRight = 1 - relX;
+      const distTop = relY;
+      const distBottom = 1 - relY;
+
+      const minHoriz = Math.min(distLeft, distRight);
+      const minVert = Math.min(distTop, distBottom);
+
+      if (minHoriz < minVert) {
+        if (distLeft < distRight) {
+          setDragOverPosition('left');
+        } else {
+          setDragOverPosition('right');
+        }
       } else {
-        setDragOverPosition('right');
+        if (distTop < distBottom) {
+          setDragOverPosition('top');
+        } else {
+          setDragOverPosition('bottom');
+        }
       }
     }
+  };
+
+  const handleContainerDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    const sourceId = draggedCardId || activeMenuCardId;
+    if (!sourceId || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const relX = (e.clientX - rect.left) / rect.width;
+
+    if (relX < 0.15) {
+      setDragOverCardId('container-left');
+      setDragOverPosition('left');
+    } else if (relX > 0.85) {
+      setDragOverCardId('container-right');
+      setDragOverPosition('right');
+    } else {
+      setDragOverCardId('container-cols');
+      setDragOverPosition('right');
+    }
+  };
+
+  const handleContainerDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const sourceId = draggedCardId || activeMenuCardId;
+    if (!sourceId) {
+      setDragOverCardId(null);
+      setDragOverPosition(null);
+      return;
+    }
+
+    const newOrder = [...pinnedArtifactIds];
+    const sourceIndex = newOrder.indexOf(sourceId);
+    if (sourceIndex !== -1) {
+      newOrder.splice(sourceIndex, 1);
+    }
+
+    if (dragOverCardId === 'container-left') {
+      newOrder.unshift(sourceId);
+    } else {
+      newOrder.push(sourceId);
+    }
+
+    onReorderPins(newOrder);
+    setDashboardLayoutMode('cols');
+
+    setDragOverCardId(null);
+    setDragOverPosition(null);
+    setDraggedCardId(null);
+    setActiveMenuCardId(null);
   };
 
   const handleDrop = (e: React.DragEvent, targetId: string) => {
@@ -243,13 +304,18 @@ export function SpaceDashboard({
       return;
     }
 
-    const currentIndex = pinnedArtifactIds.indexOf(sourceId);
-    const targetIndex = pinnedArtifactIds.indexOf(targetId);
-    if (currentIndex !== -1 && targetIndex !== -1) {
-      const newOrder = [...pinnedArtifactIds];
-      const temp = newOrder[currentIndex];
-      newOrder[currentIndex] = newOrder[targetIndex];
-      newOrder[targetIndex] = temp;
+    const newOrder = [...pinnedArtifactIds];
+    const sourceIndex = newOrder.indexOf(sourceId);
+    if (sourceIndex !== -1) {
+      newOrder.splice(sourceIndex, 1);
+    }
+
+    let targetIndex = newOrder.indexOf(targetId);
+    if (targetIndex !== -1) {
+      if (dragOverPosition === 'right' || dragOverPosition === 'bottom') {
+        targetIndex += 1;
+      }
+      newOrder.splice(targetIndex, 0, sourceId);
       onReorderPins(newOrder);
     }
 
@@ -329,10 +395,59 @@ export function SpaceDashboard({
   }
 
   return (
-    <div 
-      ref={containerRef}
-      className={`w-full h-full grid ${gridLayoutClass} gap-6 px-6 pt-4 pb-6 overflow-y-auto select-none items-stretch justify-stretch`}
-    >
+    <div className="w-full h-full flex flex-col min-h-0 relative select-none">
+      {/* Top Controls: Layout Mode Switcher */}
+      <div className="w-full flex justify-end px-6 pt-3 pb-1 shrink-0 z-20">
+        <div className="flex items-center gap-1 bg-slate-100/90 dark:bg-[#1C1D20]/90 p-1 rounded-full border border-slate-200/70 dark:border-white/10 text-xs shadow-2xs backdrop-blur-md">
+          <button 
+            type="button"
+            onClick={() => setDashboardLayoutMode('cols')}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${dashboardLayoutMode === 'cols' ? 'bg-white dark:bg-neutral-700 text-[#3186FF] dark:text-blue-400 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+            title="Columns Layout"
+          >
+            <Columns3 size={13} />
+            <span>Columns</span>
+          </button>
+          <button 
+            type="button"
+            onClick={() => setDashboardLayoutMode('rows')}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${dashboardLayoutMode === 'rows' ? 'bg-white dark:bg-neutral-700 text-[#3186FF] dark:text-blue-400 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+            title="Rows Layout"
+          >
+            <List size={13} />
+            <span>Rows</span>
+          </button>
+          <button 
+            type="button"
+            onClick={() => setDashboardLayoutMode('auto')}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${dashboardLayoutMode === 'auto' ? 'bg-white dark:bg-neutral-700 text-[#3186FF] dark:text-blue-400 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+            title="Auto Grid Layout"
+          >
+            <LayoutGrid size={13} />
+            <span>Auto</span>
+          </button>
+        </div>
+      </div>
+
+      <div 
+        ref={containerRef}
+        onDragOver={handleContainerDragOver}
+        onDragLeave={(e) => {
+          if (!containerRef.current?.contains(e.relatedTarget as Node)) {
+            setDragOverCardId(null);
+            setDragOverPosition(null);
+          }
+        }}
+        onDrop={handleContainerDrop}
+        className={`w-full flex-1 grid ${gridLayoutClass} gap-6 px-6 pt-2 pb-6 overflow-y-auto items-stretch justify-stretch relative`}
+      >
+        {/* Dynamic Container Side Indicators */}
+        {dragOverCardId === 'container-left' && (
+          <div className="absolute left-2 top-2 bottom-6 w-2 bg-[#3186FF] rounded-full shadow-[0_0_16px_rgba(49,134,255,1)] z-40 pointer-events-none animate-pulse" />
+        )}
+        {dragOverCardId === 'container-right' && (
+          <div className="absolute right-2 top-2 bottom-6 w-2 bg-[#3186FF] rounded-full shadow-[0_0_16px_rgba(49,134,255,1)] z-40 pointer-events-none animate-pulse" />
+        )}
       {pinnedFiles.map((file, idx) => {
         if (!file) return null;
         const fileId = file.id || file.driveId || 'file-' + idx;
@@ -548,6 +663,8 @@ export function SpaceDashboard({
           theme={theme}
         />
       )}
+      </div>
     </div>
   );
 }
+
