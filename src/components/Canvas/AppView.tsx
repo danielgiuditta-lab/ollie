@@ -247,12 +247,7 @@ export const AppView = memo(function AppView({ sandboxUrl, files, envId, project
   return (
     <div className="w-full h-full p-0 overflow-hidden">
       {!showIframe ? (
-        <div className={`w-full h-full ${isDark ? 'bg-[#131416] text-gray-400' : 'bg-white text-gray-400'} flex items-center justify-center`}>
-          <div className="flex flex-col items-center gap-3">
-            <span className="material-symbols-rounded text-3xl animate-spin text-blue-500">sync</span>
-            <p className="text-sm font-medium">Waiting for application code generation...</p>
-          </div>
-        </div>
+        <div className={`w-full h-full ${isDark ? 'bg-[#131416]' : 'bg-white'}`} />
       ) : (
         <iframe
           ref={(el) => {

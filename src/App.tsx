@@ -1860,11 +1860,10 @@ export default function App() {
         mimeType: 'text/html', 
         id: `${targetChatId || activeChatId || 'sandbox'}-file-0` 
       };
-      console.log("[VibeCode Debug] Transitioning to app view & pre-seeding index.html:", initialIndexFile.id);
+      console.log("[VibeCode Debug] Pre-seeding initialIndexFile structure while generation proceeds:", initialIndexFile.id);
       setSandboxFiles([initialIndexFile]);
       setSelectedFile(initialIndexFile);
       setIndexFileSelected(true);
-      setViewState('app');
       setActiveSidebar('gemini');
     }
 
@@ -2283,7 +2282,13 @@ export default function App() {
           const dataStr = line.replace('data: ', '');
           try {
             const event = JSON.parse(dataStr);
-            console.log(`[VibeCode Stream] Event received: ${event.event_type || 'unknown_event'} (step_index: ${event.step_index})`);
+            const eventType = event.event_type || 
+                              event.type || 
+                              event.event || 
+                              event.kind || 
+                              (event.interaction ? 'interaction.completed' : (event.delta ? 'step.delta' : (event.step ? 'step.start' : (event.text ? 'step.delta' : 'unknown'))));
+            
+            console.log(`[VibeCode Stream] Event parsed. Resolved eventType: ${eventType} (raw keys: ${Object.keys(event).join(', ')})`);
             if (event.error) {
               console.error("[VibeCode Stream] Event contained error:", event.error);
               flushMessagesUpdate(true);
@@ -2291,20 +2296,20 @@ export default function App() {
               continue;
             }
             
-            if (event.event_type === 'step.start') {
+            if (eventType === 'step.start') {
                const stepIndex = event.step_index !== undefined ? event.step_index : currentSteps.length;
-               currentSteps[stepIndex] = { ...event.step, _streamText: '' };
+               currentSteps[stepIndex] = { ...(event.step || {}), _streamText: '' };
                pendingMessageUpdate = { steps: [...currentSteps], text: currentText };
                scheduleMessagesUpdate();
-            } else if (event.event_type === 'step.stop') {
-               if (event.step) {
+            } else if (eventType === 'step.stop') {
+               if (event.step || event.step_index !== undefined) {
                   const stepIndex = event.step_index !== undefined ? event.step_index : (currentSteps.length > 0 ? currentSteps.length - 1 : 0);
                   const prevStreamText = currentSteps[stepIndex]?._streamText || '';
-                  currentSteps[stepIndex] = { ...event.step, _streamText: prevStreamText };
+                  currentSteps[stepIndex] = { ...(event.step || {}), _streamText: prevStreamText };
                   pendingMessageUpdate = { steps: [...currentSteps], text: currentText };
                   scheduleMessagesUpdate();
                }
-            } else if (event.event_type === 'step.delta') {
+            } else if (eventType === 'step.delta' || event.delta || event.text) {
                const deltaText = event.delta?.text || event.delta?.code || event.delta?.thought || event.delta?.query || event.delta?.content?.text || event.delta?.content?.code || "";
                
                if (event.step_index !== undefined) {
@@ -2374,9 +2379,11 @@ export default function App() {
                       }
                       return prev;
                     });
+                    setIndexFileSelected(true);
+                    setViewState('app');
                   }
                 }
-             } else if (event.event_type === 'interaction.completed') {
+             } else if (eventType === 'interaction.completed' || event.interaction) {
               console.log("[VibeCode] Event interaction.completed received. Processing final outputs...");
               flushMessagesUpdate(true);
               const finalInteraction = event.interaction;

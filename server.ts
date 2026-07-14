@@ -1873,13 +1873,15 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
         return;
       }
 
-      console.log("[Server /api/vibe-code] Invoking ai.interactions.create with antigravity-preview-05-2026...");
+      const resolvedEnv = (env_id && env_id !== 'remote' && env_id !== 'null') ? env_id : undefined;
+      console.log(`[Server /api/vibe-code] Invoking ai.interactions.create with resolvedEnv: ${resolvedEnv || 'none (fresh creation)'}...`);
+      
       const interaction = await retryWithBackoff(() => ai.interactions.create(
         {
           agent: "antigravity-preview-05-2026",
           input: prompt,
           system_instruction: systemInstruction,
-          environment: env_id || "remote",
+          ...(resolvedEnv ? { environment: resolvedEnv } : {}),
           stream: true,
         },
         { timeout: 300000 }
@@ -1887,16 +1889,21 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
 
       let eventCount = 0;
       let totalBytesEmitted = 0;
-      for await (const event of interaction) {
-        if (res.writableEnded || res.destroyed) {
-          console.warn("[Server /api/vibe-code] Response stream closed by client mid-stream.");
-          break;
+      try {
+        for await (const event of interaction) {
+          if (res.writableEnded || res.destroyed) {
+            console.warn("[Server /api/vibe-code] Response stream closed by client mid-stream.");
+            break;
+          }
+          eventCount++;
+          const eventJson = JSON.stringify(event);
+          totalBytesEmitted += eventJson.length;
+          console.log(`[Server /api/vibe-code] Emitting event #${eventCount}: type=${(event as any).event_type || (event as any).type || 'unknown'}, length=${eventJson.length} bytes`);
+          res.write(`data: ${eventJson}\n\n`);
         }
-        eventCount++;
-        const eventJson = JSON.stringify(event);
-        totalBytesEmitted += eventJson.length;
-        console.log(`[Server /api/vibe-code] Emitting event #${eventCount}: type=${(event as any).event_type || 'unknown'}, length=${eventJson.length} bytes`);
-        res.write(`data: ${eventJson}\n\n`);
+      } catch (streamErr: any) {
+        console.error("[Server /api/vibe-code] Error iterating stream:", streamErr);
+        res.write(`data: ${JSON.stringify({ error: { message: streamErr?.message || String(streamErr) } })}\n\n`);
       }
       
       console.log(`[Server /api/vibe-code] Streaming completed. Emitted ${eventCount} events, total ${totalBytesEmitted} bytes.`);
