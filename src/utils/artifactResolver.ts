@@ -51,7 +51,24 @@ export const resolveArtifactForChat = (files: any[], task: any, taskType: string
   
   if (associatedId) {
     const byId = files.find(f => f && (f.id === associatedId || f.driveId === associatedId));
-    if (byId) return byId;
+    if (byId) {
+      const fileNameLower = (byId.name || '').toLowerCase();
+      if (taskType === 'site' || taskType === 'tool') {
+        if (fileNameLower.endsWith('.html') || fileNameLower.endsWith('.js') || fileNameLower.endsWith('.css') || fileNameLower === 'index.html') {
+          return byId;
+        }
+      } else if (taskType === 'doc') {
+        if (fileNameLower.endsWith('.doc') || fileNameLower.endsWith('.docx') || fileNameLower.endsWith('.md') || fileNameLower.endsWith('.txt') || byId.mimeType?.includes('document')) {
+          return byId;
+        }
+      } else if (taskType === 'slide') {
+        if (fileNameLower.endsWith('.gslides') || fileNameLower.endsWith('.ppt') || fileNameLower.endsWith('.pptx') || byId.mimeType?.includes('presentation')) {
+          return byId;
+        }
+      } else {
+        return byId;
+      }
+    }
   }
 
   // 2. Filter candidates strictly by taskType

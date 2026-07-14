@@ -1837,11 +1837,10 @@ export default function App() {
       }
     }
 
-    // If typing/submitting on the Home screen, transition immediately to the workspace
-    if (viewState === 'home' && !activeAiMode) {
+    // If typing/submitting on the Home screen or Space Dashboard, transition immediately to the workspace canvas
+    if ((viewState === 'home' || viewState === 'dashboard' || viewState === 'null') && !activeAiMode) {
       setSandboxFiles([]);
       setSelectedFile(null);
-      // Maintain parent Space title in projectName
       setViewState('app');
       setActiveSidebar('gemini');
     }
@@ -2483,9 +2482,17 @@ export default function App() {
                 }
                 
                 if (parsedFiles.length === 0) {
-                   const fallbackMatch = finalHtmlText.match(/(<!(?:DOCTYPE )?html[\s\S]*?(?:<\/html>|$))/i);
+                   const fallbackMatch = finalHtmlText.match(/(<!(?:DOCTYPE )?html[\s\S]*?(?:<\/html>|$))/i) || 
+                                        finalHtmlText.match(/(<html[\s\S]*?(?:<\/html>|$))/i) || 
+                                        finalHtmlText.match(/(<div[\s\S]*?(?:<\/div>|$))/i) || 
+                                        finalHtmlText.match(/(<main[\s\S]*?(?:<\/main>|$))/i);
                    if (fallbackMatch) {
                       finalContent = fallbackMatch[1].trim();
+                      const idPrefix = targetChatId || activeChatId || 'sandbox';
+                      parsedFiles.push({ name: 'index.html', type: 'code', content: finalContent, id: `${idPrefix}-file-0` });
+                   } else if (finalHtmlText.trim().length > 0 && !finalHtmlText.includes('<doc>') && !finalHtmlText.includes('<chat>')) {
+                      // Final safety fallback: Wrap unformatted UI output in an index.html template
+                      finalContent = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8"/>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="p-6 bg-white text-slate-800 font-sans">\n${finalHtmlText.trim()}\n</body>\n</html>`;
                       const idPrefix = targetChatId || activeChatId || 'sandbox';
                       parsedFiles.push({ name: 'index.html', type: 'code', content: finalContent, id: `${idPrefix}-file-0` });
                    }
@@ -4585,12 +4592,15 @@ export default function App() {
         const allAvailableFiles = [...(cached.sandboxFiles || []), ...sandboxFiles, ...driveFiles];
         const taskContext = { ...matchingTask, ...cached, ...cachedChat };
 
-        const specificFileMatch = (typeof file === 'object' && file && (file.id || file.driveId) && !isSpaceObject)
+        const isChatSessionContainer = Boolean(file?.messages || file?.chatId || file?.taskType || file?.id?.includes('-chat-'));
+
+        const specificFileMatch = (typeof file === 'object' && file && (file.id || file.driveId) && !isSpaceObject && !isChatSessionContainer)
           ? allAvailableFiles.find((f: any) => f && ((file.id && (f.id === file.id || f.driveId === file.id)) || (file.driveId && (f.driveId === file.driveId || f.id === file.driveId))))
           : null;
 
         console.log("[DEBUG] handleFileClick cache resolution:", {
           isSpaceObject,
+          isChatSessionContainer,
           fileId: file?.id || file?.driveId,
           fileName: file?.name,
           specificFileMatch: specificFileMatch ? specificFileMatch.name : null,
