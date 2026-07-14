@@ -2328,7 +2328,51 @@ export default function App() {
                  pendingMessageUpdate = { steps: [...currentSteps], text: currentText };
                  scheduleMessagesUpdate();
                }
-            } else if (event.event_type === 'interaction.completed') {
+            if (accumulatedOutput && accumulatedOutput.length > 50) {
+                  const rawHtmlMatch = accumulatedOutput.match(/(<!(?:DOCTYPE )?html[\s\S]*)/i) || 
+                                       accumulatedOutput.match(/(<html[\s\S]*)/i) || 
+                                       accumulatedOutput.match(/(<div[\s\S]*)/i) ||
+                                       accumulatedOutput.match(/```html\s*([\s\S]*)/i);
+                  let liveHtmlContent = rawHtmlMatch ? rawHtmlMatch[1].replace(/```$/g, '').trim() : "";
+                  if (!liveHtmlContent && accumulatedOutput.includes('<') && accumulatedOutput.includes('>')) {
+                    liveHtmlContent = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8"/>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="p-6 bg-white text-slate-800 font-sans">\n${accumulatedOutput}\n</body>\n</html>`;
+                  }
+
+                  if (liveHtmlContent && liveHtmlContent.length > 30) {
+                    const targetId = targetChatId || activeChatId || 'sandbox';
+                    setSandboxFiles(prev => {
+                      const idx = prev.findIndex(f => f && f.name && f.name.toLowerCase() === 'index.html');
+                      const liveFile = {
+                        name: 'index.html',
+                        type: 'code',
+                        mimeType: 'text/html',
+                        content: liveHtmlContent,
+                        id: idx !== -1 ? prev[idx].id : `${targetId}-file-0`
+                      };
+                      if (idx !== -1) {
+                        if (prev[idx].content === liveHtmlContent) return prev;
+                        const updated = [...prev];
+                        updated[idx] = liveFile;
+                        return updated;
+                      }
+                      return [liveFile, ...prev];
+                    });
+                    setSelectedFile(prev => {
+                      if (!prev || prev.name?.toLowerCase() === 'index.html') {
+                        if (prev?.content === liveHtmlContent) return prev;
+                        return {
+                          name: 'index.html',
+                          type: 'code',
+                          mimeType: 'text/html',
+                          content: liveHtmlContent,
+                          id: `${targetId}-file-0`
+                        };
+                      }
+                      return prev;
+                    });
+                  }
+                }
+             } else if (event.event_type === 'interaction.completed') {
               console.log("[VibeCode] Event interaction.completed received. Processing final outputs...");
               flushMessagesUpdate(true);
               const finalInteraction = event.interaction;
