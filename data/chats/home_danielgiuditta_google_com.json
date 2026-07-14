@@ -4,6 +4,7 @@
   "chatName": null,
   "type": "workspace",
   "taskType": null,
+  "viewState": null,
   "associatedFileId": "summary-doc-1784052821636",
   "associatedFileName": "Daily_Summary_2026-07-14.md",
   "messages": [],
@@ -22,8 +23,7 @@
   "userEmail": "danielgiuditta@google.com",
   "members": [],
   "pinnedArtifactIds": [
-    "space-1784052581165-chat-1784052635974-file-0",
-    "todo-card"
+    "proactive-slide-test"
   ],
-  "updatedAt": "2026-07-14T19:21:05.371Z"
+  "updatedAt": "2026-07-14T21:31:55.399Z"
 }

@@ -1,135 +1,49 @@
 import React from 'react';
-import { NativeViewer } from './NativeViewer';
 
 interface InferredTaskDiffViewProps {
   file: any;
   theme?: 'light' | 'dark';
 }
 
+const GoogleDriveLogo = () => (
+  <svg width="110" height="96" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg" className="shrink-0 drop-shadow-sm select-none pointer-events-none">
+    <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+    <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a8.9 8.9 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+    <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.85-3.2 7.4-12.8c.8-1.4 1.2-2.95 1.2-4.5h-27.5l5.85 10.15z" fill="#ea4335"/>
+    <path d="m43.65 25 13.75-23.8c-1.4-.8-2.95-1.2-4.5-1.2h-18.5c-1.55 0-3.1.4-4.5 1.2z" fill="#00832d"/>
+    <path d="m59.8 53-16.15-28-16.15 28h32.3z" fill="#2684fc"/>
+    <path d="m73.55 76.8 13.75-23.8c.8-1.4 1.2-2.95 1.2-4.501h-27.5l12.55 28.301z" fill="#ffba00"/>
+  </svg>
+);
+
+const DriveArtifactCard = ({ title = "New Drive", subtext = "Drive", isDark = false }: { title?: string; subtext?: string; isDark?: boolean }) => {
+  return (
+    <div className={`w-full aspect-[16/10] rounded-[24px] border shadow-sm p-8 flex items-center justify-between relative overflow-hidden select-none transition-all duration-300 ${
+      isDark ? 'border-[#3E4042] bg-[#282A2D] text-white' : 'border-slate-200/80 bg-white text-slate-800'
+    }`}>
+      <div className="flex flex-col justify-center gap-1.5 min-w-0 pr-4">
+        <span className={`text-[12px] font-medium tracking-wide ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}>
+          {subtext}
+        </span>
+        <h3 className={`text-[36px] sm:text-[42px] leading-[44px] sm:leading-[48px] font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#1F1F1F]'} truncate`}>
+          {title}
+        </h3>
+      </div>
+      <div className="shrink-0 flex items-center justify-center p-2">
+        <GoogleDriveLogo />
+      </div>
+    </div>
+  );
+};
+
 export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file, theme = 'light' }) => {
   const isDark = theme === 'dark';
 
-  // Resolve task fields from file object
-  const taskTitle = file?.title || file?.draftData?.summary || file?.name || 'Updated problem framing & concise layout';
-  const taskDesc = file?.description || file?.originalContent || file?.draftData?.originalContext || 'Simon gave feedback to make the problem framing more concise.';
-  
-  const driveFilesList: any[] = (window as any).__DRIVE_FILES__ || [];
-  const matchedInDrive = driveFilesList.find((f: any) => {
-    if (!f || !f.name) return false;
-    const fId = String(f.id || f.driveId || '').toLowerCase();
-    const fNameClean = f.name.toLowerCase().replace(/\.[^/.]+$/, '').trim();
-    const checkTerms = [file?.sourceName, file?.driveId, file?.fileId, file?.id, file?.title, file?.description]
-      .filter(Boolean)
-      .map((s: string) => String(s).toLowerCase());
+  const rawTitle = file?.title || file?.name || file?.sourceName || 'New Drive';
+  const cleanTitle = rawTitle.replace(/\.[^/.]+$/, "").replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, "").trim() || "New Drive";
 
-    return checkTerms.some(term => 
-      (fId && fId.length > 5 && term.includes(fId)) || 
-      (fNameClean && fNameClean.length > 2 && (term.includes(fNameClean) || fNameClean.includes(term)))
-    );
-  });
-
-  const baseFile = matchedInDrive || file?.filesToLoad?.[0] || file;
-
-  const mimeLower = String(file?.sourceMimeType || baseFile?.mimeType || '').toLowerCase();
-  const nameLower = String(file?.sourceName || baseFile?.name || file?.title || '').toLowerCase();
-  const typeLower = String(file?.type || file?.taskType || baseFile?.type || baseFile?.taskType || '').toLowerCase();
-
-  const isSlideItem = Boolean(
-    typeLower === 'slide' ||
-    mimeLower.includes('presentation') ||
-    mimeLower.includes('slide') ||
-    nameLower.endsWith('.gslides') ||
-    nameLower.endsWith('.pptx') ||
-    nameLower.includes('drive refresh') ||
-    nameLower.includes('presentation') ||
-    nameLower.includes('slide') ||
-    nameLower.includes('deck') ||
-    nameLower.includes('new drive')
-  );
-
-  const isSheetItem = Boolean(
-    !isSlideItem && (
-      typeLower === 'sheet' ||
-      typeLower === 'spreadsheet' ||
-      mimeLower.includes('spreadsheet') ||
-      mimeLower.includes('csv') ||
-      nameLower.endsWith('.csv') ||
-      nameLower.endsWith('.gsheet')
-    )
-  );
-
-  const resolvedMime = isSlideItem 
-    ? 'application/vnd.google-apps.presentation' 
-    : (isSheetItem ? 'application/vnd.google-apps.spreadsheet' : (baseFile?.mimeType || 'application/vnd.google-apps.document'));
-
-  // Content fallbacks for Original file
-  const originalContentResolved = 
-    file?.originalContent ||
-    file?.originalContext ||
-    file?.draftData?.originalContext ||
-    (baseFile?.content && baseFile.content !== file?.content ? baseFile.content : null) ||
-    (isSlideItem 
-      ? `# ${baseFile?.name || file?.name || 'Presentation'}
-
-## Original Version
-- ${taskDesc}
-- Unmodified slide layout before proposed updates.`
-      : (isSheetItem
-        ? `Data, Original Value, Status
-Section, ${taskDesc}, Pending`
-        : `# Original Version
-
-${taskDesc}
-
-Existing document content before feedback was incorporated.`));
-
-  // Content fallbacks for Proposal file
-  const proposalContentResolved = 
-    file?.draftData?.draftContent ||
-    file?.content ||
-    (isSlideItem
-      ? `# ${baseFile?.name || file?.name || 'Presentation'}
-
-## ${taskTitle}
-- ${file?.summaryOfChanges || file?.description || 'Incorporated feedback and updated presentation slides.'}
-- Aligned visual layout and content for team review.`
-      : (isSheetItem
-        ? `Data, Original Value, Status, Proposed Update
-Section, ${taskDesc}, Pending, ${taskTitle}`
-        : `# Proposed Update
-
-## ${taskTitle}
-
-${file?.summaryOfChanges || file?.description || 'Refined problem framing with concise language applied.'}`));
-
-  // Construct Original file representation
-  const originalFile = {
-    ...(baseFile || {}),
-    id: (baseFile?.id || file?.id || 'orig') + '-original-view',
-    type: isSlideItem ? 'slide' : (isSheetItem ? 'sheet' : 'doc'),
-    taskType: isSlideItem ? 'slide' : (isSheetItem ? 'sheet' : 'doc'),
-    mimeType: resolvedMime,
-    name: isSlideItem ? 'Drive Refresh: Original' : 'Original Document',
-    content: originalContentResolved,
-    isInferredTask: false,
-    isProactiveDraft: false
-  };
-
-  // Construct Proposal file representation
-  const proposalFile = {
-    ...(baseFile || {}),
-    id: (baseFile?.id || file?.id || 'prop') + '-proposal-view',
-    type: isSlideItem ? 'slide' : (isSheetItem ? 'sheet' : 'doc'),
-    taskType: isSlideItem ? 'slide' : (isSheetItem ? 'sheet' : 'doc'),
-    mimeType: resolvedMime,
-    name: isSlideItem ? 'Drive Refresh: Proposal' : 'Proposed Document Update',
-    content: proposalContentResolved,
-    isInferredTask: false,
-    isProactiveDraft: false
-  };
-
-  const col1Description = file?.originalContext || file?.draftData?.originalContext || taskDesc || 'Simon gave feedback to make the problem framing more concise.';
-  const col2Description = file?.summaryOfChanges || file?.draftData?.summaryOfChanges || taskTitle || 'I made the language more concise in the problem framing section.';
+  const col1Description = file?.originalContext || file?.draftData?.originalContext || file?.description || 'Simon gave feedback to make the problem framing more concise.';
+  const col2Description = file?.summaryOfChanges || file?.draftData?.summaryOfChanges || file?.descriptionDone || 'I made the language more concise in the problem framing section.';
 
   return (
     <div className={`w-full h-full flex flex-col items-center justify-start p-4 overflow-y-auto transition-colors duration-300 ${
@@ -150,15 +64,8 @@ ${file?.summaryOfChanges || file?.description || 'Refined problem framing with c
           </h2>
 
           {/* Artifact Container: 16px top & bottom margin padding surround */}
-          <div className={`w-full aspect-[16/10] rounded-[24px] overflow-hidden border shadow-sm mb-4 relative select-none ${
-            isDark ? 'border-[#3E4042] bg-[#282A2D]' : 'border-slate-200/80 bg-white'
-          }`}>
-            <NativeViewer 
-              file={originalFile} 
-              isPreviewCard={true} 
-              hideHeader={true} 
-              theme={theme}
-            />
+          <div className="mb-4">
+            <DriveArtifactCard title={cleanTitle || "New Drive"} subtext="Drive" isDark={isDark} />
           </div>
 
           {/* Description: Google Sans Text Medium 16/24 */}
@@ -183,15 +90,8 @@ ${file?.summaryOfChanges || file?.description || 'Refined problem framing with c
           </h2>
 
           {/* Artifact Container: 16px top & bottom margin padding surround */}
-          <div className={`w-full aspect-[16/10] rounded-[24px] overflow-hidden border shadow-sm mb-4 relative select-none ${
-            isDark ? 'border-[#3E4042] bg-[#282A2D]' : 'border-slate-200/80 bg-white'
-          }`}>
-            <NativeViewer 
-              file={proposalFile} 
-              isPreviewCard={true} 
-              hideHeader={true} 
-              theme={theme}
-            />
+          <div className="mb-4">
+            <DriveArtifactCard title={cleanTitle || "New Drive"} subtext="Drive" isDark={isDark} />
           </div>
 
           {/* Description: Google Sans Text Medium 16/24 */}

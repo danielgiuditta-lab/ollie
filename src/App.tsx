@@ -2371,14 +2371,16 @@ export default function App() {
                  pendingMessageUpdate = { steps: [...currentSteps], text: currentText };
                  scheduleMessagesUpdate();
                }
-            if (accumulatedOutput && accumulatedOutput.length > 50) {
+            if (accumulatedOutput && accumulatedOutput.length > 50 && !accumulatedOutput.includes('<chat>') && !accumulatedOutput.includes('rate limit') && !accumulatedOutput.includes('Quota')) {
                   const rawHtmlMatch = accumulatedOutput.match(/```(?:html|xml)?\s*(<!--[\s\S]*?-->\s*)?(<!(?:DOCTYPE )?html[\s\S]*)/i) || 
                                        accumulatedOutput.match(/(<!(?:DOCTYPE )?html[\s\S]*)/i) || 
                                        accumulatedOutput.match(/(<html[\s\S]*)/i) || 
                                        accumulatedOutput.match(/(<div[\s\S]*)/i);
                   let liveHtmlContent = rawHtmlMatch ? (rawHtmlMatch[2] || rawHtmlMatch[1] || rawHtmlMatch[0]).replace(/```$/g, '').trim() : "";
-                  if (!liveHtmlContent && accumulatedOutput.includes('<') && accumulatedOutput.includes('>')) {
-                    liveHtmlContent = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8"/>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="p-6 bg-white text-slate-800 font-sans">\n${accumulatedOutput}\n</body>\n</html>`;
+                  if (!liveHtmlContent && accumulatedOutput.includes('<') && accumulatedOutput.includes('>') && !accumulatedOutput.includes('<chat>')) {
+                    if (/<(?:div|button|p|h1|h2|h3|table|form|input|ul|ol|header|main|section|span)\b/i.test(accumulatedOutput)) {
+                      liveHtmlContent = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8"/>\n  <script src="https://cdn.tailwindcss.com"></script>\n</head>\n<body class="p-6 bg-white text-slate-800 font-sans">\n${accumulatedOutput}\n</body>\n</html>`;
+                    }
                   }
 
                   if (liveHtmlContent && liveHtmlContent.length > 30) {
@@ -2999,7 +3001,6 @@ export default function App() {
 
     setSandboxFiles([proactiveSlideFile]);
     setSelectedFile(proactiveSlideFile);
-    setViewState('file_viewer');
 
     if (targetId && accessToken) {
       (async () => {
@@ -5947,6 +5948,11 @@ export default function App() {
                           projectName={projectName} 
                           onIframeRef={registerIframe}
                           selectedFile={selectedFile || sandboxFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase() === 'index.html')) || { name: 'index.html', content: '' }}
+                        />
+                      ) : (selectedFile?.isProactiveDraft || selectedFile?.isInferredTask || selectedFile?.isProactive || selectedFile?.taskType === 'inferred' || activeProactiveTask) ? (
+                        <InferredTaskDiffView
+                          file={selectedFile || activeProactiveTask}
+                          theme={appTheme}
                         />
                       ) : (
                         <NativeViewer 

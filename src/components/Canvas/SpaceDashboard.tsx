@@ -414,18 +414,18 @@ export function SpaceDashboard({
     );
   }
 
-  let gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-1";
+  let gridLayoutClass = "grid-cols-1 md:grid-cols-2 md:grid-rows-1 auto-rows-fr";
   if (dashboardLayoutMode === 'rows') {
     gridLayoutClass = "grid-cols-1 auto-rows-fr";
   } else if (dashboardLayoutMode === 'cols') {
-    gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-1";
+    gridLayoutClass = "grid-cols-1 md:grid-cols-2 md:grid-rows-1 auto-rows-fr";
   } else {
     if (totalCardsCount === 1) {
-      gridLayoutClass = "grid-cols-1 grid-rows-1";
+      gridLayoutClass = "grid-cols-1 auto-rows-fr";
     } else if (totalCardsCount === 2) {
-      gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-1";
+      gridLayoutClass = "grid-cols-1 md:grid-cols-2 md:grid-rows-1 auto-rows-fr";
     } else if (totalCardsCount <= 4) {
-      gridLayoutClass = "grid-cols-1 md:grid-cols-2 grid-rows-2";
+      gridLayoutClass = "grid-cols-1 md:grid-cols-2 md:grid-rows-2 auto-rows-fr";
     } else {
       gridLayoutClass = "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr";
     }
@@ -445,7 +445,7 @@ export function SpaceDashboard({
           }
         }}
         onDrop={handleContainerDrop}
-        className={`w-full flex-1 grid ${gridLayoutClass} gap-6 px-6 pt-2 pb-6 overflow-y-auto items-stretch justify-stretch relative`}
+        className={`w-full flex-1 grid ${gridLayoutClass} gap-4 px-4 sm:px-6 pt-2 pb-6 overflow-y-auto items-stretch justify-stretch relative`}
       >
         {/* Dynamic Container Side Indicators */}
         {dragOverCardId === 'container-left' && (

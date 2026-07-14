@@ -2011,15 +2011,83 @@ JSON output:`;
   });
 
   app.post("/api/classify-intent", async (req, res) => {
+    const { prompt } = req.body;
+
+    const fallbackClassification = (userPrompt: string) => {
+      const lower = (userPrompt || "").toLowerCase();
+      if (lower.includes("doc") || lower.includes("prd") || lower.includes("roadmap") || lower.includes("proposal") || lower.includes("specification")) {
+        return {
+          domain: "doc",
+          toolArchetype: null,
+          proposalText: `Would you like me to draft a document for this request?`,
+          pillLabel: `Draft Document`,
+          archetypePrompt: userPrompt
+        };
+      }
+      if (lower.includes("slide") || lower.includes("presentation") || lower.includes("deck")) {
+        return {
+          domain: "slide",
+          toolArchetype: null,
+          proposalText: `Would you like me to create a slide deck for this request?`,
+          pillLabel: `Create Presentation`,
+          archetypePrompt: userPrompt
+        };
+      }
+      if (lower.includes("decision") || lower.includes("risk") || lower.includes("mitigation")) {
+        return {
+          domain: "tool",
+          toolArchetype: "decision_risk_log",
+          proposalText: `Would you like me to build a **Decision & Risk Log** to track your team's decisions?`,
+          pillLabel: `Build Decision & Risk Log`,
+          archetypePrompt: `Build a comprehensive decision and risk tracking system to document team decisions, outcomes, ownership, and mitigations.`
+        };
+      }
+      if (lower.includes("bug") || lower.includes("defect") || lower.includes("issue")) {
+        return {
+          domain: "tool",
+          toolArchetype: "bug_tracker",
+          proposalText: `Would you like me to build a **Bug Tracker** to manage software defects and feedback?`,
+          pillLabel: `Build Bug Tracker`,
+          archetypePrompt: `Build a Bug Tracker application to track software bugs, severity, status, and assignees.`
+        };
+      }
+      if (lower.includes("approval") || lower.includes("sign-off") || lower.includes("signoff")) {
+        return {
+          domain: "tool",
+          toolArchetype: "approval_queue",
+          proposalText: `Would you like me to build an **Approval Queue** to manage design approvals?`,
+          pillLabel: `Build Approval Queue`,
+          archetypePrompt: `Build an Approval Queue application to track design assets, reviewers, pending sign-offs, and approval status.`
+        };
+      }
+      if (lower.includes("track") || lower.includes("kanban") || lower.includes("task") || lower.includes("work")) {
+        return {
+          domain: "tool",
+          toolArchetype: "kanban",
+          proposalText: `Would you like me to build a **Kanban Board** to track the team's work?`,
+          pillLabel: `Build Kanban Board`,
+          archetypePrompt: `Build an interactive Kanban Board with columns for To Do, In Progress, and Done to track team tasks.`
+        };
+      }
+
+      const cleanPrompt = userPrompt.length > 60 ? `${userPrompt.slice(0, 57)}...` : userPrompt;
+      return {
+        domain: "tool",
+        toolArchetype: "custom",
+        proposalText: `Would you like me to build a custom tool for "${cleanPrompt}"?`,
+        pillLabel: `Build Custom Tool`,
+        archetypePrompt: userPrompt
+      };
+    };
+
     try {
-      const { prompt } = req.body;
       if (!prompt || typeof prompt !== "string") {
-        return res.json({ domain: "tool", toolArchetype: "custom", proposalText: "Would you like me to build a custom tool for this workspace?", pillLabel: "Build Custom Tool" });
+        return res.json(fallbackClassification(""));
       }
 
       const ai = getGenAI();
       if (!ai) {
-        return res.json({ domain: "tool", toolArchetype: "custom", proposalText: "Would you like me to build a custom tool for this workspace?", pillLabel: "Build Custom Tool" });
+        return res.json(fallbackClassification(prompt));
       }
 
       const systemPrompt = `You are an expert intent router for an AI workspace.
@@ -2073,8 +2141,7 @@ OUTPUT ONLY VALID JSON:
         contents: `${systemPrompt}\n\nUser request: "${prompt}"`,
         config: {
           responseMimeType: "application/json",
-          maxOutputTokens: 256,
-          thinkingConfig: { thinkingBudget: 0 }
+          maxOutputTokens: 1024
         }
       }));
 
@@ -2089,24 +2156,12 @@ OUTPUT ONLY VALID JSON:
           archetypePrompt: parsed.archetypePrompt || prompt
         });
       } catch (e) {
-        console.warn("Failed to parse intent classification JSON from Gemini, returning default tool response.", e);
-        res.json({
-          domain: "tool",
-          toolArchetype: "custom",
-          proposalText: `Would you like me to build a custom tool for "${prompt.slice(0, 30)}"?`,
-          pillLabel: `Build Custom Tool`,
-          archetypePrompt: prompt
-        });
+        console.warn("Failed to parse intent classification JSON from Gemini, using smart fallback.", e);
+        res.json(fallbackClassification(prompt));
       }
     } catch (error) {
-      console.error("Classify intent failed:", error);
-      res.json({
-        domain: "tool",
-        toolArchetype: "custom",
-        proposalText: "Would you like me to build a custom tool for this?",
-        pillLabel: "Build Custom Tool",
-        archetypePrompt: prompt
-      });
+      console.error("Classify intent failed, using smart fallback:", error);
+      res.json(fallbackClassification(prompt));
     }
   });
 
