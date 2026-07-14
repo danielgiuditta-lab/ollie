@@ -210,7 +210,7 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
   return (
     <div 
       onClick={onClick}
-      className="w-full flex items-center justify-between gap-4 px-4 py-4 rounded-[2px] first:rounded-t-[16px] first:rounded-b-[2px] last:rounded-b-[16px] last:rounded-t-[2px] only:rounded-[16px] bg-[#F8FAFD] dark:bg-[#1E1F22] hover:bg-[#F1F3F9] dark:hover:bg-[#2B2D31] cursor-pointer transition-all duration-200 select-none"
+      className="w-full flex items-center justify-between gap-4 px-4 py-4 rounded-[4px] first:rounded-t-[16px] first:rounded-b-[4px] last:rounded-b-[16px] last:rounded-t-[4px] only:rounded-[16px] bg-[#003BC4]/5 dark:bg-[#282A2D] hover:bg-[#003BC4]/10 dark:hover:bg-[#35373A] cursor-pointer transition-all duration-200 select-none"
     >
       {/* Left Column: Status Indicator */}
       <div className="shrink-0 w-8 h-8 flex items-center justify-center">

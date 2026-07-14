@@ -1,7 +1,7 @@
 {
   "chatId": "home_danielgiuditta_google_com",
   "projectName": "Home Dashboard",
-  "chatName": "",
+  "chatName": null,
   "type": "workspace",
   "taskType": null,
   "associatedFileId": "summary-doc-1784052821636",
@@ -22,8 +22,8 @@
   "userEmail": "danielgiuditta@google.com",
   "members": [],
   "pinnedArtifactIds": [
-    "todo-card",
-    "space-1784052581165-chat-1784052635974-file-0"
+    "space-1784052581165-chat-1784052635974-file-0",
+    "todo-card"
   ],
-  "updatedAt": "2026-07-14T18:13:41.904Z"
+  "updatedAt": "2026-07-14T19:21:05.371Z"
 }

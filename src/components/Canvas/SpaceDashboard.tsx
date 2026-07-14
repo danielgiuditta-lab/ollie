@@ -107,11 +107,11 @@ export function SpaceDashboard({
     return list;
   }, [sandboxFiles, hasTodoCard, todoArtifact]);
 
-  const regularPinnedFiles = pinnedArtifactIds
+  const pinnedFiles = pinnedArtifactIds
     .map(id => {
       const isTodoId = id === 'todo-card' || id === 'inferred-tasks' || String(id).toLowerCase().includes('todo') || String(id).toLowerCase().includes('inferred');
-      if (isTodoId && !hasTodoCard) {
-        return null;
+      if (isTodoId) {
+        return hasTodoCard ? todoArtifact : null;
       }
       return sandboxFiles.find(f => f && (
         f.id === id || 
@@ -121,17 +121,6 @@ export function SpaceDashboard({
       ));
     })
     .filter(Boolean);
-
-  const isTodoPinned = hasTodoCard && (
-    pinnedArtifactIds.includes('todo-card') ||
-    pinnedArtifactIds.includes('inferred-tasks') ||
-    pinnedArtifactIds.some(id => String(id).toLowerCase().includes('todo') || String(id).toLowerCase().includes('inferred'))
-  );
-
-  const pinnedFiles = [
-    ...regularPinnedFiles.filter(f => !(f.id === 'todo-card' || f.isInferredTask || f.name === 'inferred_tasks.json')),
-    ...(isTodoPinned ? [todoArtifact] : [])
-  ];
 
   // Close menu on click outside
   useEffect(() => {
@@ -201,6 +190,35 @@ export function SpaceDashboard({
       startWidthAdjacent,
       containerWidth
     };
+  };
+
+  const resolvePinId = (cardId: string): string => {
+    if (!cardId) return '';
+    if (pinnedArtifactIds.includes(cardId)) {
+      return cardId;
+    }
+    const isTodo = cardId === 'todo-card' || cardId === 'inferred-tasks' || cardId.toLowerCase().includes('todo') || cardId.toLowerCase().includes('inferred');
+    if (isTodo) {
+      const todoMatch = pinnedArtifactIds.find(id => id === 'todo-card' || id === 'inferred-tasks' || String(id).toLowerCase().includes('todo') || String(id).toLowerCase().includes('inferred'));
+      if (todoMatch) return todoMatch;
+    }
+    const matchedFile = [...sandboxFiles, todoArtifact].find(f => f && (
+      f.id === cardId || 
+      f.driveId === cardId || 
+      f.name === cardId ||
+      (f.id && String(f.id).toLowerCase() === String(cardId).toLowerCase())
+    ));
+    if (matchedFile) {
+      const pinMatch = pinnedArtifactIds.find(id => 
+        id === matchedFile.id ||
+        id === matchedFile.driveId ||
+        id === matchedFile.name ||
+        (matchedFile.id && String(id).toLowerCase() === String(matchedFile.id).toLowerCase()) ||
+        (matchedFile.name && (String(id).toLowerCase().endsWith('-' + matchedFile.name.toLowerCase()) || String(id).toLowerCase().endsWith('_' + matchedFile.name.toLowerCase()) || String(id).toLowerCase() === matchedFile.name.toLowerCase()))
+      );
+      if (pinMatch) return pinMatch;
+    }
+    return cardId;
   };
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -273,16 +291,23 @@ export function SpaceDashboard({
       return;
     }
 
-    const newOrder = [...pinnedArtifactIds];
-    const sourceIndex = newOrder.indexOf(sourceId);
+    const sourcePin = resolvePinId(sourceId);
+    let newOrder = [...pinnedArtifactIds];
+    let sourceIndex = newOrder.indexOf(sourcePin);
+
+    if (sourceIndex === -1) {
+      newOrder = pinnedFiles.map(f => resolvePinId(f.id || f.driveId || f.name));
+      sourceIndex = newOrder.indexOf(sourcePin);
+    }
+
     if (sourceIndex !== -1) {
       newOrder.splice(sourceIndex, 1);
     }
 
     if (dragOverCardId === 'container-left') {
-      newOrder.unshift(sourceId);
+      newOrder.unshift(sourcePin);
     } else {
-      newOrder.push(sourceId);
+      newOrder.push(sourcePin);
     }
 
     onReorderPins(newOrder);
@@ -304,18 +329,30 @@ export function SpaceDashboard({
       return;
     }
 
-    const newOrder = [...pinnedArtifactIds];
-    const sourceIndex = newOrder.indexOf(sourceId);
-    if (sourceIndex !== -1) {
-      newOrder.splice(sourceIndex, 1);
+    const sourcePin = resolvePinId(sourceId);
+    const targetPin = resolvePinId(targetId);
+
+    let newOrder = [...pinnedArtifactIds];
+    let sourceIndex = newOrder.indexOf(sourcePin);
+    let targetIndex = newOrder.indexOf(targetPin);
+
+    if (sourceIndex === -1 || targetIndex === -1) {
+      newOrder = pinnedFiles.map(f => resolvePinId(f.id || f.driveId || f.name));
+      sourceIndex = newOrder.indexOf(sourcePin);
+      targetIndex = newOrder.indexOf(targetPin);
     }
 
-    let targetIndex = newOrder.indexOf(targetId);
-    if (targetIndex !== -1) {
-      if (dragOverPosition === 'right' || dragOverPosition === 'bottom') {
-        targetIndex += 1;
+    if (sourceIndex !== -1) {
+      newOrder.splice(sourceIndex, 1);
+      targetIndex = newOrder.indexOf(targetPin);
+      if (targetIndex !== -1) {
+        if (dragOverPosition === 'right' || dragOverPosition === 'bottom') {
+          targetIndex += 1;
+        }
+        newOrder.splice(targetIndex, 0, sourcePin);
+      } else {
+        newOrder.push(sourcePin);
       }
-      newOrder.splice(targetIndex, 0, sourceId);
       onReorderPins(newOrder);
     }
 
@@ -486,70 +523,76 @@ export function SpaceDashboard({
               isDragOver={isDragOver}
               className="w-full h-full flex-1 flex flex-col overflow-hidden"
               header={
-                <CardHeader
-                  title={cardTitle}
-                  count={isTodo && todoItems && todoItems.length > 0 ? todoItems.length : undefined}
-                  onTitleClick={(e) => {
-                    e.stopPropagation();
-                    onSelectArtifact(file);
-                  }}
-                  titleTooltip="Click to open artifact authoring chat"
-                  theme={theme}
-                  actions={
-                    <div className="relative">
-                      <button
-                        type="button"
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, fileId)}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveMenuCardId(activeMenuCardId === fileId ? null : fileId);
-                        }}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-grab active:cursor-grabbing ${
-                          isSelected
-                            ? 'text-[#3186FF] bg-blue-50 dark:bg-blue-950/50'
-                            : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-neutral-800'
-                        }`}
-                        title="Drag to reorder or click for options"
-                      >
-                        <MoreHorizontal size={16} />
-                      </button>
-
-                      {/* Dropdown Menu */}
-                      {activeMenuCardId === fileId && (
-                        <div 
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-9 w-36 rounded-xl bg-white dark:bg-[#2B2D31] border border-slate-200 dark:border-white/10 shadow-xl p-1 z-30 animate-in fade-in zoom-in-95 duration-100"
+                <div 
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, fileId)}
+                  className="cursor-grab active:cursor-grabbing w-full"
+                >
+                  <CardHeader
+                    title={cardTitle}
+                    count={isTodo && todoItems && todoItems.length > 0 ? todoItems.length : undefined}
+                    onTitleClick={(e) => {
+                      e.stopPropagation();
+                      onSelectArtifact(file);
+                    }}
+                    titleTooltip="Click to open artifact authoring chat"
+                    theme={theme}
+                    actions={
+                      <div className="relative">
+                        <button
+                          type="button"
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, fileId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenuCardId(activeMenuCardId === fileId ? null : fileId);
+                          }}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-grab active:cursor-grabbing ${
+                            isSelected
+                              ? 'text-[#3186FF] bg-blue-50 dark:bg-blue-950/50'
+                              : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-neutral-800'
+                          }`}
+                          title="Drag to reorder or click for options"
                         >
-                          <button
-                            onClick={() => {
-                              setActiveMenuCardId(null);
-                              onSelectArtifact(file);
-                            }}
-                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer"
+                          <MoreHorizontal size={16} />
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {activeMenuCardId === fileId && (
+                          <div 
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-9 w-36 rounded-xl bg-white dark:bg-[#2B2D31] border border-slate-200 dark:border-white/10 shadow-xl p-1 z-30 animate-in fade-in zoom-in-95 duration-100"
                           >
-                            <Edit2 size={14} />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setActiveMenuCardId(null);
-                              onRemovePin(fileId);
-                            }}
-                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer"
-                          >
-                            <Trash2 size={14} />
-                            <span>Remove</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  }
-                />
+                            <button
+                              onClick={() => {
+                                setActiveMenuCardId(null);
+                                onSelectArtifact(file);
+                              }}
+                              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                              <Edit2 size={14} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setActiveMenuCardId(null);
+                                onRemovePin(fileId);
+                              }}
+                              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer"
+                            >
+                              <Trash2 size={14} />
+                              <span>Remove</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    }
+                  />
+                </div>
               }
             >
               {/* Interactive Live Viewport */}
-              <div className="flex-1 w-full h-full relative overflow-hidden pointer-events-auto select-auto bg-slate-50/30 dark:bg-black/20">
+              <div className={`flex-1 w-full h-full relative overflow-hidden bg-slate-50/30 dark:bg-black/20 ${draggedCardId ? 'pointer-events-none' : 'pointer-events-auto select-auto'}`}>
                 <div className="absolute inset-0 w-full h-full">
                   {isTodo ? (
                     isHtml ? (
@@ -561,7 +604,7 @@ export function SpaceDashboard({
                         theme={theme}
                       />
                     ) : (
-                      <div className="w-full h-full overflow-y-auto p-4 flex flex-col gap-[2px]">
+                      <div className="w-full h-full overflow-y-auto p-4 flex flex-col gap-[4px]">
                         {todoItems && todoItems.map((item) => (
                           <InferredTaskCard 
                             key={item.id}
