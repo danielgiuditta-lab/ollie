@@ -45,7 +45,7 @@ chatsRouter.post('/:chatId', async (req, res) => {
       sandboxFiles: sandboxFiles !== undefined ? sandboxFiles : (existing?.sandboxFiles || []),
       userEmail: userEmail || existing?.userEmail || "",
       members: members !== undefined ? members : (existing?.members || []),
-      pinnedArtifactIds: pinnedArtifactIds !== undefined ? pinnedArtifactIds : (existing?.pinnedArtifactIds || []),
+      pinnedArtifactIds: pinnedArtifactIds !== undefined ? pinnedArtifactIds : (existing?.pinnedArtifactIds !== undefined ? existing.pinnedArtifactIds : ['todo-card']),
       updatedAt: new Date().toISOString()
     };
 

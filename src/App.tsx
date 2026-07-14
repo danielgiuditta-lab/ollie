@@ -126,7 +126,7 @@ export default function App() {
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
   const [activeProactiveTask, setActiveProactiveTask] = useState<any | null>(null);
-  const [homePins, setHomePins] = useState<string[]>([]);
+  const [homePins, setHomePins] = useState<string[]>(['todo-card']);
 
   const fetchGeminiTasks = async (token?: string | null, email?: string) => {
     try {
@@ -160,7 +160,7 @@ export default function App() {
             const folderName = validProjectName ? c.projectName : (driveTasksMap.get(folderId) || c.projectName || "Workspace");
 
             const isSpaceContainer = c.type === 'space' || c.chatId === folderId || isHomeChatId(c.chatId);
-            const taskPins = isSpaceContainer ? (c.pinnedArtifactIds || []) : [];
+            const taskPins = isSpaceContainer ? (c.pinnedArtifactIds !== undefined ? c.pinnedArtifactIds : ['todo-card']) : [];
             const taskObj = {
                 id: c.chatId,
                 name: c.projectName || c.chatName || folderName,
@@ -188,7 +188,7 @@ export default function App() {
                   selectedFile: existingCache.selectedFile || null,
                   indexFileSelected: existingCache.indexFileSelected || false,
                   viewState: existingCache.viewState || 'app',
-                  pinnedArtifactIds: isSpaceContainer ? (c.pinnedArtifactIds || existingCache.pinnedArtifactIds || []) : [],
+                  pinnedArtifactIds: isSpaceContainer ? (c.pinnedArtifactIds !== undefined ? c.pinnedArtifactIds : (existingCache.pinnedArtifactIds !== undefined ? existingCache.pinnedArtifactIds : ['todo-card'])) : [],
                   taskType: c.taskType || c.type || null,
                   type: c.type || null,
                   associatedFileId: c.associatedFileId || null,
@@ -199,6 +199,8 @@ export default function App() {
             if (isHomeChatId(c.chatId)) {
               if (c.pinnedArtifactIds && Array.isArray(c.pinnedArtifactIds)) {
                 setHomePins(c.pinnedArtifactIds);
+              } else if (c.pinnedArtifactIds === undefined) {
+                setHomePins(['todo-card']);
               }
               if (workspaceCacheRef.current[c.chatId]) {
                 workspaceCacheRef.current[c.chatId].messages = [];
@@ -221,7 +223,7 @@ export default function App() {
                 viewState: parentCache.viewState || 'app',
                 ...parentCache,
                 sandboxFiles: Array.from(mergedMap.values()),
-                pinnedArtifactIds: c.pinnedArtifactIds || parentCache.pinnedArtifactIds || [],
+                pinnedArtifactIds: c.pinnedArtifactIds !== undefined ? c.pinnedArtifactIds : (parentCache.pinnedArtifactIds !== undefined ? parentCache.pinnedArtifactIds : ['todo-card']),
                 projectName: parentCache.projectName || folderName
               };
             }
@@ -258,6 +260,8 @@ export default function App() {
       if (cached) {
         if (cached.pinnedArtifactIds && Array.isArray(cached.pinnedArtifactIds)) {
           setHomePins(cached.pinnedArtifactIds);
+        } else if (cached.pinnedArtifactIds === undefined) {
+          setHomePins(['todo-card']);
         }
       }
       try {
@@ -267,6 +271,8 @@ export default function App() {
           if (chatData) {
             if (chatData.pinnedArtifactIds && Array.isArray(chatData.pinnedArtifactIds)) {
               setHomePins(chatData.pinnedArtifactIds);
+            } else if (chatData.pinnedArtifactIds === undefined) {
+              setHomePins(['todo-card']);
             }
           }
         }
@@ -870,7 +876,7 @@ export default function App() {
     const resolvedFileId = associatedFileId || existing?.associatedFileId || (customFiles?.length === 1 ? (customFiles[0].driveId || customFiles[0].id) : (primaryFile?.driveId || primaryFile?.id));
     const resolvedFileName = associatedFileName || existing?.associatedFileName || (customFiles?.length === 1 ? customFiles[0].name : primaryFile?.name);
     const isSelfSpace = chatIdVal === resolvedSpaceId || isHomeChatId(chatIdVal);
-    const resolvedPins = isSelfSpace ? (getSpacePins(resolvedSpaceId).length > 0 ? getSpacePins(resolvedSpaceId) : (existing?.pinnedArtifactIds || [])) : undefined;
+    const resolvedPins = isSelfSpace ? getSpacePins(resolvedSpaceId) : undefined;
 
     try {
       await fetch(`/api/chats/${chatIdVal}`, {
@@ -4036,7 +4042,7 @@ export default function App() {
   };
 
   const getSpacePins = (spaceId: string | null) => {
-    const defaultPins: string[] = [];
+    const defaultPins: string[] = ['todo-card'];
     if (!spaceId) return defaultPins;
     if (isHomeChatId(spaceId)) {
       const cachePins = workspaceCacheRef.current[spaceId]?.pinnedArtifactIds;

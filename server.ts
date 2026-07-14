@@ -558,7 +558,7 @@ async function startServer() {
       const existingChat = await getChatAsync(sanitizedId);
       const resolvedPins = pinnedArtifactIds !== undefined 
         ? (Array.isArray(pinnedArtifactIds) ? pinnedArtifactIds : []) 
-        : (existingChat?.pinnedArtifactIds || []);
+        : (existingChat?.pinnedArtifactIds !== undefined ? existingChat.pinnedArtifactIds : ['todo-card']);
 
       const payload = {
         chatId: sanitizedId,
