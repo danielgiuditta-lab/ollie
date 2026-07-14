@@ -1476,6 +1476,10 @@ export function NativeViewer({
     // 1b. Premium Native Editors / Embed Viewers for Google Workspace files
     if (mode === 'preview') {
       if (isGoogleSlide || isSlide) {
+        if (isPreviewCard) {
+          return renderGoogleSlidesSim();
+        }
+
         const slideDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = slideDriveId && isRealDriveId(slideDriveId);
         const nativeSlideUrl = hasNativeUrl 
@@ -1499,6 +1503,10 @@ export function NativeViewer({
       }
 
       if (isGoogleDoc) {
+        if (isPreviewCard) {
+          return renderGoogleDocSim();
+        }
+
         const docDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = docDriveId && isRealDriveId(docDriveId);
         const nativeDocUrl = hasNativeUrl 
@@ -1522,6 +1530,10 @@ export function NativeViewer({
       }
 
       if (isGoogleSheet) {
+        if (isPreviewCard) {
+          return renderGoogleSheetSim();
+        }
+
         const sheetDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = sheetDriveId && isRealDriveId(sheetDriveId);
         const nativeSheetUrl = hasNativeUrl 
