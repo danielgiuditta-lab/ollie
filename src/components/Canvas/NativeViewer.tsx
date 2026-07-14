@@ -225,6 +225,12 @@ export function NativeViewer({
     nameLower.endsWith('.gslides') ||
     nameLower.endsWith('.pptx') ||
     nameLower.endsWith('.ppt') ||
+    nameLower.includes('drive refresh') ||
+    nameLower.includes('big rock') ||
+    nameLower.includes('presentation') ||
+    nameLower.includes('slide') ||
+    nameLower.includes('deck') ||
+    nameLower.includes('talking point') ||
     (file.mimeType && (
       file.mimeType.toLowerCase().includes('vnd.google-apps.presentation') ||
       file.mimeType.toLowerCase().includes('officedocument.presentationml') ||
@@ -232,7 +238,7 @@ export function NativeViewer({
       file.mimeType.toLowerCase().includes('presentation') ||
       file.mimeType.toLowerCase().includes('slide')
     )) ||
-    (file.isProactiveDraft && (file.type === 'slide' || file.taskType === 'slide' || nameLower.endsWith('.gslides') || nameLower.includes('slide') || nameLower.includes('presentation')));
+    (file.isProactiveDraft && (file.type === 'slide' || file.taskType === 'slide' || nameLower.endsWith('.gslides') || nameLower.includes('slide') || nameLower.includes('presentation') || nameLower.includes('drive refresh')));
 
   const isGoogleSheet = 
     (file.mimeType && (
@@ -447,13 +453,7 @@ export function NativeViewer({
 
     if (hideHeader && isPreviewCard) {
       const displayContent = file.content || parsedContent || title;
-      return (
-        <div className="w-full h-full bg-white dark:bg-[#1E1F22] p-3 flex flex-col text-left select-none overflow-hidden font-sans">
-          <div className="markdown-body prose max-w-none text-[9px] leading-relaxed text-slate-700 dark:text-slate-200 font-sans overflow-hidden space-y-1">
-            <ReactMarkdown>{displayContent}</ReactMarkdown>
-          </div>
-        </div>
-      );
+      return <ScaledDocStage file={file} title={title} content={displayContent} />;
     }
 
     if (isCreatedDocFromSpace) {
@@ -791,35 +791,79 @@ export function NativeViewer({
 
   // Google Slides High fidelity mock viewer
   const renderGoogleSlidesSim = () => {
-    let title = file.name.replace(/\.[a-zA-Z]+$/, '');
+    const cleanTitle = (t: string) => {
+      return t
+        .replace(/^\[.*?\]\s*/, '')
+        .replace(/-\s*\d{4}\/\d{2}\/\d{2}.*$/, '')
+        .replace(/-\s*Notes by Gemini.*$/i, '')
+        .trim();
+    };
+
+    let title = file.name ? file.name.replace(/\.[a-zA-Z]+$/, '') : 'Presentation';
+    title = cleanTitle(title);
     title = title.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
     const rowLines = file.content ? file.content.split('\n') : [];
     
-    // Parse slides out of markdown tags or numbered points
-    const slides: Array<{ title: string; bullets: string[] }> = [];
-    let currentSlide: { title: string; bullets: string[] } | null = null;
+    // Parse slides out of markdown tags, subtitle/description fields, or bullet points
+    interface SlideData {
+      title: string;
+      subtitle?: string;
+      description?: string;
+      pill?: string;
+      bullets: string[];
+    }
+
+    const slides: SlideData[] = [];
+    let currentSlide: SlideData | null = null;
 
     rowLines.forEach((line: string) => {
       const trimmed = line.trim();
+      const lower = trimmed.toLowerCase();
+
+      // Skip meta-agent execution notes and task progress text
+      const isMetaLog = lower.startsWith('i addressed') || 
+                        lower.startsWith('i simplified') || 
+                        lower.startsWith('i edited') || 
+                        lower.startsWith('i updated') || 
+                        lower.startsWith('i created') || 
+                        lower.startsWith('i reviewed') || 
+                        lower.startsWith('i will simplify') ||
+                        lower.startsWith('working on task') || 
+                        lower.startsWith('drafting') || 
+                        lower.startsWith('notes by gemini') ||
+                        lower.includes('commented to') ||
+                        lower.includes('consolidate the layout');
+
+      if (isMetaLog) return;
+
       if (trimmed.startsWith('#') || trimmed.startsWith('##')) {
         if (currentSlide) {
           slides.push(currentSlide);
         }
         currentSlide = {
-          title: trimmed.replace(/^[#\s]+/, ''),
+          title: cleanTitle(trimmed.replace(/^[#\s]+/, '')),
           bullets: []
         };
+      } else if (lower.startsWith('subtitle:') || lower.startsWith('category:')) {
+        if (!currentSlide) currentSlide = { title: title, bullets: [] };
+        currentSlide.subtitle = trimmed.replace(/^(subtitle|category):\s*/i, '').trim();
+      } else if (lower.startsWith('description:')) {
+        if (!currentSlide) currentSlide = { title: title, bullets: [] };
+        currentSlide.description = trimmed.replace(/^description:\s*/i, '').trim();
+      } else if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        if (!currentSlide) currentSlide = { title: title, bullets: [] };
+        currentSlide.pill = trimmed.slice(1, -1).trim();
       } else if (trimmed.startsWith('-') || trimmed.startsWith('*') || /^\d+\./.test(trimmed)) {
-        if (!currentSlide) {
-          currentSlide = { title: title, bullets: [] };
-        }
+        if (!currentSlide) currentSlide = { title: title, bullets: [] };
         currentSlide.bullets.push(trimmed.replace(/^[-*\d.\s]+/, ''));
-      } else if (trimmed.length > 5 && !trimmed.toLowerCase().startsWith('author:') && !trimmed.toLowerCase().startsWith('contributors:')) {
-        if (!currentSlide) {
-          currentSlide = { title: title, bullets: [] };
+      } else if (trimmed.length > 5 && !lower.startsWith('author:') && !lower.startsWith('contributors:')) {
+        if (!currentSlide) currentSlide = { title: title, bullets: [] };
+        if (!currentSlide.description && currentSlide.bullets.length === 0) {
+          currentSlide.description = trimmed;
+        } else {
+          currentSlide.bullets.push(trimmed);
         }
-        currentSlide.bullets.push(trimmed);
       }
     });
 
@@ -828,63 +872,110 @@ export function NativeViewer({
     }
 
     if (slides.length === 0) {
-      slides.push({
-        title: title,
-        bullets: ["Integrated slide deck workspace", "Real-time context presentation", "Synchronized assets with Drive"]
-      });
+      const isDriveRefresh = (file.name || '').toLowerCase().includes('drive') || (file.id || '').includes('drive');
+      if (isDriveRefresh) {
+        slides.push({
+          title: "UX Improvement: Navigating and viewing files in New Drive",
+          subtitle: "Drive",
+          description: "Better ways to navigate, find and view all your files and artifacts in Drive.",
+          pill: "FIGMA",
+          bullets: [
+            "Streamlined file & artifact navigation",
+            "Enhanced interactive workspace staging",
+            "Synchronized real-time Drive connectivity"
+          ]
+        });
+      } else {
+        slides.push({
+          title: title,
+          subtitle: "Presentation",
+          description: "Integrated slide deck workspace presentation stage.",
+          pill: "SLIDES",
+          bullets: ["Integrated slide deck workspace", "Real-time context presentation", "Synchronized assets with Drive"]
+        });
+      }
     }
 
-    const activeSlide = slides[activeSlideIndex] || slides[0] || { title: title, bullets: [] };
+    const activeSlide = slides[activeSlideIndex] || slides[0] || {
+      title: "UX Improvement: Navigating and viewing files in New Drive",
+      subtitle: "Drive",
+      description: "Better ways to navigate, find and view all your files and artifacts in Drive.",
+      pill: "FIGMA",
+      bullets: []
+    };
 
     if (hideHeader && isPreviewCard) {
-      const firstSlide = slides[0] || { title: title, bullets: [] };
-      return (
-        <div className="w-full h-full bg-[#18191B] text-white p-3 flex flex-col justify-between text-left select-none overflow-hidden font-sans">
-          <div>
-            <h1 className="text-[11px] leading-snug font-extrabold text-white mb-2 tracking-tight font-sans truncate shrink-0">
-              {firstSlide.title || title}
-            </h1>
-            
-            <ul className="space-y-1 text-[9.5px] text-slate-200 leading-snug list-none pl-0">
-              {firstSlide.bullets.slice(0, 4).map((bullet: string, idx: number) => (
-                <li key={idx} className="flex gap-1.5 items-start min-w-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#fbbc05] shrink-0 mt-1"></span>
-                  <span className="text-[9.5px] text-slate-200 font-normal truncate">{bullet}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="flex justify-between items-center text-[8px] text-slate-400 border-t border-slate-800 pt-1.5 mt-2">
-            <span className="truncate font-medium">{title}</span>
-            <span className="text-[#fbbc05] font-semibold shrink-0">Slide 1</span>
-          </div>
-        </div>
-      );
+      const firstSlide = slides[0] || {
+        title: "UX Improvement: Navigating and viewing files in New Drive",
+        subtitle: "Drive",
+        description: "Better ways to navigate, find and view all your files and artifacts in Drive.",
+        pill: "FIGMA",
+        bullets: []
+      };
+      return <ScaledSlideStage file={file} slide={firstSlide} />;
     }
 
     return (
       <div className="w-full h-full bg-white dark:bg-[#18191B] p-8 flex items-center justify-center relative select-none font-sans">
         {/* Pure Clean Widescreen 16:9 Presentation slide container - NO CHROME AT ALL */}
-        <div className="aspect-[16/9] w-full max-w-[880px] bg-white dark:bg-[#1E1F22] rounded-2xl shadow-xl border border-slate-150 dark:border-neutral-800 p-12 flex flex-col justify-center text-left relative overflow-hidden text-neutral-850">
+        <div className="aspect-[16/9] w-full max-w-[880px] bg-white dark:bg-[#1E1F22] rounded-2xl shadow-xl border border-slate-150 dark:border-neutral-800 p-10 flex flex-col justify-between text-left relative overflow-hidden text-neutral-850">
           
+          {/* Top Header Row with Subtitle Pill and Action Button */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="px-3.5 py-1 rounded-md bg-slate-100 dark:bg-[#2B2D31] text-[#fbbc05] font-bold text-xs tracking-wider uppercase font-mono">
+                {activeSlide.subtitle || 'Drive'}
+              </span>
+              {activeSlide.pill && (
+                <span className="px-3.5 py-1 rounded-full bg-purple-100 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/40 text-xs font-bold font-mono tracking-wide">
+                  {activeSlide.pill}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#fbbc05]"></span>
+              <span className="text-xs text-slate-400 font-semibold">Slide {activeSlideIndex + 1} of {slides.length}</span>
+            </div>
+          </div>
+
           {/* Slide Content */}
-          <div className="flex-1 flex flex-col justify-center max-w-[90%]">
-            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white leading-tight border-none pb-0 mb-6 tracking-tight font-sans text-left" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
+          <div className="flex-1 flex flex-col justify-center my-4 space-y-4">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white leading-tight border-none pb-0 mb-1 tracking-tight font-sans text-left" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
               {activeSlide.title}
             </h1>
+
+            {activeSlide.description && (
+              <p className="text-base text-slate-600 dark:text-slate-300 font-medium leading-relaxed font-sans">
+                {activeSlide.description}
+              </p>
+            )}
+
+            {/* Embedded Drive UI Graphic Preview Box */}
+            <div className="w-full h-20 rounded-2xl bg-slate-50 dark:bg-[#212328] border border-slate-200 dark:border-slate-700/60 p-4 flex items-center justify-between gap-4 mt-2">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 border border-blue-400/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-lg shadow-inner">
+                  📁
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-sm font-bold text-slate-900 dark:text-slate-100">Drive Artifact & File Navigator Preview</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-sans">Better ways to navigate, find and view all your files and artifacts in Drive.</span>
+                </div>
+              </div>
+              <span className="px-3.5 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider">
+                Preview
+              </span>
+            </div>
             
-            <ul className="space-y-4 text-sm text-slate-700 dark:text-slate-200 font-sans leading-relaxed text-left list-none pl-2">
-              {activeSlide.bullets.map((bullet, idx) => (
-                <li key={idx} className="flex gap-3.5 items-start">
-                  <span className="w-2 h-2 rounded-full bg-[#fbbc05] shrink-0 mt-2 shadow-xs"></span>
-                  <span className="text-[15px] text-slate-700 dark:text-slate-200 leading-normal font-sans font-medium">{bullet}</span>
-                </li>
-              ))}
-              {activeSlide.bullets.length === 0 && (
-                <li className="text-sm text-slate-400 italic">No notes or bullets on this slide.</li>
-              )}
-            </ul>
+            {activeSlide.bullets.length > 0 && (
+              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-200 font-sans leading-relaxed text-left list-none pl-1 pt-1">
+                {activeSlide.bullets.map((bullet, idx) => (
+                  <li key={idx} className="flex gap-3 items-start">
+                    <span className="w-2 h-2 rounded-full bg-[#fbbc05] shrink-0 mt-1.5 shadow-xs"></span>
+                    <span className="text-[14px] text-slate-700 dark:text-slate-200 leading-normal font-sans font-medium">{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Clean Overlay Navigation Arrows with NO extra chrome or text */}
@@ -1382,36 +1473,101 @@ export function NativeViewer({
       );
     }
 
-    // 1b. Premium Native / High-Fidelity Simulated Editors for Google Workspace files
+    // 1b. Premium Native Editors / Embed Viewers for Google Workspace files
     if (mode === 'preview') {
       if (isGoogleSlide || isSlide) {
-        if (!isPreviewCard) {
-          const slideDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '') : undefined);
-          const hasNativeUrl = slideDriveId && isRealDriveId(slideDriveId);
-          const nativeSlideUrl = hasNativeUrl 
-            ? `https://docs.google.com/presentation/d/${slideDriveId}/preview?rm=minimal` 
-            : (file.embedUrl || file.previewUrl || file.url);
+        const slideDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/-preview$/, '') : undefined);
+        const hasNativeUrl = slideDriveId && isRealDriveId(slideDriveId);
+        const nativeSlideUrl = hasNativeUrl 
+          ? `https://docs.google.com/presentation/d/${slideDriveId}/preview?rm=minimal` 
+          : (file.embedUrl || file.previewUrl || file.url);
 
-          if (nativeSlideUrl) {
+        if (nativeSlideUrl) {
+          if (isPreviewCard) {
             return (
-              <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
-                <iframe 
-                  src={nativeSlideUrl}
-                  className="w-full h-full border-none bg-white shadow-none"
-                  allow="autoplay; fullscreen"
-                  title={file.name}
-                />
-              </div>
+              <ScaledIframe 
+                src={nativeSlideUrl}
+                title={file.name}
+                type="slide"
+              />
             );
           }
+          return (
+            <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+              <iframe 
+                src={nativeSlideUrl}
+                className="w-full h-full border-none bg-white shadow-none pointer-events-none"
+                allow="autoplay; fullscreen"
+                title={file.name}
+              />
+            </div>
+          );
         }
 
         return renderGoogleSlidesSim();
       }
+
       if (isGoogleDoc) {
+        const docDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/-preview$/, '') : undefined);
+        const hasNativeUrl = docDriveId && isRealDriveId(docDriveId);
+        const nativeDocUrl = hasNativeUrl 
+          ? `https://docs.google.com/document/d/${docDriveId}/preview` 
+          : (file.embedUrl || file.previewUrl || file.url);
+
+        if (nativeDocUrl) {
+          if (isPreviewCard) {
+            return (
+              <ScaledIframe 
+                src={nativeDocUrl}
+                title={file.name}
+                type="doc"
+              />
+            );
+          }
+          return (
+            <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+              <iframe 
+                src={nativeDocUrl}
+                className="w-full h-full border-none bg-white shadow-none pointer-events-none"
+                allow="autoplay"
+                title={file.name}
+              />
+            </div>
+          );
+        }
+
         return renderGoogleDocSim();
       }
+
       if (isGoogleSheet) {
+        const sheetDriveId = driveId || (file.id ? String(file.id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/-preview$/, '') : undefined);
+        const hasNativeUrl = sheetDriveId && isRealDriveId(sheetDriveId);
+        const nativeSheetUrl = hasNativeUrl 
+          ? `https://docs.google.com/spreadsheets/d/${sheetDriveId}/preview` 
+          : (file.embedUrl || file.previewUrl || file.url);
+
+        if (nativeSheetUrl) {
+          if (isPreviewCard) {
+            return (
+              <ScaledIframe 
+                src={nativeSheetUrl}
+                title={file.name}
+                type="sheet"
+              />
+            );
+          }
+          return (
+            <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+              <iframe 
+                src={nativeSheetUrl}
+                className="w-full h-full border-none bg-white shadow-none pointer-events-none"
+                allow="autoplay"
+                title={file.name}
+              />
+            </div>
+          );
+        }
+
         return renderGoogleSheetSim();
       }
     }
@@ -2138,6 +2294,198 @@ function ScaledIframe({
           />
         </div>
       )}
+    </div>
+  );
+}
+
+function ScaledSlideStage({ 
+  file, 
+  slide 
+}: { 
+  file: any; 
+  slide: { title: string; subtitle?: string; description?: string; pill?: string; bullets: string[] };
+}) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 });
+
+  React.useEffect(() => {
+    if (!containerRef.current) return;
+    const element = containerRef.current;
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setDimensions({ width: rect.width, height: rect.height });
+      }
+    };
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const virtualWidth = 800;
+  const virtualHeight = 450;
+  const currentScale = dimensions.width > 0 ? dimensions.width / virtualWidth : (110 / virtualWidth);
+
+  const title = slide.title || 'UX Improvement: Navigating and viewing files in New Drive';
+  const subtitle = slide.subtitle || 'Drive';
+  const description = slide.description || 'Better ways to navigate, find and view all your files and artifacts in Drive.';
+  const pill = slide.pill || 'FIGMA';
+  const bullets = slide.bullets || [];
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="w-full h-full relative overflow-hidden bg-[#121316] select-none pointer-events-none flex items-center justify-center font-sans"
+    >
+      <div
+        style={{
+          width: `${virtualWidth}px`,
+          height: `${virtualHeight}px`,
+          transform: `scale(${currentScale})`,
+          transformOrigin: 'top left',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+        }}
+        className="bg-[#18191B] text-white p-10 flex flex-col justify-between overflow-hidden shadow-2xl rounded-lg font-sans border border-slate-800"
+      >
+        {/* Header row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="px-3.5 py-1 rounded-md bg-[#2B2D31] text-[#fbbc05] font-bold text-sm tracking-wider uppercase font-mono">
+              {subtitle}
+            </span>
+            {pill && (
+              <span className="px-3.5 py-1 rounded-full bg-purple-600/30 text-purple-300 border border-purple-500/40 text-xs font-bold font-mono tracking-wide">
+                {pill}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3.5 h-3.5 rounded-full bg-[#fbbc05]"></span>
+            <span className="text-xs text-slate-400 font-semibold">Slide 1</span>
+          </div>
+        </div>
+
+        {/* Main Title & Description */}
+        <div className="flex-1 flex flex-col justify-center my-4 space-y-4">
+          <h1 className="text-3xl font-extrabold text-white leading-tight tracking-tight max-w-[95%] font-sans">
+            {title}
+          </h1>
+          {description && (
+            <p className="text-base text-slate-300 font-medium leading-relaxed max-w-[92%] font-sans">
+              {description}
+            </p>
+          )}
+
+          {/* Embedded Drive UI Graphic Preview Box */}
+          <div className="w-full h-24 rounded-2xl bg-[#212328] border border-slate-700/60 p-4 flex items-center justify-between gap-4 mt-2">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-blue-500/20 border border-blue-400/30 text-blue-400 flex items-center justify-center font-bold text-xl shadow-inner">
+                📁
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-base font-bold text-slate-100">New Drive Artifact Stage</span>
+                <span className="text-xs text-slate-400 font-sans">Interactive file preview & document navigation engine</span>
+              </div>
+            </div>
+            <span className="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider">
+              Preview
+            </span>
+          </div>
+
+          {bullets.length > 0 && (
+            <ul className="space-y-2 text-sm text-slate-200 pt-2 pl-1">
+              {bullets.slice(0, 3).map((b: string, i: number) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  <span className="w-2 h-2 rounded-full bg-[#fbbc05] shrink-0 mt-1.5"></span>
+                  <span className="text-sm font-medium">{b}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Footer Bar */}
+        <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-3">
+          <span className="font-semibold text-slate-300 truncate max-w-[400px]">{file.name || title}</span>
+          <span className="font-mono text-slate-400">Google Slides</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScaledDocStage({ 
+  file, 
+  title, 
+  content 
+}: { 
+  file: any; 
+  title: string; 
+  content: string; 
+}) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 });
+
+  React.useEffect(() => {
+    if (!containerRef.current) return;
+    const element = containerRef.current;
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setDimensions({ width: rect.width, height: rect.height });
+      }
+    };
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const virtualWidth = 800;
+  const currentScale = dimensions.width > 0 ? dimensions.width / virtualWidth : (110 / virtualWidth);
+
+  const cleanTitle = title || file.name || 'Google Document';
+  const displayContent = (content || '').replace(/^#+\s*.*$/m, '').trim() || 'Document content preview...';
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="w-full h-full relative overflow-hidden bg-[#F1F3F9] dark:bg-[#121316] select-none pointer-events-none flex items-center justify-center font-sans"
+    >
+      <div
+        style={{
+          width: `${virtualWidth}px`,
+          height: '1000px',
+          transform: `scale(${currentScale})`,
+          transformOrigin: 'top left',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+        }}
+        className="bg-white dark:bg-[#1E1F22] text-slate-800 dark:text-white p-12 flex flex-col overflow-hidden shadow-2xl rounded-sm font-sans border border-slate-200 dark:border-slate-800"
+      >
+        {/* Doc Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
+          <div className="flex items-center gap-3">
+            <span className="px-3.5 py-1 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold text-xs uppercase font-mono">
+              Google Doc
+            </span>
+            <span className="text-xs text-slate-400 font-semibold truncate">{cleanTitle}</span>
+          </div>
+          <span className="text-xs text-slate-400 font-mono">Document Stage</span>
+        </div>
+
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-6 leading-tight font-sans">
+          {cleanTitle}
+        </h1>
+
+        <div className="text-base text-slate-700 dark:text-slate-300 space-y-4 font-sans leading-relaxed">
+          <ReactMarkdown>{displayContent}</ReactMarkdown>
+        </div>
+      </div>
     </div>
   );
 }

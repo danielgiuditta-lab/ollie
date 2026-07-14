@@ -802,15 +802,17 @@ async function startServer() {
       const ingestPromises = filesToIngest.map(async (file) => {
         const mType = (file.mimeType || '').toLowerCase();
         
-        // Identify if it's text/code/doc/sheet
+        // Identify if it's text/code/doc/sheet/slide
         const isGoogleDoc = mType === 'application/vnd.google-apps.document';
         const isGoogleSheet = mType === 'application/vnd.google-apps.spreadsheet';
+        const isGoogleSlide = mType === 'application/vnd.google-apps.presentation';
         const isTextOrCode = mType.startsWith('text/') || 
                              mType === 'application/json' || 
                              mType === 'application/javascript' || 
                              mType === 'application/x-javascript' ||
                              isGoogleDoc || 
-                             isGoogleSheet;
+                             isGoogleSheet ||
+                             isGoogleSlide;
         
         const sizeNum = file.size ? parseInt(file.size, 10) : 0;
         const isTooLarge = sizeNum > 1000000; // 1MB limit
@@ -826,7 +828,7 @@ async function startServer() {
         }
 
         let downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
-        if (isGoogleDoc) {
+        if (isGoogleDoc || isGoogleSlide) {
           downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
         } else if (isGoogleSheet) {
           downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;

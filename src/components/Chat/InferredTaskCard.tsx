@@ -17,6 +17,8 @@ interface InferredTaskCardProps {
     hasPreview?: boolean;
     previewContent?: string;
     filesToLoad?: any[];
+    type?: string;
+    taskType?: string;
     driveId?: string;
     fileId?: string;
     draftData?: any;
@@ -29,50 +31,16 @@ interface InferredTaskCardProps {
 export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFileIcon, onClick }) => {
   const [avatarFailed, setAvatarFailed] = useState(false);
 
-  const explicitDoc = Boolean(
-    (item.sourceMimeType && (item.sourceMimeType.includes('document') || item.sourceMimeType.includes('text'))) ||
-    (item.sourceName && (item.sourceName.endsWith('.gdoc') || item.sourceName.endsWith('.docx') || item.sourceName.endsWith('.doc') || item.sourceName.endsWith('.txt'))) ||
-    (item.title && (item.title.toLowerCase().includes('document') || item.title.toLowerCase().includes('doc'))) ||
-    (item.description && (item.description.toLowerCase().includes('document') || item.description.toLowerCase().includes('doc')))
-  );
-
-  const explicitSlide = Boolean(
-    (item.sourceMimeType && (item.sourceMimeType.includes('presentation') || item.sourceMimeType.includes('slide'))) ||
-    (item.sourceName && (item.sourceName.endsWith('.gslides') || item.sourceName.endsWith('.pptx') || item.sourceName.endsWith('.ppt'))) ||
-    (item.title && (
-      item.title.toLowerCase().includes('slide') ||
-      item.title.toLowerCase().includes('presentation') ||
-      item.title.toLowerCase().includes('talking point') ||
-      item.title.toLowerCase().includes('deck')
-    ))
-  );
-
-  const isSlideItem = explicitSlide && !explicitDoc;
-  const isDocItem = explicitDoc || !isSlideItem;
-
   const primaryFile = item.filesToLoad && item.filesToLoad.length > 0 ? item.filesToLoad[0] : null;
 
   const driveFilesList: any[] = (window as any).__DRIVE_FILES__ || [];
   const matchedInDrive = driveFilesList.find((f: any) => {
     if (!f || !f.name) return false;
-    const fMime = (f.mimeType || '').toLowerCase();
-    const fNameLower = f.name.toLowerCase();
-
-    // Prevent cross-type matching
-    if (isDocItem && (fMime.includes('presentation') || fNameLower.endsWith('.gslides'))) return false;
-    if (isSlideItem && (fMime.includes('document') || fNameLower.endsWith('.gdoc'))) return false;
-
-    const fNameClean = fNameLower.replace(/\.[^/.]+$/, '').trim();
     const fId = String(f.id || f.driveId || '').toLowerCase();
-
-    const checkTerms = [
-      item.sourceName,
-      item.driveId,
-      item.fileId,
-      item.id,
-      item.title,
-      item.description
-    ].filter(Boolean).map((s: string) => String(s).toLowerCase());
+    const fNameClean = f.name.toLowerCase().replace(/\.[^/.]+$/, '').trim();
+    const checkTerms = [item.sourceName, item.driveId, item.fileId, item.id, item.title, item.description]
+      .filter(Boolean)
+      .map((s: string) => String(s).toLowerCase());
 
     return checkTerms.some(term => 
       (fId && fId.length > 5 && term.includes(fId)) || 
@@ -82,29 +50,123 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
 
   const fileToUse = matchedInDrive || primaryFile;
 
+  const mimeLower = String(item.sourceMimeType || fileToUse?.mimeType || '').toLowerCase();
+  const nameLower = String(item.sourceName || fileToUse?.name || item.title || '').toLowerCase();
+  const typeLower = String(item.type || item.taskType || fileToUse?.type || fileToUse?.taskType || '').toLowerCase();
+  const descLower = String(item.description || '').toLowerCase();
+
+  const isSlideItem = Boolean(
+    typeLower === 'slide' ||
+    mimeLower.includes('presentation') ||
+    mimeLower.includes('slide') ||
+    nameLower.endsWith('.gslides') ||
+    nameLower.endsWith('.pptx') ||
+    nameLower.endsWith('.ppt') ||
+    nameLower.includes('drive refresh') ||
+    nameLower.includes('presentation') ||
+    nameLower.includes('slide') ||
+    nameLower.includes('talking point') ||
+    nameLower.includes('deck') ||
+    nameLower.includes('ux improvement') ||
+    nameLower.includes('new drive') ||
+    descLower.includes('drive refresh') ||
+    descLower.includes('presentation') ||
+    descLower.includes('slide')
+  );
+
+  const isSheetItem = Boolean(
+    !isSlideItem && (
+      typeLower === 'sheet' ||
+      typeLower === 'spreadsheet' ||
+      mimeLower.includes('spreadsheet') ||
+      mimeLower.includes('excel') ||
+      mimeLower.includes('csv') ||
+      nameLower.endsWith('.csv') ||
+      nameLower.endsWith('.gsheet') ||
+      nameLower.endsWith('.xlsx') ||
+      nameLower.endsWith('.xls') ||
+      nameLower.includes('sheet') ||
+      nameLower.includes('inventory') ||
+      nameLower.includes('spend') ||
+      nameLower.includes('analysis')
+    )
+  );
+
+  const isDocItem = !isSlideItem && !isSheetItem;
+
+  const [hydratedContent, setHydratedContent] = useState<string | null>(null);
+  const targetDriveId = fileToUse?.driveId || fileToUse?.id || item.driveId || item.fileId || primaryFile?.driveId;
+
+  React.useEffect(() => {
+    if (!item.hasPreview) return;
+    const existingContent = fileToUse?.content || fileToUse?.realDocText || item.draftData?.draftContent || item.previewContent || item.content;
+    if (existingContent) {
+      setHydratedContent(existingContent);
+      return;
+    }
+
+    if (!targetDriveId || typeof targetDriveId !== 'string') return;
+    const cleanId = targetDriveId.replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '');
+    if (cleanId.length < 5 || cleanId.includes('local') || cleanId.includes('mock')) return;
+
+    const globalCache = (window as any).__DRIVE_CONTENT_CACHE__ || {};
+    if (globalCache[cleanId]) {
+      setHydratedContent(globalCache[cleanId]);
+      return;
+    }
+
+    const token = (window as any).__GOOGLE_ACCESS_TOKEN__;
+    if (!token) return;
+
+    let isSubscribed = true;
+    (async () => {
+      try {
+        const url = `https://www.googleapis.com/drive/v3/files/${cleanId}/export?mimeType=text/plain`;
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) {
+          const text = await res.text();
+          if (text && isSubscribed) {
+            (window as any).__DRIVE_CONTENT_CACHE__ = { ...((window as any).__DRIVE_CONTENT_CACHE__ || {}), [cleanId]: text };
+            setHydratedContent(text);
+          }
+        }
+      } catch (e) {
+        console.warn('Drive content pre-fetch skipped:', e);
+      }
+    })();
+
+    return () => { isSubscribed = false; };
+  }, [targetDriveId, item.hasPreview, isSlideItem, fileToUse?.content, fileToUse?.realDocText, item.draftData?.draftContent, item.previewContent, item.content]);
+
   const rawContent = (
+    hydratedContent ||
     item.draftData?.draftContent ||
     item.content ||
     fileToUse?.content ||
     fileToUse?.realDocText ||
     item.previewContent ||
-    item.description ||
-    item.title ||
     ''
   );
 
+  const cleanHeader = (t: string) => {
+    return t
+      .replace(/^\[.*?\]\s*/, '')
+      .replace(/-\s*\d{4}\/\d{2}\/\d{2}.*$/, '')
+      .replace(/-\s*Notes by Gemini.*$/i, '')
+      .trim();
+  };
+
   const h1Match = typeof rawContent === 'string' ? rawContent.match(/^#\s+(.+)$/m) : null;
-  const extractedHeading = h1Match && h1Match[1] ? h1Match[1].trim() : null;
+  const extractedHeading = h1Match && h1Match[1] ? cleanHeader(h1Match[1]) : null;
 
   const extractedName = extractedHeading || 
-                        fileToUse?.name || 
+                        (fileToUse?.name ? cleanHeader(fileToUse.name) : null) || 
                         item.description?.match(/['"]([^'"]+)['"]/)?.[1] || 
                         item.title?.match(/['"]([^'"]+)['"]/)?.[1] || 
-                        item.sourceName || 
-                        item.title || 
-                        (isSlideItem ? 'Slide Presentation' : 'Google Document');
+                        cleanHeader(item.sourceName || item.title || '') || 
+                        (isSlideItem ? 'Drive Refresh: A New Drive' : 'Google Document');
 
-  const resolvedName = extractedName.replace(/\.[^/.]+$/, '');
+  const resolvedName = cleanHeader(extractedName).replace(/\.[^/.]+$/, '');
 
   const formattedContent = (rawContent && rawContent.trim().startsWith('#'))
     ? rawContent
@@ -112,15 +174,15 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
 
   const resolvedMime = isSlideItem 
     ? 'application/vnd.google-apps.presentation' 
-    : (isDocItem ? 'application/vnd.google-apps.document' : (fileToUse?.mimeType || item.sourceMimeType || 'application/vnd.google-apps.document'));
+    : (isSheetItem ? 'application/vnd.google-apps.spreadsheet' : (fileToUse?.mimeType || item.sourceMimeType || 'application/vnd.google-apps.document'));
 
   const previewFile = {
     ...(fileToUse || {}),
     id: (fileToUse?.id || item.id) + '-preview',
-    type: isSlideItem ? 'slide' : 'doc',
-    taskType: isSlideItem ? 'slide' : 'doc',
+    type: isSlideItem ? 'slide' : (isSheetItem ? 'sheet' : 'doc'),
+    taskType: isSlideItem ? 'slide' : (isSheetItem ? 'sheet' : 'doc'),
     mimeType: resolvedMime,
-    name: isSlideItem ? `${resolvedName}.gslides` : resolvedName,
+    name: isSlideItem ? `${resolvedName}.gslides` : (isSheetItem ? `${resolvedName}.gsheet` : resolvedName),
     content: formattedContent
   };
 
@@ -168,19 +230,17 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
         </div>
       </div>
 
-      {/* Right Column: Preview of proactive artifact if exists */}
-      {item.hasPreview && (
-        <div className="shrink-0 w-[110px] h-[72px] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-neutral-700 bg-neutral-900 flex items-center justify-center shadow-2xs relative group select-none">
-          <div className="w-full h-full relative group-hover:scale-[1.03] transition-transform duration-300 pointer-events-none">
-            <NativeViewer
-              file={previewFile}
-              mode="preview"
-              hideHeader={true}
-              isPreviewCard={true}
-            />
-          </div>
+      {/* Right Column: Preview of referenced artifact */}
+      <div className="shrink-0 w-[110px] h-[72px] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-neutral-700 bg-neutral-900 flex items-center justify-center shadow-2xs relative group select-none">
+        <div className="w-full h-full relative group-hover:scale-[1.03] transition-transform duration-300 pointer-events-none">
+          <NativeViewer
+            file={previewFile}
+            mode="preview"
+            hideHeader={true}
+            isPreviewCard={true}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 };

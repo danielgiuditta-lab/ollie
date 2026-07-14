@@ -63,7 +63,8 @@ export default function App() {
 
   useEffect(() => {
     (window as any).__DRIVE_FILES__ = driveFiles;
-  }, [driveFiles]);
+    (window as any).__GOOGLE_ACCESS_TOKEN__ = accessToken;
+  }, [driveFiles, accessToken]);
 
   const {
     recentTasks, setRecentTasks,
