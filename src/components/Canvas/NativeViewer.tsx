@@ -1400,20 +1400,20 @@ export function NativeViewer({
       return (
         <div 
           ref={previewRef}
-          className="w-full h-full relative overflow-hidden bg-white select-none pointer-events-none rounded-[8px]"
+          className="w-full h-full relative overflow-hidden bg-[#FAFAFC] select-none pointer-events-none rounded-[8px]"
         >
           <div 
             style={{
-              width: '1040px',
-              height: '720px',
-              transform: 'scale(0.1)',
+              width: '520px',
+              height: '360px',
+              transform: 'scale(0.2)',
               transformOrigin: 'top left',
               position: 'absolute',
               left: 0,
               top: 0,
               overflow: 'hidden'
             }}
-            className="p-8 bg-[#FAFAFC] text-slate-800 flex flex-col justify-start rounded-[16px] border border-slate-200/90 shadow-2xs"
+            className="p-5 bg-[#FAFAFC] text-slate-800 flex flex-col justify-start rounded-[16px] border border-slate-200/90 shadow-2xs"
           >
             <RenderSlideMarkdown text={activeSlideText} isDark={false} />
           </div>
@@ -1421,7 +1421,7 @@ export function NativeViewer({
       );
     }
 
-    // Doc Card Thumbnail Preview (Scaled 1:1 RenderDocMarkdown on 540x720 canvas)
+    // Doc Card Thumbnail Preview (Scaled 1:1 RenderDocMarkdown on 300x400 canvas)
     return (
       <div 
         ref={previewRef}
@@ -1429,16 +1429,16 @@ export function NativeViewer({
       >
         <div 
           style={{
-            width: '540px',
-            height: '720px',
-            transform: 'scale(0.1)',
+            width: '300px',
+            height: '400px',
+            transform: 'scale(0.18)',
             transformOrigin: 'top left',
             position: 'absolute',
             left: 0,
             top: 0,
             overflow: 'hidden'
           }}
-          className="p-6 bg-white text-slate-800 flex flex-col justify-start rounded-[14px] border border-slate-200/90 shadow-2xs"
+          className="p-4 bg-white text-slate-800 flex flex-col justify-start rounded-[14px] border border-slate-200/90 shadow-2xs"
         >
           <RenderDocMarkdown text={rawText} isDark={false} />
         </div>

@@ -144,10 +144,14 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
   const rawContent = (
     hydratedContent ||
     item.draftData?.draftContent ||
+    (item as any).updatedMarkdown ||
+    (item as any).originalMarkdown ||
     item.content ||
     fileToUse?.content ||
     fileToUse?.realDocText ||
     item.previewContent ||
+    (item as any).summaryOfChanges ||
+    item.description ||
     ''
   );
 
