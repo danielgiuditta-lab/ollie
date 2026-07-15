@@ -532,11 +532,15 @@ export function HomeLanding({
         }
       }
       if (!personName) {
-        const team = ['Elena Vance', 'Dr. Marcus Thorne', 'Sarah Lin', 'David Ross', 'Priya Patel', 'Rachel Chang'];
-        personName = team[idx % team.length];
+        if (accessToken) {
+          personName = userProfile?.displayName || userProfile?.name || 'Workspace Teammate';
+        } else {
+          const team = ['Elena Vance', 'Dr. Marcus Thorne', 'Sarah Lin', 'David Ross', 'Priya Patel', 'Rachel Chang'];
+          personName = team[idx % team.length];
+        }
       }
 
-      const personAvatar = getAvatarForPerson(personName);
+      const personAvatar = item.personAvatar || item.authorPhotoUrl || (accessToken ? (userProfile?.picture || getAvatarForPerson(personName, true)) : getAvatarForPerson(personName));
       const isProactive = idx === 0;
 
       let fileName = cleanSpace;

@@ -26,10 +26,14 @@ export const PERSON_AVATAR_MAP: Record<string, string> = {
   'kaushal': '/people/kaushal.jpg'
 };
 
-export function getAvatarForPerson(name: string): string {
-  if (!name) return '/people/default_user.jpg';
+export function getAvatarForPerson(name: string, isOAuth: boolean = false): string {
+  if (!name) return isOAuth ? 'https://ui-avatars.com/api/?name=Google+User&background=1a73e8&color=ffffff&bold=true' : '/people/default_user.jpg';
   const clean = name.trim().toLowerCase();
   
+  if (isOAuth) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1a73e8&color=ffffff&bold=true`;
+  }
+
   if (PERSON_AVATAR_MAP[clean]) {
     return PERSON_AVATAR_MAP[clean];
   }

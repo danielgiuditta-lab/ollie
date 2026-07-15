@@ -24,6 +24,8 @@ interface InferredTaskCardProps {
     fileId?: string;
     draftData?: any;
     content?: string;
+    isReal?: boolean;
+    isOAuth?: boolean;
   };
   getFileIcon: (mimeType?: string) => string;
   onClick: () => void;
@@ -237,7 +239,7 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
             {!avatarFailed ? (
               <img 
-                src={item.personAvatar || getAvatarForPerson(item.personName)} 
+                src={item.personAvatar || getAvatarForPerson(item.personName, Boolean(item.isReal || item.driveId || item.isOAuth))} 
                 alt="avatar icon" 
                 className="w-3.5 h-3.5 rounded-full object-cover shrink-0" 
                 onError={() => setAvatarFailed(true)}
