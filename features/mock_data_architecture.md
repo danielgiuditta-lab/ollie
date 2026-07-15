@@ -4,8 +4,9 @@
 - **Mock Storage Isolation**: All mock data (inferred tasks, chat histories, recent files, space states) must be stored in data files under the `data/` directory (e.g. `data/mock_inferred_tasks.json`, `data/chats/*.json`) and served via backend endpoints (`/api/mock-inferred-tasks`, `/api/user-chats/:email`, `/api/chats/:chatId`).
 - **MANDATORY: ZERO HARDCODED MOCK DATA IN TSX FILES**: Under NO circumstances should mock dataset objects, task items, or placeholder arrays be written into `.tsx` files or React component state constants (e.g. `DEFAULT_TODO_ITEMS = []`). All mock data MUST reside exclusively in backend JSON files under `data/` and be fetched dynamically via server endpoints (`/api/...`). Modifying `.tsx` files to hardcode mock data items is strictly prohibited.
 - **Strict Bifurcation Rule**:
-  - **OAuth Authenticated (`accessToken !== null`)**: App fetches real Google Workspace content via Google APIs (`/api/workspace-digest`, Drive API). Mock datasets evaluate to empty arrays (`[]`).
+  - **OAuth Authenticated (`accessToken !== null`)**: App fetches real Google Workspace content via Google APIs (`/api/workspace-digest`, Drive API). Mock datasets evaluate to empty arrays (`[]`). Under NO circumstances should mock data, mock persona names, or mock local photo assets leak into the OAuth path.
   - **Simulated Mock Login (`!accessToken` / Mock User)**: App loads simulated database items from backend JSON files (`data/`).
+  - **MANDATORY IMPACT QUESTIONING**: If a requested change to the mock dataset requires code edits that touch shared UI components or affect both execution paths, the AI assistant MUST explicitly ask the user for confirmation first.
 
 ## 2. Domain Context: Health UI Product Designer Persona
 Mock data across the system reflects real artifacts and workflows owned by a Senior Product Designer at a Health UI / MedTech software company (**Aura Health Systems**):
