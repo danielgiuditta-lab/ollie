@@ -1,25 +1,25 @@
 {
   "chatId": "home_mock-user_example_com",
-  "projectName": "New Workspace",
-  "chatName": null,
-  "type": null,
-  "taskType": null,
+  "projectName": "Home Dashboard",
+  "chatName": "",
+  "type": "workspace",
+  "taskType": "app",
   "viewState": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [],
   "envId": null,
-  "activeSpaceId": null,
+  "activeSpaceId": "home_mock-user_example_com",
   "sandboxUrl": "",
   "sandboxFiles": [],
-  "userEmail": "",
+  "userEmail": "mock-user@example.com",
   "members": [],
   "pinnedArtifactIds": [
     "todo-card",
+    "space-patient-experience",
     "space-flatiron-ui-design",
     "space-flatiron-gtm",
-    "space-flatiron-new-app-launch",
-    "space-flatiron-new-app-launch-file-0"
+    "space-flatiron-new-app-launch"
   ],
-  "updatedAt": "2026-07-15T13:07:56.496Z"
+  "updatedAt": "2026-07-15T17:15:36.589Z"
 }
