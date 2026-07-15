@@ -1026,8 +1026,23 @@ async function startServer() {
 
       [emails, chats, comments] = await Promise.all([fetchEmails(), fetchChats(), fetchComments()]);
 
+      let recentFiles: any[] = [];
       const hasData = emails.length > 0 || chats.length > 0 || comments.length > 0;
       if (!hasData) {
+        try {
+          const driveQuery = `trashed = false and (mimeType = 'application/vnd.google-apps.document' or mimeType = 'application/vnd.google-apps.spreadsheet' or mimeType = 'application/vnd.google-apps.presentation')`;
+          const driveUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(driveQuery)}&pageSize=8&orderBy=modifiedTime desc&fields=files(id,name,mimeType,modifiedTime,owners)`;
+          const driveRes = await fetchWithTimeout(driveUrl, { headers }, 2500);
+          if (driveRes.ok) {
+            const driveData = await driveRes.json();
+            recentFiles = driveData.files || [];
+          }
+        } catch (e) {
+          console.warn("Failed to fetch recent files fallback for digest:", e);
+        }
+      }
+
+      if (!hasData && recentFiles.length === 0) {
         return res.json({
           summary: "No recent updates or actionable items found in your Google Workspace.",
           immediateActions: [],
@@ -1051,10 +1066,15 @@ async function startServer() {
         ? `\n--- ACTIVE COMMENTS IN DOCS/SLIDES/SHEETS ---\n` + comments.map(doc => `File: "${doc.fileName}"\n` + doc.comments.map((c: any) => `- Comment by ${c.author}: "${c.content}"\n  Replies:\n` + (c.replies.map((r: any) => `    * Reply by ${r.author}: "${r.content}"`).join('\n') || '    (None)')).join('\n')).join('\n\n')
         : '';
 
-      const promptText = `You are a helpful assistant. Synthesize a structured 'Today's Agenda & Action Plan' based on the following Google Workspace activity log:
+      const filesBlock = recentFiles.length > 0
+        ? `\n--- RECENT USER GOOGLE DRIVE FILES (Synthesize proactive tasks for these files) ---\n` + recentFiles.map(f => `File Title: "${f.name}" (Drive ID: ${f.id}, MimeType: ${f.mimeType})`).join('\n\n')
+        : '';
+
+      const promptText = `You are a helpful proactive AI coding assistant. Synthesize a structured 'Today's Agenda & Action Plan' based on the following Google Workspace activity log and recent Drive files:
 ${emailsBlock}
 ${chatsBlock}
 ${commentsBlock}
+${filesBlock}
 
 Provide the response as a JSON object matching the following structure:
 {

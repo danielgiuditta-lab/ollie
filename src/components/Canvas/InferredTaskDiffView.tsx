@@ -5,55 +5,104 @@ interface InferredTaskDiffViewProps {
   theme?: 'light' | 'dark';
 }
 
-const GoogleDriveLogo = () => (
-  <svg width="110" height="96" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg" className="shrink-0 drop-shadow-sm select-none pointer-events-none">
-    <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
-    <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a8.9 8.9 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
-    <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.85-3.2 7.4-12.8c.8-1.4 1.2-2.95 1.2-4.5h-27.5l5.85 10.15z" fill="#ea4335"/>
-    <path d="m43.65 25 13.75-23.8c-1.4-.8-2.95-1.2-4.5-1.2h-18.5c-1.55 0-3.1.4-4.5 1.2z" fill="#00832d"/>
-    <path d="m59.8 53-16.15-28-16.15 28h32.3z" fill="#2684fc"/>
-    <path d="m73.55 76.8 13.75-23.8c.8-1.4 1.2-2.95 1.2-4.501h-27.5l12.55 28.301z" fill="#ffba00"/>
-  </svg>
-);
+const RenderMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
+  if (!text) return null;
+  const lines = text.split('\n');
 
-const DriveArtifactCard = ({ 
-  title = "New Drive", 
-  subtext = "Drive", 
-  isDark = false,
-  content = []
-}: { 
-  title?: string; 
-  subtext?: string; 
+  return (
+    <div className="space-y-2.5 font-sans leading-relaxed text-[13px] sm:text-[14px]">
+      {lines.map((line, i) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={i} className="h-1" />;
+
+        // Header 1 (# Title)
+        if (trimmed.startsWith('# ')) {
+          return (
+            <h2 key={i} className={`text-[17px] sm:text-[19px] font-bold tracking-tight border-b pb-2 mb-2 ${isDark ? 'text-white border-neutral-700' : 'text-slate-900 border-slate-200'}`}>
+              {trimmed.replace(/^#\s+/, '')}
+            </h2>
+          );
+        }
+
+        // Header 2 (## Subheading)
+        if (trimmed.startsWith('## ')) {
+          return (
+            <h3 key={i} className={`text-[14px] sm:text-[15px] font-semibold tracking-tight border-b pb-1.5 mb-1.5 ${isDark ? 'text-neutral-100 border-neutral-700' : 'text-slate-800 border-slate-200'}`}>
+              {trimmed.replace(/^##\s+/, '')}
+            </h3>
+          );
+        }
+
+        // Bullet Point (- item or • item)
+        if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+          const content = trimmed.replace(/^[\-•]\s*/, '');
+          const parts = content.split(/(\*\*.*?\*\*|`.*?`)/g);
+          return (
+            <div key={i} className="flex items-start gap-2 pl-0.5">
+              <span className={`font-bold shrink-0 mt-0.5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>•</span>
+              <span className={isDark ? 'text-neutral-200' : 'text-slate-700'}>
+                {parts.map((part, pIdx) => {
+                  if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={pIdx} className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
+                  }
+                  if (part.startsWith('`') && part.endsWith('`')) {
+                    return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[12px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
+                  }
+                  return part;
+                })}
+              </span>
+            </div>
+          );
+        }
+
+        // Regular Paragraph
+        const parts = trimmed.split(/(\*\*.*?\*\*|`.*?`)/g);
+        return (
+          <p key={i} className={isDark ? 'text-neutral-300' : 'text-slate-650'}>
+            {parts.map((part, pIdx) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={pIdx} className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
+              }
+              if (part.startsWith('`') && part.endsWith('`')) {
+                return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[12px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
+              }
+              return part;
+            })}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
+const SlideCard = ({
+  markdown = "",
+  isDark = false
+}: {
+  markdown?: string;
   isDark?: boolean;
-  content?: string[];
 }) => {
   return (
-    <div className={`w-full aspect-[16/10] rounded-[24px] border shadow-sm p-8 flex flex-col justify-between relative overflow-hidden select-none transition-all duration-300 ${
-      isDark ? 'border-[#3E4042] bg-[#282A2D] text-white' : 'border-slate-200/80 bg-white text-slate-800'
+    <div className={`w-full aspect-[16/9] max-h-[50vh] rounded-[20px] border shadow-xs p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
+      isDark ? 'border-[#3E4042] bg-[#242629] text-white' : 'border-slate-200/90 bg-white text-slate-800'
     }`}>
-      <div className="flex items-center justify-between w-full">
-        <div className="flex flex-col justify-center min-w-0 pr-4">
-          <span className={`text-[12px] font-medium tracking-wide ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}>
-            {subtext}
-          </span>
-          <h3 className={`text-[28px] sm:text-[32px] font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#1F1F1F]'} truncate`}>
-            {title}
-          </h3>
-        </div>
-        <div className="shrink-0 flex items-center justify-center p-2">
-          <GoogleDriveLogo />
-        </div>
-      </div>
+      <RenderMarkdown text={markdown} isDark={isDark} />
+    </div>
+  );
+};
 
-      {content && content.length > 0 && (
-        <div className="my-auto space-y-2 text-sm sm:text-base leading-relaxed font-sans font-medium">
-          {content.map((bullet, idx) => (
-            <p key={idx} className={isDark ? 'text-neutral-200' : 'text-slate-700'}>
-              {bullet}
-            </p>
-          ))}
-        </div>
-      )}
+const DocCard = ({
+  markdown = "",
+  isDark = false
+}: {
+  markdown?: string;
+  isDark?: boolean;
+}) => {
+  return (
+    <div className={`w-full aspect-[8.5/11] max-h-[50vh] rounded-[18px] border shadow-sm p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
+      isDark ? 'border-[#3E4042] bg-[#222427] text-white' : 'border-slate-200/90 bg-white text-slate-800'
+    }`}>
+      <RenderMarkdown text={markdown} isDark={isDark} />
     </div>
   );
 };
@@ -61,14 +110,43 @@ const DriveArtifactCard = ({
 export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file, theme = 'light' }) => {
   const isDark = theme === 'dark';
 
-  const rawTitle = file?.title || file?.name || file?.sourceName || 'New Drive';
-  const cleanTitle = rawTitle.replace(/\.[^/.]+$/, "").replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, "").trim() || "New Drive";
+  const task = file?.task || file || {};
+  const rawTitle = task?.sourceName || file?.sourceName || file?.name || file?.title || 'Workspace Artifact';
+  const cleanTitle = rawTitle.replace(/\.[^/.]+$/, "").replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, "").trim();
 
-  const col1Description = file?.originalContext || file?.draftData?.originalContext || file?.description || 'Simon gave feedback to make the problem framing more concise.';
-  const col2Description = file?.summaryOfChanges || file?.draftData?.summaryOfChanges || file?.descriptionDone || 'I made the language more concise in the problem framing section.';
+  const mimeLower = String(task?.sourceMimeType || file?.sourceMimeType || file?.mimeType || '').toLowerCase();
+  const nameLower = String(task?.sourceName || file?.sourceName || file?.name || '').toLowerCase();
+  const typeLower = String(task?.type || task?.taskType || file?.type || file?.taskType || '').toLowerCase();
 
-  const col1Content = file?.originalContentLines || file?.task?.originalContentLines || file?.originalSlide?.content;
-  const col2Content = file?.updatedContentLines || file?.task?.updatedContentLines || file?.updatedSlide?.content;
+  const isSlide = Boolean(
+    typeLower === 'slide' ||
+    mimeLower.includes('presentation') ||
+    mimeLower.includes('slide') ||
+    nameLower.endsWith('.gslides') ||
+    nameLower.endsWith('.pptx') ||
+    nameLower.includes('kiosk') ||
+    nameLower.includes('deck') ||
+    nameLower.includes('audit') ||
+    nameLower.includes('roadmap') ||
+    nameLower.includes('optimization')
+  );
+
+  const col1Description = task?.originalContext || file?.originalContext || file?.draftData?.originalContext || file?.description || 'Collaborator comment requesting updates to this artifact.';
+  const col2Description = task?.summaryOfChanges || file?.summaryOfChanges || file?.draftData?.summaryOfChanges || file?.descriptionDone || 'Agent updated the content based on the collaborator comment.';
+
+  const col1Markdown = 
+    task?.originalMarkdown || 
+    file?.originalMarkdown || 
+    (Array.isArray(task?.originalContentLines) ? task.originalContentLines.join('\n') : null) ||
+    (Array.isArray(file?.originalContentLines) ? file.originalContentLines.join('\n') : null) ||
+    `# ${cleanTitle}\n\n- Baseline content before collaborator review.\n- ${col1Description}`;
+
+  const col2Markdown = 
+    task?.updatedMarkdown || 
+    file?.updatedMarkdown || 
+    (Array.isArray(task?.updatedContentLines) ? task.updatedContentLines.join('\n') : null) ||
+    (Array.isArray(file?.updatedContentLines) ? file.updatedContentLines.join('\n') : null) ||
+    `# ${cleanTitle}\n\n- ${col2Description}`;
 
   return (
     <div className={`w-full h-full flex flex-col items-stretch justify-start p-4 sm:p-6 overflow-y-auto transition-colors duration-300 ${
@@ -88,12 +166,14 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
             Original
           </h2>
 
-          {/* Artifact Container: 16px top & bottom margin padding surround */}
           <div className="mb-4">
-            <DriveArtifactCard title={cleanTitle || "New Drive"} subtext="Drive" isDark={isDark} content={col1Content} />
+            {isSlide ? (
+              <SlideCard markdown={col1Markdown} isDark={isDark} />
+            ) : (
+              <DocCard markdown={col1Markdown} isDark={isDark} />
+            )}
           </div>
 
-          {/* Description: Google Sans Text Medium 16/24 */}
           <p 
             className={`font-['Google_Sans_Text','Inter',sans-serif] text-[16px] leading-[24px] font-medium ${
               isDark ? 'text-neutral-300' : 'text-[#3C4043]'
@@ -114,12 +194,14 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
             Suggested Update
           </h2>
 
-          {/* Artifact Container: 16px top & bottom margin padding surround */}
           <div className="mb-4">
-            <DriveArtifactCard title={cleanTitle || "New Drive"} subtext="Drive" isDark={isDark} content={col2Content} />
+            {isSlide ? (
+              <SlideCard markdown={col2Markdown} isDark={isDark} />
+            ) : (
+              <DocCard markdown={col2Markdown} isDark={isDark} />
+            )}
           </div>
 
-          {/* Description: Google Sans Text Medium 16/24 */}
           <p 
             className={`font-['Google_Sans_Text','Inter',sans-serif] text-[16px] leading-[24px] font-medium ${
               isDark ? 'text-neutral-300' : 'text-[#3C4043]'

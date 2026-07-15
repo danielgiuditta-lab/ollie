@@ -16,6 +16,7 @@ interface CanvasContainerProps {
   sandboxUrl: string;
   envId: string | null;
   appTheme: 'light' | 'dark';
+  accessToken?: string | null;
   pinnedArtifactIds?: string[];
   aiSummarySources?: any[];
   aiSummaryMessages?: any[];
@@ -39,6 +40,7 @@ export function CanvasContainer({
   sandboxUrl,
   envId,
   appTheme,
+  accessToken,
   pinnedArtifactIds = [],
   aiSummarySources = [],
   aiSummaryMessages = [],
@@ -81,7 +83,7 @@ export function CanvasContainer({
   }
 
   if (selectedFile) {
-    const isDiffItem = Boolean(
+    const isDiffItem = !accessToken && Boolean(
       selectedFile.isProactiveDraft || 
       selectedFile.isInferredTask || 
       selectedFile.isProactive || 

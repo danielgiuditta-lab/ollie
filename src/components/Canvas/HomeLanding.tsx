@@ -47,116 +47,7 @@ export function cleanWorkspaceName(raw: string): string {
   return cleaned || 'Workspace';
 }
 
-export const DEFAULT_TODO_ITEMS = [
-  {
-    id: 'todo-proactive-1',
-    title: "I addressed Emily's comment on Brand Guidelines",
-    titleDone: "I addressed Emily's comment on Brand Guidelines",
-    description: "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
-    descriptionDone: "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
-    workspace: "Branding",
-    sourceName: "Brand Guidelines",
-    sourceMimeType: "application/vnd.google-apps.document",
-    personName: "Emily",
-    personAvatar: getAvatarForPerson("Emily"),
-    status: 'blocked',
-    hasPreview: true,
-    involvesMe: true,
-    filesToLoad: [
-      {
-        name: 'Brand Guidelines.gdoc',
-        type: 'code',
-        content: `# Brand Guidelines & Policies\n\nAuthor: Brand Operations\nContributors: Emily\n\n## Brand Kit Layout (Consolidated)\nOur brand emphasizes sustainability, transparent sourcing, and modern design aesthetic. All public collateral adheres to our updated color system and typography per Emily's feedback.`,
-        mimeType: 'application/vnd.google-apps.document'
-      }
-    ]
-  },
-  {
-    id: 'todo-2',
-    title: "I changed the slide color based on David's feedback",
-    titleDone: "I changed the slide color based on David's feedback",
-    description: "David commented on Q3 Strategy Deck to use warm palette. I updated the palette for your review.",
-    descriptionDone: "David commented on Q3 Strategy Deck to use warm palette. I updated the palette for your review.",
-    workspace: 'Branding',
-    sourceName: "Q3 Strategy Deck",
-    sourceMimeType: "application/vnd.google-apps.presentation",
-    personName: "David",
-    personAvatar: getAvatarForPerson("David"),
-    status: 'blocked',
-    hasPreview: true,
-    involvesMe: true,
-    filesToLoad: [
-      {
-        name: 'Q3 Strategy Deck.gslides',
-        type: 'code',
-        content: `# Q3 Brand Strategy\n\n## Warm Palette Transition\n- Replaced cool slate with warm amber tones per David's feedback\n- Adjusted typography contrast for accessibility\n- Consolidated Q3 brand metrics and targets\n\n## Next Steps\n- Roll out warm palette across marketing collateral\n- Share preview deck with design stakeholders`,
-        mimeType: 'application/vnd.google-apps.presentation'
-      }
-    ]
-  },
-  {
-    id: 'todo-3',
-    title: "I removed the section from paragraph based on Juyun's feedback",
-    titleDone: "I removed the section from paragraph based on Juyun's feedback",
-    description: "Juyun commented on Brand Guidelines doc to remove legacy pricing. I removed the section for your review.",
-    descriptionDone: "Juyun commented on Brand Guidelines doc to remove legacy pricing. I removed the section for your review.",
-    workspace: 'Branding',
-    sourceName: "Brand Guidelines",
-    sourceMimeType: "application/vnd.google-apps.document",
-    personName: "Juyun",
-    personAvatar: getAvatarForPerson("Juyun"),
-    status: 'blocked',
-    hasPreview: true,
-    involvesMe: true,
-    filesToLoad: [
-      {
-        name: 'Brand Guidelines.gdoc',
-        type: 'code',
-        content: `# Brand Guidelines & Policies\n\nAuthor: Brand Operations\nContributors: Juyun, Michael\n\n## Core Principles\nOur brand emphasizes sustainability, transparent sourcing, and modern design aesthetic. All public collateral must adhere to our updated color system and typography.\n\n## Pricing Policy (Updated)\n*Note: Legacy distributor pricing tier section has been cleanly removed per Juyun's feedback.*`,
-        mimeType: 'application/vnd.google-apps.document'
-      }
-    ]
-  },
-  {
-    id: 'todo-space-external-1',
-    title: "I updated the branding layout visuals for David",
-    description: "David left feedback for Chandu to fix visuals. I updated the layout visuals for your review.",
-    workspace: "Branding",
-    sourceName: "Branding",
-    sourceMimeType: "text/html",
-    personName: "David",
-    personAvatar: getAvatarForPerson("David"),
-    status: 'done',
-    hasPreview: false,
-    involvesMe: false
-  },
-  {
-    id: 'todo-4',
-    title: 'I updated the sales performance tracker (annual_sales.csv)',
-    description: "David commented on annual_sales.csv. I updated the figures against monthly data.",
-    workspace: 'Sales',
-    sourceName: "Sales",
-    sourceMimeType: "application/vnd.google-apps.spreadsheet",
-    personName: "David",
-    personAvatar: getAvatarForPerson("David"),
-    status: 'done',
-    hasPreview: false,
-    involvesMe: true
-  },
-  {
-    id: 'todo-5',
-    title: 'I compiled an operations status update on leads',
-    description: "Bora and Megan messaged about leads. I compiled the operations status summary.",
-    workspace: 'Operations',
-    sourceName: "Operations",
-    sourceMimeType: "application/vnd.google-apps.chat",
-    personName: "Bora",
-    personAvatar: getAvatarForPerson("Bora"),
-    status: 'done',
-    hasPreview: false,
-    involvesMe: true
-  }
-];
+export const DEFAULT_TODO_ITEMS: any[] = [];
 
 interface HomeLandingProps {
   accessToken?: string | null;
@@ -709,7 +600,7 @@ export function HomeLanding({
 
     let finalTodos = [...mappedTodos];
     const isHome = isHomeId(activeSpaceId);
-    if (!isHome && projectName) {
+    if (!accessToken && !isHome && projectName) {
       const spaceName = projectName.trim();
       const hasSpaceTasks = mappedTodos.some(t => 
         (t.workspace || '').toLowerCase().includes(spaceName.toLowerCase()) ||
@@ -941,45 +832,20 @@ export function HomeLanding({
     setTodoItems([]); // Clear mock tasks immediately when accessToken or space changes
 
     if (!accessToken && isMock) {
-      const mockDigest = {
-        spaceId: activeSpaceId,
-        immediateActions: [
-          {
-            id: 'todo-proactive-1',
-            description: "I addressed Emily's comment on Brand Guidelines",
-            action: "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
-            source: "Branding"
-          },
-          {
-            id: 'todo-2',
-            description: 'I added the design strategy to the Marketing campaign brief',
-            action: "A teammate suggested adding key design guidelines. I updated the Marketing brief for your review.",
-            source: "Marketing"
-          },
-          {
-            id: 'todo-3',
-            description: 'I crafted the pricing strategy on Pricing Proposal doc',
-            action: "I updated pricing tiers and structure on the pricing doc for your review.",
-            source: 'Pricing Proposal'
+      setIsDigestLoading(true);
+      fetch('/api/mock-inferred-tasks')
+        .then(r => r.json())
+        .then(tasks => {
+          if (Array.isArray(tasks) && tasks.length > 0) {
+            setTodoItems(tasks);
+            todoCacheRef.current[spaceKey] = tasks;
           }
-        ],
-        followUps: [
-          {
-            id: 'todo-4',
-            description: 'I updated the sales performance tracker (annual_sales.csv)',
-            action: "I verified monthly figures against actual performance data.",
-            source: 'Sales'
-          },
-          {
-            id: 'todo-5',
-            description: 'I compiled an operations status update on leads',
-            action: "I reviewed the leads pipeline and compiled an operations status summary.",
-            source: 'Operations'
-          }
-        ]
-      };
-      setDigestData(mockDigest);
-      setIsDigestLoading(false);
+          setIsDigestLoading(false);
+        })
+        .catch(err => {
+          console.error("Error fetching mock tasks from server:", err);
+          setIsDigestLoading(false);
+        });
       return;
     }
 
@@ -1000,40 +866,8 @@ export function HomeLanding({
           setDigestError("Unable to load live daily digest.");
           setDigestData({
             spaceId: activeSpaceId,
-            immediateActions: [
-              {
-                id: 'todo-proactive-1',
-                description: "I addressed Emily's comment on Brand Guidelines",
-                action: "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
-                source: "Branding"
-              },
-              {
-                id: 'todo-2',
-                description: 'I added the design strategy to the Marketing campaign brief',
-                action: "A teammate suggested adding key design guidelines. I updated the Marketing brief for your review.",
-                source: "Marketing"
-              },
-              {
-                id: 'todo-3',
-                description: 'I crafted the pricing strategy on Pricing Proposal doc',
-                action: "I updated pricing tiers and structure on the pricing doc for your review.",
-                source: 'Pricing Proposal'
-              }
-            ],
-            followUps: [
-              {
-                id: 'todo-4',
-                description: 'I updated the sales performance tracker (annual_sales.csv)',
-                action: "I verified monthly figures against actual performance data.",
-                source: 'Sales'
-              },
-              {
-                id: 'todo-5',
-                description: 'I compiled an operations status update on leads',
-                action: "I reviewed the leads pipeline and compiled an operations status summary.",
-                source: 'Operations'
-              }
-            ]
+            immediateActions: [],
+            followUps: []
           });
         }
       } catch (err) {
@@ -1041,40 +875,8 @@ export function HomeLanding({
         setDigestError("Error connecting to server.");
         setDigestData({
           spaceId: activeSpaceId,
-          immediateActions: [
-            {
-              id: 'todo-proactive-1',
-              description: "I addressed Emily's comment on Brand Guidelines",
-              action: "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
-              source: "Branding"
-            },
-            {
-              id: 'todo-2',
-              description: 'I added the design strategy to the Marketing campaign brief',
-              action: "A teammate suggested adding key design guidelines. I updated the Marketing brief for your review.",
-              source: "Marketing"
-            },
-            {
-              id: 'todo-3',
-              description: 'I crafted the pricing strategy on Pricing Proposal doc',
-              action: "I updated pricing tiers and structure on the pricing doc for your review.",
-              source: 'Pricing Proposal'
-            }
-          ],
-          followUps: [
-            {
-              id: 'todo-4',
-              description: 'I updated the sales performance tracker (annual_sales.csv)',
-              action: "I verified monthly figures against actual performance data.",
-              source: 'Sales'
-            },
-            {
-              id: 'todo-5',
-              description: 'I compiled an operations status update on leads',
-              action: "I reviewed the leads pipeline and compiled an operations status summary.",
-              source: 'Operations'
-            }
-          ]
+          immediateActions: [],
+          followUps: []
         });
       } finally {
         setIsDigestLoading(false);

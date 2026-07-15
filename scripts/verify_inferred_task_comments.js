@@ -22,19 +22,24 @@ if (!hasSlidesAndDocs) {
   process.exit(1);
 }
 
-const hasBulletLines = mockTasks.every(t => Array.isArray(t.originalContentLines) && Array.isArray(t.updatedContentLines));
-if (!hasBulletLines) {
-  console.error('FAIL: mock tasks missing originalContentLines or updatedContentLines bullet point arrays');
+const hasMarkdownContent = mockTasks.every(t => typeof t.originalMarkdown === 'string' && typeof t.updatedMarkdown === 'string');
+if (!hasMarkdownContent) {
+  console.error('FAIL: mock tasks missing originalMarkdown or updatedMarkdown content string');
   process.exit(1);
 }
 
-console.log('SUCCESS: data/mock_inferred_tasks.json contains bullet point lines for slides and docs.');
+console.log('SUCCESS: data/mock_inferred_tasks.json contains Health UI product designer markdown for slides and docs.');
 
-// 2. Verify InferredTaskDiffView 2-column layout
-if (!diffViewContent.includes('DriveArtifactCard') || !diffViewContent.includes('Original') || !diffViewContent.includes('Suggested Update')) {
-  console.error('FAIL: InferredTaskDiffView missing 2-column DriveArtifactCard diff layout');
+// 2. Verify InferredTaskDiffView 2-column layout (RenderMarkdown, SlideCard, DocCard)
+if (!diffViewContent.includes('RenderMarkdown') || !diffViewContent.includes('SlideCard') || !diffViewContent.includes('DocCard')) {
+  console.error('FAIL: InferredTaskDiffView missing RenderMarkdown, SlideCard, or DocCard components');
   process.exit(1);
 }
 
-console.log('SUCCESS: InferredTaskDiffView preserves the 2-card Original vs Suggested Update diff layout.');
+if (diffViewContent.includes('GoogleDriveLogo') || diffViewContent.includes('LETTER PORTRAIT')) {
+  console.error('FAIL: InferredTaskDiffView contains unwanted logo or watermark label string');
+  process.exit(1);
+}
+
+console.log('SUCCESS: InferredTaskDiffView renders markdown for slides and portrait docs with zero unwanted watermark labels.');
 console.log('--- ALL INFERRED TASK VERIFICATIONS PASSED ---');

@@ -1,0 +1,30 @@
+{
+  "chatId": "home_danielgiuditta_google_com-chat-1784079620268",
+  "projectName": "Home Dashboard",
+  "chatName": "Inferred Tasks",
+  "type": "workspace",
+  "taskType": "inferred",
+  "viewState": null,
+  "associatedFileId": "inferred-tasks-1784079620268",
+  "associatedFileName": "inferred_tasks.json",
+  "messages": [],
+  "envId": null,
+  "activeSpaceId": "home_danielgiuditta_google_com",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "inferred_tasks.json",
+      "type": "code",
+      "content": "[]",
+      "mimeType": "application/json",
+      "isInferredTask": true,
+      "id": "inferred-tasks-1784079620268"
+    }
+  ],
+  "userEmail": "danielgiuditta@google.com",
+  "members": [],
+  "pinnedArtifactIds": [
+    "proactive-slide-test"
+  ],
+  "updatedAt": "2026-07-15T01:40:20.312Z"
+}
