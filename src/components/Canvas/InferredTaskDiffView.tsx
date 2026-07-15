@@ -5,31 +5,40 @@ interface InferredTaskDiffViewProps {
   theme?: 'light' | 'dark';
 }
 
-const RenderMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
+const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
   if (!text) return null;
   const lines = text.split('\n');
 
   return (
-    <div className="space-y-2.5 font-sans leading-relaxed text-[13px] sm:text-[14px]">
+    <div className="space-y-3 font-sans leading-relaxed text-[13px] sm:text-[14px]">
       {lines.map((line, i) => {
         const trimmed = line.trim();
-        if (!trimmed) return <div key={i} className="h-1" />;
+        if (!trimmed) return <div key={i} className="h-1.5" />;
 
-        // Header 1 (# Title)
+        // Document Section H1 (# Title)
         if (trimmed.startsWith('# ')) {
           return (
-            <h2 key={i} className={`text-[17px] sm:text-[19px] font-bold tracking-tight border-b pb-2 mb-2 ${isDark ? 'text-white border-neutral-700' : 'text-slate-900 border-slate-200'}`}>
+            <h2 key={i} className={`text-[18px] sm:text-[20px] font-extrabold tracking-tight border-b pb-2 mb-3 ${isDark ? 'text-white border-neutral-700' : 'text-slate-900 border-slate-200'}`}>
               {trimmed.replace(/^#\s+/, '')}
             </h2>
           );
         }
 
-        // Header 2 (## Subheading)
+        // Subheading H2 (## Section Title)
         if (trimmed.startsWith('## ')) {
           return (
-            <h3 key={i} className={`text-[14px] sm:text-[15px] font-semibold tracking-tight border-b pb-1.5 mb-1.5 ${isDark ? 'text-neutral-100 border-neutral-700' : 'text-slate-800 border-slate-200'}`}>
+            <h3 key={i} className={`text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mb-2 mt-4 ${isDark ? 'text-blue-300 border-neutral-700' : 'text-blue-700 border-slate-200'}`}>
               {trimmed.replace(/^##\s+/, '')}
             </h3>
+          );
+        }
+
+        // Subheading H3
+        if (trimmed.startsWith('### ')) {
+          return (
+            <h4 key={i} className={`text-[14px] sm:text-[15px] font-semibold tracking-tight mb-1.5 ${isDark ? 'text-neutral-200' : 'text-slate-800'}`}>
+              {trimmed.replace(/^###\s+/, '')}
+            </h4>
           );
         }
 
@@ -38,15 +47,15 @@ const RenderMarkdown = ({ text, isDark = false }: { text: string; isDark?: boole
           const content = trimmed.replace(/^[\-•]\s*/, '');
           const parts = content.split(/(\*\*.*?\*\*|`.*?`)/g);
           return (
-            <div key={i} className="flex items-start gap-2 pl-0.5">
-              <span className={`font-bold shrink-0 mt-0.5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>•</span>
-              <span className={isDark ? 'text-neutral-200' : 'text-slate-700'}>
+            <div key={i} className="flex items-start gap-2.5 pl-1 my-1.5">
+              <span className={`font-bold shrink-0 mt-1 text-[8px] ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>●</span>
+              <span className={`leading-snug ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
                 {parts.map((part, pIdx) => {
                   if (part.startsWith('**') && part.endsWith('**')) {
-                    return <strong key={pIdx} className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
+                    return <strong key={pIdx} className={`font-semibold ${isDark ? 'text-white' : 'text-slate-950'}`}>{part.slice(2, -2)}</strong>;
                   }
                   if (part.startsWith('`') && part.endsWith('`')) {
-                    return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[12px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
+                    return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-medium ${isDark ? 'bg-neutral-800 text-amber-300 border border-neutral-700' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
                   }
                   return part;
                 })}
@@ -58,13 +67,137 @@ const RenderMarkdown = ({ text, isDark = false }: { text: string; isDark?: boole
         // Regular Paragraph
         const parts = trimmed.split(/(\*\*.*?\*\*|`.*?`)/g);
         return (
-          <p key={i} className={isDark ? 'text-neutral-300' : 'text-slate-650'}>
+          <p key={i} className={`my-1.5 ${isDark ? 'text-neutral-300' : 'text-slate-700'}`}>
             {parts.map((part, pIdx) => {
               if (part.startsWith('**') && part.endsWith('**')) {
                 return <strong key={pIdx} className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
               }
               if (part.startsWith('`') && part.endsWith('`')) {
-                return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[12px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
+                return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
+              }
+              return part;
+            })}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
+export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+
+  return (
+    <div className="flex flex-col gap-2 font-sans w-full">
+      {lines.map((line, i) => {
+        const trimmed = line.trim();
+        if (!trimmed) return null;
+
+        // Slide Title (# Title) - 22px/24px Impact Heading
+        if (trimmed.startsWith('# ')) {
+          return (
+            <div key={i} className="mb-2">
+              <h2 className={`text-[20px] sm:text-[23px] font-extrabold tracking-tight leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                {trimmed.replace(/^#\s+/, '')}
+              </h2>
+            </div>
+          );
+        }
+
+        // Callout Block (> Quote / Stat Callout) - Highlighted Callout Box
+        if (trimmed.startsWith('> ')) {
+          const calloutText = trimmed.replace(/^>\s+/, '');
+          const parts = calloutText.split(/(\*\*.*?\*\*|`.*?`)/g);
+          return (
+            <div key={i} className={`p-3 sm:p-3.5 my-1.5 rounded-xl border-l-4 border-blue-500 ${
+              isDark ? 'bg-blue-950/40 border-blue-500 text-blue-100' : 'bg-gradient-to-r from-blue-50/80 to-indigo-50/50 text-slate-800 border-blue-600'
+            }`}>
+              <p className="text-[13px] sm:text-[14px] font-medium leading-snug">
+                {parts.map((part, pIdx) => {
+                  if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={pIdx} className="font-extrabold text-blue-600 dark:text-blue-300">{part.slice(2, -2)}</strong>;
+                  }
+                  if (part.startsWith('`') && part.endsWith('`')) {
+                    return <code key={pIdx} className="px-1.5 py-0.5 rounded font-mono text-[11px] bg-blue-100 dark:bg-blue-900/60 font-bold">{part.slice(1, -1)}</code>;
+                  }
+                  return part;
+                })}
+              </p>
+            </div>
+          );
+        }
+
+        // Section Heading (## Subheader) - 15px/16px Bold Header with Divider Line
+        if (trimmed.startsWith('## ')) {
+          return (
+            <h3 key={i} className={`text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mt-2.5 mb-1 ${isDark ? 'text-amber-300 border-neutral-700' : 'text-amber-700 border-slate-200'}`}>
+              {trimmed.replace(/^##\s+/, '')}
+            </h3>
+          );
+        }
+
+        // Bullet Cards (- **Title**: description) - Floating Feature Cards
+        if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+          const content = trimmed.replace(/^[\-•]\s*/, '');
+          const hasBoldHeader = content.startsWith('**') && content.includes('**:');
+          
+          if (hasBoldHeader) {
+            const match = content.match(/^\*\*(.*?)\*\*:\s*(.*)$/);
+            if (match) {
+              const [_, boldTitle, restText] = match;
+              const restParts = restText.split(/(`.*?`)/g);
+              return (
+                <div key={i} className={`p-2.5 rounded-xl border flex items-start gap-2.5 my-1 transition-all ${
+                  isDark ? 'bg-neutral-800/60 border-neutral-700/60' : 'bg-slate-50/90 border-slate-200/70'
+                }`}>
+                  <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${isDark ? 'bg-amber-400' : 'bg-amber-500'}`} />
+                  <div className="text-[13px] sm:text-[14px] leading-relaxed">
+                    <span className={`font-bold mr-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{boldTitle}:</span>
+                    <span className={isDark ? 'text-neutral-200' : 'text-slate-700'}>
+                      {restParts.map((part, pIdx) => {
+                        if (part.startsWith('`') && part.endsWith('`')) {
+                          return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold ${isDark ? 'bg-neutral-900 text-amber-300 border border-neutral-700' : 'bg-white text-slate-800 border border-slate-200 shadow-2xs'}`}>{part.slice(1, -1)}</code>;
+                        }
+                        return part;
+                      })}
+                    </span>
+                  </div>
+                </div>
+              );
+            }
+          }
+
+          // Standard bullets
+          const parts = content.split(/(\*\*.*?\*\*|`.*?`)/g);
+          return (
+            <div key={i} className="flex items-start gap-2.5 pl-0.5 my-1">
+              <span className={`font-bold shrink-0 mt-1 text-[8px] ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>◆</span>
+              <span className={`text-[13px] sm:text-[14px] leading-relaxed ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
+                {parts.map((part, pIdx) => {
+                  if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={pIdx} className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
+                  }
+                  if (part.startsWith('`') && part.endsWith('`')) {
+                    return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
+                  }
+                  return part;
+                })}
+              </span>
+            </div>
+          );
+        }
+
+        // Regular Paragraph
+        const parts = trimmed.split(/(\*\*.*?\*\*|`.*?`)/g);
+        return (
+          <p key={i} className={`text-[13px] sm:text-[14px] leading-relaxed my-1 ${isDark ? 'text-neutral-300' : 'text-slate-700'}`}>
+            {parts.map((part, pIdx) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={pIdx} className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
+              }
+              if (part.startsWith('`') && part.endsWith('`')) {
+                return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
               }
               return part;
             })}
@@ -86,7 +219,7 @@ const SlideCard = ({
     <div className={`w-full aspect-[16/9] max-h-[50vh] rounded-[20px] border shadow-xs p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
       isDark ? 'border-[#3E4042] bg-[#242629] text-white' : 'border-slate-200/90 bg-white text-slate-800'
     }`}>
-      <RenderMarkdown text={markdown} isDark={isDark} />
+      <RenderSlideMarkdown text={markdown} isDark={isDark} />
     </div>
   );
 };
@@ -102,7 +235,7 @@ const DocCard = ({
     <div className={`w-full aspect-[8.5/11] max-h-[50vh] rounded-[18px] border shadow-sm p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
       isDark ? 'border-[#3E4042] bg-[#222427] text-white' : 'border-slate-200/90 bg-white text-slate-800'
     }`}>
-      <RenderMarkdown text={markdown} isDark={isDark} />
+      <RenderDocMarkdown text={markdown} isDark={isDark} />
     </div>
   );
 };
@@ -124,11 +257,10 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
     mimeLower.includes('slide') ||
     nameLower.endsWith('.gslides') ||
     nameLower.endsWith('.pptx') ||
-    nameLower.includes('kiosk') ||
+    nameLower.endsWith('.ppt') ||
     nameLower.includes('deck') ||
-    nameLower.includes('audit') ||
-    nameLower.includes('roadmap') ||
-    nameLower.includes('optimization')
+    nameLower.includes('presentation') ||
+    nameLower.includes('slide')
   );
 
   const col1Description = task?.originalContext || file?.originalContext || file?.draftData?.originalContext || file?.description || 'Collaborator comment requesting updates to this artifact.';

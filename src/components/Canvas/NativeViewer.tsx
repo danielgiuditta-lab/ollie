@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
 import { NullTitle } from '../Shared/NullTitle';
+import { RenderSlideMarkdown } from './InferredTaskDiffView';
 
 interface NativeViewerProps {
   file: any;
@@ -865,8 +866,8 @@ export function NativeViewer({
 
             <div className="flex-1 w-full h-full p-8 flex flex-col items-center justify-center overflow-auto bg-[#121315]">
               <div className="w-full max-w-4xl aspect-[16/9] bg-white text-slate-900 rounded-2xl shadow-2xl p-12 flex flex-col justify-between border border-neutral-800 relative overflow-hidden">
-                <div className="markdown-body prose prose-slate max-w-none text-slate-800 text-[18px] leading-relaxed">
-                  <ReactMarkdown>{currentSlideContent}</ReactMarkdown>
+                <div className="w-full text-slate-800 text-[16px] sm:text-[18px] leading-relaxed">
+                  <RenderSlideMarkdown text={currentSlideContent} isDark={false} />
                 </div>
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-400 font-medium">
                   <span>{file.name}</span>
