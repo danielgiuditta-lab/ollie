@@ -16,22 +16,44 @@ const GoogleDriveLogo = () => (
   </svg>
 );
 
-const DriveArtifactCard = ({ title = "New Drive", subtext = "Drive", isDark = false }: { title?: string; subtext?: string; isDark?: boolean }) => {
+const DriveArtifactCard = ({ 
+  title = "New Drive", 
+  subtext = "Drive", 
+  isDark = false,
+  content = []
+}: { 
+  title?: string; 
+  subtext?: string; 
+  isDark?: boolean;
+  content?: string[];
+}) => {
   return (
-    <div className={`w-full aspect-[16/10] rounded-[24px] border shadow-sm p-8 flex items-center justify-between relative overflow-hidden select-none transition-all duration-300 ${
+    <div className={`w-full aspect-[16/10] rounded-[24px] border shadow-sm p-8 flex flex-col justify-between relative overflow-hidden select-none transition-all duration-300 ${
       isDark ? 'border-[#3E4042] bg-[#282A2D] text-white' : 'border-slate-200/80 bg-white text-slate-800'
     }`}>
-      <div className="flex flex-col justify-center gap-1.5 min-w-0 pr-4">
-        <span className={`text-[12px] font-medium tracking-wide ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}>
-          {subtext}
-        </span>
-        <h3 className={`text-[36px] sm:text-[42px] leading-[44px] sm:leading-[48px] font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#1F1F1F]'} truncate`}>
-          {title}
-        </h3>
+      <div className="flex items-center justify-between w-full">
+        <div className="flex flex-col justify-center min-w-0 pr-4">
+          <span className={`text-[12px] font-medium tracking-wide ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}>
+            {subtext}
+          </span>
+          <h3 className={`text-[28px] sm:text-[32px] font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#1F1F1F]'} truncate`}>
+            {title}
+          </h3>
+        </div>
+        <div className="shrink-0 flex items-center justify-center p-2">
+          <GoogleDriveLogo />
+        </div>
       </div>
-      <div className="shrink-0 flex items-center justify-center p-2">
-        <GoogleDriveLogo />
-      </div>
+
+      {content && content.length > 0 && (
+        <div className="my-auto space-y-2 text-sm sm:text-base leading-relaxed font-sans font-medium">
+          {content.map((bullet, idx) => (
+            <p key={idx} className={isDark ? 'text-neutral-200' : 'text-slate-700'}>
+              {bullet}
+            </p>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -44,6 +66,9 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
 
   const col1Description = file?.originalContext || file?.draftData?.originalContext || file?.description || 'Simon gave feedback to make the problem framing more concise.';
   const col2Description = file?.summaryOfChanges || file?.draftData?.summaryOfChanges || file?.descriptionDone || 'I made the language more concise in the problem framing section.';
+
+  const col1Content = file?.originalContentLines || file?.task?.originalContentLines || file?.originalSlide?.content;
+  const col2Content = file?.updatedContentLines || file?.task?.updatedContentLines || file?.updatedSlide?.content;
 
   return (
     <div className={`w-full h-full flex flex-col items-stretch justify-start p-4 sm:p-6 overflow-y-auto transition-colors duration-300 ${
@@ -65,7 +90,7 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
 
           {/* Artifact Container: 16px top & bottom margin padding surround */}
           <div className="mb-4">
-            <DriveArtifactCard title={cleanTitle || "New Drive"} subtext="Drive" isDark={isDark} />
+            <DriveArtifactCard title={cleanTitle || "New Drive"} subtext="Drive" isDark={isDark} content={col1Content} />
           </div>
 
           {/* Description: Google Sans Text Medium 16/24 */}
@@ -91,7 +116,7 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
 
           {/* Artifact Container: 16px top & bottom margin padding surround */}
           <div className="mb-4">
-            <DriveArtifactCard title={cleanTitle || "New Drive"} subtext="Drive" isDark={isDark} />
+            <DriveArtifactCard title={cleanTitle || "New Drive"} subtext="Drive" isDark={isDark} content={col2Content} />
           </div>
 
           {/* Description: Google Sans Text Medium 16/24 */}

@@ -1,0 +1,230 @@
+[
+  {
+    "id": "todo-1",
+    "title": "I updated Q3 Strategy Deck slide 3 per David's comment",
+    "titleDone": "I updated Q3 Strategy Deck slide 3 per David's comment",
+    "description": "David commented: 'The color scheme on this slide feels too cold and plain. Can we update it to our warm amber brand palette, and highlight the 45% YoY growth in a bold callout?'",
+    "descriptionDone": "David commented: 'The color scheme on this slide feels too cold and plain. Can we update it to our warm amber brand palette, and highlight the 45% YoY growth in a bold callout?'",
+    "workspace": "Branding",
+    "sourceName": "Q3 Strategy Deck.gslides",
+    "sourceMimeType": "application/vnd.google-apps.presentation",
+    "type": "slide",
+    "personName": "David",
+    "personAvatar": "/people/david.jpg",
+    "commentTime": "2 hours ago",
+    "commentText": "The color scheme on this slide feels too cold and plain. Can we update it to our warm amber brand palette, and highlight the 45% YoY growth in a bold callout?",
+    "targetElement": "Slide 3 — Market Expansion Metrics",
+    "status": "blocked",
+    "hasPreview": true,
+    "involvesMe": true,
+    "originalContext": "David commented on Q3 Strategy Deck to use warm amber palette and feature 45% YoY growth.",
+    "summaryOfChanges": "I updated the slide palette to warm amber tones and highlighted the 45% YoY growth metric callout.",
+    "originalContentLines": [
+      "• Q3 growth up year-over-year across core product tiers",
+      "• Distribution extended to 12 new domestic and international regions",
+      "• Pipeline performance and conversion figures pending layout review"
+    ],
+    "updatedContentLines": [
+      "• 🚀 45% YoY Revenue Growth (Enterprise Tier Lead)",
+      "• Distribution extended to 12 new domestic and international regions",
+      "• Color palette updated to warm amber brand tokens per David's feedback"
+    ],
+    "filesToLoad": [
+      {
+        "name": "Q3 Strategy Deck.gslides",
+        "type": "slide",
+        "mimeType": "application/vnd.google-apps.presentation"
+      }
+    ]
+  },
+  {
+    "id": "todo-2",
+    "title": "I consolidated the Brand Kit layout per Emily's comment",
+    "titleDone": "I consolidated the Brand Kit layout per Emily's comment",
+    "description": "Emily commented: 'This section has 3 redundant sub-headings and conflicting color guidelines from 2024. Please consolidate into a single modern Brand Kit section with HSL tokens.'",
+    "descriptionDone": "Emily commented: 'This section has 3 redundant sub-headings and conflicting color guidelines from 2024. Please consolidate into a single modern Brand Kit section with HSL tokens.'",
+    "workspace": "Branding",
+    "sourceName": "Brand Guidelines.gdoc",
+    "sourceMimeType": "application/vnd.google-apps.document",
+    "type": "doc",
+    "personName": "Emily",
+    "personAvatar": "/people/emily.jpg",
+    "commentTime": "4 hours ago",
+    "commentText": "This section has 3 redundant sub-headings and conflicting color guidelines from 2024. Please consolidate into a single modern Brand Kit section with HSL tokens.",
+    "targetElement": "Section 2 — Visual Design System",
+    "status": "blocked",
+    "hasPreview": true,
+    "involvesMe": true,
+    "originalContext": "Emily commented to consolidate 3 redundant sub-headings and conflicting 2024 hex values.",
+    "summaryOfChanges": "I consolidated the section into a single modern Brand Kit section with HSL color tokens.",
+    "originalContentLines": [
+      "• Section 2.1: Legacy Hex Palette (#0066DA, #2684FC)",
+      "• Section 2.2: Draft Secondary Shades (Green Accents)",
+      "• Section 2.3: Unconsolidated Typography Notes"
+    ],
+    "updatedContentLines": [
+      "• Consolidated Brand Kit: Primary Accent hsl(215, 85%, 52%)",
+      "• Secondary Tokens: Gold Ember hsl(38, 92%, 50%) & Slate Base",
+      "• Standardized Google Sans typography stack specs"
+    ],
+    "filesToLoad": [
+      {
+        "name": "Brand Guidelines.gdoc",
+        "type": "doc",
+        "mimeType": "application/vnd.google-apps.document"
+      }
+    ]
+  },
+  {
+    "id": "todo-3",
+    "title": "I added the SDK flow diagram to Slide 5 per Sarah's comment",
+    "titleDone": "I added the SDK flow diagram to Slide 5 per Sarah's comment",
+    "description": "Sarah commented: 'Slide 5 is missing the architecture breakdown. Could you add a visual diagram showing the SDK -> Agent flow and p99 latency stats?'",
+    "descriptionDone": "Sarah commented: 'Slide 5 is missing the architecture breakdown. Could you add a visual diagram showing the SDK -> Agent flow and p99 latency stats?'",
+    "workspace": "Product",
+    "sourceName": "Executive Pitch Deck.gslides",
+    "sourceMimeType": "application/vnd.google-apps.presentation",
+    "type": "slide",
+    "personName": "Sarah",
+    "personAvatar": "/people/sarah_lin.jpg",
+    "commentTime": "Yesterday, 4:15 PM",
+    "commentText": "Slide 5 is missing the architecture breakdown we discussed. Could you add a visual diagram showing the SDK -> Agent flow and p99 latency stats?",
+    "targetElement": "Slide 5 — Architecture Spec",
+    "status": "blocked",
+    "hasPreview": true,
+    "involvesMe": true,
+    "originalContext": "Sarah commented that Slide 5 was missing the SDK -> Agent architecture diagram and latency benchmarks.",
+    "summaryOfChanges": "I added the interactive SDK -> Linux Agent Sandbox flow diagram and p95/p99 latency benchmarks table.",
+    "originalContentLines": [
+      "• [ Architecture Diagram Placeholder — TBD ]",
+      "• High-throughput processing pipeline across Linux nodes",
+      "• Latency benchmark figures pending execution run"
+    ],
+    "updatedContentLines": [
+      "• Execution Flow: [User App] ➔ [Interactions SDK] ➔ [Linux Sandbox]",
+      "• Response Benchmarks: p50 = 85ms | p95 = 180ms | p99 = 340ms",
+      "• High-throughput processing pipeline validated"
+    ],
+    "filesToLoad": [
+      {
+        "name": "Executive Pitch Deck.gslides",
+        "type": "slide",
+        "mimeType": "application/vnd.google-apps.presentation"
+      }
+    ]
+  },
+  {
+    "id": "todo-4",
+    "title": "I updated Auth Protocols to OAuth 2.0 PKCE per Marcus's comment",
+    "titleDone": "I updated Auth Protocols to OAuth 2.0 PKCE per Marcus's comment",
+    "description": "Marcus commented: 'We decided to deprecate basic API key auth. Please update this section to mandate OAuth 2.0 PKCE flow with 15-minute token rotation.'",
+    "descriptionDone": "Marcus commented: 'We decided to deprecate basic API key auth. Please update this section to mandate OAuth 2.0 PKCE flow with 15-minute token rotation.'",
+    "workspace": "Engineering",
+    "sourceName": "Product Requirements Document.gdoc",
+    "sourceMimeType": "application/vnd.google-apps.document",
+    "type": "doc",
+    "personName": "Marcus",
+    "personAvatar": "/people/dr_marcus_thorne.jpg",
+    "commentTime": "Yesterday, 11:30 AM",
+    "commentText": "We decided to deprecate basic API key auth for the mobile client. Please update this section to mandate OAuth 2.0 PKCE flow with 15-minute token rotation.",
+    "targetElement": "Section 4.2 — Authentication Protocol",
+    "status": "blocked",
+    "hasPreview": true,
+    "involvesMe": true,
+    "originalContext": "Marcus commented to deprecate static API key authentication headers and mandate OAuth 2.0 PKCE.",
+    "summaryOfChanges": "I updated Section 4.2 to mandate OAuth 2.0 PKCE flow with 15-minute token rotation policy.",
+    "originalContentLines": [
+      "• Mobile clients authenticate via static X-API-Key headers",
+      "• Token expiration is unconstrained by default",
+      "• Simple client reconnect logic without session state rotation"
+    ],
+    "updatedContentLines": [
+      "• Mobile clients MUST use OAuth 2.0 with Proof Key for Code Exchange (PKCE)",
+      "• Access tokens expire after 15 minutes via HttpOnly cookies",
+      "• Seamless refresh token rotation protocol enforced"
+    ],
+    "filesToLoad": [
+      {
+        "name": "Product Requirements Document.gdoc",
+        "type": "doc",
+        "mimeType": "application/vnd.google-apps.document"
+      }
+    ]
+  },
+  {
+    "id": "todo-5",
+    "title": "I updated Q3 milestone launch date to Aug 15 per Juyun's comment",
+    "titleDone": "I updated Q3 milestone launch date to Aug 15 per Juyun's comment",
+    "description": "Juyun commented: 'The Q3 launch date is wrong on this roadmap slide—we pushed it to August 15th to align with the global conference. Please update the Q3 milestone card.'",
+    "descriptionDone": "Juyun commented: 'The Q3 launch date is wrong on this roadmap slide—we pushed it to August 15th to align with the global conference. Please update the Q3 milestone card.'",
+    "workspace": "Product",
+    "sourceName": "Product Roadmap 2026.gslides",
+    "sourceMimeType": "application/vnd.google-apps.presentation",
+    "type": "slide",
+    "personName": "Juyun",
+    "personAvatar": "/people/juyun.jpg",
+    "commentTime": "3 days ago",
+    "commentText": "The Q3 launch date is wrong on this roadmap slide—we pushed it to August 15th to align with the global conference. Please update the Q3 milestone card.",
+    "targetElement": "Slide 2 — 2026 Roadmap Milestones",
+    "status": "blocked",
+    "hasPreview": true,
+    "involvesMe": true,
+    "originalContext": "Juyun commented that the Q3 milestone launch date on Slide 2 was listed as July 1st instead of August 15th.",
+    "summaryOfChanges": "I updated the Q3 milestone card on Slide 2 to August 15th for Global Keynote launch alignment.",
+    "originalContentLines": [
+      "• Q1 Core Alpha: Jan 15, 2026",
+      "• Q2 Drive SDK Integration: April 30, 2026",
+      "• Q3 Public Beta Launch: July 1, 2026 [Outdated Date]"
+    ],
+    "updatedContentLines": [
+      "• Q1 Core Alpha: Jan 15, 2026",
+      "• Q2 Drive SDK Integration: April 30, 2026",
+      "• Q3 Global Keynote Launch: August 15, 2026 ✨ [Updated for Conf]"
+    ],
+    "filesToLoad": [
+      {
+        "name": "Product Roadmap 2026.gslides",
+        "type": "slide",
+        "mimeType": "application/vnd.google-apps.presentation"
+      }
+    ]
+  },
+  {
+    "id": "todo-6",
+    "title": "I updated Enterprise SLA uptime to 99.99% per Alex's comment",
+    "titleDone": "I updated Enterprise SLA uptime to 99.99% per Alex's comment",
+    "description": "Alex commented: 'Legal confirmed we guaranteed 99.99% uptime for Enterprise tier, not 99.9%. Update the SLA clause and response time guarantee to 15 mins.'",
+    "descriptionDone": "Alex commented: 'Legal confirmed we guaranteed 99.99% uptime for Enterprise tier, not 99.9%. Update the SLA clause and response time guarantee to 15 mins.'",
+    "workspace": "Operations",
+    "sourceName": "Pricing & Operations Report.gdoc",
+    "sourceMimeType": "application/vnd.google-apps.document",
+    "type": "doc",
+    "personName": "Alex",
+    "personAvatar": "/people/default_user.jpg",
+    "commentTime": "3 days ago",
+    "commentText": "Legal confirmed we guaranteed 99.99% uptime for Enterprise tier, not 99.9%. Update the SLA clause and response time guarantee to 15 mins.",
+    "targetElement": "Section 3 — Enterprise SLA",
+    "status": "blocked",
+    "hasPreview": true,
+    "involvesMe": true,
+    "originalContext": "Alex commented that legal confirmed 99.99% availability SLA and a 15-minute response guarantee.",
+    "summaryOfChanges": "I updated Section 3 to state a binding 99.99% availability SLA and 15-minute incident response window.",
+    "originalContentLines": [
+      "• Enterprise availability SLA target: 99.9% platform availability",
+      "• Priority 1 incident response window: 60 minutes",
+      "• Standard support escalation path"
+    ],
+    "updatedContentLines": [
+      "• Enterprise binding availability SLA: 99.99% uptime guarantee",
+      "• Priority 1 incident response window: 15-minute escalation guarantee",
+      "• Automatic service credit compensation clause included"
+    ],
+    "filesToLoad": [
+      {
+        "name": "Pricing & Operations Report.gdoc",
+        "type": "doc",
+        "mimeType": "application/vnd.google-apps.document"
+      }
+    ]
+  }
+]

@@ -861,6 +861,20 @@ async function startServer() {
     }
   });
 
+  app.get("/api/mock-inferred-tasks", async (req, res) => {
+    try {
+      const filePath = path.join(process.cwd(), "data", "mock_inferred_tasks.json");
+      if (await fileExistsAsync(filePath)) {
+        const raw = await fs.promises.readFile(filePath, "utf-8");
+        return res.json(JSON.parse(raw));
+      }
+      return res.json([]);
+    } catch (err) {
+      console.error("Error reading mock inferred tasks file:", err);
+      return res.status(500).json({ error: String(err) });
+    }
+  });
+
   const digestCacheMap = new Map<string, { data: any; timestamp: number }>();
   const DIGEST_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache TTL
 
