@@ -254,9 +254,9 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
         </div>
       </div>
 
-      {/* Right Column: Preview of referenced artifact (square for docs, rectangle for slides) */}
+      {/* Right Column: Preview of referenced artifact (portrait aspect for docs, landscape for slides) */}
       {showThumbnail && (
-        <div className={`shrink-0 ${isSlideItem ? 'w-[110px]' : 'w-[72px]'} h-[72px] rounded-2xl overflow-hidden border border-slate-200/80 dark:border-[#3E4042] bg-white dark:bg-[#1E1F22] flex items-center justify-center relative group select-none transition-all duration-300`}>
+        <div className={`shrink-0 ${isSlideItem ? 'w-[104px]' : 'w-[54px]'} h-[72px] rounded-[10px] overflow-hidden border border-slate-200/90 dark:border-[#3E4042] bg-white dark:bg-[#1E1F22] flex items-center justify-center relative group select-none transition-all duration-300 shadow-2xs`}>
           <div className="w-full h-full relative group-hover:scale-[1.03] transition-transform duration-300 pointer-events-none">
             <NativeViewer
               file={previewFile}

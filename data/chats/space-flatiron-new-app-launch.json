@@ -48,7 +48,7 @@
       "name": "app_launch_review_deck.gslides",
       "type": "code",
       "mimeType": "application/vnd.google-apps.presentation",
-      "content": "# Presentation: Flatiron Assist Mobile App Launch Executive Review Deck\n\nType: Google Slides\nFile ID: flatiron-deck-launch-03"
+      "content": "# Flatiron Assist Mobile App Launch — Executive Deck\n\n> **60-Second Time to Activation**: Zero-friction clinical trial mobile companion app engineered for oncology care teams.\n\n- **Target Care Teams**: 1,200+ Clinical Research Coordinators & Oncologists across 45 network trials.\n- **Key Metric Milestone**: `94.2% Beta Adoption` achieved across 12 pilot hospital sites.\n\n---\n\n# Release Milestones & Phase 1 Rollout\n\n## Launch Schedule & Validation\n\n- **Sprint 1 (Alpha Validation)**: Core EHR integration testing completed across 5 pilot community sites.\n- **Sprint 2 (CRC Beta Program)**: Onboarded 120 coordinators; achieved `4.8/5.0` usability score rating.\n- **Sprint 3 (GA Deployment)**: Full App Store & Google Play enterprise distribution kickoff.\n\n## Care Team Onboarding\n\n- **Instant Auth SSO**: Integrated hospital OAuth login reduces user signup time from 5 mins down to `< 12 seconds`.\n- **Offline Protocol Caching**: Native SQLite database caches 500+ active biopharma trial criteria offline.\n\n---\n\n# Go-To-Market Growth & Adoption Metrics\n\n## User Activation & Telemetry\n\n- **Daily Active Coordinators (DAC)**: Projected 850 active daily users within 30 days of launch.\n- **Push Notification Response Rate**: `78% open rate` on real-time biomarker match alerts.\n- **Feedback & NPS Goal**: Target Net Promoter Score of `> 65` across all pilot trial coordinators."
     }
   ],
   "userEmail": "mock-user@example.com",

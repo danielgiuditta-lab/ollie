@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
 import { NullTitle } from '../Shared/NullTitle';
-import { RenderSlideMarkdown } from './InferredTaskDiffView';
+import { RenderSlideMarkdown, RenderDocMarkdown } from './InferredTaskDiffView';
 
 interface NativeViewerProps {
   file: any;
@@ -1374,48 +1374,73 @@ export function NativeViewer({
   const isTargetIframe = isIframeViewer && driveId && mode === 'preview';
 
   if (isPreviewCard && !isTargetIframe) {
-    const virtualWidth = 600;
-    const virtualHeight = 350;
-    const activeWidth = previewDims.width > 0 ? previewDims.width : 240;
-    const activeHeight = previewDims.height > 0 ? previewDims.height : 140;
-    const scale = activeWidth / virtualWidth;
-    const scaledHeight = activeHeight / scale;
+    const nameLower = (file?.name || '').toLowerCase();
+    const mimeLower = (file?.mimeType || '').toLowerCase();
+    const typeLower = (file?.type || file?.taskType || '').toLowerCase();
+    const cleanTitle = (file?.name || file?.title || 'Artifact').replace(/\.[^/.]+$/, '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').trim();
 
+    const isSlide = Boolean(
+      typeLower === 'slide' ||
+      mimeLower.includes('presentation') ||
+      mimeLower.includes('slide') ||
+      nameLower.endsWith('.gslides') ||
+      nameLower.endsWith('.pptx') ||
+      nameLower.endsWith('.ppt') ||
+      nameLower.includes('deck') ||
+      nameLower.includes('presentation') ||
+      nameLower.includes('slide')
+    );
+
+    const rawText = file.content || file.realDocText || `# ${cleanTitle}\n\n- Preview content`;
+
+    if (isSlide) {
+      const slidesList = rawText.split(/(?=\n# )|(?=^# )|\n---/g).filter((s: string) => s.trim().length > 0);
+      const activeSlideText = slidesList[0] || rawText;
+
+      return (
+        <div 
+          ref={previewRef}
+          className="w-full h-full relative overflow-hidden bg-white select-none pointer-events-none rounded-[8px]"
+        >
+          <div 
+            style={{
+              width: '520px',
+              height: '360px',
+              transform: 'scale(0.2)',
+              transformOrigin: 'top left',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              overflow: 'hidden'
+            }}
+            className="p-5 bg-[#FAFAFC] text-slate-800 flex flex-col justify-start rounded-[16px] border border-slate-200/90 shadow-2xs"
+          >
+            <RenderSlideMarkdown text={activeSlideText} isDark={false} />
+          </div>
+        </div>
+      );
+    }
+
+    // Doc Card Thumbnail Preview (Scaled 1:1 RenderDocMarkdown)
     return (
       <div 
-        ref={previewRef} 
-        className="w-full h-full relative overflow-hidden bg-white select-none pointer-events-none rounded-[20px]"
+        ref={previewRef}
+        className="w-full h-full relative overflow-hidden bg-white select-none pointer-events-none rounded-[8px]"
       >
-        <style>{`
-          .native-serif-viewer,
-          .native-serif-viewer *,
-          .native-serif-viewer p,
-          .native-serif-viewer h1,
-          .native-serif-viewer h2,
-          .native-serif-viewer h3,
-          .native-serif-viewer h4,
-          .native-serif-viewer h5,
-          .native-serif-viewer h6,
-          .native-serif-viewer li,
-          .native-serif-viewer span,
-          .native-serif-viewer div {
-            font-family: "Google Sans", "Product Sans", "Inter", sans-serif !important;
-          }
-        `}</style>
         <div 
           style={{
-            width: `${virtualWidth}px`,
-            height: `${scaledHeight}px`,
-            transform: `scale(${scale})`,
+            width: '300px',
+            height: '400px',
+            transform: 'scale(0.18)',
             transformOrigin: 'top left',
             position: 'absolute',
             left: 0,
             top: 0,
-            overflow: 'hidden',
+            overflow: 'hidden'
           }}
-          className="select-none pointer-events-none rounded-[20px]"
+          className="p-4 bg-white text-slate-800 flex flex-col justify-start rounded-[14px] border border-slate-200/90 shadow-2xs"
         >
-          {renderContent()}
+          <RenderDocMarkdown text={rawText} isDark={false} />
         </div>
       </div>
     );

@@ -1,0 +1,59 @@
+{
+  "envId": "space-flatiron-gtm",
+  "key": "oncotrials_alignment_tracker_v1",
+  "data": {
+    "decisions": [
+      {
+        "id": "dec-1",
+        "title": "Approve OncoEMR Integration protocol for Rocky Mountain Cancer Centers",
+        "owner": "Sakura Okoro",
+        "date": "2026-07-10",
+        "status": "Approved",
+        "notes": "Security audit cleared and API gateway approved for pilot EMR data connection."
+      },
+      {
+        "id": "dec-2",
+        "title": "Standardize CRC Workflow Training to a 2-day virtual curriculum",
+        "owner": "Adam Lee",
+        "date": "2026-07-14",
+        "status": "Proposed",
+        "notes": "Proposed shift to 100% remote self-paced training with interactive Q&A clinics."
+      },
+      {
+        "id": "dec-3",
+        "title": "Approve Biomarker Gateway Setup schema for Highlands Oncology Group",
+        "owner": "Malik Harold",
+        "date": "2026-07-12",
+        "status": "Approved",
+        "notes": "Validated HL7 FHIR profile matches core clinical trials platform requirements."
+      }
+    ],
+    "risks": [
+      {
+        "id": "risk-1",
+        "title": "Delays in EMR connection validation by community clinical sites",
+        "owner": "Malik Harold",
+        "severity": "High",
+        "mitigation": "Provide automated self-service validation scripts to ease external IT burdens.",
+        "status": "Active"
+      },
+      {
+        "id": "risk-2",
+        "title": "Low clinical coordinator engagement during training modules",
+        "owner": "Sakura Okoro",
+        "severity": "Medium",
+        "mitigation": "Conduct weekly drop-in clinic hours and issue digital enablement badges on completion.",
+        "status": "Mitigated"
+      },
+      {
+        "id": "risk-3",
+        "title": "Data latency in the point-of-care matching gateway alerts",
+        "owner": "Adam Lee",
+        "severity": "High",
+        "mitigation": "Optimize database query rules and implement local 24-hour cache refreshing.",
+        "status": "Active"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-15T02:29:04.977Z"
+}

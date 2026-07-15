@@ -5,7 +5,7 @@ interface InferredTaskDiffViewProps {
   theme?: 'light' | 'dark';
 }
 
-const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
+export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
   if (!text) return null;
   const lines = text.split('\n');
 
@@ -27,7 +27,7 @@ const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDark?: bo
         // Subheading H2 (## Section Title)
         if (trimmed.startsWith('## ')) {
           return (
-            <h3 key={i} className={`text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mb-2 mt-4 ${isDark ? 'text-blue-300 border-neutral-700' : 'text-blue-700 border-slate-200'}`}>
+            <h3 key={i} className={`text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mb-2 mt-4 ${isDark ? 'text-slate-200 border-neutral-700' : 'text-slate-800 border-slate-200'}`}>
               {trimmed.replace(/^##\s+/, '')}
             </h3>
           );
@@ -48,7 +48,7 @@ const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDark?: bo
           const parts = content.split(/(\*\*.*?\*\*|`.*?`)/g);
           return (
             <div key={i} className="flex items-start gap-2.5 pl-1 my-1.5">
-              <span className={`font-bold shrink-0 mt-1 text-[8px] ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>●</span>
+              <span className={`font-bold shrink-0 mt-1 text-[8px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>●</span>
               <span className={`leading-snug ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
                 {parts.map((part, pIdx) => {
                   if (part.startsWith('**') && part.endsWith('**')) {
@@ -86,124 +86,233 @@ const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDark?: bo
 
 export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
   if (!text) return null;
-  const lines = text.split('\n');
 
-  return (
-    <div className="flex flex-col gap-2 font-sans w-full">
-      {lines.map((line, i) => {
-        const trimmed = line.trim();
-        if (!trimmed) return null;
+  const hasH1 = text.trim().startsWith('# ');
+  let titleBlock: string | null = null;
+  let bodyText = text;
 
-        // Slide Title (# Title) - 22px/24px Impact Heading
-        if (trimmed.startsWith('# ')) {
-          return (
-            <div key={i} className="mb-2">
-              <h2 className={`text-[20px] sm:text-[23px] font-extrabold tracking-tight leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {trimmed.replace(/^#\s+/, '')}
-              </h2>
-            </div>
-          );
-        }
+  if (hasH1) {
+    const lines = text.split('\n');
+    titleBlock = lines[0];
+    bodyText = lines.slice(1).join('\n');
+  }
 
-        // Callout Block (> Quote / Stat Callout) - Highlighted Callout Box
-        if (trimmed.startsWith('> ')) {
-          const calloutText = trimmed.replace(/^>\s+/, '');
-          const parts = calloutText.split(/(\*\*.*?\*\*|`.*?`)/g);
-          return (
-            <div key={i} className={`p-3 sm:p-3.5 my-1.5 rounded-xl border-l-4 border-blue-500 ${
-              isDark ? 'bg-blue-950/40 border-blue-500 text-blue-100' : 'bg-gradient-to-r from-blue-50/80 to-indigo-50/50 text-slate-800 border-blue-600'
+  const sections = bodyText.split(/(?=\n## )|(?=^## )|\n---/g).filter(s => s.trim().length > 0);
+  const quoteMatch = bodyText.match(/^>\s+(.+)$/m);
+  const hasHeroStat = Boolean(quoteMatch);
+
+  // Layout 1: Hero Stat Layout (Header + Metric Banner Card + Key Takeaways)
+  if (hasHeroStat) {
+    const heroContent = quoteMatch ? quoteMatch[1] : '';
+    const nonQuoteSections = sections.filter(s => !s.trim().startsWith('> '));
+
+    return (
+      <div className="flex flex-col gap-3 font-sans w-full select-text">
+        {titleBlock && (
+          <h2 className={`text-[19px] sm:text-[22px] font-extrabold tracking-tight mb-1 leading-tight ${
+            isDark ? 'text-white' : 'text-slate-900'
+          }`}>
+            {titleBlock.replace(/^#\s+/, '')}
+          </h2>
+        )}
+
+        {/* Hero Stat Banner Pill */}
+        <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs ${
+          isDark ? 'bg-neutral-800/90 border-neutral-700 text-amber-300' : 'bg-slate-900 text-white border-slate-800'
+        }`}>
+          <div className="text-[13px] sm:text-[14px] font-bold leading-snug">
+            {heroContent.replace(/\*\*/g, '').replace(/`/g, '')}
+          </div>
+          <span className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-extrabold font-mono tracking-wide ${
+            isDark ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-amber-400 text-slate-950'
+          }`}>
+            KEY METRIC
+          </span>
+        </div>
+
+        {/* Bullet Points below Hero Metric */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+          {nonQuoteSections.map((secStr, sIdx) => (
+            <div key={sIdx} className={`p-3.5 rounded-xl border min-w-0 ${
+              isDark ? 'bg-neutral-800/50 border-neutral-700/80' : 'bg-slate-50 border-slate-200/80'
             }`}>
-              <p className="text-[13px] sm:text-[14px] font-medium leading-snug">
-                {parts.map((part, pIdx) => {
-                  if (part.startsWith('**') && part.endsWith('**')) {
-                    return <strong key={pIdx} className="font-extrabold text-blue-600 dark:text-blue-300">{part.slice(2, -2)}</strong>;
-                  }
-                  if (part.startsWith('`') && part.endsWith('`')) {
-                    return <code key={pIdx} className="px-1.5 py-0.5 rounded font-mono text-[11px] bg-blue-100 dark:bg-blue-900/60 font-bold">{part.slice(1, -1)}</code>;
-                  }
-                  return part;
-                })}
-              </p>
+              {secStr.split('\n').map((line, lIdx) => {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('> ')) return null;
+                if (trimmed.startsWith('## ')) {
+                  return (
+                    <h3 key={lIdx} className={`text-[13px] font-bold pb-1 mb-1 border-b ${isDark ? 'text-slate-200 border-neutral-700' : 'text-slate-800 border-slate-200'}`}>
+                      {trimmed.replace(/^##\s+/, '')}
+                    </h3>
+                  );
+                }
+                if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+                  const content = trimmed.replace(/^[\-•]\s*/, '');
+                  return (
+                    <div key={lIdx} className="flex items-start gap-1.5 my-1">
+                      <span className={`font-bold text-[7px] mt-1 shrink-0 ${isDark ? 'text-amber-400' : 'text-slate-500'}`}>▪</span>
+                      <span className={`text-[12px] leading-snug ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
+                        {content.replace(/\*\*/g, '')}
+                      </span>
+                    </div>
+                  );
+                }
+                return (
+                  <p key={lIdx} className={`text-[12px] leading-snug my-1 ${isDark ? 'text-neutral-300' : 'text-slate-700'}`}>
+                    {trimmed.replace(/\*\*/g, '')}
+                  </p>
+                );
+              })}
             </div>
-          );
-        }
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-        // Section Heading (## Subheader) - 15px/16px Bold Header with Divider Line
-        if (trimmed.startsWith('## ')) {
-          return (
-            <h3 key={i} className={`text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mt-2.5 mb-1 ${isDark ? 'text-amber-300 border-neutral-700' : 'text-amber-700 border-slate-200'}`}>
-              {trimmed.replace(/^##\s+/, '')}
-            </h3>
-          );
-        }
+  // Layout 2: 3-Column Feature Cards Layout (if 3 or more sections)
+  if (sections.length >= 3) {
+    return (
+      <div className="flex flex-col gap-3 font-sans w-full select-text">
+        {titleBlock && (
+          <h2 className={`text-[19px] sm:text-[22px] font-extrabold tracking-tight mb-1 leading-tight ${
+            isDark ? 'text-white' : 'text-slate-900'
+          }`}>
+            {titleBlock.replace(/^#\s+/, '')}
+          </h2>
+        )}
 
-        // Bullet Cards (- **Title**: description) - Floating Feature Cards
-        if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
-          const content = trimmed.replace(/^[\-•]\s*/, '');
-          const hasBoldHeader = content.startsWith('**') && content.includes('**:');
-          
-          if (hasBoldHeader) {
-            const match = content.match(/^\*\*(.*?)\*\*:\s*(.*)$/);
-            if (match) {
-              const [_, boldTitle, restText] = match;
-              const restParts = restText.split(/(`.*?`)/g);
-              return (
-                <div key={i} className={`p-2.5 rounded-xl border flex items-start gap-2.5 my-1 transition-all ${
-                  isDark ? 'bg-neutral-800/60 border-neutral-700/60' : 'bg-slate-50/90 border-slate-200/70'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${isDark ? 'bg-amber-400' : 'bg-amber-500'}`} />
-                  <div className="text-[13px] sm:text-[14px] leading-relaxed">
-                    <span className={`font-bold mr-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{boldTitle}:</span>
-                    <span className={isDark ? 'text-neutral-200' : 'text-slate-700'}>
-                      {restParts.map((part, pIdx) => {
-                        if (part.startsWith('`') && part.endsWith('`')) {
-                          return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold ${isDark ? 'bg-neutral-900 text-amber-300 border border-neutral-700' : 'bg-white text-slate-800 border border-slate-200 shadow-2xs'}`}>{part.slice(1, -1)}</code>;
-                        }
-                        return part;
-                      })}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+          {sections.map((secStr, sIdx) => (
+            <div key={sIdx} className={`p-3.5 rounded-xl border flex flex-col justify-between min-w-0 shadow-2xs ${
+              isDark ? 'bg-neutral-800/60 border-neutral-700' : 'bg-white border-slate-200'
+            }`}>
+              <div className="space-y-1.5">
+                {secStr.split('\n').map((line, lIdx) => {
+                  const trimmed = line.trim();
+                  if (!trimmed) return null;
+                  if (trimmed.startsWith('## ')) {
+                    return (
+                      <h3 key={lIdx} className={`text-[13px] font-bold pb-1 border-b ${isDark ? 'text-amber-300 border-neutral-700' : 'text-slate-900 border-slate-150'}`}>
+                        {trimmed.replace(/^##\s+/, '')}
+                      </h3>
+                    );
+                  }
+                  if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+                    return (
+                      <p key={lIdx} className={`text-[12px] leading-snug my-1 ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
+                        {trimmed.replace(/^[\-•]\s*/, '').replace(/\*\*/g, '')}
+                      </p>
+                    );
+                  }
+                  return (
+                    <p key={lIdx} className={`text-[12px] leading-snug my-1 ${isDark ? 'text-neutral-300' : 'text-slate-600'}`}>
+                      {trimmed.replace(/\*\*/g, '')}
+                    </p>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Layout 3: 2-Column Split Cards Layout (if 2 sections)
+  if (sections.length === 2) {
+    return (
+      <div className="flex flex-col gap-3 font-sans w-full select-text">
+        {titleBlock && (
+          <h2 className={`text-[19px] sm:text-[22px] font-extrabold tracking-tight mb-1 leading-tight ${
+            isDark ? 'text-white' : 'text-slate-900'
+          }`}>
+            {titleBlock.replace(/^#\s+/, '')}
+          </h2>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start w-full">
+          {sections.map((secStr, sIdx) => (
+            <div key={sIdx} className={`p-4 rounded-xl border min-w-0 shadow-2xs ${
+              isDark ? 'bg-neutral-800/70 border-neutral-700' : 'bg-slate-50 border-slate-200/90'
+            }`}>
+              {secStr.split('\n').map((line, lIdx) => {
+                const trimmed = line.trim();
+                if (!trimmed) return null;
+                if (trimmed.startsWith('## ')) {
+                  return (
+                    <h3 key={lIdx} className={`text-[14px] font-bold pb-1.5 mb-2 border-b ${isDark ? 'text-slate-100 border-neutral-700' : 'text-slate-900 border-slate-200'}`}>
+                      {trimmed.replace(/^##\s+/, '')}
+                    </h3>
+                  );
+                }
+                if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+                  const content = trimmed.replace(/^[\-•]\s*/, '');
+                  return (
+                    <div key={lIdx} className="flex items-start gap-2 my-1.5">
+                      <span className={`font-bold text-[7px] mt-1 shrink-0 ${isDark ? 'text-amber-400' : 'text-slate-500'}`}>▪</span>
+                      <span className={`text-[13px] leading-relaxed ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
+                        {content.replace(/\*\*/g, '')}
+                      </span>
+                    </div>
+                  );
+                }
+                return (
+                  <p key={lIdx} className={`text-[13px] leading-relaxed my-1 ${isDark ? 'text-neutral-300' : 'text-slate-700'}`}>
+                    {trimmed.replace(/\*\*/g, '')}
+                  </p>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Default Standard Layout
+  return (
+    <div className="flex flex-col gap-2 font-sans w-full select-text">
+      {titleBlock && (
+        <h2 className={`text-[19px] sm:text-[22px] font-extrabold tracking-tight mb-2 leading-tight ${
+          isDark ? 'text-white' : 'text-slate-900'
+        }`}>
+          {titleBlock.replace(/^#\s+/, '')}
+        </h2>
+      )}
+
+      <div className="w-full flex flex-col gap-2">
+        {sections.map((secStr, idx) => (
+          <div key={idx} className="flex flex-col gap-1 min-w-0">
+            {secStr.split('\n').map((line, i) => {
+              const trimmed = line.trim();
+              if (!trimmed) return null;
+              if (trimmed.startsWith('## ')) {
+                return (
+                  <h3 key={i} className={`text-[14px] font-bold pb-1 border-b ${isDark ? 'text-slate-200 border-neutral-700' : 'text-slate-800 border-slate-200'}`}>
+                    {trimmed.replace(/^##\s+/, '')}
+                  </h3>
+                );
+              }
+              if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+                return (
+                  <div key={i} className="flex items-start gap-2 pl-0.5 my-1">
+                    <span className={`font-bold shrink-0 mt-1 text-[7px] ${isDark ? 'text-amber-400' : 'text-slate-600'}`}>▪</span>
+                    <span className={`text-[13px] leading-relaxed ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
+                      {trimmed.replace(/^[\-•]\s*/, '').replace(/\*\*/g, '')}
                     </span>
                   </div>
-                </div>
+                );
+              }
+              return (
+                <p key={i} className={`text-[13px] leading-relaxed my-1 ${isDark ? 'text-neutral-300' : 'text-slate-700'}`}>
+                  {trimmed.replace(/\*\*/g, '')}
+                </p>
               );
-            }
-          }
-
-          // Standard bullets
-          const parts = content.split(/(\*\*.*?\*\*|`.*?`)/g);
-          return (
-            <div key={i} className="flex items-start gap-2.5 pl-0.5 my-1">
-              <span className={`font-bold shrink-0 mt-1 text-[8px] ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>◆</span>
-              <span className={`text-[13px] sm:text-[14px] leading-relaxed ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
-                {parts.map((part, pIdx) => {
-                  if (part.startsWith('**') && part.endsWith('**')) {
-                    return <strong key={pIdx} className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
-                  }
-                  if (part.startsWith('`') && part.endsWith('`')) {
-                    return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
-                  }
-                  return part;
-                })}
-              </span>
-            </div>
-          );
-        }
-
-        // Regular Paragraph
-        const parts = trimmed.split(/(\*\*.*?\*\*|`.*?`)/g);
-        return (
-          <p key={i} className={`text-[13px] sm:text-[14px] leading-relaxed my-1 ${isDark ? 'text-neutral-300' : 'text-slate-700'}`}>
-            {parts.map((part, pIdx) => {
-              if (part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={pIdx} className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
-              }
-              if (part.startsWith('`') && part.endsWith('`')) {
-                return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
-              }
-              return part;
             })}
-          </p>
-        );
-      })}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -217,7 +326,7 @@ const SlideCard = ({
 }) => {
   return (
     <div className={`w-full aspect-[16/9] max-h-[50vh] rounded-[20px] border shadow-xs p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
-      isDark ? 'border-[#3E4042] bg-[#242629] text-white' : 'border-slate-200/90 bg-white text-slate-800'
+      isDark ? 'border-[#3E4042] bg-[#1E2024] text-white' : 'border-slate-200/90 bg-[#FAFAFC] text-slate-800'
     }`}>
       <RenderSlideMarkdown text={markdown} isDark={isDark} />
     </div>
