@@ -8,6 +8,7 @@ import { FileRow } from '../Shared/FileRow';
 import { FolderRow } from '../Shared/FolderRow';
 import { FileIcon } from '../Shared/FileIcon';
 import { themeTokens } from '../../utils/themeTokens';
+import { getAvatarForPerson } from '../../utils/personAvatars';
 
 interface BotMessageProps {
   text: string;
@@ -47,6 +48,8 @@ interface BotMessageProps {
 
 const TeamAvatar = ({ avatar, name, size = 'md', isGroupChat = false }: { avatar?: string; name?: string; size?: 'sm' | 'md' | 'lg'; isGroupChat?: boolean }) => {
   const [error, setError] = React.useState(false);
+  const resolvedName = name || '';
+  const avatarUrl = (avatar && avatar !== 'undefined') ? avatar : getAvatarForPerson(resolvedName);
   const sizeClasses = size === 'sm' ? 'w-6 h-6 text-[10px]' : size === 'lg' ? 'w-10 h-10 text-base' : 'w-8 h-8 text-sm';
   const bgClasses = size === 'sm' 
     ? 'bg-slate-200 dark:bg-slate-750 text-slate-600 dark:text-slate-350' 
@@ -54,12 +57,12 @@ const TeamAvatar = ({ avatar, name, size = 'md', isGroupChat = false }: { avatar
 
   const ringStyle = isGroupChat ? themeTokens.groupChat.facepileRing : 'ring-2 ring-white dark:ring-[#1E1F22]';
 
-  if (avatar && !error) {
+  if (avatarUrl && !error) {
     return (
       <img 
-        src={avatar} 
+        src={avatarUrl} 
         className={`${sizeClasses} rounded-full object-cover shrink-0 ${ringStyle}`} 
-        alt={name || 'User'} 
+        alt={resolvedName || 'User'} 
         onError={() => setError(true)}
       />
     );
@@ -67,14 +70,14 @@ const TeamAvatar = ({ avatar, name, size = 'md', isGroupChat = false }: { avatar
 
   return (
     <div className={`${sizeClasses} ${bgClasses} rounded-full flex items-center justify-center font-bold shrink-0 ${ringStyle}`}>
-      {(name || 'U').substring(0, 1).toUpperCase()}
+      {(resolvedName || 'U').substring(0, 1).toUpperCase()}
     </div>
   );
 };
 
 export function formatPeopleNames(people: any[]): string {
   if (!people || people.length === 0) return "Team members";
-  const names = people.map(p => p.name || p.displayName || 'Collaborator').filter(Boolean);
+  const names = people.map(p => (typeof p === 'string' ? p : p.name || p.displayName || 'Team Member')).filter(Boolean);
   if (names.length === 1) return names[0];
   if (names.length === 2) return `${names[0]} and ${names[1]}`;
   if (names.length === 3) return `${names[0]}, ${names[1]}, and ${names[2]}`;
@@ -201,15 +204,19 @@ export function BotMessage({
 
         {people.length > 0 && (
           <div className="flex items-center -space-x-2 pl-1 pt-0.5 select-none">
-            {people.map((person: any, idx: number) => (
-              <TeamAvatar 
-                key={person.email || idx} 
-                avatar={person.avatar} 
-                name={person.name} 
-                size="md" 
-                isGroupChat={isGroupChat}
-              />
-            ))}
+            {people.map((person: any, idx: number) => {
+              const personName = typeof person === 'string' ? person : (person?.name || person?.displayName || '');
+              const avatar = (person && typeof person === 'object' && person.avatar) ? person.avatar : getAvatarForPerson(personName);
+              return (
+                <TeamAvatar 
+                  key={person?.email || personName || idx} 
+                  avatar={avatar} 
+                  name={personName} 
+                  size="md" 
+                  isGroupChat={isGroupChat}
+                />
+              );
+            })}
           </div>
         )}
       </div>

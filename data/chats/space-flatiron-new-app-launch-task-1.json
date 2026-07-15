@@ -4,6 +4,8 @@
   "chatName": "Add Beta Findings to Deck",
   "type": "inferred",
   "taskType": "inferred",
+  "personName": "Rachel Chang",
+  "personAvatar": "/people/rachel_chang.jpg",
   "associatedFileId": "space-flatiron-new-app-launch-file-3",
   "associatedFileName": "app_launch_review_deck.gslides",
   "messages": [
@@ -56,5 +58,5 @@
     "Dr. Jason Miller"
   ],
   "pinnedArtifactIds": [],
-  "updatedAt": "2026-07-14T23:19:08.442Z"
+  "updatedAt": "2026-07-15T00:24:56.070Z"
 }

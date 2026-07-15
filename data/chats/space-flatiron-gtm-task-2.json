@@ -4,6 +4,8 @@
   "chatName": "Refine Onboarding Diagram",
   "type": "inferred",
   "taskType": "inferred",
+  "personName": "David Ross",
+  "personAvatar": "/people/david_ross.jpg",
   "associatedFileId": "space-flatiron-gtm-file-3",
   "associatedFileName": "gtm_executive_pitch.gslides",
   "messages": [
@@ -56,5 +58,5 @@
     "Elena Vance"
   ],
   "pinnedArtifactIds": [],
-  "updatedAt": "2026-07-14T23:19:08.442Z"
+  "updatedAt": "2026-07-15T00:24:56.070Z"
 }

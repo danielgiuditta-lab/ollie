@@ -10,6 +10,7 @@ import { ShapeLoader } from '../Shared/ShapeLoader';
 import { NullTitle } from '../Shared/NullTitle';
 import { NullChat } from '../Shared/NullChat';
 import { SpaceDashboard } from './SpaceDashboard';
+import { getAvatarForPerson } from '../../utils/personAvatars';
 
 import docsIcon from '../../assets/docs.png';
 import sheetsIcon from '../../assets/sheets.png';
@@ -57,7 +58,7 @@ export const DEFAULT_TODO_ITEMS = [
     sourceName: "Brand Guidelines",
     sourceMimeType: "application/vnd.google-apps.document",
     personName: "Emily",
-    personAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+    personAvatar: getAvatarForPerson("Emily"),
     status: 'blocked',
     hasPreview: true,
     involvesMe: true,
@@ -80,7 +81,7 @@ export const DEFAULT_TODO_ITEMS = [
     sourceName: "Q3 Strategy Deck",
     sourceMimeType: "application/vnd.google-apps.presentation",
     personName: "David",
-    personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+    personAvatar: getAvatarForPerson("David"),
     status: 'blocked',
     hasPreview: true,
     involvesMe: true,
@@ -103,7 +104,7 @@ export const DEFAULT_TODO_ITEMS = [
     sourceName: "Brand Guidelines",
     sourceMimeType: "application/vnd.google-apps.document",
     personName: "Juyun",
-    personAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
+    personAvatar: getAvatarForPerson("Juyun"),
     status: 'blocked',
     hasPreview: true,
     involvesMe: true,
@@ -124,7 +125,7 @@ export const DEFAULT_TODO_ITEMS = [
     sourceName: "Branding",
     sourceMimeType: "text/html",
     personName: "David",
-    personAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+    personAvatar: getAvatarForPerson("David"),
     status: 'done',
     hasPreview: false,
     involvesMe: false
@@ -137,7 +138,7 @@ export const DEFAULT_TODO_ITEMS = [
     sourceName: "Sales",
     sourceMimeType: "application/vnd.google-apps.spreadsheet",
     personName: "David",
-    personAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
+    personAvatar: getAvatarForPerson("David"),
     status: 'done',
     hasPreview: false,
     involvesMe: true
@@ -149,8 +150,8 @@ export const DEFAULT_TODO_ITEMS = [
     workspace: 'Operations',
     sourceName: "Operations",
     sourceMimeType: "application/vnd.google-apps.chat",
-    personName: "Bora & Megan",
-    personAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
+    personName: "Bora",
+    personAvatar: getAvatarForPerson("Bora"),
     status: 'done',
     hasPreview: false,
     involvesMe: true
@@ -623,22 +624,28 @@ export function HomeLanding({
         mimeType = 'application/vnd.google-apps.spreadsheet';
       }
 
-      let personName = 'Collaborator';
-      if (item.source) {
+      let personName = item.personName || item.author || (item.members && item.members[0]) || '';
+      if (!personName && item.source) {
         const matches = item.source.match(/(?:from|by|at)\s+([A-Z][a-z]+)/i);
         if (matches && matches[1]) {
           personName = matches[1];
         }
       }
+      if (!personName && (item.title || item.description)) {
+        const textToSearch = `${item.title || ''} ${item.description || ''}`;
+        const descMatch = textToSearch.match(/^I\s+(?:addressed|changed|removed|updated|crafted|compiled|added)\s+([A-Z][a-z]+)'s/i) ||
+                          textToSearch.match(/([A-Z][a-z]+)\s+(?:commented|tagged|mentioned|asked|replied|requested)/i) ||
+                          textToSearch.match(/(?:for|from|by|with)\s+([A-Z][a-z]+)/i);
+        if (descMatch && descMatch[1] && !['Google', 'Brand', 'Pricing', 'Marketing', 'Sales', 'Operations', 'Q3', 'Slide'].includes(descMatch[1])) {
+          personName = descMatch[1];
+        }
+      }
+      if (!personName) {
+        const team = ['Elena Vance', 'Dr. Marcus Thorne', 'Sarah Lin', 'David Ross', 'Priya Patel', 'Rachel Chang'];
+        personName = team[idx % team.length];
+      }
 
-      const avatars = [
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80'
-      ];
-      const personAvatar = avatars[idx % avatars.length];
+      const personAvatar = getAvatarForPerson(personName);
       const isProactive = idx === 0;
 
       let fileName = cleanSpace;

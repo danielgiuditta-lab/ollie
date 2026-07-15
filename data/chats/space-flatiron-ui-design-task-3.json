@@ -4,6 +4,8 @@
   "chatName": "Prepare Prototype Review",
   "type": "inferred",
   "taskType": "inferred",
+  "personName": "Dr. Marcus Thorne",
+  "personAvatar": "/people/dr_marcus_thorne.jpg",
   "associatedFileId": "space-flatiron-ui-design-file-0",
   "associatedFileName": "index.html",
   "messages": [
@@ -56,5 +58,5 @@
     "Sarah Lin"
   ],
   "pinnedArtifactIds": [],
-  "updatedAt": "2026-07-14T23:19:08.442Z"
+  "updatedAt": "2026-07-15T00:24:56.070Z"
 }

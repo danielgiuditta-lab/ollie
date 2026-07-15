@@ -4,12 +4,14 @@
   "chatName": "Update UX Deck Quotes",
   "type": "inferred",
   "taskType": "inferred",
+  "personName": "Sarah Lin",
+  "personAvatar": "/people/sarah_lin.jpg",
   "associatedFileId": "space-flatiron-ui-design-file-3",
   "associatedFileName": "trial_matcher_deck.gslides",
   "messages": [
     {
       "role": "user",
-      "text": "Please extract quotes from the UXR synthesis doc and format them for Slides 4 & 5 in trial_matcher_deck.gslides."
+      "text": "Please extract quotes from Sarah Lin's UXR synthesis doc and format them for Slides 4 & 5 in trial_matcher_deck.gslides."
     },
     {
       "role": "bot",
@@ -56,5 +58,5 @@
     "Sarah Lin"
   ],
   "pinnedArtifactIds": [],
-  "updatedAt": "2026-07-14T23:19:08.442Z"
+  "updatedAt": "2026-07-15T00:24:56.070Z"
 }

@@ -1,0 +1,33 @@
+{
+  "envId": "2b314173d8d345d6314df9ee4d2f9a41",
+  "key": "decision_risk_log_state",
+  "data": {
+    "items": [
+      {
+        "id": "1",
+        "decision": "Approved MDM distribution strategy for iOS deployment with Managed Apple IDs.",
+        "ownerEmail": "malik@example.com",
+        "status": "Decided",
+        "impact": "High",
+        "timestamp": 1783812499662
+      },
+      {
+        "id": "2",
+        "decision": "Resolve NCCN Guidelines caching latency currently averaging 1.2s.",
+        "ownerEmail": "sakura@example.com",
+        "status": "Pending",
+        "impact": "Medium",
+        "timestamp": 1783898899662
+      },
+      {
+        "id": "3",
+        "decision": "HIPAA compliance sign-off on direct push notification pathway for pathology biomarker returns.",
+        "ownerEmail": "adam@example.com",
+        "status": "Mitigated",
+        "impact": "Critical",
+        "timestamp": 1783985299662
+      }
+    ]
+  },
+  "updatedAt": "2026-07-14T23:28:19.966Z"
+}

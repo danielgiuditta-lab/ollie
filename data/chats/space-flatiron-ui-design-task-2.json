@@ -4,6 +4,8 @@
   "chatName": "Refine UI Specs",
   "type": "inferred",
   "taskType": "inferred",
+  "personName": "Elena Vance",
+  "personAvatar": "/people/elena_vance.jpg",
   "associatedFileId": "space-flatiron-ui-design-file-2",
   "associatedFileName": "oncology_component_specs.md",
   "messages": [
@@ -56,5 +58,5 @@
     "Sarah Lin"
   ],
   "pinnedArtifactIds": [],
-  "updatedAt": "2026-07-14T23:19:08.442Z"
+  "updatedAt": "2026-07-15T00:24:56.070Z"
 }

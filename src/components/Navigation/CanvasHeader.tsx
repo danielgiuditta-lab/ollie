@@ -4,23 +4,27 @@ import { themeTokens } from '../../utils/themeTokens';
 
 import { cleanWorkspaceName } from '../Canvas/HomeLanding';
 
+import { getAvatarForPerson } from '../../utils/personAvatars';
+
 const AvatarCircle = ({ member }: { member: any }) => {
   const [error, setError] = useState(false);
+  const name = typeof member === 'string' ? member : (member?.name || '');
+  const avatarUrl = (member && typeof member === 'object' && member.avatar) ? member.avatar : getAvatarForPerson(name);
 
   return (
     <div
       className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-3xs ${themeTokens.groupChat.facepileRing} shrink-0 overflow-hidden bg-blue-500`}
-      title={`${member.name} (${member.email})`}
+      title={name ? (typeof member === 'object' && member.email ? `${name} (${member.email})` : name) : 'User'}
     >
-      {member.avatar && !error ? (
+      {avatarUrl && !error ? (
         <img 
-          src={member.avatar} 
+          src={avatarUrl} 
           className="w-full h-full object-cover" 
-          alt={member.name} 
+          alt={name} 
           onError={() => setError(true)}
         />
       ) : (
-        (member.name || 'U').substring(0, 1).toUpperCase()
+        (name || 'U').substring(0, 1).toUpperCase()
       )}
     </div>
   );

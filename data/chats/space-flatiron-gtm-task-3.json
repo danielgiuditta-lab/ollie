@@ -4,6 +4,8 @@
   "chatName": "Finalize Sponsor Matrix",
   "type": "inferred",
   "taskType": "inferred",
+  "personName": "Priya Patel",
+  "personAvatar": "/people/priya_patel.jpg",
   "associatedFileId": "space-flatiron-gtm-file-2",
   "associatedFileName": "biopharma_partnership_proposal.doc",
   "messages": [
@@ -56,5 +58,5 @@
     "Elena Vance"
   ],
   "pinnedArtifactIds": [],
-  "updatedAt": "2026-07-14T23:19:08.442Z"
+  "updatedAt": "2026-07-15T00:24:56.070Z"
 }

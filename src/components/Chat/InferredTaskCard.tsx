@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
 import { StatusIndicator } from './StatusIndicator';
 import { NativeViewer } from '../Canvas/NativeViewer';
+import { getAvatarForPerson } from '../../utils/personAvatars';
 
 interface InferredTaskCardProps {
   item: {
@@ -236,7 +237,7 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
             {!avatarFailed ? (
               <img 
-                src={item.personAvatar} 
+                src={item.personAvatar || getAvatarForPerson(item.personName)} 
                 alt="avatar icon" 
                 className="w-3.5 h-3.5 rounded-full object-cover shrink-0" 
                 onError={() => setAvatarFailed(true)}

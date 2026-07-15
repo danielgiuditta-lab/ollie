@@ -16,6 +16,11 @@ function saveJson(filename, data) {
 
 const now = new Date().toISOString();
 
+function getAvatarPath(personName) {
+  const slug = personName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  return `/people/${slug}.jpg`;
+}
+
 // --- POLARIS / M3 DESIGN SYSTEM HEAD (FROM src/agent-system-prompt.md Section 8) ---
 const POLARIS_M3_HEAD = `
   <meta charset="UTF-8">
@@ -250,10 +255,12 @@ const space1Task1 = {
   chatName: 'Update UX Deck Quotes',
   type: 'inferred',
   taskType: 'inferred',
+  personName: 'Sarah Lin',
+  personAvatar: getAvatarPath('Sarah Lin'),
   associatedFileId: `${spaceUiDesignId}-file-3`,
   associatedFileName: 'trial_matcher_deck.gslides',
   messages: [
-    { role: 'user', text: 'Please extract quotes from the UXR synthesis doc and format them for Slides 4 & 5 in trial_matcher_deck.gslides.' },
+    { role: 'user', text: 'Please extract quotes from Sarah Lin\'s UXR synthesis doc and format them for Slides 4 & 5 in trial_matcher_deck.gslides.' },
     { role: 'bot', text: 'I have parsed `patient_eligibility_uxr_readout.doc` and structured quotes from Community CRCs regarding chart screening fatigue and biomarker pill visibility ready for Slide 4 and Slide 5.' }
   ],
   envId: null,
@@ -272,6 +279,8 @@ const space1Task2 = {
   chatName: 'Refine UI Specs',
   type: 'inferred',
   taskType: 'inferred',
+  personName: 'Elena Vance',
+  personAvatar: getAvatarPath('Elena Vance'),
   associatedFileId: `${spaceUiDesignId}-file-2`,
   associatedFileName: 'oncology_component_specs.md',
   messages: [
@@ -294,6 +303,8 @@ const space1Task3 = {
   chatName: 'Prepare Prototype Review',
   type: 'inferred',
   taskType: 'inferred',
+  personName: 'Dr. Marcus Thorne',
+  personAvatar: getAvatarPath('Dr. Marcus Thorne'),
   associatedFileId: `${spaceUiDesignId}-file-0`,
   associatedFileName: 'index.html',
   messages: [
@@ -473,6 +484,8 @@ const space2Task1 = {
   chatName: 'Update GTM Pitch Deck',
   type: 'inferred',
   taskType: 'inferred',
+  personName: 'Priya Patel',
+  personAvatar: getAvatarPath('Priya Patel'),
   associatedFileId: `${spaceGtmId}-file-3`,
   associatedFileName: 'gtm_executive_pitch.gslides',
   messages: [
@@ -495,6 +508,8 @@ const space2Task2 = {
   chatName: 'Refine Onboarding Diagram',
   type: 'inferred',
   taskType: 'inferred',
+  personName: 'David Ross',
+  personAvatar: getAvatarPath('David Ross'),
   associatedFileId: `${spaceGtmId}-file-3`,
   associatedFileName: 'gtm_executive_pitch.gslides',
   messages: [
@@ -517,6 +532,8 @@ const space2Task3 = {
   chatName: 'Finalize Sponsor Matrix',
   type: 'inferred',
   taskType: 'inferred',
+  personName: 'Priya Patel',
+  personAvatar: getAvatarPath('Priya Patel'),
   associatedFileId: `${spaceGtmId}-file-2`,
   associatedFileName: 'biopharma_partnership_proposal.doc',
   messages: [
@@ -649,6 +666,8 @@ const space3Task1 = {
   chatName: 'Add Beta Findings to Deck',
   type: 'inferred',
   taskType: 'inferred',
+  personName: 'Rachel Chang',
+  personAvatar: getAvatarPath('Rachel Chang'),
   associatedFileId: `${spaceLaunchId}-file-3`,
   associatedFileName: 'app_launch_review_deck.gslides',
   messages: [
@@ -671,6 +690,8 @@ const space3Task2 = {
   chatName: 'Update Security Checklist',
   type: 'inferred',
   taskType: 'inferred',
+  personName: 'Dr. Jason Miller',
+  personAvatar: getAvatarPath('Dr. Jason Miller'),
   associatedFileId: `${spaceLaunchId}-file-3`,
   associatedFileName: 'app_launch_review_deck.gslides',
   messages: [
@@ -693,6 +714,8 @@ const space3Task3 = {
   chatName: 'Review Mobile Wireframes',
   type: 'inferred',
   taskType: 'inferred',
+  personName: 'Elena Vance',
+  personAvatar: getAvatarPath('Elena Vance'),
   associatedFileId: `${spaceLaunchId}-file-1`,
   associatedFileName: 'beta_user_feedback_summary.doc',
   messages: [
@@ -727,4 +750,4 @@ saveJson(`${spaceLaunchId}-task-1.json`, space3Task1);
 saveJson(`${spaceLaunchId}-task-2.json`, space3Task2);
 saveJson(`${spaceLaunchId}-task-3.json`, space3Task3);
 
-console.log("🎉 Successfully updated Flatiron Health mock database with ultra-short concise titles!");
+console.log("🎉 Successfully updated Flatiron Health mock database with explicit 1-to-1 person names and headshots!");

@@ -1,5 +1,6 @@
 import React from 'react';
 import { getFileIcon } from '../Shared/FileIcon';
+import { getAvatarForPerson } from '../../utils/personAvatars';
 
 interface TypeAheadProps {
   mode?: 'context' | 'open';
@@ -100,7 +101,7 @@ export function TypeAhead({
       {mode === 'context' && filteredRecentPeople.length > 0 && (
         <div className="flex flex-col gap-0.5 pt-1 border-t border-gray-100 dark:border-white/5">
           {filteredRecentPeople.slice(0, 5).map(person => {
-            const profilePic = person.photoLink || person.picture || person.avatar || (person.name === (userProfile?.name || userProfile?.displayName) ? userProfile?.picture : null);
+            const profilePic = person.photoLink || person.picture || person.avatar || (person.name === (userProfile?.name || userProfile?.displayName) ? userProfile?.picture : getAvatarForPerson(person.name));
             return (
               <button
                 key={person.name}
