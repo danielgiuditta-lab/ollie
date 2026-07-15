@@ -72,6 +72,22 @@ export function SpaceDashboard({
   } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
+
+  // ResizeObserver to detect dashboard container width
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const element = containerRef.current;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setContainerWidth(entry.contentRect.width);
+        }
+      }
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   // Resolve synthetic or real To-dos artifact
   const hasTodoCard = Boolean(todoItems && todoItems.length > 0);
@@ -414,6 +430,9 @@ export function SpaceDashboard({
     );
   }
 
+  const isTwoColumns = dashboardLayoutMode === 'cols' || (dashboardLayoutMode === 'auto' && pinnedFiles.length >= 2);
+  const isNarrowDashboardCard = isTwoColumns || (containerWidth > 0 && (containerWidth < 900 || (containerWidth / Math.max(1, pinnedFiles.length)) < 520));
+
   let gridLayoutClass = "grid-cols-1 md:grid-cols-2 md:grid-rows-1 auto-rows-fr";
   if (dashboardLayoutMode === 'rows') {
     gridLayoutClass = "grid-cols-1 auto-rows-fr";
@@ -610,6 +629,7 @@ export function SpaceDashboard({
                             key={item.id}
                             item={item}
                             getFileIcon={getFileIcon || (() => '')}
+                            isNarrow={isNarrowDashboardCard}
                             onClick={() => {
                               if (onProactiveTaskClick) {
                                 onProactiveTaskClick(item);

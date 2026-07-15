@@ -29,10 +29,29 @@ interface InferredTaskCardProps {
   };
   getFileIcon: (mimeType?: string) => string;
   onClick: () => void;
+  isNarrow?: boolean;
 }
 
-export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFileIcon, onClick }) => {
+export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFileIcon, onClick, isNarrow }) => {
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const cardRef = React.useRef<HTMLDivElement>(null);
+  const [selfNarrow, setSelfNarrow] = useState(false);
+
+  React.useEffect(() => {
+    if (!cardRef.current) return;
+    const element = cardRef.current;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setSelfNarrow(entry.contentRect.width < 480);
+        }
+      }
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const effectiveNarrow = Boolean(isNarrow || selfNarrow);
 
   const primaryFile = item.filesToLoad && item.filesToLoad.length > 0 ? item.filesToLoad[0] : null;
 
@@ -212,12 +231,13 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
     ))
   );
 
-  const showThumbnail = !isNonNativeEmailOrChat;
+  const showThumbnail = !isNonNativeEmailOrChat && !effectiveNarrow;
 
   return (
     <div 
+      ref={cardRef}
       onClick={onClick}
-      className="w-full flex items-center justify-between gap-4 px-4 py-4 rounded-[4px] first:rounded-t-[16px] first:rounded-b-[4px] last:rounded-b-[16px] last:rounded-t-[4px] only:rounded-[16px] bg-[#003BC4]/5 dark:bg-[#282A2D] hover:bg-[#003BC4]/10 dark:hover:bg-[#35373A] cursor-pointer transition-all duration-200 select-none"
+      className="w-full flex items-center justify-between gap-4 px-4 py-4 rounded-[4px] first:rounded-t-[16px] first:rounded-b-[4px] last:rounded-b-[16px] last:rounded-t-[4px] only:rounded-[16px] bg-[#003BC4]/5 dark:bg-[#282A2D] hover:bg-[#003BC4]/10 dark:hover:bg-[#35373A] cursor-pointer transition-all duration-200 select-none min-w-0"
     >
       {/* Left Column: Status Indicator */}
       <div className="shrink-0 w-8 h-8 flex items-center justify-center">
@@ -234,13 +254,13 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
             {item.description}
           </p>
         </div>
-        {/* Source and Person capsule chips */}
-        <div className="flex flex-wrap items-center gap-2 mt-2">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
+        {/* Source and Person capsule chips: single line truncation when narrow to prevent 4th line */}
+        <div className={`flex items-center gap-2 mt-2 min-w-0 max-w-full ${effectiveNarrow ? 'flex-nowrap overflow-hidden' : 'flex-wrap'}`}>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0 shrink max-w-[120px]">
             <img src={getFileIcon(resolvedMime)} alt="source icon" className="w-3.5 h-3.5 object-contain shrink-0" />
-            <span className="max-w-[100px] truncate block">{item.sourceName}</span>
+            <span className="truncate block">{item.sourceName}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0 shrink max-w-[100px]">
             {!avatarFailed ? (
               <img 
                 src={item.personAvatar || getAvatarForPerson(item.personName, Boolean(item.isReal || item.driveId || item.isOAuth))} 
@@ -253,12 +273,12 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
                 {(item.personName || 'U').substring(0, 1).toUpperCase()}
               </div>
             )}
-            <span className="max-w-[80px] truncate block">{item.personName}</span>
+            <span className="truncate block">{item.personName}</span>
           </div>
         </div>
       </div>
 
-      {/* Right Column: Preview of referenced artifact (portrait aspect for docs, landscape for slides) */}
+      {/* Right Column: Preview of referenced artifact (hidden on narrow/2-col dashboard) */}
       {showThumbnail && (
         <div className={`shrink-0 ${isSlideItem ? 'w-[104px]' : 'w-[54px]'} h-[72px] rounded-[10px] overflow-hidden border border-slate-200/90 dark:border-[#3E4042] bg-white dark:bg-[#1E1F22] flex items-center justify-center relative group select-none transition-all duration-300 shadow-2xs`}>
           <div className="w-full h-full relative group-hover:scale-[1.03] transition-transform duration-300 pointer-events-none">
