@@ -237,11 +237,14 @@ export function BotMessage({
     };
 
     const handleFeedback = () => {
-      if (onFeedbackProactive) {
+      if (onDoDifferently) {
+        onDoDifferently();
+      } else if (onFeedbackProactive) {
         onFeedbackProactive();
       } else {
         const composerInput = document.querySelector('textarea[placeholder*="Ask Gemini"], textarea[placeholder*="Ask anything"], textarea') as HTMLTextAreaElement | null;
         if (composerInput) {
+          composerInput.value = "I'd like to do this differently: ";
           composerInput.focus();
         }
       }
@@ -288,7 +291,7 @@ export function BotMessage({
               theme={theme} 
               onClick={handleFeedback}
             >
-              Give feedback
+              Do differently
             </Button>
             <Button 
               variant={isApproved ? "secondary" : "primary"} 

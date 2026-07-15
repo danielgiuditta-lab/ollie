@@ -1,0 +1,55 @@
+{
+  "envId": "13c408e3a2e4f55d0e8e6a5a7051bbd8",
+  "key": "h2_kanban_board_state",
+  "data": [
+    {
+      "id": "task-1",
+      "title": "Triage Severity Scoring (ESI)",
+      "description": "Implement Emergency Severity Index (ESI Levels 1-5) automated EHR tagging system upon patient intake.",
+      "assignee": "dr_marcus_thorne@example.com",
+      "priority": "High",
+      "status": "To Do"
+    },
+    {
+      "id": "task-2",
+      "title": "Bed Allocation Latency Target",
+      "description": "Design real-time alerting to decrease median triage-to-bed time from 48 minutes down to under 18 minutes.",
+      "assignee": "rachel_chang@example.com",
+      "priority": "Critical",
+      "status": "In Progress"
+    },
+    {
+      "id": "task-3",
+      "title": "Digital SBAR Checklist Handoff Protocol",
+      "description": "Deploy mandatory digital Situation, Background, Assessment, Recommendation checklists prior to ward transfer.",
+      "assignee": "dr_marcus_thorne@example.com",
+      "priority": "High",
+      "status": "In Progress"
+    },
+    {
+      "id": "task-4",
+      "title": "Live Care Journey Tracker",
+      "description": "Provide patients and family real-time mobile app/SMS visibility into lab status, physician rounds, and schedules.",
+      "assignee": "sarah_lin@example.com",
+      "priority": "Medium",
+      "status": "To Do"
+    },
+    {
+      "id": "task-5",
+      "title": "Interactive Room Transition Map",
+      "description": "Create interactive user interfaces showing patient room transitions between Emergency, Surgery, PACU, and Inpatient Wards.",
+      "assignee": "dr_jason_miller@example.com",
+      "priority": "High",
+      "status": "Completed"
+    },
+    {
+      "id": "task-6",
+      "title": "Automated Discharge Enablement",
+      "description": "Streamline pharmacy prescriptions, follow-up scheduling, and post-acute transport care options.",
+      "assignee": "rachel_chang@example.com",
+      "priority": "Medium",
+      "status": "To Do"
+    }
+  ],
+  "updatedAt": "2026-07-15T18:56:00.957Z"
+}

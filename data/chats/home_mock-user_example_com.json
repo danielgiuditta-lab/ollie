@@ -1,7 +1,7 @@
 {
   "chatId": "home_mock-user_example_com",
   "projectName": "Home Dashboard",
-  "chatName": "",
+  "chatName": null,
   "type": "workspace",
   "taskType": "app",
   "viewState": null,
@@ -21,5 +21,5 @@
     "space-flatiron-gtm",
     "space-flatiron-new-app-launch"
   ],
-  "updatedAt": "2026-07-15T17:15:36.589Z"
+  "updatedAt": "2026-07-15T18:38:41.134Z"
 }

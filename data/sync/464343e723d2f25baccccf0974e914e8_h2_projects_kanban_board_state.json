@@ -1,0 +1,57 @@
+{
+  "envId": "464343e723d2f25baccccf0974e914e8",
+  "key": "h2_projects_kanban_board_state",
+  "data": {
+    "projects": [
+      {
+        "id": "proj-1",
+        "title": "Live Care Journey Tracker",
+        "description": "Provide patients & family real-time visibility into lab status, physician rounds, and medication schedules.",
+        "assigneeEmail": "sarah_lin@example.com",
+        "phase": "in_progress",
+        "dueDate": "2026-12-31"
+      },
+      {
+        "id": "proj-2",
+        "title": "Interactive Room Transition Map",
+        "description": "Smooth transfers between Emergency, Surgery, Post-Anesthesia Care Unit (PACU), and Inpatient Wards.",
+        "assigneeEmail": "dr_jason_miller@example.com",
+        "phase": "in_progress",
+        "dueDate": "2026-11-15"
+      },
+      {
+        "id": "proj-3",
+        "title": "Automated Discharge Enablement",
+        "description": "Streamline pharmacy prescriptions, follow-up appointments, and post-acute transport care.",
+        "assigneeEmail": "rachel_chang@example.com",
+        "phase": "planning",
+        "dueDate": "2026-10-01"
+      },
+      {
+        "id": "proj-4",
+        "title": "Triage Severity Scoring",
+        "description": "Implement Emergency Severity Index (ESI Levels 1-5) automated EHR tag upon patient intake.",
+        "assigneeEmail": "dr_marcus_thorne@example.com",
+        "phase": "completed",
+        "dueDate": "2026-07-15"
+      },
+      {
+        "id": "proj-5",
+        "title": "Bed Allocation Latency Optimization",
+        "description": "Decrease median triage-to-bed time from 48 minutes to < 18 minutes.",
+        "assigneeEmail": "rachel_chang@example.com",
+        "phase": "in_progress",
+        "dueDate": "2026-08-20"
+      },
+      {
+        "id": "proj-6",
+        "title": "Digital Care Team Handoff Protocol",
+        "description": "Mandatory digital SBAR (Situation, Background, Assessment, Recommendation) checklist prior to ward transfer.",
+        "assigneeEmail": "dr_marcus_thorne@example.com",
+        "phase": "completed",
+        "dueDate": "2026-07-01"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-15T17:59:50.677Z"
+}

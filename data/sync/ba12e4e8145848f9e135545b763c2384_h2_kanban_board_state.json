@@ -1,0 +1,51 @@
+{
+  "envId": "ba12e4e8145848f9e135545b763c2384",
+  "key": "h2_kanban_board_state",
+  "data": {
+    "tasks": [
+      {
+        "id": "task-1",
+        "title": "Implement ESI Severity Scoring Tags",
+        "desc": "Automate ESI automated EHR level tags upon patient intake to accelerate ED triage workflow velocity.",
+        "assignee": "rachel_chang@example.com",
+        "column": "in-progress"
+      },
+      {
+        "id": "task-2",
+        "title": "Decrease Triage-to-Bed Time",
+        "desc": "Decrease median triage-to-bed allocation latency under 18 minutes baseline. Audit flow protocols.",
+        "assignee": "dr_marcus_thorne@example.com",
+        "column": "todo"
+      },
+      {
+        "id": "task-3",
+        "title": "Live Care Journey Tracker UI",
+        "desc": "Build strategic gateway for real-time patient lab visibility, physician schedule updates, and SMS notifications.",
+        "assignee": "sarah_lin@example.com",
+        "column": "in-progress"
+      },
+      {
+        "id": "task-4",
+        "title": "Interactive Room Transition Map",
+        "desc": "Map transition parameters from Emergency ED to Operating Recovery and post-acute wards dynamically.",
+        "assignee": "dr_jason_miller@example.com",
+        "column": "todo"
+      },
+      {
+        "id": "task-5",
+        "title": "Automated Discharge Enablement",
+        "desc": "Streamline discharge planning, including coordinated pharmacy prescriptions and post-acute transit slots.",
+        "assignee": "dr_jason_miller@example.com",
+        "column": "completed"
+      },
+      {
+        "id": "task-6",
+        "title": "Digital SBAR Care Team Checklist",
+        "desc": "Build clinical handoff verification checklist prior to transferring triage patients out of the ED.",
+        "assignee": "dr_marcus_thorne@example.com",
+        "column": "blocked"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-15T17:42:18.101Z"
+}

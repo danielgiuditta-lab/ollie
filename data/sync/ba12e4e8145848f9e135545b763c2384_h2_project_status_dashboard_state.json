@@ -1,0 +1,69 @@
+{
+  "envId": "ba12e4e8145848f9e135545b763c2384",
+  "key": "h2_project_status_dashboard_state",
+  "data": {
+    "projects": [
+      {
+        "id": "proj-1",
+        "title": "Automated ESI Triage Tags",
+        "stage": "Triage & Intake",
+        "desc": "Implement Emergency Severity Index (ESI Levels 1-5) automated EHR level tags upon patient intake.",
+        "ownerEmail": "sakura@example.com",
+        "status": "On Track",
+        "progress": 60,
+        "targetDate": "2026-07-16"
+      },
+      {
+        "id": "proj-2",
+        "title": "Bed Allocation Latency Optimization",
+        "stage": "Triage & Intake",
+        "desc": "Decrease median triage-to-bed time from 48 minutes to under 18 minutes by streamlining flow protocols.",
+        "ownerEmail": "malik@example.com",
+        "status": "At Risk",
+        "progress": 35,
+        "targetDate": "2026-07-16"
+      },
+      {
+        "id": "proj-3",
+        "title": "Digital SBAR Handoff Checklist",
+        "stage": "Care Team Handoff",
+        "desc": "Implement clinical SBAR handoff verification checklist prior to transferring triage patients out of the ED.",
+        "ownerEmail": "adam@example.com",
+        "status": "Completed",
+        "progress": 100,
+        "targetDate": "2026-07-15"
+      },
+      {
+        "id": "proj-4",
+        "title": "Live Care Journey Tracker UI",
+        "stage": "Diagnostics & Labs",
+        "desc": "Build real-time mobile and dashboard tracker updates for viewing lab status, physician rounds, and medications.",
+        "ownerEmail": "sakura@example.com",
+        "status": "On Track",
+        "progress": 45,
+        "targetDate": "2026-07-18"
+      },
+      {
+        "id": "proj-5",
+        "title": "Interactive Room Transition Map",
+        "stage": "Specialized Care",
+        "desc": "Smooth transfer tracking interface between Emergency ED, Surgery OR, PACU, and post-acute wards.",
+        "ownerEmail": "malik@example.com",
+        "status": "Completed",
+        "progress": 100,
+        "targetDate": "2026-07-17"
+      },
+      {
+        "id": "proj-6",
+        "title": "Automated Discharge Enablement",
+        "stage": "Discharge Ready",
+        "desc": "Streamline discharge flow tracking, coordinated pharmacy prescriptions, and post-acute transport bookings.",
+        "ownerEmail": "adam@example.com",
+        "status": "On Track",
+        "progress": 80,
+        "targetDate": "2026-07-15"
+      }
+    ]
+  },
+  "updatedAt": "2026-07-15T17:45:19.080Z"
+}

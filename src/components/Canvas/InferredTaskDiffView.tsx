@@ -408,11 +408,7 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
           </h2>
 
           <div className="mb-4">
-            {isSlide ? (
-              <SlideCard markdown={col1Markdown} isDark={isDark} />
-            ) : (
-              <DocCard markdown={col1Markdown} isDark={isDark} />
-            )}
+            <SlideCard markdown={col1Markdown} isDark={isDark} />
           </div>
 
           <p 
@@ -436,11 +432,7 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
           </h2>
 
           <div className="mb-4">
-            {isSlide ? (
-              <SlideCard markdown={col2Markdown} isDark={isDark} />
-            ) : (
-              <DocCard markdown={col2Markdown} isDark={isDark} />
-            )}
+            <SlideCard markdown={col2Markdown} isDark={isDark} />
           </div>
 
           <p 

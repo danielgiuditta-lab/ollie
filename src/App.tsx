@@ -3108,6 +3108,7 @@ export default function App() {
     const handleFeedbackProactive = () => {
       const composerInput = document.querySelector('textarea[placeholder*="Ask Gemini"], textarea[placeholder*="Ask anything"], textarea') as HTMLTextAreaElement | null;
       if (composerInput) {
+        composerInput.value = "I'd like to do this differently: ";
         composerInput.focus();
       }
     };
