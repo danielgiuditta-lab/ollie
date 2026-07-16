@@ -244,7 +244,7 @@ export function LeftNav({
       </div>
 
       {/* 2. Main Navigation Menu / Spaces Scroll Container */}
-      <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar w-full px-4 gap-4">
+      <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden no-scrollbar w-full px-4 gap-4">
         
         {/* Home Row (Dashboard) */}
         <div className="flex flex-col gap-1 w-full shrink-0">
@@ -257,7 +257,7 @@ export function LeftNav({
             }`}
             title={isExpandedActive ? undefined : "Home"}
           >
-            <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex items-center gap-3.5 min-w-0 overflow-hidden">
               <div className="w-6 h-6 flex items-center justify-center shrink-0">
                 <span 
                   className="material-symbols-rounded shrink-0" 
@@ -352,7 +352,7 @@ export function LeftNav({
                   }`}
                   title={isExpandedActive ? undefined : space.name}
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex items-center gap-3.5 min-w-0 overflow-hidden">
                     <span className="text-xl shrink-0 leading-none w-6 h-6 flex items-center justify-center">
                       {getSpaceEmoji(space.name)}
                     </span>
@@ -428,7 +428,7 @@ export function LeftNav({
             className={`h-[40px] px-2 rounded-[20px] flex items-center cursor-pointer transition-colors duration-200 shrink-0 mt-2 ${themeTokens.text.idle} ${themeTokens.hoverBg}`}
             title="New workspace"
           >
-            <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex items-center gap-3.5 min-w-0 overflow-hidden">
               <div className="w-6 h-6 flex items-center justify-center shrink-0">
                 <span 
                   className="material-symbols-rounded shrink-0" 
