@@ -1,44 +1,28 @@
 {
-  "chatId": "space-1784168397745",
+  "chatId": "space-1784168397745-chat-1784168724259",
   "projectName": "Policy Issues",
-  "chatName": null,
-  "type": null,
-  "taskType": null,
+  "chatName": "Project Nexus PRD",
+  "type": "workspace",
+  "taskType": "doc",
   "viewState": null,
-  "associatedFileId": null,
-  "associatedFileName": null,
+  "associatedFileId": "created-artifact-1784168724259",
+  "associatedFileName": "Project Nexus PRD.doc",
   "messages": [
     {
       "role": "bot",
-      "text": "Elena Vance, David Ross, and 3 others added to this chat, you can create a new private chat any time",
-      "isMembersAddedNotice": true,
-      "addedMembers": [
-        {
-          "name": "Elena Vance",
-          "email": "elena_vance@example.com",
-          "avatar": "/people/sarah_lin.jpg"
-        },
-        {
-          "name": "David Ross",
-          "email": "david_ross@example.com",
-          "avatar": "/people/david.jpg"
-        },
-        {
-          "name": "Priya Patel",
-          "email": "priya_patel@example.com",
-          "avatar": "/people/rachel_chang.jpg"
-        },
-        {
-          "name": "Dr. Marcus Thorne",
-          "email": "dr_marcus_thorne@example.com",
-          "avatar": "/people/dr_marcus_thorne.jpg"
-        },
-        {
-          "name": "Rachel Chang",
-          "email": "rachel_chang@example.com",
-          "avatar": "/people/david.jpg"
-        }
-      ]
+      "text": "How can I help with your doc?"
+    },
+    {
+      "role": "user",
+      "text": "write a prd for this project"
+    },
+    {
+      "role": "bot",
+      "text": ""
+    },
+    {
+      "role": "bot",
+      "text": "I have drafted a comprehensive, professional Product Requirement Document (PRD) template for you. Since I don't have the specific details of your project yet, I've styled this around a realistic modern product scenario: **\"Project Nexus\" (an AI-Assisted Collaborative Document Editor)**. \n\nThis gives you a robust, industry-standard framework to start with. To tailor this specifically to your actual project, could you tell me:\n1. What is the official name of your project/product?\n2. What is the primary problem your product solves, and who are the target users?\n3. What are 2-3 key features that must be included in the initial launch (MVP)? \n\nOnce you share those details, I can update all the placeholders and customize the requirements for you!"
     }
   ],
   "envId": null,
@@ -94,5 +78,5 @@
   "pinnedArtifactIds": [
     "todo-card"
   ],
-  "updatedAt": "2026-07-16T02:25:50.439Z"
+  "updatedAt": "2026-07-16T02:25:50.284Z"
 }

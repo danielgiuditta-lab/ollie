@@ -122,6 +122,8 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
   }
 
   const sections = bodyText.split(/(?=\n## )|(?=^## )|\n---/g).filter(s => s.trim().length > 0);
+  const quoteMatch = text.match(/>\s*(.+)/);
+  const hasHeroStat = Boolean(quoteMatch);
   // Layout 0: Standalone Big Title Cover Slide Layout (if no sub-sections or body text)
   if (titleBlock && sections.length === 0) {
     return (

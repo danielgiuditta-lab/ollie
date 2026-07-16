@@ -295,7 +295,7 @@ export function NativeViewer({
     );
   }
 
-  const nameLower = file.name.toLowerCase();
+  const nameLower = (file.name || '').toLowerCase();
   
   const isGoogleSlide = 
     file.type === 'slide' ||
@@ -942,8 +942,8 @@ export function NativeViewer({
                 </div>
               </div>
 
-              {/* Slide Thumbnail Gallery Strip Below - Slightly Bigger (w-[164px] h-[104px]) */}
-              <div className="w-full flex items-center justify-start sm:justify-center gap-3.5 mt-5 sm:mt-6 overflow-x-auto py-2 px-4 select-none scrollbar-none shrink-0">
+              {/* Slide Thumbnail Gallery Strip Below - Left-aligned to prevent left-edge clipping */}
+              <div className="w-full flex items-center justify-start gap-3.5 mt-5 sm:mt-6 overflow-x-auto py-2 px-4 sm:px-6 select-none scrollbar-none shrink-0">
                 {rawSlides.map((slideText: string, idx: number) => {
                   const isActive = idx === safeIndex;
                   return (
@@ -1163,7 +1163,7 @@ export function NativeViewer({
     // 4. Document/Markdown Premium Reader View
     if (isDocFile && mode === 'preview') {
       const lines = (file.content || '').split('\n');
-      let title = file.name.replace(/\.[a-zA-Z]+$/, '');
+      let title = (file.name || 'Document').replace(/\.[a-zA-Z]+$/, '');
       title = title.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
       let author = '';
