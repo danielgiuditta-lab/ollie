@@ -2988,7 +2988,7 @@ export default function App() {
       }
     }
 
-    const slideContent = task.draftData?.draftContent || `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Proactive Agent Output'}\n- ${task.descriptionDone || task.description || 'Incorporated feedback and updated presentation slides.'}\n- Aligned visual layout and content for team review.\n- Autosaved slide draft to workspace.`;
+    const slideContent = task.updatedMarkdown || task.draftData?.draftContent || `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Proactive Agent Output'}\n- ${task.descriptionDone || task.description || 'Incorporated feedback and updated presentation slides.'}\n- Aligned visual layout and content for team review.\n- Autosaved slide draft to workspace.`;
 
     const proactiveSlideFile = {
       ...task,
@@ -2999,7 +2999,9 @@ export default function App() {
       driveId: targetId || `mock-drive-${task.id}`,
       id: `proactive-slide-${task.id}`,
       mimeType: isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document',
-      isProactiveDraft: true,
+      isProactiveDraft: !task.directSlideView && task.showDiffView !== false,
+      directSlideView: task.directSlideView,
+      showDiffView: task.showDiffView,
       summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive presentation draft.",
       originalMarkdown: task.originalMarkdown,
       updatedMarkdown: task.updatedMarkdown,
@@ -5930,7 +5932,7 @@ export default function App() {
                           onIframeRef={registerIframe}
                           selectedFile={selectedFile || sandboxFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase() === 'index.html')) || { name: 'index.html', content: '' }}
                         />
-                      ) : (!accessToken && (selectedFile?.isProactiveDraft || selectedFile?.isInferredTask || selectedFile?.isProactive || selectedFile?.taskType === 'inferred' || activeProactiveTask)) ? (
+                      ) : (!accessToken && (selectedFile?.isProactiveDraft || selectedFile?.isInferredTask || selectedFile?.isProactive || selectedFile?.taskType === 'inferred' || activeProactiveTask) && selectedFile?.directSlideView !== true && selectedFile?.showDiffView !== false && activeProactiveTask?.directSlideView !== true) ? (
                         <InferredTaskDiffView
                           file={selectedFile || activeProactiveTask}
                           theme={appTheme}

@@ -1,0 +1,62 @@
+{
+  "chatId": "space-veritas-social-task-2",
+  "projectName": "Veritas Social",
+  "chatName": "Simplify Escalation Flow Diagram",
+  "type": "inferred",
+  "taskType": "inferred",
+  "personName": "David Ross",
+  "personAvatar": "/people/david_ross.jpg",
+  "associatedFileId": "space-veritas-social-file-3",
+  "associatedFileName": "veritas_safety_roadmap.gslides",
+  "messages": [
+    {
+      "role": "user",
+      "text": "Simplify the escalation flow diagram on Slide 10 to highlight automated PhotoDNA hash blocking."
+    },
+    {
+      "role": "bot",
+      "text": "Slide 10 outline updated to emphasize zero-latency PhotoDNA and SaferNet media quarantine."
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space-veritas-social",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "space-veritas-social-file-0",
+      "name": "index.html",
+      "type": "code",
+      "mimeType": "text/html",
+      "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  \n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n  <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n  <link href=\"https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap\" rel=\"stylesheet\">\n  <script src=\"https://cdn.tailwindcss.com\"></script>\n  <style>\n    :root {\n      --gemini-rail-icon-gap: 0px;\n      --gemini-side-panel-padding-left: 16px;\n      --gemini-side-panel-padding-right: 16px;\n      --gemini-header-padding-left: 10px;\n      --gemini-header-padding-right: 12px;\n      --gemini-header-elements-gap: 8px;\n    }\n    body {\n      font-family: 'Google Sans Text', sans-serif;\n      background-color: #ffffff;\n      color: #1f1f1f;\n    }\n    h1, h2, h3, h4, h5, button {\n      font-family: 'Google Sans', sans-serif;\n    }\n  </style>\n\n  <title>Veritas Social - Trust & Safety Operations Queue</title>\n</head>\n<body class=\"p-6 bg-white text-[#1f1f1f]\">\n  <div class=\"max-w-5xl mx-auto space-y-6\">\n    <!-- Header -->\n    <div class=\"flex items-center justify-between border-b border-[#e2e8f0] pb-4\">\n      <div>\n        <h2 class=\"text-lg font-medium text-[#1f1f1f]\">Veritas Social — Moderation Operations & Escalations</h2>\n        <p class=\"text-xs text-[#5f6368]\">Community Guidelines &amp; Minor Protection Enforcement SLA</p>\n      </div>\n      <button class=\"px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition cursor-pointer\">Download Compliance Log</button>\n    </div>\n\n    <!-- Metric Cards -->\n    <div class=\"grid grid-cols-1 md:grid-cols-4 gap-4\">\n      <div class=\"bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl\">\n        <div class=\"text-xs text-[#5f6368] font-medium\">Hourly Screened Posts</div>\n        <div class=\"text-2xl font-bold text-[#1f1f1f] mt-1\">12,450</div>\n        <div class=\"text-[11px] text-[#0b57d0] mt-1\">85% Automated pre-filter</div>\n      </div>\n      <div class=\"bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl\">\n        <div class=\"text-xs text-[#5f6368] font-medium\">Median Review SLA</div>\n        <div class=\"text-2xl font-bold text-[#1f1f1f] mt-1\">4.2 min</div>\n        <div class=\"text-[11px] text-[#5f6368] mt-1\">Target &lt; 15 min</div>\n      </div>\n      <div class=\"bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl\">\n        <div class=\"text-xs text-[#5f6368] font-medium\">PhotoDNA CSAM Hash Alerts</div>\n        <div class=\"text-2xl font-bold text-[#0b57d0] mt-1\">0 Pending</div>\n        <div class=\"text-[11px] text-[#5f6368] mt-1\">Instant NCMEC automated dispatch</div>\n      </div>\n      <div class=\"bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl\">\n        <div class=\"text-xs text-[#5f6368] font-medium\">Appeal Turnaround</div>\n        <div class=\"text-2xl font-bold text-[#1f1f1f] mt-1\">100% Cleared</div>\n        <div class=\"text-[11px] text-[#5f6368] mt-1\">Within 48h deadline</div>\n      </div>\n    </div>\n\n    <!-- Active Moderation Queue Table -->\n    <div class=\"bg-white border border-[#e2e8f0] rounded-xl p-4 space-y-3\">\n      <h3 class=\"text-sm font-medium text-[#1f1f1f]\">Priority Moderation Escalation Pipeline</h3>\n      <table class=\"w-full text-left text-xs border-collapse\">\n        <thead class=\"text-[#5f6368] border-b border-[#e2e8f0]\">\n          <tr>\n            <th class=\"pb-2 font-medium\">Incident Category</th>\n            <th class=\"pb-2 font-medium\">Report Queue</th>\n            <th class=\"pb-2 font-medium\">Primary Risk Factor</th>\n            <th class=\"pb-2 font-medium\">Current SLA</th>\n            <th class=\"pb-2 font-medium text-right\">Status</th>\n          </tr>\n        </thead>\n        <tbody class=\"divide-y divide-[#e2e8f0] text-[#1f1f1f]\">\n          <tr>\n            <td class=\"py-3 font-medium\">Targeted Harassment &amp; Doxxing Campaign</td>\n            <td>Tier 2 Safety Queue</td>\n            <td>Creator Harm &amp; Privacy Breach</td>\n            <td>3.1 min</td>\n            <td class=\"text-right\"><span class=\"px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium\">Active Review</span></td>\n          </tr>\n          <tr>\n            <td class=\"py-3 font-medium\">Bypassed Hate Speech Classifier (Leetspeak)</td>\n            <td>Policy Tuning Queue</td>\n            <td>Model Miss Vector</td>\n            <td>8.4 min</td>\n            <td class=\"text-right\"><span class=\"px-2 py-0.5 bg-[#f0f4f9] text-[#1f1f1f] rounded text-[11px] font-medium\">Classifier Updated</span></td>\n          </tr>\n          <tr>\n            <td class=\"py-3 font-medium\">Coordinated Automated Bot Spam Network</td>\n            <td>Security Ops Desk</td>\n            <td>Platform Abuse / Sybil Attack</td>\n            <td>1.8 min</td>\n            <td class=\"text-right\"><span class=\"px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium\">Purged</span></td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n  </div>\n</body>\n</html>"
+    },
+    {
+      "id": "space-veritas-social-file-1",
+      "name": "content_moderation_policy_v2.doc",
+      "type": "code",
+      "mimeType": "application/vnd.google-apps.document",
+      "content": "# Veritas Social — Community Standards & Harassment Enforcement SOP\n\n**Authors:** Priya Patel (Community Safety Ops) & David Ross (Head of Trust & Safety)\n\n### Overview\nStandard Operating Procedures (SOP) for enforcing hate speech, harassment, and harassment mitigation across creator communities.\n\n### Key Operational Benchmarks\n1. **Tier 1 Classifier Automated Block:** Machine learning pre-filter routes high-confidence violations directly out of public feed.\n2. **Reviewer SLA Milestone:** High-severity user reports must be evaluated within 4.2 minutes of submission."
+    },
+    {
+      "id": "space-veritas-social-file-2",
+      "name": "csam_ncii_compliance_spec.doc",
+      "type": "code",
+      "mimeType": "application/vnd.google-apps.document",
+      "content": "# Veritas Social — Minor Safety & PhotoDNA Hash Matching Specification\n\n**Strategic Safety Architecture:**\n- Real-time perceptual hashing against PhotoDNA and SaferNet databases for all uploaded images and video media.\n- Automated API transmission of validated matches to the NCMEC CyberTipline within 15 minutes."
+    },
+    {
+      "id": "space-veritas-social-file-3",
+      "name": "veritas_safety_roadmap.gslides",
+      "type": "code",
+      "mimeType": "application/vnd.google-apps.presentation",
+      "content": "# Presentation: Veritas Social Trust & Safety Strategic Roadmap\n\nType: Google Slides\nFile ID: veritas-deck-safety-02"
+    }
+  ],
+  "userEmail": "mock-user@example.com",
+  "members": [
+    "David Ross",
+    "Priya Patel",
+    "Elena Vance"
+  ],
+  "pinnedArtifactIds": [],
+  "updatedAt": "2026-07-16T01:11:04.143Z"
+}

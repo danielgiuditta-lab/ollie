@@ -1248,44 +1248,44 @@ Please generate an updated version of the file content incorporating the request
       }
 
       if (!isValidAuth || files.length === 0) {
-        const mockPatientExperienceFiles = [
+        const mockTrustSafetyFiles = [
           {
-            id: "patient_inquiry_and_triage_flow.doc",
-            name: "patient_inquiry_and_triage_flow.doc",
+            id: "content_moderation_policy_v2.doc",
+            name: "content_moderation_policy_v2.doc",
             mimeType: "application/vnd.google-apps.document",
-            content: "# Patient Emergency Triage & Inpatient Admission Flow\n\n**Author:** Dr. Marcus Thorne (Chief Medical Officer) & Rachel Chang (Inpatient Nursing Lead)\n\n### Executive Summary\nStandard operating procedure for optimizing patient triage velocity, ED intake handoffs, and bed management transitions across inpatient hospital departments.\n\n### Key Intake Benchmarks\n1. **Triage Severity Scoring**: Implement Emergency Severity Index (ESI Levels 1-5) automated EHR tag upon patient intake.\n2. **Bed Allocation Latency**: Decrease median triage-to-bed time from 48 minutes to < 18 minutes.\n3. **Care Team Handoff Protocol**: Digital SBAR (Situation, Background, Assessment, Recommendation) checklist mandatory prior to ward transfer."
+            content: "# Community Guidelines & Harassment Enforcement SOP\n\n**Author:** Elena Vance (Trust & Safety Consultant) & David Ross (Head of T&S)\n\n### Executive Summary\nStandard operating procedures for optimizing content moderation velocity, harassment escalations, and minor safety enforcement.\n\n### Key Enforcement Benchmarks\n1. **Tier 1 Automated Pre-filtering**: Deploy high-confidence toxicity classifiers to filter 85% of toxic posts prior to public delivery.\n2. **Review SLA Target**: Decrease median ticket escalation SLA to < 4.2 minutes.\n3. **Translucent Appeal Workflow**: Transparent appeal portal for affected creators with 48-hour SLA."
           },
           {
-            id: "patient_experience_h2_roadmap_spec.gdoc",
-            name: "patient_experience_h2_roadmap_spec.gdoc",
+            id: "llm_safety_guardrails_spec.gdoc",
+            name: "llm_safety_guardrails_spec.gdoc",
             mimeType: "application/vnd.google-apps.document",
-            content: "# H2 Strategic Patient Experience & Digital Journey Specs\n\n**Author:** Sarah Lin (Lead Patient Experience Designer) & Dr. Jason Miller (Emergency & Inpatient Director)\n\n### Core Objective\nTransform the hospital stay journey through real-time mobile updates, transparent surgical status tracking, and automated discharge planning.\n\n### Strategic H2 Initiatives\n1. **Live Care Journey Tracker**: Provide patients & family real-time visibility into lab status, physician rounds, and medication schedules.\n2. **Interactive Room Transition Map**: Smooth transfers between Emergency, Surgery, Post-Anesthesia Care Unit (PACU), and Inpatient Wards.\n3. **Automated Discharge Enablement**: Streamline pharmacy prescriptions, follow-up appointments, and post-acute transport care."
+            content: "# Aegis AI — LLM Input/Output Safety Rules & Toxicity Thresholds\n\n**Author:** Sarah Lin (Product Manager) & Dr. Marcus Thorne (Staff Safety Engineer)\n\n### Core Objective\nEstablish LLM red teaming benchmarks, prompt injection mitigation, and automated PII anonymization.\n\n### Strategic Safety Directives\n1. **Sub-50ms Guardrail Overhead**: Real-time dual-tier neural classifier evaluates prompts without streaming latency.\n2. **Red Teaming Benchmarks**: Execute 1,200+ adversarial jailbreak payloads with 99.4% classifier precision.\n3. **Automated Credential Masking**: Regex + NER entity extraction automatically sanitizes PII and secret tokens."
           },
           {
-            id: "inpatient_room_transition_matrix.csv",
-            name: "inpatient_room_transition_matrix.csv",
+            id: "trust_and_safety_risk_log.csv",
+            name: "trust_and_safety_risk_log.csv",
             mimeType: "text/csv",
-            content: "Patient ID,Patient Name,Care Stage,Department,Attending Physician,Bed Status,Estimated Discharge\nPX-8401,Eleanor Vance,Triage & Intake,Emergency ED,Dr. Marcus Thorne,Bed 12-A,2026-07-16\nPX-8402,Robert Sterling,Diagnostics & Labs,Radiology / ICU,Dr. Jason Miller,Bed ICU-04,2026-07-18\nPX-8403,Maria Gomez,Specialized Care,Operating Room 3,Dr. Marcus Thorne,OR Recovery,2026-07-17\nPX-8404,David Harrison,Inpatient Recovery,Post-Acute Ward,Dr. Jason Miller,Bed 402-B,2026-07-16\nPX-8405,Clara Bennett,Discharge Ready,Step-Down Unit,Dr. Marcus Thorne,Bed 310-A,2026-07-15"
+            content: "Incident ID,Client Platform,Risk Factor,Severity,Lead Consultant,Status,Target SLA\nTS-9401,Aegis AI,LLM Prompt Injection Escapes,High,Elena Vance,Mitigated,2026-07-16\nTS-9402,Veritas Social,Harassment Campaign Spike,Medium,Priya Patel,Active SLA,2026-07-18\nTS-9403,Nexus Pay,Account Takeover (ATO) Spike,High,Rachel Chang,Step-Up Auth Live,2026-07-17\nTS-9404,Veritas Social,PhotoDNA CSAM Hash Sync,High,David Ross,Enforced 100%,2026-07-16\nTS-9405,Aegis AI,EU DSA Transparency Audit,Medium,Sarah Lin,Audit Ready,2026-07-15"
           },
           {
-            id: "hospital_journey_executive_deck.gslides",
-            name: "hospital_journey_executive_deck.gslides",
+            id: "trust_safety_executive_deck.gslides",
+            name: "trust_safety_executive_deck.gslides",
             mimeType: "application/vnd.google-apps.presentation",
-            content: "# H2 Hospital Patient Journey Transformation\n\n> **35% Reduced Waiting Time**: Accelerating care delivery and digital visibility across all hospital departments.\n\n- **Patient Satisfaction Target**: Elevate HCAHPS care experience rating from 74% to 92%.\n- **Family Visibility Gateways**: Real-time SMS & app updates during emergency triage and surgical procedures.\n\n---\n\n# Key Journey Milestones & H2 Roadmap\n\n## Care Stage Optimization\n\n- **Triage & Emergency Intake**: Digital intake kiosks reduce baseline registration time by 60%.\n- **Surgical & Procedure Updates**: Automated status board for waiting family members.\n- **Inpatient Ward Experience**: Bedside tablet integration for viewing lab results and daily care team schedules.\n\n## Outcomes Metrics\n\n- **Average Emergency Wait**: Down to `14 minutes` (from 42 minutes baseline).\n- **Patient Satisfaction**: Net Promoter Score (NPS) +28 lift across early pilot wards."
+            content: "# Freelance Trust & Safety Client Strategy Deck\n\n> **99.4% Platform Safety Precision**: Protecting digital communities, AI foundation models, and payment ecosystems.\n\n- **Client Satisfaction Target**: Maintain 100% policy SLA compliance across all advisory startups.\n- **Risk Prevention**: Mitigated over $4.2M in fraud attempts and 1.2M daily automated prompt injections.\n\n---\n\n# Key Milestones & Advisory Roadmap\n\n## Platform Safety Operations\n\n- **AI Red Teaming**: Adversarial jailbreak testing and classifier fine-tuning.\n- **Content Moderation Operations**: Automated queue routing and minor safety (CSAM/NCII) hash blocking.\n- **Fraud & ATO Prevention**: Multi-signal behavioral risk scoring and biometric step-up authentication."
           }
         ];
 
-        const mockPatientExperiencePeople = [
+        const mockTrustSafetyPeople = [
+          { name: "Elena Vance", email: "elena_vance@example.com", avatar: "/people/sarah_lin.jpg" },
           { name: "Dr. Marcus Thorne", email: "dr_marcus_thorne@example.com", avatar: "/people/dr_marcus_thorne.jpg" },
-          { name: "Sarah Lin", email: "sarah_lin@example.com", avatar: "/people/sarah_lin.jpg" },
-          { name: "Dr. Jason Miller", email: "dr_jason_miller@example.com", avatar: "/people/dr_jason_miller.jpg" },
-          { name: "Rachel Chang", email: "rachel_chang@example.com", avatar: "/people/rachel_chang.jpg" }
+          { name: "Sarah Lin", email: "sarah_lin@example.com", avatar: "/people/rachel_chang.jpg" },
+          { name: "Rachel Chang", email: "rachel_chang@example.com", avatar: "/people/david.jpg" }
         ];
 
         return res.json({
-          files: mockPatientExperienceFiles,
-          suggestedPeople: mockPatientExperiencePeople,
-          explanation: `Found 4 relevant clinical workflow specs and patient experience planning documents matching the Patient Experience medical journey domain.`
+          files: mockTrustSafetyFiles,
+          suggestedPeople: mockTrustSafetyPeople,
+          explanation: `Found 4 relevant Trust & Safety policy specs and risk governance documents matching the advisory domain.`
         });
       }
 

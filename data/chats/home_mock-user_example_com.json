@@ -1,26 +1,23 @@
 {
-  "chatId": "home_mock-user_example_com",
   "projectName": "Home Dashboard",
   "chatName": null,
-  "type": "workspace",
-  "taskType": "app",
-  "viewState": null,
+  "type": "space",
+  "taskType": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [],
   "envId": null,
-  "activeSpaceId": "home_mock-user_example_com",
   "sandboxUrl": "",
   "sandboxFiles": [],
   "userEmail": "mock-user@example.com",
   "members": [],
   "pinnedArtifactIds": [
     "todo-card",
-    "space-patient-experience",
-    "space-flatiron-ui-design",
-    "space-flatiron-gtm",
-    "space-flatiron-new-app-launch",
-    "space-1784142285784-chat-1784142299742-file-0"
+    "space-aegis-ai",
+    "space-veritas-social",
+    "space-nexus-pay"
   ],
-  "updatedAt": "2026-07-15T20:40:59.364Z"
+  "updatedAt": "2026-07-16T01:11:04.143Z",
+  "chatId": "home_mock-user_example_com",
+  "activeSpaceId": "home_mock-user_example_com"
 }

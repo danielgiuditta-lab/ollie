@@ -88,7 +88,7 @@ export function CanvasContainer({
       selectedFile.isInferredTask || 
       selectedFile.isProactive || 
       selectedFile.taskType === 'inferred'
-    );
+    ) && selectedFile.directSlideView !== true && selectedFile.showDiffView !== false;
 
     if (viewState === 'file_viewer' || viewState === 'files') {
       if (isDiffItem) {

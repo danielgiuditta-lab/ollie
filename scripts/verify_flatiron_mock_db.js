@@ -2,8 +2,8 @@ import fetch from 'node-fetch';
 
 const BASE_URL = 'http://localhost:3000';
 
-async function verifyFlatironMockData() {
-  console.log("🚀 Verifying Flatiron Health Mock Data & DB Separation...\n");
+async function verifyTrustSafetyMockData() {
+  console.log("🚀 Verifying Trust & Safety Freelance Consultant Mock Data & DB Separation...\n");
 
   const mockEmail = 'mock-user@example.com';
   const oauthEmail = 'danielgiuditta@google.com';
@@ -18,9 +18,9 @@ async function verifyFlatironMockData() {
 
   // Verify spaces
   const spaceIds = [
-    'space-flatiron-ui-design',
-    'space-flatiron-gtm',
-    'space-flatiron-new-app-launch'
+    'space-aegis-ai',
+    'space-veritas-social',
+    'space-nexus-pay'
   ];
 
   for (const sId of spaceIds) {
@@ -54,19 +54,19 @@ async function verifyFlatironMockData() {
   if (!oauthRes.ok) throw new Error(`Failed to fetch OAuth chats: ${oauthRes.status}`);
   const oauthChats = await oauthRes.json();
 
-  const leakedFlatironSpaces = oauthChats.filter(c => c.chatId && c.chatId.startsWith('space-flatiron-'));
+  const leakedSpaces = oauthChats.filter(c => c.chatId && (c.chatId.startsWith('space-aegis-') || c.chatId.startsWith('space-veritas-') || c.chatId.startsWith('space-nexus-')));
   console.log(`   OAuth user total chats: ${oauthChats.length}`);
-  console.log(`   Leaked Flatiron spaces in OAuth DB: ${leakedFlatironSpaces.length}`);
+  console.log(`   Leaked T&S client spaces in OAuth DB: ${leakedSpaces.length}`);
 
-  if (leakedFlatironSpaces.length > 0) {
-    throw new Error(`❌ SECURITY BREACH: Flatiron mock spaces leaked into OAuth database!`);
+  if (leakedSpaces.length > 0) {
+    throw new Error(`❌ SECURITY BREACH: Trust & Safety mock spaces leaked into OAuth database!`);
   }
 
   console.log("\n🎉 ALL CHECKS PASSED SUCCESSFULLY!");
-  console.log("Flatiron Health synthetic spaces, slide deck tasks, and interactive previews are fully isolated in the Mock Database!");
+  console.log("Trust & Safety synthetic client spaces, slide deck tasks, and interactive previews are fully isolated in the Mock Database!");
 }
 
-verifyFlatironMockData().catch(err => {
+verifyTrustSafetyMockData().catch(err => {
   console.error("\n❌ VERIFICATION ERROR:", err);
   process.exit(1);
 });

@@ -28,11 +28,11 @@ if (!hasMarkdownContent) {
   process.exit(1);
 }
 
-console.log('SUCCESS: data/mock_inferred_tasks.json contains Health UI product designer markdown for slides and docs.');
+console.log('SUCCESS: data/mock_inferred_tasks.json contains Trust & Safety markdown for slides and docs.');
 
-// 2. Verify InferredTaskDiffView 2-column layout (RenderMarkdown, SlideCard, DocCard)
-if (!diffViewContent.includes('RenderMarkdown') || !diffViewContent.includes('SlideCard') || !diffViewContent.includes('DocCard')) {
-  console.error('FAIL: InferredTaskDiffView missing RenderMarkdown, SlideCard, or DocCard components');
+// 2. Verify InferredTaskDiffView 2-column layout (RenderDocMarkdown, RenderSlideMarkdown)
+if (!diffViewContent.includes('RenderDocMarkdown') || !diffViewContent.includes('RenderSlideMarkdown')) {
+  console.error('FAIL: InferredTaskDiffView missing RenderDocMarkdown or RenderSlideMarkdown components');
   process.exit(1);
 }
 

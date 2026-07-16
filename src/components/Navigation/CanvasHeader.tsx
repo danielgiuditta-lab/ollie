@@ -301,6 +301,27 @@ export function CanvasHeader({
         {/* Actual people avatars shared with */}
         {!isHome && !isHomeSpace && <SharedMembersAvatars />}
 
+        {/* Open in Slides button on direct slide view */}
+        {selectedFile && isSlide && (
+          <button
+            onClick={() => {
+              if (onOpenInDrive) {
+                onOpenInDrive(selectedFile);
+              } else {
+                const slideDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
+                const targetUrl = (slideDriveId && slideDriveId.length > 5 && !slideDriveId.includes('local') && !slideDriveId.includes('mock')) 
+                  ? `https://docs.google.com/presentation/d/${slideDriveId}/edit` 
+                  : 'https://docs.google.com/presentation';
+                window.open(targetUrl, '_blank');
+              }
+            }}
+            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
+            title="Open in Google Slides"
+          >
+            <span>Open in Slides</span>
+          </button>
+        )}
+
         {/* Library side panel toggle button */}
         {onToggleSourcesPanel && (
           <button

@@ -87,6 +87,30 @@ export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDa
 export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
   if (!text) return null;
 
+  const lowerText = text.toLowerCase();
+  if (lowerText.includes('new drive') || lowerText.includes('drive refresh') || lowerText.includes('ux improvement') || (lowerText.includes('# drive') && lowerText.includes('new drive'))) {
+    return (
+      <div className="w-full h-full min-h-[220px] flex items-center justify-between px-6 sm:px-10 py-4 select-text">
+        <div className="flex flex-col justify-center gap-1.5">
+          <span className="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300 tracking-wide font-sans">
+            Drive
+          </span>
+          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-[#1F304E] dark:text-white leading-[1.05] font-sans">
+            New<br />Drive
+          </h1>
+        </div>
+        <div className="flex items-center justify-center shrink-0">
+          <svg viewBox="0 0 87.3 78" className="w-28 h-28 sm:w-40 sm:h-40 shrink-0 drop-shadow-sm">
+            <path d="M6.6 66.85l16.15-28 31.95 28H6.6z" fill="#0066DA"/>
+            <path d="M43.8 11.15l16.2 28H87.3L71.1 11.15H43.8z" fill="#00AC47"/>
+            <path d="M71.1 11.15L54.7 39.55 22.75 38.85 38.95 11.15H71.1z" fill="#EA4335"/>
+            <path d="M6.6 66.85L22.75 38.85 54.7 39.55 38.55 66.85H6.6z" fill="#FFBA00"/>
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
   const hasH1 = text.trim().startsWith('# ');
   let titleBlock: string | null = null;
   let bodyText = text;

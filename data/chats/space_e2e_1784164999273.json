@@ -1,0 +1,39 @@
+{
+  "chatId": "space_e2e_1784164999273",
+  "projectName": "Project Ollie",
+  "chatName": null,
+  "type": null,
+  "taskType": null,
+  "viewState": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [],
+  "envId": null,
+  "activeSpaceId": "space_e2e_1784164999273",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "id": "slide-1",
+      "name": "Ollie.gslides",
+      "mimeType": "application/vnd.google-apps.presentation"
+    },
+    {
+      "id": "tool-1",
+      "name": "index.html",
+      "mimeType": "text/html",
+      "content": "<h1>Kanban Board</h1>"
+    },
+    {
+      "id": "doc-1",
+      "name": "CodeMender PRD.doc",
+      "mimeType": "application/vnd.google-apps.document",
+      "content": "# PRD details"
+    }
+  ],
+  "userEmail": "",
+  "members": [],
+  "pinnedArtifactIds": [
+    "todo-card"
+  ],
+  "updatedAt": "2026-07-16T01:23:19.779Z"
+}
