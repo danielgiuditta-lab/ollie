@@ -1956,6 +1956,45 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
         return;
       }
 
+      const lowerPrompt = prompt.toLowerCase();
+      const isH2Request = (lowerPrompt.includes('h2') || lowerPrompt.includes('patient')) && 
+                          (lowerPrompt.includes('track') || lowerPrompt.includes('plan') || lowerPrompt.includes('kanban') || lowerPrompt.includes('work') || lowerPrompt.includes('project') || lowerPrompt.includes('build'));
+
+      if (isH2Request) {
+        const cachedPath = path.join(process.cwd(), "data", "cached_h2_kanban.html");
+        if (fs.existsSync(cachedPath)) {
+          console.log("[Server /api/vibe-code] Intercepted H2 tracker prompt. Fast streaming pre-cached Kanban HTML tool!");
+          const htmlContent = fs.readFileSync(cachedPath, "utf-8");
+          const streamText = `I'll create an interactive H2 Patient Journey Kanban Board tailored to your space to track milestone progress across triage, diagnostics, surgery, and discharge stages.\n\n\`\`\`html\n<!-- index.html -->\n${htmlContent}\n\`\`\`\n\nYour H2 Patient Experience Kanban Board is ready! You can drag and drop milestones across care stages, add new tasks, and filter by assigned team leads.`;
+
+          const chunkSize = 600;
+          for (let i = 0; i < streamText.length; i += chunkSize) {
+            if (res.writableEnded || res.destroyed) break;
+            const chunk = streamText.substring(i, i + chunkSize);
+            res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+            await new Promise(r => setTimeout(r, 25));
+          }
+
+          const completionEvent = {
+            event_type: "interaction.completed",
+            interaction: {
+              environment_id: "remote",
+              steps: [
+                {
+                  text: streamText
+                }
+              ]
+            }
+          };
+          res.write(`data: ${JSON.stringify(completionEvent)}\n\n`);
+
+          if (!res.writableEnded && !res.destroyed) {
+            res.end();
+          }
+          return;
+        }
+      }
+
       const resolvedEnv = (env_id && env_id !== 'remote' && env_id !== 'null' && env_id !== 'undefined') ? env_id : "remote";
       console.log(`[Server /api/vibe-code] Invoking ai.interactions.create with environment: ${resolvedEnv}...`);
       

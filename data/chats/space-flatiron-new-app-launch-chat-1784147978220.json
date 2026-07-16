@@ -1,12 +1,12 @@
 {
-  "chatId": "space-flatiron-new-app-launch",
+  "chatId": "space-flatiron-new-app-launch-chat-1784147978220",
   "projectName": "New App Launch",
-  "chatName": "New App Launch",
-  "type": "space",
-  "taskType": "space",
+  "chatName": "Product Requirement Document Project SyncFlow",
+  "type": "workspace",
+  "taskType": "doc",
   "viewState": null,
-  "associatedFileId": null,
-  "associatedFileName": null,
+  "associatedFileId": "created-artifact-1784147978220",
+  "associatedFileName": "Product Requirement Document Project SyncFlow.doc",
   "messages": [
     {
       "role": "bot",
@@ -19,10 +19,8 @@
       ]
     },
     {
-      "id": "msg-shared-1784138542984",
       "role": "bot",
-      "text": "Shared 3 source file(s) to this Space: **patient_inquiry_and_triage_flow.doc, inpatient_room_transition_matrix.csv, hospital_journey_executive_deck.gslides**",
-      "timestamp": "02:02 PM"
+      "text": "I have created a comprehensive, professional Product Requirement Document (PRD) for a modern, high-potential software project: **SyncFlow (an AI-powered collaborative workspace)**. \n\nSince you didn't specify a project name or industry, I built this around a state-of-the-art SaaS platform that combines real-time document collaboration with generative AI workflows. This gives you a highly structured, realistic template to work with.\n\nPlease let me know if we should:\n1. Rename the project or change the core product concept.\n2. Add specific functional requirements or integrations (e.g., Slack, Jira, GitHub).\n3. Adjust the user personas, target metrics, or release phases to match your actual goals."
     }
   ],
   "envId": null,
@@ -97,8 +95,7 @@
   "userEmail": "mock-user@example.com",
   "members": [],
   "pinnedArtifactIds": [
-    "todo-card",
-    "space-flatiron-new-app-launch-file-0"
+    "todo-card"
   ],
-  "updatedAt": "2026-07-15T20:40:08.240Z"
+  "updatedAt": "2026-07-15T20:40:08.100Z"
 }

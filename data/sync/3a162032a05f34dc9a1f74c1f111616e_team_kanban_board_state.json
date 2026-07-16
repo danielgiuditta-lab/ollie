@@ -1,0 +1,49 @@
+{
+  "envId": "3a162032a05f34dc9a1f74c1f111616e",
+  "key": "team_kanban_board_state",
+  "data": [
+    {
+      "id": "task-1",
+      "title": "Automate EHR severity tags (ESI level)",
+      "status": "todo",
+      "assignee": "Sakura Okoro",
+      "doc": "patient_inquiry_and_triage_flow.doc"
+    },
+    {
+      "id": "task-2",
+      "title": "Monitor triage-to-bed allocation latency",
+      "status": "in-progress",
+      "assignee": "Malik Harold",
+      "doc": "patient_inquiry_and_triage_flow.doc"
+    },
+    {
+      "id": "task-3",
+      "title": "Mandate SBAR handoff protocols prior to transfer",
+      "status": "done",
+      "assignee": "Adam Lee",
+      "doc": "patient_inquiry_and_triage_flow.doc"
+    },
+    {
+      "id": "task-4",
+      "title": "Build Live Care Journey Tracker framework",
+      "status": "in-progress",
+      "assignee": "Sakura Okoro",
+      "doc": "patient_experience_h2_roadmap_spec.gdoc"
+    },
+    {
+      "id": "task-5",
+      "title": "Incorporate interactive PACU to Ward map transitions",
+      "status": "in-progress",
+      "assignee": "Malik Harold",
+      "doc": "patient_experience_h2_roadmap_spec.gdoc"
+    },
+    {
+      "id": "task-6",
+      "title": "Configure patient satisfaction metric SMS triggers",
+      "status": "done",
+      "assignee": "Adam Lee",
+      "doc": "hospital_journey_executive_deck.gslides"
+    }
+  ],
+  "updatedAt": "2026-07-15T20:26:59.412Z"
+}

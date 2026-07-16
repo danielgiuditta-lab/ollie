@@ -3224,7 +3224,7 @@ export default function App() {
         const id = typeof t === 'string' ? '' : t.id;
         return id !== spaceId;
       });
-      return [{ id: spaceId, name: cleanFolderName, type: 'space', activeSpaceId: spaceId, updatedAt: now }, ...filtered];
+      return [{ id: spaceId, name: cleanFolderName, type: 'space', activeSpaceId: spaceId, pinnedArtifactIds: ['todo-card'], updatedAt: now }, ...filtered];
     });
     
     try {
@@ -3338,7 +3338,8 @@ export default function App() {
             sandboxFiles: newSandboxFiles,
             members: selectedPeople,
             userEmail: userProfile?.email || '',
-            activeSpaceId: spaceId
+            activeSpaceId: spaceId,
+            pinnedArtifactIds: ['todo-card']
           })
         });
       } catch (saveChatErr) {
@@ -3519,7 +3520,8 @@ export default function App() {
             sandboxFiles: newSandboxFiles,
             members: [],
             userEmail: userProfile?.email || '',
-            activeSpaceId: spaceId
+            activeSpaceId: spaceId,
+            pinnedArtifactIds: ['todo-card']
           })
         });
       } catch (saveChatErr) {

@@ -1,9 +1,9 @@
 {
   "chatId": "space-flatiron-gtm",
   "projectName": "Go to Market",
-  "chatName": null,
+  "chatName": "Go to Market",
   "type": "space",
-  "taskType": null,
+  "taskType": "space",
   "viewState": null,
   "associatedFileId": null,
   "associatedFileName": null,
@@ -57,8 +57,7 @@
   "members": [],
   "pinnedArtifactIds": [
     "todo-card",
-    "space-flatiron-gtm-file-0",
-    "space-flatiron-gtm-file-3"
+    "space-flatiron-gtm-file-0"
   ],
-  "updatedAt": "2026-07-15T02:16:09.977Z"
+  "updatedAt": "2026-07-15T19:07:52.694Z"
 }

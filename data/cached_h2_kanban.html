@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Google Sans Text', sans-serif;
+      background-color: #ffffff;
+      color: #1f1f1f;
+    }
+    h1, h2, h3, h4, h5, button {
+      font-family: 'Google Sans', sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
+    .kanban-column {
+      min-height: 480px;
+    }
+    .dragging {
+      opacity: 0.4;
+      transform: scale(0.98);
+    }
+  </style>
+  <title>H2 Patient Experience Kanban Tracker</title>
+</head>
+<body class="p-6 bg-white text-[#1f1f1f]">
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Controls Toolbar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#e2e8f0]">
+      <!-- Filters -->
+      <div class="flex items-center space-x-3">
+        <!-- Search Input -->
+        <div class="relative">
+          <input type="text" id="search-input" oninput="render()" placeholder="Search milestones..." class="w-48 md:w-64 pl-8 pr-3 py-1.5 text-xs bg-[#f0f4f9] hover:bg-[#e8f0fe] focus:bg-white border border-transparent focus:border-[#0b57d0] rounded-lg outline-none transition">
+          <svg class="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-[#5f6368]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+
+        <!-- Assignee Filter -->
+        <select id="assignee-filter" onchange="render()" class="px-3 py-1.5 text-xs bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] rounded-lg outline-none text-[#1f1f1f]">
+          <option value="ALL">All Assignees</option>
+          <option value="Dr. Marcus Thorne">Dr. Marcus Thorne</option>
+          <option value="Sarah Lin">Sarah Lin</option>
+          <option value="Dr. Jason Miller">Dr. Jason Miller</option>
+          <option value="Rachel Chang">Rachel Chang</option>
+        </select>
+      </div>
+
+      <!-- Action Button -->
+      <button onclick="openModal()" class="px-4 py-1.5 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition duration-150 flex items-center space-x-1.5 shadow-sm">
+        <span class="text-sm font-semibold">+</span>
+        <span>Add H2 Milestone</span>
+      </button>
+    </div>
+
+    <!-- Kanban Columns Board Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="kanban-grid">
+      <!-- Dynamically generated columns -->
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="modal-backdrop" class="fixed inset-0 bg-black/20 backdrop-blur-[1px] hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl border border-[#e2e8f0] w-full max-w-md p-6 space-y-4 shadow-lg">
+      <div class="flex items-center justify-between border-b border-[#e2e8f0] pb-3">
+        <h3 class="text-sm font-semibold text-[#1f1f1f]">Add H2 Roadmap Task</h3>
+        <button onclick="closeModal()" class="text-[#5f6368] hover:text-[#1f1f1f] p-1 rounded-md hover:bg-[#f0f4f9]">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form onsubmit="handleFormSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-[#5f6368] mb-1">Milestone Description</label>
+          <input type="text" id="form-title" required placeholder="e.g. Bedside Tablet Lab Result View" class="w-full px-3 py-2 text-xs border border-[#e2e8f0] rounded-lg focus:border-[#0b57d0] outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-[#5f6368] mb-1">Care Stage (Column)</label>
+          <select id="form-stage" required class="w-full px-3 py-2 text-xs border border-[#e2e8f0] rounded-lg focus:border-[#0b57d0] outline-none bg-white">
+            <option value="triage">Intake & Triage</option>
+            <option value="diagnostics">Diagnostics & Labs</option>
+            <option value="surgery">Specialized & Surgery</option>
+            <option value="discharge">Discharge & Post-Acute</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-[#5f6368] mb-1">Assigned Lead</label>
+          <select id="form-assignee" required class="w-full px-3 py-2 text-xs border border-[#e2e8f0] rounded-lg focus:border-[#0b57d0] outline-none bg-white">
+            <option value="Dr. Marcus Thorne">Dr. Marcus Thorne</option>
+            <option value="Sarah Lin">Sarah Lin</option>
+            <option value="Dr. Jason Miller">Dr. Jason Miller</option>
+            <option value="Rachel Chang">Rachel Chang</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-[#5f6368] mb-1">Target Completion Date</label>
+          <input type="date" id="form-date" required class="w-full px-3 py-2 text-xs border border-[#e2e8f0] rounded-lg focus:border-[#0b57d0] outline-none">
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-3 border-t border-[#e2e8f0]">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-[#f0f4f9] hover:bg-[#e2e8f0] text-xs font-medium rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg">Save Milestone</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const teamMembers = [
+      { name: "Dr. Marcus Thorne", avatar: "/people/dr_marcus_thorne.jpg", initials: "MT", bg: "#e8f0fe", text: "#1a73e8" },
+      { name: "Sarah Lin", avatar: "/people/sarah_lin.jpg", initials: "SL", bg: "#fce8e6", text: "#d93025" },
+      { name: "Dr. Jason Miller", avatar: "/people/dr_jason_miller.jpg", initials: "JM", bg: "#e6f4ea", text: "#137333" },
+      { name: "Rachel Chang", avatar: "/people/rachel_chang.jpg", initials: "RC", bg: "#fef7e0", text: "#b06000" }
+    ];
+
+    const columns = [
+      { id: "triage", title: "Intake & Triage", countBg: "bg-blue-100 text-blue-700" },
+      { id: "diagnostics", title: "Diagnostics & Labs", countBg: "bg-amber-100 text-amber-700" },
+      { id: "surgery", title: "Specialized & Surgery", countBg: "bg-purple-100 text-purple-700" },
+      { id: "discharge", title: "Discharge & Outpatient", countBg: "bg-emerald-100 text-emerald-700" }
+    ];
+
+    let tasks = [
+      {
+        id: "task-1",
+        title: "Implement Emergency Severity Index (ESI 1-5) automated EHR intake tag",
+        stage: "triage",
+        assignee: "Dr. Marcus Thorne",
+        date: "2026-07-28"
+      },
+      {
+        id: "task-2",
+        title: "Digital Kiosk Self-Registration Protocol for ED arrivals",
+        stage: "triage",
+        assignee: "Sarah Lin",
+        date: "2026-08-05"
+      },
+      {
+        id: "task-3",
+        title: "Reduce median triage-to-bed time from 48 minutes to < 18 minutes",
+        stage: "diagnostics",
+        assignee: "Dr. Jason Miller",
+        date: "2026-07-22"
+      },
+      {
+        id: "task-4",
+        title: "Biomarker & Blood Panel Rapid Result Alerts on mobile gateway",
+        stage: "diagnostics",
+        assignee: "Rachel Chang",
+        date: "2026-07-30"
+      },
+      {
+        id: "task-5",
+        title: "Digital SBAR Care Handoff checklist mandatory before Ward Transfer",
+        stage: "surgery",
+        assignee: "Rachel Chang",
+        date: "2026-08-01"
+      },
+      {
+        id: "task-6",
+        title: "Automated Family Waiting Status Board in PACU surgical center",
+        stage: "surgery",
+        assignee: "Sarah Lin",
+        date: "2026-08-12"
+      },
+      {
+        id: "task-7",
+        title: "Streamlined Digital Discharge & Post-Acute Transport Enablement",
+        stage: "discharge",
+        assignee: "Dr. Jason Miller",
+        date: "2026-07-16"
+      }
+    ];
+
+    function getMember(name) {
+      return teamMembers.find(m => m.name === name) || teamMembers[0];
+    }
+
+    function renderMemberAvatar(name) {
+      const m = getMember(name);
+      return `
+        <div class="flex items-center space-x-1.5">
+          <img src="${m.avatar}" onerror="this.outerHTML='<div class=\\'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold\\' style=\\'background-color:${m.bg};color:${m.text}\\'>${m.initials}</div>'" class="w-5 h-5 rounded-full object-cover border border-slate-200">
+          <span class="text-xs text-[#5f6368] font-medium">${m.name}</span>
+        </div>
+      `;
+    }
+
+    let draggedTaskId = null;
+
+    function handleDragStart(e, id) {
+      draggedTaskId = id;
+      e.target.classList.add('dragging');
+    }
+
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+      draggedTaskId = null;
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+    }
+
+    function handleDrop(e, stageId) {
+      e.preventDefault();
+      if (!draggedTaskId) return;
+      const index = tasks.findIndex(t => t.id === draggedTaskId);
+      if (index !== -1) {
+        tasks[index].stage = stageId;
+        saveState();
+        render();
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem("h2_kanban_tasks", JSON.stringify(tasks));
+      } catch (err) {}
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem("h2_kanban_tasks");
+        if (saved) {
+          tasks = JSON.parse(saved);
+        }
+      } catch (err) {}
+    }
+
+    function render() {
+      const query = document.getElementById('search-input').value.toLowerCase().trim();
+      const assigneeFilter = document.getElementById('assignee-filter').value;
+      const grid = document.getElementById('kanban-grid');
+      grid.innerHTML = '';
+
+      columns.forEach(col => {
+        const colTasks = tasks.filter(t => {
+          const matchesStage = t.stage === col.id;
+          const matchesQuery = t.title.toLowerCase().includes(query) || t.assignee.toLowerCase().includes(query);
+          const matchesAssignee = assigneeFilter === 'ALL' || t.assignee === assigneeFilter;
+          return matchesStage && matchesQuery && matchesAssignee;
+        });
+
+        const colEl = document.createElement('div');
+        colEl.className = "flex flex-col bg-[#f0f4f9] rounded-xl p-3 border border-[#e2e8f0] kanban-column";
+        colEl.ondragover = handleDragOver;
+        colEl.ondrop = (e) => handleDrop(e, col.id);
+
+        let cardsHtml = '';
+        if (colTasks.length === 0) {
+          cardsHtml = `<div class="p-4 text-center text-xs text-[#5f6368] border border-dashed border-slate-300 rounded-lg bg-white/50">No milestones in this stage</div>`;
+        } else {
+          colTasks.forEach(task => {
+            cardsHtml += `
+              <div draggable="true" ondragstart="handleDragStart(event, '${task.id}')" ondragend="handleDragEnd(event)" class="bg-white rounded-lg p-3 border border-[#e2e8f0] shadow-sm hover:border-[#0b57d0] transition cursor-grab active:cursor-grabbing space-y-3">
+                <div class="text-xs font-medium text-[#1f1f1f] leading-snug">${escapeHTML(task.title)}</div>
+                <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+                  ${renderMemberAvatar(task.assignee)}
+                  <span class="text-[11px] text-[#5f6368] font-mono">${escapeHTML(task.date)}</span>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        colEl.innerHTML = `
+          <div class="flex items-center justify-between pb-3 mb-2 border-b border-slate-200">
+            <h4 class="text-xs font-semibold text-[#1f1f1f] uppercase tracking-wider">${col.title}</h4>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${col.countBg}">${colTasks.length}</span>
+          </div>
+          <div class="space-y-2.5 flex-1 overflow-y-auto">
+            ${cardsHtml}
+          </div>
+        `;
+
+        grid.appendChild(colEl);
+      });
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function openModal() {
+      document.getElementById('modal-backdrop').classList.remove('hidden');
+      document.getElementById('modal-backdrop').classList.add('flex');
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('form-date').value = today;
+    }
+
+    function closeModal() {
+      document.getElementById('modal-backdrop').classList.add('hidden');
+      document.getElementById('modal-backdrop').classList.remove('flex');
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('form-title').value.trim();
+      const stage = document.getElementById('form-stage').value;
+      const assignee = document.getElementById('form-assignee').value;
+      const date = document.getElementById('form-date').value;
+
+      if (title) {
+        tasks.push({
+          id: 'task-' + Date.now(),
+          title,
+          stage,
+          assignee,
+          date
+        });
+        saveState();
+        render();
+        closeModal();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      render();
+    });
+  </script>
+</body>
+</html>

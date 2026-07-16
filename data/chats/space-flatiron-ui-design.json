@@ -1,9 +1,10 @@
 {
   "chatId": "space-flatiron-ui-design",
   "projectName": "UI Design",
-  "chatName": null,
+  "chatName": "UI Design",
   "type": "space",
-  "taskType": null,
+  "taskType": "space",
+  "viewState": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [
@@ -59,8 +60,7 @@
   ],
   "pinnedArtifactIds": [
     "todo-card",
-    "space-flatiron-ui-design-file-0",
-    "space-flatiron-ui-design-file-1"
+    "space-flatiron-ui-design-file-0"
   ],
-  "updatedAt": "2026-07-15T00:24:56.070Z"
+  "updatedAt": "2026-07-15T19:08:04.310Z"
 }
