@@ -1645,6 +1645,7 @@ export default function App() {
             activeFileName: activeDoc.name || 'document.doc',
             activeFileContent: activeDoc.content || '',
             contextFileIds: contextFiles ? contextFiles.map(c => c.id || c.driveId) : [],
+            activeSpaceId: activeSpaceIdRef.current || activeSpaceId,
             history: messages.filter(m => m.text)
           })
         });

@@ -209,35 +209,63 @@ const spaceAegis = {
       name: 'ai_red_teaming_audit_summary.doc',
       type: 'code',
       mimeType: 'application/vnd.google-apps.document',
-      content: `# Aegis AI — LLM Red Teaming & Adversarial Vulnerability Audit
+      content: `# Aegis AI — LLM Red Teaming & Adversarial Vulnerability Audit Report
 
 **Authors:** Elena Vance (Trust & Safety Lead Consultant) & Dr. Marcus Thorne (Staff Safety Engineer)  
-**Context:** Comprehensive red teaming audit evaluating LLM resilience against multi-turn jailbreaks and prompt injection vectors.
+**Target Platform:** Aegis AI Foundation Model Gateway & Real-Time Prompt Pipeline  
+**Audit Period:** Q2 2026 Executive Review  
 
 ---
 
-### Key Findings & Advisory Recommendations
+### Executive Overview & Security Posture
+Aegis AI provides enterprise LLM safety guardrails, prompt injection filtering, and automated red-teaming evaluations. During the Q2 2026 audit, our red teaming team executed over 1,200 adversarial probe vectors testing multi-turn jailbreaks, role-playing bypasses, system prompt extraction, and PII exfiltration.
 
-1. **Prompt Injection Overhead is Controlled Under 42ms**
-   * Pre-execution neural classifiers inspect incoming prompt tokens before hitting the main LLM inference engine.
-   * Successfully blocked 1,200+ known adversarial jailbreak patterns with zero escapes into production APIs.
+### Critical Telemetry & Performance Benchmarks
+1. **Prompt Injection SLA Overhead (< 42ms):**
+   - High-throughput neural classifiers analyze input prompt tokens in parallel prior to LLM execution.
+   - Total latency added to streaming socket connections is capped at 42ms (Target: < 50ms).
+2. **Jailbreak Escape Rate (0.0% Escapes):**
+   - 1,200+ known adversarial jailbreak templates tested; 100% blocked at input gateway without leakages into production endpoints.
+3. **PII & Credential NER Masking (100% Anonymized):**
+   - Automated Regex + Named Entity Recognition (NER) models sanitize sensitive tokens (SSNs, API keys, patient records) before response streaming.
+4. **Hallucination & Evidence Citation Baseline (94.5% Grounded):**
+   - RAG Fact-Check Engine matches model citations against retrieved source docs in real-time.
 
-2. **Output Guardrails & Masking Engine**
-   * Automatic Named Entity Recognition (NER) strips sensitive credentials, SSNs, and private tokens prior to response streaming.
-   * High-confidence toxicity filters enforce sanitization without degrading conversational quality.`
+### Vulnerability Vector Findings & Remediations
+- **Vector A: Cipher-Encoded Multi-Turn Jailbreaks:**
+  - *Risk Level:* High
+  - *Mitigation:* Deployed Neural Classifier v3.4 trained on Base64, ROT13, and Unicode multi-layer evasion payloads.
+- **Vector B: System Prompt Extraction via Context Wrapping:**
+  - *Risk Level:* Medium
+  - *Mitigation:* Enforced system prompt token immutability guard in LLM context middleware.
+
+### Advisory Recommendations for Q3 Engineering Roadmap
+- Implement sub-30ms distilled BERT toxicity classifiers for mobile SDK integrations.
+- Extend out-of-court dispute integration and biannual EU DSA compliance audit logging.`
     },
     {
       id: `${spaceAegisId}-file-2`,
       name: 'safety_guardrail_policy_spec.md',
       type: 'code',
       mimeType: 'text/markdown',
-      content: `# Aegis AI — Input/Output Safety Rules & Toxicity Thresholds
+      content: `# Aegis AI — Input/Output Safety Rules & Toxicity Threshold Specification
 
-## Policy Guidelines & Machine Learning Thresholds
+**Document Version:** v3.4.1  
+**Lead Contributor:** Dr. Marcus Thorne  
 
-- **Primary Accent:** Safety Blue (\`#0b57d0\`)
-- **Toxicity Classifier Confidence Cutoff:** Minimum 99.2% certainty required before triggering hard prompt block.
-- **Latency SLAs:** Input filter evaluation must complete in \`< 50ms\` to maintain real-time web socket streaming speed.`
+## 1. Classification Thresholds & Confidence Cutoffs
+- **Primary Design Token:** Safety Blue ('#0b57d0')
+- **Toxicity Classifier Confidence Cutoff:** Hard block triggered at **99.2%** certainty.
+- **Adversarial Jailbreak Confidence Cutoff:** Hard block triggered at **99.8%** certainty.
+- **PII Leakage Policy:** Deterministic 100% token redacting; redacts email addresses, social security numbers, OAuth secret tokens, and phone numbers.
+
+## 2. Real-Time Processing Budgets
+- **Maximum Input Latency Budget:** '< 50ms' total inspection overhead per prompt.
+- **Streaming Socket Buffer Limit:** Max 256 tokens per chunk inspection window.
+- **Emergency Circuit Breaker:** Automatic fallback to sterile default response if classifier processing exceeds 100ms.
+
+## 3. Escalation Protocols
+- High-risk zero-day jailbreak escapes automatically flag an incident for Elena Vance and trigger Slack notifications to '#aegis-safety-ops'.`
     },
     {
       id: `${spaceAegisId}-file-3`,
@@ -246,8 +274,22 @@ const spaceAegis = {
       mimeType: 'application/vnd.google-apps.presentation',
       content: `# Presentation: Aegis AI LLM Red Teaming & Guardrails Board Review
 
-Type: Google Slides
-File ID: aegis-deck-safety-01`
+> **Executive Synthesis**: Comprehensive evaluation of LLM input/output safety guardrails, zero-day jailbreak mitigations, and performance latency SLAs.
+
+- **Classifier Overhead Target**: < 50ms budget (Achieved: 42ms median latency).
+- **Red Team Corpus**: 1,200+ multi-turn adversarial prompts evaluated with 0 critical escapes.
+- **PII Anonymization**: 100% automated NER stripping for private keys and identity credentials.
+
+---
+
+# Key Architectural Pillars & Milestones
+
+## Guardrail Pipeline Architecture
+- Pre-execution neural classifier filters adversarial prompt injections before LLM tokenization.
+- Parallel NER masking strips sensitive PII tokens prior to web socket streaming.
+
+## Next Horizon: Hallucination Verification
+- Fine-tuning RAG Fact-Check engine to reach > 98% evidence citation accuracy.`
     }
   ],
   userEmail: MOCK_EMAIL,
@@ -447,25 +489,48 @@ const spaceVeritas = {
       mimeType: 'application/vnd.google-apps.document',
       content: `# Veritas Social — Community Standards & Harassment Enforcement SOP
 
-**Authors:** Priya Patel (Community Safety Ops) & David Ross (Head of Trust & Safety)
+**Authors:** Priya Patel (Community Safety Ops) & David Ross (Head of Trust & Safety)  
+**Scope:** Standard Operating Procedures (SOP) across global creator feeds, live chats, and direct messaging channels.  
 
-### Overview
-Standard Operating Procedures (SOP) for enforcing hate speech, harassment, and harassment mitigation across creator communities.
+---
 
-### Key Operational Benchmarks
-1. **Tier 1 Classifier Automated Block:** Machine learning pre-filter routes high-confidence violations directly out of public feed.
-2. **Reviewer SLA Milestone:** High-severity user reports must be evaluated within 4.2 minutes of submission.`
+### Executive Summary & Operational SLAs
+Veritas Social serves millions of active daily creators. Protecting creator safety, enforcing anti-harassment standards, and maintaining rapid reviewer response times are critical operational mandates.
+
+### Core Metrics & Performance Targets
+1. **Median Human Review SLA (4.2 minutes):**
+   - High-severity escalated reports are reviewed within 4.2 minutes (Target: < 15 minutes).
+2. **Automated Pre-Filtering Efficiency (85% Auto-Quarantined):**
+   - Machine learning toxic language classifiers auto-hold 85% of hate speech, doxxing attempts, and targeted harassment prior to feed distribution.
+3. **Hourly Screened Content Volume (12,450 posts/hr):**
+   - Multi-stage moderation pipeline processes over 12,000 posts every hour across global regional hubs.
+4. **User Appeal Turnaround SLA (100% Cleared < 48 Hours):**
+   - Second-tier moderation board resolves all creator account strikes and content appeal tickets within the 48-hour SLA deadline.
+
+### Moderation Incident Triage Matrix
+- **Category 1: Targeted Harassment & Doxxing Campaigns:**
+  - *SLA Target:* < 5 minutes.
+  - *Action:* Route to Tier 2 Safety Desk, initiate instant profile protection mode, freeze suspect accounts.
+- **Category 2: Bypassed Toxicity Classifiers (Leetspeak & Evasion):**
+  - *SLA Target:* < 15 minutes.
+  - *Action:* Update BERT embedding dictionaries and retrain daily model weights.
+- **Category 3: Coordinated Sybil Bot Spam Networks:**
+  - *SLA Target:* Instant automated network purge via IP cluster fingerprinting.`
     },
     {
       id: `${spaceVeritasId}-file-2`,
       name: 'csam_ncii_compliance_spec.doc',
       type: 'code',
-      mimeType: 'application/vnd.google-apps.document',
+      mimeType: 'text/markdown',
       content: `# Veritas Social — Minor Safety & PhotoDNA Hash Matching Specification
 
-**Strategic Safety Architecture:**
-- Real-time perceptual hashing against PhotoDNA and SaferNet databases for all uploaded images and video media.
-- Automated API transmission of validated matches to the NCMEC CyberTipline within 15 minutes.`
+**Compliance Leads:** David Ross & Priya Patel  
+
+## Real-Time Media Hashing & Compliance SLA
+- **SaferNet & PhotoDNA Database Sync:** Real-time hash comparison triggered instantly upon media payload upload.
+- **NCMEC CyberTipline Dispatch SLA:** Validated positive matches trigger an encrypted, automated API transmission to the NCMEC CyberTipline within **15 minutes**.
+- **Zero-Persistence Ephemeral Buffer:** Confirmed illegal media vectors are immediately quarantined and stripped from public storage buckets.
+- **EU Digital Services Act (DSA) Compliance:** Maintains automated log audits supporting biannual DSA transparency reports and out-of-court dispute integration.`
     },
     {
       id: `${spaceVeritasId}-file-3`,
@@ -474,8 +539,19 @@ Standard Operating Procedures (SOP) for enforcing hate speech, harassment, and h
       mimeType: 'application/vnd.google-apps.presentation',
       content: `# Presentation: Veritas Social Trust & Safety Strategic Roadmap
 
-Type: Google Slides
-File ID: veritas-deck-safety-02`
+> **Trust & Safety Milestones**: Scaling content moderation SLAs, perceptual hashing compliance, and creator protection tools.
+
+- **Human Review SLA**: 4.2 min median turnaround (Target: < 15 min).
+- **Automated Pre-Filter**: 85% high-confidence toxicity pre-filter efficiency.
+- **Minor Protection**: 100% automated PhotoDNA hash matching & NCMEC reporting.
+
+---
+
+# Operational Roadmap & Metrics
+
+## Triage Queue SLAs
+- Tier 2 escalation desk clearing harassment reports in 3.1 minutes.
+- Automated Sybil bot purge executing within 1.8 minutes of cluster discovery.`
     }
   ],
   userEmail: MOCK_EMAIL,
@@ -629,14 +705,29 @@ const spaceNexus = {
       name: 'fraud_risk_audit_readout.doc',
       type: 'code',
       mimeType: 'application/vnd.google-apps.document',
-      content: `# Nexus Pay — Fraud & Account Takeover Risk Assessment
+      content: `# Nexus Pay — Fraud & Account Takeover Risk Assessment Report
 
 **Authors:** Rachel Chang (Lead Risk PM) & Dr. Jason Miller (Chief Security Counsel)  
-**Sample:** Audit of 1.4M transactions across P2P checkout and merchant endpoints.
+**Sample Corpus:** Audit of 1.4 Million P2P transactions and merchant API checkouts  
 
-### Key Insights
-- 99.1% pass rate on frictionless identity verification.
-- Account Takeover (ATO) attempts reduced by 94.2% after enabling dynamic WebAuthn passkey step-up authentication.`
+---
+
+### Executive Assessment & Financial Recovery
+Nexus Pay operates high-volume peer-to-peer payment processing and digital wallet services. During the recent risk telemetry period, our fraud engine thwarted multiple automated credential stuffing campaigns and localized Sybil merchant risk networks.
+
+### Core Risk Telemetry & Achievements
+1. **$4.2 Million in Prevented Fraud Losses:**
+   - Real-time device fingerprinting and risk scoring blocked unauthorized account drain attempts.
+2. **94.2% Reduction in Account Takeover (ATO) Attacks:**
+   - Enforced dynamic WebAuthn passkey step-up authentication upon suspicious IP location shifts.
+3. **0.04% Chargeback Baseline (Target: < 0.10%):**
+   - Fraud chargeback ratio remains at less than half of major card network dispute caps.
+4. **99.1% Seamless KYC Verification Rate:**
+   - OCR document analysis combined with biometric liveness verification enables instant onboarding for 99.1% of low-risk users.
+
+### Key Risk Domain Findings
+- **Credential Stuffing Vectors:** Mitigated using progressive CAPTCHA challenges and rate-limiting endpoints.
+- **Merchant Synthetic Identity Risks:** Enforced micro-deposit verification and automated TIN matching.`
     },
     {
       id: `${spaceNexusId}-file-2`,
@@ -645,8 +736,18 @@ const spaceNexus = {
       mimeType: 'application/vnd.google-apps.document',
       content: `# Nexus Pay — KYC & Anti-Phishing Operational Launch Plan
 
-**Target Launch Date:** August 1, 2026  
-**Channels:** Web, iOS, and Android Native SDKs.`
+**Authors:** Rachel Chang & Dr. Jason Miller  
+**Target Rollout Date:** August 1, 2026  
+**SDK Platforms:** Web Application, iOS Native, Android Native  
+
+## 1. Onboarding Identity Verification Strategy
+- **Step 1: Automated Document Capture:** Instant OCR extraction for government-issued passports and driver licenses.
+- **Step 2: Biometric Liveness Verification:** 3D depth map verification preventing video spoofing.
+- **Step 3: Sanctions & PEP Screening:** Real-time lookup against OFAC and global watchlist API endpoints.
+
+## 2. Compliance & SOC2 Controls
+- **SOC2 Type II Audit:** Completed with zero material exceptions reported by independent auditors.
+- **Data Encryption Standard:** AES-256 encryption at rest for all stored identity PII payload data.`
     },
     {
       id: `${spaceNexusId}-file-3`,
@@ -655,8 +756,19 @@ const spaceNexus = {
       mimeType: 'application/vnd.google-apps.presentation',
       content: `# Presentation: Nexus Pay Risk Operations & Fraud Mitigation Deck
 
-Type: Google Slides
-File ID: nexus-deck-risk-03`
+> **Risk Executive Summary**: Telemetry results from 1.4M transactions, ATO prevention milestones, and KYC onboarding metrics.
+
+- **Loss Prevention**: $4.2M in fraudulent transactions prevented.
+- **ATO Reduction**: 94.2% drop in account takeovers via passkey step-up auth.
+- **Chargeback Ratio**: 0.04% maintaining tier-1 card network status.
+
+---
+
+# Strategic Architecture & SOC2 Milestones
+
+## KYC & Onboarding SDK
+- 99.1% automated pass rate for frictionless customer identity verification.
+- Complete SOC2 Type II compliance sign-off.`
     }
   ],
   userEmail: MOCK_EMAIL,

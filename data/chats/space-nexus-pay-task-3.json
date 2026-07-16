@@ -34,21 +34,21 @@
       "name": "fraud_risk_audit_readout.doc",
       "type": "code",
       "mimeType": "application/vnd.google-apps.document",
-      "content": "# Nexus Pay — Fraud & Account Takeover Risk Assessment\n\n**Authors:** Rachel Chang (Lead Risk PM) & Dr. Jason Miller (Chief Security Counsel)  \n**Sample:** Audit of 1.4M transactions across P2P checkout and merchant endpoints.\n\n### Key Insights\n- 99.1% pass rate on frictionless identity verification.\n- Account Takeover (ATO) attempts reduced by 94.2% after enabling dynamic WebAuthn passkey step-up authentication."
+      "content": "# Nexus Pay — Fraud & Account Takeover Risk Assessment Report\n\n**Authors:** Rachel Chang (Lead Risk PM) & Dr. Jason Miller (Chief Security Counsel)  \n**Sample Corpus:** Audit of 1.4 Million P2P transactions and merchant API checkouts  \n\n---\n\n### Executive Assessment & Financial Recovery\nNexus Pay operates high-volume peer-to-peer payment processing and digital wallet services. During the recent risk telemetry period, our fraud engine thwarted multiple automated credential stuffing campaigns and localized Sybil merchant risk networks.\n\n### Core Risk Telemetry & Achievements\n1. **$4.2 Million in Prevented Fraud Losses:**\n   - Real-time device fingerprinting and risk scoring blocked unauthorized account drain attempts.\n2. **94.2% Reduction in Account Takeover (ATO) Attacks:**\n   - Enforced dynamic WebAuthn passkey step-up authentication upon suspicious IP location shifts.\n3. **0.04% Chargeback Baseline (Target: < 0.10%):**\n   - Fraud chargeback ratio remains at less than half of major card network dispute caps.\n4. **99.1% Seamless KYC Verification Rate:**\n   - OCR document analysis combined with biometric liveness verification enables instant onboarding for 99.1% of low-risk users.\n\n### Key Risk Domain Findings\n- **Credential Stuffing Vectors:** Mitigated using progressive CAPTCHA challenges and rate-limiting endpoints.\n- **Merchant Synthetic Identity Risks:** Enforced micro-deposit verification and automated TIN matching."
     },
     {
       "id": "space-nexus-pay-file-2",
       "name": "kyc_identity_verification_plan.doc",
       "type": "code",
       "mimeType": "application/vnd.google-apps.document",
-      "content": "# Nexus Pay — KYC & Anti-Phishing Operational Launch Plan\n\n**Target Launch Date:** August 1, 2026  \n**Channels:** Web, iOS, and Android Native SDKs."
+      "content": "# Nexus Pay — KYC & Anti-Phishing Operational Launch Plan\n\n**Authors:** Rachel Chang & Dr. Jason Miller  \n**Target Rollout Date:** August 1, 2026  \n**SDK Platforms:** Web Application, iOS Native, Android Native  \n\n## 1. Onboarding Identity Verification Strategy\n- **Step 1: Automated Document Capture:** Instant OCR extraction for government-issued passports and driver licenses.\n- **Step 2: Biometric Liveness Verification:** 3D depth map verification preventing video spoofing.\n- **Step 3: Sanctions & PEP Screening:** Real-time lookup against OFAC and global watchlist API endpoints.\n\n## 2. Compliance & SOC2 Controls\n- **SOC2 Type II Audit:** Completed with zero material exceptions reported by independent auditors.\n- **Data Encryption Standard:** AES-256 encryption at rest for all stored identity PII payload data."
     },
     {
       "id": "space-nexus-pay-file-3",
       "name": "nexus_risk_review_deck.gslides",
       "type": "code",
       "mimeType": "application/vnd.google-apps.presentation",
-      "content": "# Presentation: Nexus Pay Risk Operations & Fraud Mitigation Deck\n\nType: Google Slides\nFile ID: nexus-deck-risk-03"
+      "content": "# Presentation: Nexus Pay Risk Operations & Fraud Mitigation Deck\n\n> **Risk Executive Summary**: Telemetry results from 1.4M transactions, ATO prevention milestones, and KYC onboarding metrics.\n\n- **Loss Prevention**: $4.2M in fraudulent transactions prevented.\n- **ATO Reduction**: 94.2% drop in account takeovers via passkey step-up auth.\n- **Chargeback Ratio**: 0.04% maintaining tier-1 card network status.\n\n---\n\n# Strategic Architecture & SOC2 Milestones\n\n## KYC & Onboarding SDK\n- 99.1% automated pass rate for frictionless customer identity verification.\n- Complete SOC2 Type II compliance sign-off."
     }
   ],
   "userEmail": "mock-user@example.com",
@@ -58,5 +58,5 @@
     "Dr. Jason Miller"
   ],
   "pinnedArtifactIds": [],
-  "updatedAt": "2026-07-16T02:19:54.135Z"
+  "updatedAt": "2026-07-16T02:36:43.172Z"
 }

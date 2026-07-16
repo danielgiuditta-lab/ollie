@@ -34,21 +34,21 @@
       "name": "content_moderation_policy_v2.doc",
       "type": "code",
       "mimeType": "application/vnd.google-apps.document",
-      "content": "# Veritas Social — Community Standards & Harassment Enforcement SOP\n\n**Authors:** Priya Patel (Community Safety Ops) & David Ross (Head of Trust & Safety)\n\n### Overview\nStandard Operating Procedures (SOP) for enforcing hate speech, harassment, and harassment mitigation across creator communities.\n\n### Key Operational Benchmarks\n1. **Tier 1 Classifier Automated Block:** Machine learning pre-filter routes high-confidence violations directly out of public feed.\n2. **Reviewer SLA Milestone:** High-severity user reports must be evaluated within 4.2 minutes of submission."
+      "content": "# Veritas Social — Community Standards & Harassment Enforcement SOP\n\n**Authors:** Priya Patel (Community Safety Ops) & David Ross (Head of Trust & Safety)  \n**Scope:** Standard Operating Procedures (SOP) across global creator feeds, live chats, and direct messaging channels.  \n\n---\n\n### Executive Summary & Operational SLAs\nVeritas Social serves millions of active daily creators. Protecting creator safety, enforcing anti-harassment standards, and maintaining rapid reviewer response times are critical operational mandates.\n\n### Core Metrics & Performance Targets\n1. **Median Human Review SLA (4.2 minutes):**\n   - High-severity escalated reports are reviewed within 4.2 minutes (Target: < 15 minutes).\n2. **Automated Pre-Filtering Efficiency (85% Auto-Quarantined):**\n   - Machine learning toxic language classifiers auto-hold 85% of hate speech, doxxing attempts, and targeted harassment prior to feed distribution.\n3. **Hourly Screened Content Volume (12,450 posts/hr):**\n   - Multi-stage moderation pipeline processes over 12,000 posts every hour across global regional hubs.\n4. **User Appeal Turnaround SLA (100% Cleared < 48 Hours):**\n   - Second-tier moderation board resolves all creator account strikes and content appeal tickets within the 48-hour SLA deadline.\n\n### Moderation Incident Triage Matrix\n- **Category 1: Targeted Harassment & Doxxing Campaigns:**\n  - *SLA Target:* < 5 minutes.\n  - *Action:* Route to Tier 2 Safety Desk, initiate instant profile protection mode, freeze suspect accounts.\n- **Category 2: Bypassed Toxicity Classifiers (Leetspeak & Evasion):**\n  - *SLA Target:* < 15 minutes.\n  - *Action:* Update BERT embedding dictionaries and retrain daily model weights.\n- **Category 3: Coordinated Sybil Bot Spam Networks:**\n  - *SLA Target:* Instant automated network purge via IP cluster fingerprinting."
     },
     {
       "id": "space-veritas-social-file-2",
       "name": "csam_ncii_compliance_spec.doc",
       "type": "code",
-      "mimeType": "application/vnd.google-apps.document",
-      "content": "# Veritas Social — Minor Safety & PhotoDNA Hash Matching Specification\n\n**Strategic Safety Architecture:**\n- Real-time perceptual hashing against PhotoDNA and SaferNet databases for all uploaded images and video media.\n- Automated API transmission of validated matches to the NCMEC CyberTipline within 15 minutes."
+      "mimeType": "text/markdown",
+      "content": "# Veritas Social — Minor Safety & PhotoDNA Hash Matching Specification\n\n**Compliance Leads:** David Ross & Priya Patel  \n\n## Real-Time Media Hashing & Compliance SLA\n- **SaferNet & PhotoDNA Database Sync:** Real-time hash comparison triggered instantly upon media payload upload.\n- **NCMEC CyberTipline Dispatch SLA:** Validated positive matches trigger an encrypted, automated API transmission to the NCMEC CyberTipline within **15 minutes**.\n- **Zero-Persistence Ephemeral Buffer:** Confirmed illegal media vectors are immediately quarantined and stripped from public storage buckets.\n- **EU Digital Services Act (DSA) Compliance:** Maintains automated log audits supporting biannual DSA transparency reports and out-of-court dispute integration."
     },
     {
       "id": "space-veritas-social-file-3",
       "name": "veritas_safety_roadmap.gslides",
       "type": "code",
       "mimeType": "application/vnd.google-apps.presentation",
-      "content": "# Presentation: Veritas Social Trust & Safety Strategic Roadmap\n\nType: Google Slides\nFile ID: veritas-deck-safety-02"
+      "content": "# Presentation: Veritas Social Trust & Safety Strategic Roadmap\n\n> **Trust & Safety Milestones**: Scaling content moderation SLAs, perceptual hashing compliance, and creator protection tools.\n\n- **Human Review SLA**: 4.2 min median turnaround (Target: < 15 min).\n- **Automated Pre-Filter**: 85% high-confidence toxicity pre-filter efficiency.\n- **Minor Protection**: 100% automated PhotoDNA hash matching & NCMEC reporting.\n\n---\n\n# Operational Roadmap & Metrics\n\n## Triage Queue SLAs\n- Tier 2 escalation desk clearing harassment reports in 3.1 minutes.\n- Automated Sybil bot purge executing within 1.8 minutes of cluster discovery."
     }
   ],
   "userEmail": "mock-user@example.com",
@@ -62,5 +62,5 @@
     "space-veritas-social-file-0",
     "space-veritas-social-file-3"
   ],
-  "updatedAt": "2026-07-16T02:19:54.135Z"
+  "updatedAt": "2026-07-16T02:36:43.172Z"
 }

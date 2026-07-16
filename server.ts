@@ -230,6 +230,163 @@ async function startServer() {
     }
   }
 
+  const MOCK_TRUST_SAFETY_FILES = [
+    {
+      id: "client_policy_issues_tracker.doc",
+      name: "client_policy_issues_tracker.doc",
+      mimeType: "application/vnd.google-apps.document",
+      content: `# Client Trust & Safety Policy Issues Log & Audit Protocol
+
+**Authors:** Elena Vance (Trust & Safety Lead Consultant) & David Ross (Head of T&S Operations)  
+
+### Executive Summary
+Centralized intake log tracking active Trust & Safety issues, jailbreak escapes, content moderation escalations, and fraud vulnerabilities reported across advisory startup platforms (Aegis AI, Veritas Social, Nexus Pay).
+
+### Operational Intake Benchmarks & SLAs
+1. **Policy Risk Categorization:** Tag issues by risk domain (AI Safety, Content Moderation, Fraud Ops, Regulatory Compliance).
+2. **Intake Triage SLA (< 15 minutes):** Severity 1 safety issues evaluated within 15 minutes of intake submission.
+3. **Remediation SLA (< 48 hours):** Mitigate high-risk policy escapes, model misses, and credential stuffing attacks within 48 hours of discovery.
+4. **Resolution SLA (< 7 days):** Complete permanent model retrain or policy patch within 7 business days.`
+    },
+    {
+      id: "policy_issue_triage_framework.gdoc",
+      name: "policy_issue_triage_framework.gdoc",
+      mimeType: "application/vnd.google-apps.document",
+      content: `# Policy Issue Triage & Escalation Standard Operating Procedure (SOP)
+
+**Authors:** Priya Patel (Policy & Moderation Lead) & Dr. Marcus Thorne (Staff AI Safety Engineer)  
+
+### Core Operational Directive
+Establish standardized intake and triage escalation workflows for assessing client safety policy breaches, adversarial LLM prompt injection vectors, and moderation classifier bypasses.
+
+### Severity Classification & Directives
+1. **Severity 1 (Critical - <15m SLA):** Active CSAM PhotoDNA hash sync discrepancies, zero-day LLM jailbreak escapes into production, or credential stuffing ATO spikes.
+2. **Severity 2 (High - <2h SLA):** Targeted harassment classifier bypasses, unhandled toxicity vectors, or high-risk PII redaction misses.
+3. **Severity 3 (Medium - <24h SLA):** EU DSA transparency reporting gaps, user appeal queue backlogs, or UI layout alignment requests.`
+    },
+    {
+      id: "cross_client_policy_issues_matrix.csv",
+      name: "cross_client_policy_issues_matrix.csv",
+      mimeType: "text/csv",
+      content: `Issue ID,Client Platform,Policy Category,Reported Date,Severity,Assigned Lead,Status
+ISSUE-101,Aegis AI,LLM Jailbreak Escape,2026-07-14,High,Elena Vance,Mitigation Testing
+ISSUE-102,Veritas Social,Harassment Classifier Bypass,2026-07-15,Medium,Priya Patel,Model Retrained
+ISSUE-103,Nexus Pay,Credential Stuffing ATO Spike,2026-07-12,High,Rachel Chang,Step-Up Auth Enforced
+ISSUE-104,Veritas Social,CSAM PhotoDNA Hash Sync Discrepancy,2026-07-13,Critical,David Ross,Resolved
+ISSUE-105,Aegis AI,EU DSA Transparency Audit,2026-07-10,Medium,Sarah Lin,Drafting Report`
+    },
+    {
+      id: "client_policy_issues_deck.gslides",
+      name: "client_policy_issues_deck.gslides",
+      mimeType: "application/vnd.google-apps.presentation",
+      content: `# Presentation: Client Trust & Safety Policy Issues — Executive Synthesis
+
+> **Cross-Client Safety Telemetry**: Tracking policy issues, AI red teaming escapes, and moderation SLAs across startup platforms.
+
+- **Client Satisfaction Target**: Maintain 100% policy resolution SLA compliance across all advisory startups.
+- **Risk Mitigations**: 100% of high-severity prompt injection escapes and moderation bypasses resolved.
+
+---
+
+# Key Milestones & Advisory Roadmap
+
+## Client Policy Issues Resolution
+- **AI Red Teaming Escapes**: Rapid patch deployment and neural classifier fine-tuning.
+- **Moderation SLA Backlog**: Automated escalation queue routing and PhotoDNA hash synchronization.
+- **Regulatory Audits**: Biannual DSA transparency reports and out-of-court dispute integration.`
+    }
+  ];
+
+  async function getMockLibraryContext(prompt: string, activeSpaceId?: string, contextFileIds?: string[]) {
+    const allMockFiles: { id: string; name: string; mimeType: string; content: string; spaceId?: string }[] = [];
+
+    MOCK_TRUST_SAFETY_FILES.forEach(f => {
+      allMockFiles.push({ ...f });
+    });
+
+    try {
+      const chatsDir = path.join(process.cwd(), "data", "chats");
+      if (await fileExistsAsync(chatsDir)) {
+        const files = await fs.promises.readdir(chatsDir);
+        for (const file of files) {
+          if (file.endsWith(".json")) {
+            try {
+              const raw = await fs.promises.readFile(path.join(chatsDir, file), "utf-8");
+              const data = JSON.parse(raw);
+              const spaceId = data.activeSpaceId || data.chatId;
+              if (data.sandboxFiles && Array.isArray(data.sandboxFiles)) {
+                for (const sf of data.sandboxFiles) {
+                  if (sf.content && sf.name && !allMockFiles.some(m => m.id === sf.id || m.name === sf.name)) {
+                    allMockFiles.push({
+                      id: sf.id || sf.name,
+                      name: sf.name,
+                      mimeType: sf.mimeType || 'text/plain',
+                      content: sf.content,
+                      spaceId
+                    });
+                  }
+                }
+              }
+            } catch (e) {
+              // ignore malformed
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[getMockLibraryContext] Error reading data/chats:", err);
+    }
+
+    let selected: typeof allMockFiles = [];
+
+    if (contextFileIds && Array.isArray(contextFileIds) && contextFileIds.length > 0) {
+      selected = allMockFiles.filter(f => contextFileIds.includes(f.id) || contextFileIds.includes(f.name));
+    }
+
+    if (selected.length === 0) {
+      const cleanPrompt = (prompt || '').toLowerCase();
+      const stopWords = new Set(["tell", "me", "about", "show", "open", "give", "find", "search", "a", "the", "in", "my", "of", "and", "to", "for", "with", "on", "at", "by", "from", "please", "can", "you", "write", "doc", "document", "prd", "outline", "create", "draft", "make", "generate"]);
+      const words = cleanPrompt.split(/\s+/).map(w => w.replace(/[^a-zA-Z0-9_\-]/g, '')).filter(w => w && w.length > 2 && !stopWords.has(w));
+
+      const scored = allMockFiles.map(f => {
+        let score = 0;
+        if (activeSpaceId && f.spaceId === activeSpaceId) score += 10;
+        const fNameLower = f.name.toLowerCase();
+        const fContentLower = f.content.toLowerCase();
+
+        words.forEach(w => {
+          if (fNameLower.includes(w)) score += 5;
+          if (fContentLower.includes(w)) score += 2;
+        });
+        return { file: f, score };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+
+      const candidates = scored.filter(s => s.score > 0).map(s => s.file);
+      if (candidates.length > 0) {
+        selected = candidates.slice(0, 4);
+      } else if (activeSpaceId) {
+        selected = allMockFiles.filter(f => f.spaceId === activeSpaceId).slice(0, 4);
+      }
+      if (selected.length === 0) {
+        selected = allMockFiles.slice(0, 4);
+      }
+    }
+
+    const sources = selected.map(f => ({
+      id: f.id,
+      name: f.name,
+      mimeType: f.mimeType,
+      modifiedTime: new Date().toISOString(),
+      size: String(f.content.length)
+    }));
+
+    const contextText = selected.map(f => `--- CONTEXT FILE: ${f.name} (ID: ${f.id}) ---\n${f.content}\n--- END CONTEXT FILE ---`).join('\n\n');
+
+    return { sources, contextText, selectedFiles: selected };
+  }
+
   app.post("/api/share", async (req, res) => {
     try {
       const { envId, workspaceName, owner, ownerId, files } = req.body;
@@ -769,8 +926,23 @@ async function startServer() {
     try {
       const folderId = req.body.activeSpaceId || req.body.spaceId || req.body.folderId;
       const authHeader = req.headers.authorization;
-      if (!authHeader) {
-        return res.status(401).json({ error: "No authorization header" });
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+      if (!isValidAuth) {
+        if (folderId) {
+          const chatFilePath = path.join(process.cwd(), "data", "chats", `${folderId}.json`);
+          if (await fileExistsAsync(chatFilePath)) {
+            const raw = await fs.promises.readFile(chatFilePath, "utf-8");
+            const spaceData = JSON.parse(raw);
+            const files = (spaceData.sandboxFiles || []).map((f: any) => ({
+              id: f.id || f.name,
+              filename: f.name,
+              content: f.content || '',
+              mimeType: f.mimeType || 'text/plain'
+            }));
+            return res.json({ files });
+          }
+        }
+        return res.json({ files: MOCK_TRUST_SAFETY_FILES.map(f => ({ id: f.id, filename: f.name, content: f.content, mimeType: f.mimeType })) });
       }
 
       if (!folderId || typeof folderId !== 'string' || folderId.startsWith('space-') || folderId.startsWith('local-') || folderId === 'root') {
@@ -1666,7 +1838,8 @@ Guidelines:
       let contextText = "";
       let sources: any[] = [];
 
-      if (authHeader) {
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+      if (isValidAuth) {
         console.log("[DocJourney Server] Performing Drive RAG search for prompt...");
         let files: any[] = [];
         const hasExplicitContext = contextFileIds && Array.isArray(contextFileIds) && contextFileIds.length > 0;
@@ -1758,6 +1931,13 @@ Guidelines:
           const downloadedContents = downloadedContentsRaw.filter(Boolean) as { name: string, id: string, content: string }[];
           contextText = downloadedContents.map(d => `--- CONTEXT FILE: ${d.name} (ID: ${d.id}) ---\n${d.content}\n--- END CONTEXT FILE ---`).join('\n\n');
         }
+      }
+
+      if (!isValidAuth || sources.length === 0) {
+        console.log("[DocJourney Server] Utilizing mock library RAG context lookup...");
+        const mockRes = await getMockLibraryContext(prompt, req.body.activeSpaceId, contextFileIds);
+        sources = mockRes.sources;
+        contextText = mockRes.contextText;
       }
 
       let historyText = "";
@@ -1915,9 +2095,18 @@ The user is modifying their Out-of-the-Box "To-dos" (Inferred Tasks) tool with n
 - CRITICAL RULE - NO UNSOLICITED KANBAN BOARDS: Never convert To-dos into a multi-column Kanban board unless the user explicitly uses the word "kanban" or asks for columns!`;
       }
 
-      if (ingestedContext && Array.isArray(ingestedContext) && ingestedContext.length > 0) {
+      let resolvedContext = ingestedContext;
+      const authHeader = req.headers.authorization;
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+      if ((!resolvedContext || !Array.isArray(resolvedContext) || resolvedContext.length === 0) && !isValidAuth) {
+        const activeSpaceId = req.body.activeSpaceId || req.body.spaceId;
+        const mockRes = await getMockLibraryContext(prompt, activeSpaceId);
+        resolvedContext = mockRes.selectedFiles.map(f => ({ filename: f.name, content: f.content }));
+      }
+
+      if (resolvedContext && Array.isArray(resolvedContext) && resolvedContext.length > 0) {
         systemInstruction += `\n\nThe user has provided the following files from their workspace (Google Drive) as context for this task:\n`;
-        ingestedContext.forEach((f: any) => {
+        resolvedContext.forEach((f: any) => {
             systemInstruction += `\n--- START OF ${f.filename} ---\n${f.content}\n--- END OF ${f.filename} ---\n`;
         });
         systemInstruction += `\nUse these files as context, inspiration, or starting points. Enhance them based on the user prompt. You MUST output the modified files (such as index.html, styles.css, app.js etc.) using markdown code blocks so they can be rendered in the canvas. If you output multiple files, you MUST include the exact filename as the very first line inside the code block as a comment (e.g. <!-- index.html --> or /* app.js */). Never output generic file names like file-3.txt. IMPORTANT: If you use Tailwind classes, ensure the Tailwind CSS CDN script tag is included in the existing or new index.html file.`;
