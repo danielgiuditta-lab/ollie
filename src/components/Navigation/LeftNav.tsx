@@ -31,17 +31,21 @@ interface LeftNavProps {
   isGroupChat?: boolean;
 }
 
-// Deterministic emoji helper based on space name hash
+// Deterministic emoji helper based on space name hash & domain keywords
 const getSpaceEmoji = (name: string): string => {
   const lower = name.toLowerCase();
   if (lower.includes('ollie')) return '🙂';
-  if (lower.includes('production') || lower.includes('build') || lower.includes('construct')) return '🏗';
+  if (lower.includes('aegis') || lower.includes('ai safety') || lower.includes('guard')) return '🛡️';
+  if (lower.includes('veritas') || lower.includes('social') || lower.includes('community')) return '💬';
+  if (lower.includes('nexus') || lower.includes('pay') || lower.includes('fraud') || lower.includes('fintech')) return '💳';
+  if (lower.includes('policy') || lower.includes('issue') || lower.includes('escalation') || lower.includes('governance')) return '📋';
+  if (lower.includes('production') || lower.includes('build') || lower.includes('construct')) return '🏗️';
   if (lower.includes('marketing') || lower.includes('brand')) return '📢';
   if (lower.includes('sales') || lower.includes('revenue')) return '📈';
   if (lower.includes('design') || lower.includes('art')) return '🎨';
   if (lower.includes('data') || lower.includes('sheet') || lower.includes('csv')) return '📊';
   
-  const emojis = ['📁', '💼', '💡', '🚀', '🌟', '🛠', '⚙️', '📝', '🎯', '🌱'];
+  const emojis = ['📁', '💼', '💡', '🚀', '🌟', '🛠️', '⚙️', '📝', '🎯', '🌱'];
   const sum = Array.from(name).reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return emojis[sum % emojis.length];
 };

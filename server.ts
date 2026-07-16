@@ -1250,42 +1250,43 @@ Please generate an updated version of the file content incorporating the request
       if (!isValidAuth || files.length === 0) {
         const mockTrustSafetyFiles = [
           {
-            id: "content_moderation_policy_v2.doc",
-            name: "content_moderation_policy_v2.doc",
+            id: "client_policy_issues_tracker.doc",
+            name: "client_policy_issues_tracker.doc",
             mimeType: "application/vnd.google-apps.document",
-            content: "# Community Guidelines & Harassment Enforcement SOP\n\n**Author:** Elena Vance (Trust & Safety Consultant) & David Ross (Head of T&S)\n\n### Executive Summary\nStandard operating procedures for optimizing content moderation velocity, harassment escalations, and minor safety enforcement.\n\n### Key Enforcement Benchmarks\n1. **Tier 1 Automated Pre-filtering**: Deploy high-confidence toxicity classifiers to filter 85% of toxic posts prior to public delivery.\n2. **Review SLA Target**: Decrease median ticket escalation SLA to < 4.2 minutes.\n3. **Translucent Appeal Workflow**: Transparent appeal portal for affected creators with 48-hour SLA."
+            content: "# Client Trust & Safety Policy Issues Log\n\n**Author:** Elena Vance (Trust & Safety Lead Consultant) & David Ross (Head of T&S)\n\n### Executive Summary\nCentralized intake log tracking active Trust & Safety issues, jailbreak escapes, content moderation escalations, and fraud vulnerabilities reported across advisory clients.\n\n### Key Intake Benchmarks\n1. **Policy Issue Categorization**: Tag issues by risk domain (AI Safety, Content Moderation, Fraud Ops, Regulatory Compliance).\n2. **Triage SLA Target**: Severity 1 safety issues evaluated within < 15 minutes.\n3. **Remediation SLAs**: Mitigate high-risk policy escapes within 48 hours of intake."
           },
           {
-            id: "llm_safety_guardrails_spec.gdoc",
-            name: "llm_safety_guardrails_spec.gdoc",
+            id: "policy_issue_triage_framework.gdoc",
+            name: "policy_issue_triage_framework.gdoc",
             mimeType: "application/vnd.google-apps.document",
-            content: "# Aegis AI — LLM Input/Output Safety Rules & Toxicity Thresholds\n\n**Author:** Sarah Lin (Product Manager) & Dr. Marcus Thorne (Staff Safety Engineer)\n\n### Core Objective\nEstablish LLM red teaming benchmarks, prompt injection mitigation, and automated PII anonymization.\n\n### Strategic Safety Directives\n1. **Sub-50ms Guardrail Overhead**: Real-time dual-tier neural classifier evaluates prompts without streaming latency.\n2. **Red Teaming Benchmarks**: Execute 1,200+ adversarial jailbreak payloads with 99.4% classifier precision.\n3. **Automated Credential Masking**: Regex + NER entity extraction automatically sanitizes PII and secret tokens."
+            content: "# Policy Issue Triage & Escalation SOP\n\n**Author:** Priya Patel (Policy & Moderation PM) & Dr. Marcus Thorne (Staff AI Safety Engineer)\n\n### Core Objective\nEstablish standard triage procedures for assessing client safety policy breaches, prompt injection vectors, and moderation classifier bypasses.\n\n### Strategic Directives\n1. **Severity 1 (Critical)**: Active CSAM hash errors, zero-day LLM jailbreak escapes, or major ATO credential attacks.\n2. **Severity 2 (High)**: Harassment classifier bypasses or unhandled toxicity vectors.\n3. **Severity 3 (Medium)**: DSA transparency reporting gaps or user appeal queue backlogs."
           },
           {
-            id: "trust_and_safety_risk_log.csv",
-            name: "trust_and_safety_risk_log.csv",
+            id: "cross_client_policy_issues_matrix.csv",
+            name: "cross_client_policy_issues_matrix.csv",
             mimeType: "text/csv",
-            content: "Incident ID,Client Platform,Risk Factor,Severity,Lead Consultant,Status,Target SLA\nTS-9401,Aegis AI,LLM Prompt Injection Escapes,High,Elena Vance,Mitigated,2026-07-16\nTS-9402,Veritas Social,Harassment Campaign Spike,Medium,Priya Patel,Active SLA,2026-07-18\nTS-9403,Nexus Pay,Account Takeover (ATO) Spike,High,Rachel Chang,Step-Up Auth Live,2026-07-17\nTS-9404,Veritas Social,PhotoDNA CSAM Hash Sync,High,David Ross,Enforced 100%,2026-07-16\nTS-9405,Aegis AI,EU DSA Transparency Audit,Medium,Sarah Lin,Audit Ready,2026-07-15"
+            content: "Issue ID,Client Platform,Policy Category,Reported Date,Severity,Assigned Lead,Status\nISSUE-101,Aegis AI,LLM Jailbreak Escape,2026-07-14,High,Elena Vance,Mitigation Testing\nISSUE-102,Veritas Social,Harassment Classifier Bypass,2026-07-15,Medium,Priya Patel,Model Retrained\nISSUE-103,Nexus Pay,Credential Stuffing ATO Spike,2026-07-12,High,Rachel Chang,Step-Up Auth Enforced\nISSUE-104,Veritas Social,CSAM PhotoDNA Hash Sync Discrepancy,2026-07-13,Critical,David Ross,Resolved\nISSUE-105,Aegis AI,EU DSA Transparency Audit,2026-07-10,Medium,Sarah Lin,Drafting Report"
           },
           {
-            id: "trust_safety_executive_deck.gslides",
-            name: "trust_safety_executive_deck.gslides",
+            id: "client_policy_issues_deck.gslides",
+            name: "client_policy_issues_deck.gslides",
             mimeType: "application/vnd.google-apps.presentation",
-            content: "# Freelance Trust & Safety Client Strategy Deck\n\n> **99.4% Platform Safety Precision**: Protecting digital communities, AI foundation models, and payment ecosystems.\n\n- **Client Satisfaction Target**: Maintain 100% policy SLA compliance across all advisory startups.\n- **Risk Prevention**: Mitigated over $4.2M in fraud attempts and 1.2M daily automated prompt injections.\n\n---\n\n# Key Milestones & Advisory Roadmap\n\n## Platform Safety Operations\n\n- **AI Red Teaming**: Adversarial jailbreak testing and classifier fine-tuning.\n- **Content Moderation Operations**: Automated queue routing and minor safety (CSAM/NCII) hash blocking.\n- **Fraud & ATO Prevention**: Multi-signal behavioral risk scoring and biometric step-up authentication."
+            content: "# Client Trust & Safety Policy Issues — Executive Synthesis\n\n> **Cross-Client Safety Telemetry**: Tracking policy issues, AI red teaming escapes, and moderation SLAs across startup platforms.\n\n- **Client Satisfaction Target**: Maintain 100% policy resolution SLA compliance across all advisory startups.\n- **Risk Mitigations**: 100% of high-severity prompt injection escapes and moderation bypasses resolved.\n\n---\n\n# Key Milestones & Advisory Roadmap\n\n## Client Policy Issues Resolution\n\n- **AI Red Teaming Escapes**: Rapid patch deployment and neural classifier fine-tuning.\n- **Moderation SLA Backlog**: Automated escalation queue routing and PhotoDNA hash synchronization.\n- **Regulatory Audits**: Biannual DSA transparency reports and out-of-court dispute integration."
           }
         ];
 
         const mockTrustSafetyPeople = [
           { name: "Elena Vance", email: "elena_vance@example.com", avatar: "/people/sarah_lin.jpg" },
+          { name: "David Ross", email: "david_ross@example.com", avatar: "/people/david.jpg" },
+          { name: "Priya Patel", email: "priya_patel@example.com", avatar: "/people/rachel_chang.jpg" },
           { name: "Dr. Marcus Thorne", email: "dr_marcus_thorne@example.com", avatar: "/people/dr_marcus_thorne.jpg" },
-          { name: "Sarah Lin", email: "sarah_lin@example.com", avatar: "/people/rachel_chang.jpg" },
           { name: "Rachel Chang", email: "rachel_chang@example.com", avatar: "/people/david.jpg" }
         ];
 
         return res.json({
           files: mockTrustSafetyFiles,
           suggestedPeople: mockTrustSafetyPeople,
-          explanation: `Found 4 relevant Trust & Safety policy specs and risk governance documents matching the advisory domain.`
+          explanation: `Found 4 relevant Trust & Safety policy specs and client issue governance documents matching the policy issues tracking domain.`
         });
       }
 

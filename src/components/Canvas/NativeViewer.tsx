@@ -319,7 +319,18 @@ export function NativeViewer({
     (file.isProactiveDraft && (file.type === 'slide' || file.taskType === 'slide' || nameLower.endsWith('.gslides') || nameLower.includes('slide') || nameLower.includes('presentation') || nameLower.includes('drive refresh')));
 
   const isGoogleSheet = 
-    (file.mimeType && (
+    !isGoogleSlide &&
+    file.type !== 'doc' &&
+    file.taskType !== 'doc' &&
+    !nameLower.endsWith('.doc') &&
+    !nameLower.endsWith('.docx') &&
+    !nameLower.endsWith('.gdoc') &&
+    !nameLower.endsWith('.md') &&
+    !nameLower.endsWith('.markdown') &&
+    !nameLower.endsWith('.txt') &&
+    !file.createdFromComposer &&
+    !file.isDocJourney &&
+    ((file.mimeType && (
       file.mimeType.toLowerCase().includes('vnd.google-apps.spreadsheet') ||
       file.mimeType.toLowerCase().includes('officedocument.spreadsheetml') ||
       file.mimeType.toLowerCase().includes('ms-excel') ||
@@ -329,26 +340,28 @@ export function NativeViewer({
     nameLower.endsWith('.xlsx') ||
     nameLower.endsWith('.xls') ||
     nameLower.endsWith('.csv') ||
-    nameLower.includes('spend') ||
-    nameLower.includes('analysis') ||
-    nameLower.includes('breakdown') ||
-    nameLower.includes('inventory');
+    ((nameLower.includes('spend') || nameLower.includes('inventory')) && !nameLower.includes('doc') && !nameLower.includes('report')));
 
   const isGoogleDoc = 
     !isGoogleSlide && 
     !isGoogleSheet && (
       file.type === 'doc' ||
       file.taskType === 'doc' ||
+      file.createdFromComposer ||
+      file.isDocJourney ||
       (file.mimeType && (
         file.mimeType.toLowerCase().includes('vnd.google-apps.document') ||
         file.mimeType.toLowerCase().includes('wordprocessingml') ||
         file.mimeType.toLowerCase().includes('msword') ||
-        file.mimeType.toLowerCase().includes('gdoc')
+        file.mimeType.toLowerCase().includes('gdoc') ||
+        file.mimeType.toLowerCase().includes('text/plain')
       )) ||
       nameLower.endsWith('.gdoc') ||
       nameLower.endsWith('.docx') ||
       nameLower.endsWith('.doc') ||
       nameLower.endsWith('.txt') ||
+      nameLower.endsWith('.md') ||
+      nameLower.endsWith('.markdown') ||
       nameLower.includes('suppliers') ||
       nameLower.includes('proposal') ||
       nameLower.includes('report') ||
@@ -359,9 +372,16 @@ export function NativeViewer({
   const isDoc = 
     isGoogleDoc ||
     (!isGoogleSlide && !isGoogleSheet && (
+      file.type === 'doc' ||
+      file.taskType === 'doc' ||
+      file.createdFromComposer ||
+      file.isDocJourney ||
       nameLower.endsWith('.doc') || 
       nameLower.endsWith('.docx') || 
       nameLower.endsWith('.gdoc') ||
+      nameLower.endsWith('.md') ||
+      nameLower.endsWith('.markdown') ||
+      nameLower.endsWith('.txt') ||
       (file.mimeType && (
         file.mimeType.toLowerCase().includes('document') || 
         file.mimeType.toLowerCase().includes('gdoc')
@@ -411,6 +431,14 @@ export function NativeViewer({
     !isSlide &&
     !isGoogleSheet && (
       isDoc || 
+      isGoogleDoc ||
+      file.type === 'doc' ||
+      file.taskType === 'doc' ||
+      file.createdFromComposer ||
+      file.isDocJourney ||
+      nameLower.endsWith('.doc') ||
+      nameLower.endsWith('.docx') ||
+      nameLower.endsWith('.gdoc') ||
       nameLower.endsWith('.md') || 
       nameLower.endsWith('.markdown') || 
       nameLower.endsWith('.txt') || 
@@ -429,17 +457,27 @@ export function NativeViewer({
     );
 
   const isCsvFile = 
+    !isDocFile &&
+    !isGoogleDoc &&
+    !isDoc &&
+    file.type !== 'doc' &&
+    file.taskType !== 'doc' &&
+    !file.createdFromComposer &&
+    !file.isDocJourney &&
+    !nameLower.endsWith('.doc') &&
+    !nameLower.endsWith('.docx') &&
+    !nameLower.endsWith('.gdoc') &&
     !nameLower.endsWith('.md') &&
     !nameLower.endsWith('.markdown') &&
     !nameLower.endsWith('.txt') &&
-    (nameLower.endsWith('.csv') || 
-    nameLower.endsWith('.xls') || 
-    nameLower.endsWith('.xlsx') ||
-    (file.mimeType && file.mimeType.includes('spreadsheet')) ||
-    nameLower === 'suppliers' || 
-    nameLower === 'fulfillment centers' ||
-    nameLower === 'supply chain analysis' ||
-    (file.content && (file.content.includes(',') || file.content.includes(';') || file.content.includes('\t')))) &&
+    (
+      nameLower.endsWith('.csv') || 
+      nameLower.endsWith('.xls') || 
+      nameLower.endsWith('.xlsx') ||
+      (file.mimeType && (file.mimeType.includes('spreadsheet') || file.mimeType.includes('csv'))) ||
+      nameLower === 'suppliers.csv' ||
+      nameLower === 'fulfillment centers.csv'
+    ) &&
     !(isIframeViewer && mode === 'preview');
 
   const isImageFile = 
@@ -1122,83 +1160,7 @@ export function NativeViewer({
       );
     }
 
-    // 4. Spreadsheet View (.csv or similar)
-    if (isCsvFile && file.content) {
-      const rowLines = file.content.split(/\r?\n/).filter((l: string) => l.trim().length > 0);
-      const parsedLines = rowLines.map((line: string) => line.split(/[,;\t]/).map((c: string) => c.trim().replace(/^["']|["']$/g, '')));
-      const headers = parsedLines[0] || [];
-      const rows = parsedLines.slice(1);
-
-      return (
-        <div className="w-full h-full bg-f8f9fa flex flex-col overflow-hidden relative">
-          {!hideHeader && (
-            <div className="shrink-0 flex items-center justify-between px-6 py-3.5 bg-white border-b border-gray-150 pr-16 animate-fade-in animate-duration-200">
-              <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded bg-emerald-50 text-emerald-600">
-                  <FileSpreadsheet size={16} />
-                </div>
-                <span className="font-semibold text-xs text-gray-800">{file.name}</span>
-                <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold">CSV Grid</span>
-              </div>
-              {onSave && (
-                <button
-                  onClick={() => onSave(file)}
-                  className="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-blue-500/10 mr-12"
-                >
-                  <HardDrive size={13} />
-                  Save to Drive
-                </button>
-              )}
-            </div>
-          )}
-
-          <div className="flex-1 overflow-auto bg-transparent">
-            <div className="bg-white border-none w-full h-full max-w-full rounded-none">
-              <table className="w-full border-collapse text-left text-xs text-gray-700">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-250 select-none">
-                    <th className="w-10 text-center border-r border-gray-200 font-bold text-gray-400 bg-gray-50/50 py-2.5 px-1 text-[10px]">#</th>
-                    {headers.map((hdr: string, i: number) => (
-                      <th 
-                        key={i} 
-                        className="px-4 py-2.5 border-r border-gray-200 font-semibold text-gray-950 uppercase tracking-wider text-[11px]"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>{hdr.trim().replace(/^["']|["']$/g, '')}</span>
-                          <span className="text-[10px] text-gray-350 font-normal ml-3">{String.fromCharCode(65 + (i % 26))}</span>
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row: string[], rowIndex: number) => (
-                    <tr 
-                      key={rowIndex} 
-                      className="border-b border-gray-150 hover:bg-blue-50/30 transition-colors"
-                    >
-                      <td className="w-10 text-center border-r border-gray-200 font-bold text-gray-400 bg-gray-50/30 py-2 text-[10px] select-none">
-                        {rowIndex + 1}
-                      </td>
-                      {row.map((cell: string, cellIndex: number) => (
-                        <td 
-                          key={cellIndex} 
-                          className="px-4 py-2 border-r border-gray-200 truncate max-w-[250px] font-medium"
-                        >
-                          {cell.trim().replace(/^["']|["']$/g, '')}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // 5. Document/Markdown Premium Reader View
+    // 4. Document/Markdown Premium Reader View
     if (isDocFile && mode === 'preview') {
       const lines = (file.content || '').split('\n');
       let title = file.name.replace(/\.[a-zA-Z]+$/, '');
@@ -1360,6 +1322,82 @@ export function NativeViewer({
               <div className="markdown-body prose prose-slate max-w-none text-[16px] text-slate-700 leading-7 pr-4 focus:outline-none native-serif-viewer">
                 <ReactMarkdown>{bodyParagraphs.join('\n')}</ReactMarkdown>
               </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // 5. Spreadsheet View (.csv or similar)
+    if (isCsvFile && file.content) {
+      const rowLines = file.content.split(/\r?\n/).filter((l: string) => l.trim().length > 0);
+      const parsedLines = rowLines.map((line: string) => line.split(/[,;\t]/).map((c: string) => c.trim().replace(/^["']|["']$/g, '')));
+      const headers = parsedLines[0] || [];
+      const rows = parsedLines.slice(1);
+
+      return (
+        <div className="w-full h-full bg-f8f9fa flex flex-col overflow-hidden relative">
+          {!hideHeader && (
+            <div className="shrink-0 flex items-center justify-between px-6 py-3.5 bg-white border-b border-gray-150 pr-16 animate-fade-in animate-duration-200">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded bg-emerald-50 text-emerald-600">
+                  <FileSpreadsheet size={16} />
+                </div>
+                <span className="font-semibold text-xs text-gray-800">{file.name}</span>
+                <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold">CSV Grid</span>
+              </div>
+              {onSave && (
+                <button
+                  onClick={() => onSave(file)}
+                  className="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-blue-500/10 mr-12"
+                >
+                  <HardDrive size={13} />
+                  Save to Drive
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="flex-1 overflow-auto bg-transparent">
+            <div className="bg-white border-none w-full h-full max-w-full rounded-none">
+              <table className="w-full border-collapse text-left text-xs text-gray-700">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-250 select-none">
+                    <th className="w-10 text-center border-r border-gray-200 font-bold text-gray-400 bg-gray-50/50 py-2.5 px-1 text-[10px]">#</th>
+                    {headers.map((hdr: string, i: number) => (
+                      <th 
+                        key={i} 
+                        className="px-4 py-2.5 border-r border-gray-200 font-semibold text-gray-950 uppercase tracking-wider text-[11px]"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span>{hdr.trim().replace(/^["']|["']$/g, '')}</span>
+                          <span className="text-[10px] text-gray-350 font-normal ml-3">{String.fromCharCode(65 + (i % 26))}</span>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row: string[], rowIndex: number) => (
+                    <tr 
+                      key={rowIndex} 
+                      className="border-b border-gray-150 hover:bg-blue-50/30 transition-colors"
+                    >
+                      <td className="w-10 text-center border-r border-gray-200 font-bold text-gray-400 bg-gray-50/30 py-2 text-[10px] select-none">
+                        {rowIndex + 1}
+                      </td>
+                      {row.map((cell: string, cellIndex: number) => (
+                        <td 
+                          key={cellIndex} 
+                          className="px-4 py-2 border-r border-gray-200 truncate max-w-[250px] font-medium"
+                        >
+                          {cell.trim().replace(/^["']|["']$/g, '')}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1581,7 +1619,7 @@ export function NativeViewer({
           font-family: "Google Sans", "Product Sans", "Inter", sans-serif !important;
         }
       `}</style>
-      {!isDocFile && !isImageFile && !isVideoFile && onClose && (
+      {!isDocFile && !isImageFile && !isVideoFile && !isGoogleSlide && !isSlide && onClose && (
         <button 
           onClick={onClose} 
           className="absolute top-3.5 right-4 z-50 hover:bg-gray-100 p-1.5 rounded-full transition duration-200 cursor-pointer text-gray-400 hover:text-gray-600 bg-white shadow-sm border border-gray-150 animate-fade-in"

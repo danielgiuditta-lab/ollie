@@ -122,8 +122,18 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
   }
 
   const sections = bodyText.split(/(?=\n## )|(?=^## )|\n---/g).filter(s => s.trim().length > 0);
-  const quoteMatch = bodyText.match(/^>\s+(.+)$/m);
-  const hasHeroStat = Boolean(quoteMatch);
+  // Layout 0: Standalone Big Title Cover Slide Layout (if no sub-sections or body text)
+  if (titleBlock && sections.length === 0) {
+    return (
+      <div className="w-full h-full min-h-[220px] flex flex-col items-center justify-center text-center p-6 select-text font-sans">
+        <h1 className={`text-[32px] sm:text-[44px] font-extrabold tracking-tight leading-[1.15] max-w-2xl ${
+          isDark ? 'text-white' : 'text-slate-900'
+        }`}>
+          {titleBlock.replace(/^#\s+/, '')}
+        </h1>
+      </div>
+    );
+  }
 
   // Layout 1: Hero Stat Layout (Header + Metric Banner Card + Key Takeaways)
   if (hasHeroStat) {
@@ -133,7 +143,7 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
     return (
       <div className="flex flex-col gap-3 font-sans w-full select-text">
         {titleBlock && (
-          <h2 className={`text-[19px] sm:text-[22px] font-extrabold tracking-tight mb-1 leading-tight ${
+          <h2 className={`text-[26px] sm:text-[34px] font-extrabold tracking-tight mb-2 sm:mb-3 leading-tight ${
             isDark ? 'text-white' : 'text-slate-900'
           }`}>
             {titleBlock.replace(/^#\s+/, '')}
@@ -199,7 +209,7 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
     return (
       <div className="flex flex-col gap-3 font-sans w-full select-text">
         {titleBlock && (
-          <h2 className={`text-[19px] sm:text-[22px] font-extrabold tracking-tight mb-1 leading-tight ${
+          <h2 className={`text-[26px] sm:text-[34px] font-extrabold tracking-tight mb-2 sm:mb-3 leading-tight ${
             isDark ? 'text-white' : 'text-slate-900'
           }`}>
             {titleBlock.replace(/^#\s+/, '')}
@@ -248,7 +258,7 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
     return (
       <div className="flex flex-col gap-3 font-sans w-full select-text">
         {titleBlock && (
-          <h2 className={`text-[19px] sm:text-[22px] font-extrabold tracking-tight mb-1 leading-tight ${
+          <h2 className={`text-[26px] sm:text-[34px] font-extrabold tracking-tight mb-2 sm:mb-3 leading-tight ${
             isDark ? 'text-white' : 'text-slate-900'
           }`}>
             {titleBlock.replace(/^#\s+/, '')}
