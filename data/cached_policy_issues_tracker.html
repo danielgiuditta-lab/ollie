@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Policy Issues Tracker</title>
+  <!-- Google Sans & Google Sans Text Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Google Sans"', '"Google Sans Text"', 'sans-serif'],
+            body: ['"Google Sans Text"', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    :root {
+      --gemini-rail-icon-gap: 0px;
+      --gemini-side-panel-padding-left: 16px;
+      --gemini-side-panel-padding-right: 16px;
+      --gemini-header-padding-left: 10px;
+      --gemini-header-padding-right: 12px;
+      --gemini-header-elements-gap: 8px;
+    }
+    body {
+      font-family: "Google Sans Text", sans-serif;
+      background-color: #ffffff;
+      color: #1f1f1f;
+    }
+    h1, h2, h3, h4, h5, h6, button {
+      font-family: "Google Sans", sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-white p-6 text-[#1f1f1f]">
+
+<div class="max-w-7xl mx-auto space-y-6">
+
+  <!-- Header Banner & Stats -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#e2e8f0]">
+    <div>
+      <div class="flex items-center space-x-2">
+        <h1 class="text-xl font-bold text-[#1f1f1f] tracking-tight">Cross-Client Policy Issues & Escalation Tracker</h1>
+        <span class="px-2.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#0b57d0] text-xs font-semibold">Active Monitoring</span>
+      </div>
+      <p class="text-xs text-[#5f6368] mt-1">Centralized governance for Trust & Safety policy violations, LLM jailbreaks, and content moderation SLAs across advisory platforms.</p>
+    </div>
+
+    <button onclick="startCreateNewIssue()" class="px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition duration-150 flex items-center space-x-1.5 shadow-sm cursor-pointer self-start md:self-auto">
+      <span class="text-base font-semibold">+</span>
+      <span>Log Policy Escalation</span>
+    </button>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-1">
+      <div class="text-xs text-[#5f6368] font-medium">Active Policy Escalations</div>
+      <div id="metric-active-count" class="text-2xl font-bold text-[#1f1f1f]">5 Issues</div>
+      <div class="text-[11px] text-[#5f6368]">Logged across client accounts</div>
+    </div>
+    <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-1">
+      <div class="text-xs text-[#5f6368] font-medium">Critical Safety Risk</div>
+      <div id="metric-critical-count" class="text-2xl font-bold text-red-600">1 Critical</div>
+      <div class="text-[11px] text-red-600 font-medium">Immediate SLA remediation required</div>
+    </div>
+    <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-1">
+      <div class="text-xs text-[#5f6368] font-medium">Resolution SLA Compliance</div>
+      <div class="text-2xl font-bold text-[#0b57d0]">96.4%</div>
+      <div class="text-[11px] text-[#0b57d0] font-medium">< 48 hr mitigation target</div>
+    </div>
+    <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-1">
+      <div class="text-xs text-[#5f6368] font-medium">Monitored Startup Clients</div>
+      <div id="metric-clients-count" class="text-2xl font-bold text-[#1f1f1f]">3 Clients</div>
+      <div class="text-[11px] text-[#5f6368]">Aegis AI, Veritas Social, Nexus Pay</div>
+    </div>
+  </div>
+
+  <!-- Split View Panel Layout -->
+  <div class="flex flex-col lg:flex-row border border-[#e2e8f0] rounded-xl overflow-hidden min-h-[520px] bg-white">
+
+    <!-- Left Master List View -->
+    <div class="w-full lg:w-[420px] flex flex-col border-r border-[#e2e8f0] bg-white">
+      <!-- Search & Controls Toolbar -->
+      <div class="p-4 border-b border-[#e2e8f0] space-y-3 bg-[#f8fafc]">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[#5f6368] uppercase tracking-wider">Policy Issue Directory</span>
+          <span id="issues-counter" class="text-[11px] text-[#5f6368] font-medium">5 total</span>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative">
+          <input type="text" id="search-input" oninput="renderIssuesList()" placeholder="Search client, description, or ID..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-white rounded-lg border border-[#e2e8f0] focus:border-[#0b57d0] outline-none transition">
+          <svg class="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#5f6368]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+
+        <!-- Filter Selects -->
+        <div class="grid grid-cols-3 gap-2">
+          <select id="filter-client" onchange="renderIssuesList()" class="bg-white border border-[#e2e8f0] rounded-lg px-2 py-1 text-[11px] text-[#1f1f1f] outline-none focus:border-[#0b57d0]">
+            <option value="">All Clients</option>
+          </select>
+          <select id="filter-severity" onchange="renderIssuesList()" class="bg-white border border-[#e2e8f0] rounded-lg px-2 py-1 text-[11px] text-[#1f1f1f] outline-none focus:border-[#0b57d0]">
+            <option value="">All Severity</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select id="filter-status" onchange="renderIssuesList()" class="bg-white border border-[#e2e8f0] rounded-lg px-2 py-1 text-[11px] text-[#1f1f1f] outline-none focus:border-[#0b57d0]">
+            <option value="">All Statuses</option>
+            <option value="Open">Open</option>
+            <option value="Investigating">Investigating</option>
+            <option value="Mitigation">Mitigation</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Scrollable Issues Directory -->
+      <div id="issues-list" class="flex-1 overflow-y-auto divide-y divide-[#e2e8f0] no-scrollbar max-h-[580px]">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Right Details / Editor Pane -->
+    <div id="details-pane" class="flex-1 flex flex-col bg-white">
+      <!-- Rendered via JavaScript -->
+    </div>
+  </div>
+</div>
+
+<script>
+  // Workspace T&S Leads Metadata
+  const teamMembers = [
+    { name: "Elena Vance", email: "elena_vance@example.com", initials: "EV", color: "#e8f0fe", textColor: "#0b57d0" },
+    { name: "David Ross", email: "david_ross@example.com", initials: "DR", color: "#fce8e6", textColor: "#c5221f" },
+    { name: "Priya Patel", email: "priya_patel@example.com", initials: "PP", color: "#e6f4ea", textColor: "#137333" },
+    { name: "Dr. Marcus Thorne", email: "dr_marcus_thorne@example.com", initials: "MT", color: "#feefc3", textColor: "#b06000" }
+  ];
+
+  // Default Mock Issues Dataset
+  const defaultIssues = [
+    {
+      id: "ISSUE-101",
+      client: "Aegis AI",
+      description: "LLM Jailbreak Escape: Zero-day prompt injection bypass on customer support chatbot returning prohibited toxicity responses.",
+      source: "policy_issue_triage_framework.gdoc",
+      severity: "High",
+      status: "Mitigation",
+      ownerEmail: "elena_vance@example.com",
+      resolution: "Implemented initial system-level guardrails. Currently running adversarial test suites against retrained prompt boundaries.",
+      dateReported: "2026-07-14"
+    },
+    {
+      id: "ISSUE-102",
+      client: "Veritas Social",
+      description: "Harassment Classifier Bypass: Custom Unicode homoglyph characters allow evasion of primary toxic intent moderation model.",
+      source: "cross_client_policy_issues_matrix.csv",
+      severity: "Medium",
+      status: "Resolved",
+      ownerEmail: "priya_patel@example.com",
+      resolution: "Retrained neural classifier on Unicode homoglyph datasets. Deployed model patch v2.1 to production moderation pipeline.",
+      dateReported: "2026-07-15"
+    },
+    {
+      id: "ISSUE-103",
+      client: "Nexus Pay",
+      description: "Credential Stuffing ATO Spike: Automated credential stuffing attacks targeting consumer digital wallet authentication endpoints.",
+      source: "client_policy_issues_tracker.doc",
+      severity: "High",
+      status: "Investigating",
+      ownerEmail: "david_ross@example.com",
+      resolution: "Evaluating adaptive rate-limiting rules, blocking malicious ASN ranges, and enforcing step-up MFA challenge flows.",
+      dateReported: "2026-07-12"
+    },
+    {
+      id: "ISSUE-104",
+      client: "Veritas Social",
+      description: "PhotoDNA Hash Sync Discrepancy: PhotoDNA backend queue integration failing during peak upload traffic spikes.",
+      source: "client_policy_issues_deck.gslides",
+      severity: "Critical",
+      status: "Resolved",
+      ownerEmail: "dr_marcus_thorne@example.com",
+      resolution: "Identified and patched thread deadlock in core queue handler. Automated recovery and secondary fallback channels are active.",
+      dateReported: "2026-07-13"
+    },
+    {
+      id: "ISSUE-105",
+      client: "Aegis AI",
+      description: "EU DSA Transparency Audit Gaps: Audit discrepancy report highlighting transparency reporting gaps for regional safety statistics.",
+      source: "cross_client_policy_issues_matrix.csv",
+      severity: "Medium",
+      status: "Open",
+      ownerEmail: "priya_patel@example.com",
+      resolution: "Formulating standardized automated DSA data export schemas for compliance submission.",
+      dateReported: "2026-07-10"
+    }
+  ];
+
+  let issues = [];
+  let selectedIssueId = null;
+
+  const envId = window.__sandboxEnvId;
+  const syncKey = "client_policy_issues_state_v1";
+
+  function escapeHTML(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function getMemberByEmail(email) {
+    return teamMembers.find(m => m.email === email) || {
+      name: email || "Unassigned",
+      email: email,
+      initials: email ? email.substring(0, 2).toUpperCase() : "?",
+      color: "#f1f3f4",
+      textColor: "#5f6368"
+    };
+  }
+
+  function isUserEditing() {
+    const active = document.activeElement;
+    if (!active) return false;
+    return active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT";
+  }
+
+  async function loadState() {
+    if (envId) {
+      try {
+        const res = await fetch(`/api/sync/${envId}/${syncKey}`);
+        const json = await res.json();
+        if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+          applyNewIssuesData(json.data);
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to fetch synced state:", err);
+      }
+    }
+    
+    const local = localStorage.getItem(syncKey);
+    if (local) {
+      try {
+        applyNewIssuesData(JSON.parse(local));
+      } catch (e) {
+        applyNewIssuesData(defaultIssues);
+      }
+    } else {
+      applyNewIssuesData(defaultIssues);
+    }
+  }
+
+  function applyNewIssuesData(data) {
+    const stringifiedNew = JSON.stringify(data);
+    const stringifiedCurrent = JSON.stringify(issues);
+    
+    if (stringifiedNew !== stringifiedCurrent) {
+      issues = data;
+      updateClientFiltersDropdown();
+      updateMetrics();
+      renderIssuesList();
+      
+      if (selectedIssueId && !isUserEditing()) {
+        renderDetailsPane();
+      }
+    }
+  }
+
+  async function saveState() {
+    localStorage.setItem(syncKey, JSON.stringify(issues));
+    updateClientFiltersDropdown();
+    updateMetrics();
+    
+    if (envId) {
+      try {
+        await fetch(`/api/sync/${envId}/${syncKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: issues })
+        });
+      } catch (err) {
+        console.error("Failed to save synced state:", err);
+      }
+    }
+  }
+
+  function updateMetrics() {
+    const activeElem = document.getElementById("metric-active-count");
+    const criticalElem = document.getElementById("metric-critical-count");
+    const clientsElem = document.getElementById("metric-clients-count");
+    const counterElem = document.getElementById("issues-counter");
+
+    if (activeElem) activeElem.textContent = `${issues.length} Issues`;
+    if (counterElem) counterElem.textContent = `${issues.length} total`;
+    
+    const criticalCount = issues.filter(i => i.severity === 'Critical').length;
+    if (criticalElem) criticalElem.textContent = `${criticalCount} Critical`;
+
+    const uniqueClients = [...new Set(issues.map(i => i.client))].filter(Boolean);
+    if (clientsElem) clientsElem.textContent = `${uniqueClients.length} Clients`;
+  }
+
+  function updateClientFiltersDropdown() {
+    const clientSelect = document.getElementById("filter-client");
+    if (!clientSelect) return;
+    const currentVal = clientSelect.value;
+    
+    const clients = [...new Set(issues.map(item => item.client))].filter(Boolean).sort();
+    
+    let html = `<option value="">All Clients</option>`;
+    clients.forEach(c => {
+      html += `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`;
+    });
+    clientSelect.innerHTML = html;
+    clientSelect.value = currentVal;
+  }
+
+  function renderIssuesList() {
+    const container = document.getElementById("issues-list");
+    if (!container) return;
+
+    const searchVal = document.getElementById("search-input").value.toLowerCase();
+    const filterSev = document.getElementById("filter-severity").value;
+    const filterStat = document.getElementById("filter-status").value;
+    const filterClient = document.getElementById("filter-client").value;
+
+    let filtered = issues.filter(issue => {
+      const matchSearch = issue.client.toLowerCase().includes(searchVal) || 
+                          issue.description.toLowerCase().includes(searchVal) ||
+                          issue.id.toLowerCase().includes(searchVal) ||
+                          (issue.source && issue.source.toLowerCase().includes(searchVal));
+      const matchSev = !filterSev || issue.severity === filterSev;
+      const matchStat = !filterStat || issue.status === filterStat;
+      const matchClient = !filterClient || issue.client === filterClient;
+      
+      return matchSearch && matchSev && matchStat && matchClient;
+    });
+
+    filtered.sort((a, b) => b.id.localeCompare(a.id));
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="p-8 text-center text-[#5f6368] text-xs space-y-1">
+          <p class="font-medium text-[#1f1f1f]">No matching policy issues</p>
+          <p>Try adjusting your search filters or clear the selection.</p>
+        </div>
+      `;
+      return;
+    }
+
+    let html = "";
+    filtered.forEach(issue => {
+      const member = getMemberByEmail(issue.ownerEmail);
+      const isActive = selectedIssueId === issue.id;
+      
+      const activeClass = isActive 
+        ? 'bg-[#e8f0fe] border-l-[3px] border-l-[#0b57d0]' 
+        : 'hover:bg-[#f8fafc] border-l-[3px] border-l-transparent';
+      
+      let severityBadge = "bg-[#f1f3f4] text-[#5f6368]";
+      if (issue.severity === "Critical") severityBadge = "bg-red-50 text-red-700 font-semibold border border-red-200";
+      else if (issue.severity === "High") severityBadge = "bg-orange-50 text-orange-700 font-medium border border-orange-200";
+      else if (issue.severity === "Medium") severityBadge = "bg-blue-50 text-blue-700 font-medium border border-blue-200";
+
+      let statusBadge = "bg-[#f1f3f4] text-[#5f6368]";
+      if (issue.status === "Resolved") statusBadge = "bg-emerald-50 text-emerald-700 font-medium";
+      else if (issue.status === "Mitigation") statusBadge = "bg-purple-50 text-purple-700 font-medium";
+      else if (issue.status === "Investigating") statusBadge = "bg-amber-50 text-amber-700 font-medium";
+
+      html += `
+        <div onclick="selectIssue('${issue.id}')" class="p-4 cursor-pointer transition-colors ${activeClass} flex flex-col space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono font-semibold text-[#5f6368] tracking-wider">${issue.id}</span>
+            <span class="text-[10px] text-[#5f6368]">${issue.dateReported}</span>
+          </div>
+          <div class="text-xs font-semibold text-[#1f1f1f] flex items-center justify-between">
+            <span>${escapeHTML(issue.client)}</span>
+            <span class="text-[10px] px-2 py-0.5 rounded ${severityBadge}">${issue.severity}</span>
+          </div>
+          <p class="text-xs text-[#444746] line-clamp-2 leading-relaxed">${escapeHTML(issue.description)}</p>
+          
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-[10px] px-2 py-0.5 rounded ${statusBadge}">${issue.status}</span>
+            
+            <div class="flex items-center space-x-1.5" title="Lead: ${escapeHTML(member.name)}">
+              <span class="text-[10px] text-[#5f6368] truncate max-w-[90px]">${escapeHTML(member.name)}</span>
+              <div class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style="background-color: ${member.color}; color: ${member.textColor};">
+                ${member.initials}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  function selectIssue(id) {
+    selectedIssueId = id;
+    renderIssuesList();
+    renderDetailsPane();
+  }
+
+  function startCreateNewIssue() {
+    selectedIssueId = "NEW";
+    renderIssuesList();
+    renderDetailsPane();
+  }
+
+  function cancelEdit() {
+    selectedIssueId = null;
+    renderIssuesList();
+    renderDetailsPane();
+  }
+
+  function renderDetailsPane() {
+    const pane = document.getElementById("details-pane");
+    if (!pane) return;
+
+    if (!selectedIssueId) {
+      pane.innerHTML = `
+        <div class="flex-1 flex flex-col items-center justify-center p-8 text-center h-full select-none">
+          <div class="w-12 h-12 rounded-full bg-[#f0f4f9] flex items-center justify-center text-[#0b57d0] mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <p class="text-sm font-semibold text-[#1f1f1f]">Select a Policy Issue</p>
+          <p class="text-xs text-[#5f6368] mt-1 max-w-sm">Choose an escalation log from the directory list on the left to review triage details, assign safety owners, or update remediation status.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const isNew = selectedIssueId === "NEW";
+    let issue = null;
+
+    if (isNew) {
+      const today = new Date().toISOString().split('T')[0];
+      issue = {
+        id: "",
+        client: "",
+        description: "",
+        source: "",
+        severity: "High",
+        status: "Open",
+        ownerEmail: "elena_vance@example.com",
+        resolution: "",
+        dateReported: today
+      };
+    } else {
+      issue = issues.find(i => i.id === selectedIssueId);
+      if (!issue) {
+        pane.innerHTML = `
+          <div class="p-8 text-center text-red-600 text-xs font-medium">
+            Error: Selected issue log could not be located or was removed.
+          </div>
+        `;
+        return;
+      }
+    }
+
+    pane.innerHTML = `
+      <div class="p-6 max-w-2xl w-full mx-auto space-y-5">
+        
+        <div class="flex items-center justify-between border-b border-[#e2e8f0] pb-3">
+          <div>
+            <span class="text-[10px] text-[#5f6368] font-mono tracking-wider font-semibold uppercase">
+              ${isNew ? 'New Entry' : `Issue Identifier: ${issue.id}`}
+            </span>
+            <h2 class="text-base font-semibold text-[#1f1f1f] mt-0.5">
+              ${isNew ? 'Log Policy Escalation Issue' : `Edit Triage Log — ${escapeHTML(issue.client)}`}
+            </h2>
+          </div>
+          
+          <button onclick="cancelEdit()" class="text-[#5f6368] hover:text-[#1f1f1f] p-1 rounded-md hover:bg-[#f0f4f9]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <form id="issue-form" class="space-y-4" onsubmit="handleFormSubmit(event)">
+          <input type="hidden" id="form-issue-id" value="${issue.id}">
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col space-y-1">
+              <label for="form-client" class="text-xs font-medium text-[#5f6368]">Client Platform <span class="text-red-500">*</span></label>
+              <input type="text" id="form-client" required class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none" value="${escapeHTML(issue.client)}" placeholder="e.g. Aegis AI">
+            </div>
+
+            <div class="flex flex-col space-y-1">
+              <label for="form-source" class="text-xs font-medium text-[#5f6368]">Source Specification / Doc</label>
+              <input type="text" id="form-source" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none" value="${escapeHTML(issue.source || '')}" placeholder="e.g. policy_issue_triage_framework.gdoc">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="flex flex-col space-y-1">
+              <label for="form-severity" class="text-xs font-medium text-[#5f6368]">Severity Risk</label>
+              <select id="form-severity" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs bg-white focus:border-[#0b57d0] outline-none">
+                <option value="Critical" ${issue.severity === 'Critical' ? 'selected' : ''}>Critical</option>
+                <option value="High" ${issue.severity === 'High' ? 'selected' : ''}>High</option>
+                <option value="Medium" ${issue.severity === 'Medium' ? 'selected' : ''}>Medium</option>
+                <option value="Low" ${issue.severity === 'Low' ? 'selected' : ''}>Low</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col space-y-1">
+              <label for="form-status" class="text-xs font-medium text-[#5f6368]">Triage Status</label>
+              <select id="form-status" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs bg-white focus:border-[#0b57d0] outline-none">
+                <option value="Open" ${issue.status === 'Open' ? 'selected' : ''}>Open</option>
+                <option value="Investigating" ${issue.status === 'Investigating' ? 'selected' : ''}>Investigating</option>
+                <option value="Mitigation" ${issue.status === 'Mitigation' ? 'selected' : ''}>Mitigation</option>
+                <option value="Resolved" ${issue.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col space-y-1">
+              <label for="form-owner" class="text-xs font-medium text-[#5f6368]">Assigned T&S Lead</label>
+              <select id="form-owner" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs bg-white focus:border-[#0b57d0] outline-none">
+                ${teamMembers.map(m => `<option value="${m.email}" ${issue.ownerEmail === m.email ? 'selected' : ''}>${m.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="flex flex-col space-y-1 w-full md:w-1/2">
+            <label for="form-date" class="text-xs font-medium text-[#5f6368]">Date Logged</label>
+            <input type="date" id="form-date" required class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none" value="${issue.dateReported}">
+          </div>
+
+          <div class="flex flex-col space-y-1">
+            <label for="form-description" class="text-xs font-medium text-[#5f6368]">Issue Summary & Vulnerability Context <span class="text-red-500">*</span></label>
+            <textarea id="form-description" rows="3" required class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none resize-none" placeholder="Describe prompt injections, moderation bypasses, or policy escalations...">${escapeHTML(issue.description)}</textarea>
+          </div>
+
+          <div class="flex flex-col space-y-1">
+            <label for="form-resolution" class="text-xs font-medium text-[#5f6368]">Mitigation Actions & Resolution Strategy</label>
+            <textarea id="form-resolution" rows="3" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none resize-none" placeholder="Detail model patch deployments, system guardrails, or policy revisions...">${escapeHTML(issue.resolution || '')}</textarea>
+          </div>
+
+          <div class="flex items-center justify-between pt-4 border-t border-[#e2e8f0]">
+            <div>
+              ${!isNew ? `
+                <button type="button" onclick="deleteIssue('${issue.id}')" class="text-red-600 hover:text-red-800 text-xs font-medium flex items-center space-x-1 transition cursor-pointer">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                  <span>Delete Log</span>
+                </button>
+              ` : '<div></div>'}
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <button type="button" onclick="cancelEdit()" class="border border-[#e2e8f0] hover:bg-[#f8fafc] text-[#1f1f1f] px-3.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer">
+                Cancel
+              </button>
+              <button type="submit" class="bg-[#0b57d0] hover:bg-[#0842a0] text-white px-4 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer shadow-sm">
+                ${isNew ? 'Create Issue Log' : 'Save Escalation'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    `;
+  }
+
+  async function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    const idVal = document.getElementById("form-issue-id").value;
+    const clientVal = document.getElementById("form-client").value.trim();
+    const sourceVal = document.getElementById("form-source").value.trim();
+    const severityVal = document.getElementById("form-severity").value;
+    const statusVal = document.getElementById("form-status").value;
+    const ownerEmailVal = document.getElementById("form-owner").value;
+    const dateVal = document.getElementById("form-date").value;
+    const descriptionVal = document.getElementById("form-description").value.trim();
+    const resolutionVal = document.getElementById("form-resolution").value.trim();
+
+    if (selectedIssueId === "NEW") {
+      let maxNum = 100;
+      issues.forEach(i => {
+        const match = i.id.match(/^ISSUE-(\d+)$/);
+        if (match) {
+          const num = parseInt(match[1]);
+          if (num > maxNum) maxNum = num;
+        }
+      });
+      const nextId = `ISSUE-${maxNum + 1}`;
+
+      const newIssue = {
+        id: nextId,
+        client: clientVal,
+        source: sourceVal,
+        severity: severityVal,
+        status: statusVal,
+        ownerEmail: ownerEmailVal,
+        dateReported: dateVal,
+        description: descriptionVal,
+        resolution: resolutionVal
+      };
+
+      issues.push(newIssue);
+      selectedIssueId = nextId;
+    } else {
+      const idx = issues.findIndex(i => i.id === idVal);
+      if (idx !== -1) {
+        issues[idx].client = clientVal;
+        issues[idx].source = sourceVal;
+        issues[idx].severity = severityVal;
+        issues[idx].status = statusVal;
+        issues[idx].ownerEmail = ownerEmailVal;
+        issues[idx].dateReported = dateVal;
+        issues[idx].description = descriptionVal;
+        issues[idx].resolution = resolutionVal;
+      }
+    }
+
+    await saveState();
+    renderIssuesList();
+    renderDetailsPane();
+  }
+
+  async function deleteIssue(id) {
+    if (!confirm(`Are you sure you want to delete policy issue ${id}?`)) {
+      return;
+    }
+
+    issues = issues.filter(i => i.id !== id);
+    selectedIssueId = null;
+    
+    await saveState();
+    renderIssuesList();
+    renderDetailsPane();
+  }
+
+  async function init() {
+    await loadState();
+    if (envId) {
+      setInterval(loadState, 2000);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

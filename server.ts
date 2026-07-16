@@ -2147,6 +2147,44 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
       }
 
       const lowerPrompt = prompt.toLowerCase();
+      const isPolicyRequest = lowerPrompt.includes('policy') && 
+                                (lowerPrompt.includes('organize') || lowerPrompt.includes('track') || lowerPrompt.includes('client') || lowerPrompt.includes('issue') || lowerPrompt.includes('build') || lowerPrompt.includes('tool'));
+
+      if (isPolicyRequest) {
+        const cachedPath = path.join(process.cwd(), "data", "cached_policy_issues_tracker.html");
+        if (fs.existsSync(cachedPath)) {
+          console.log("[Server /api/vibe-code] Intercepted Policy Issues prompt. Fast streaming pre-cached Policy Issues Tracker HTML tool!");
+          const htmlContent = fs.readFileSync(cachedPath, "utf-8");
+          const streamText = `I'll create an interactive Cross-Client Policy Issues & Escalation Tracker tailored to your Policy Issues space to centralize intake logs, monitor critical vulnerabilities, and assign triage leads across advisory platforms.\n\n\`\`\`html\n<!-- index.html -->\n${htmlContent}\n\`\`\`\n\nYour Policy Issues & Escalation Tracker is ready! You can filter escalations by client, severity level, or status, log new policy issues, and update resolution steps in real time.`;
+
+          const chunkSize = 600;
+          for (let i = 0; i < streamText.length; i += chunkSize) {
+            if (res.writableEnded || res.destroyed) break;
+            const chunk = streamText.substring(i, i + chunkSize);
+            res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+            await new Promise(r => setTimeout(r, 25));
+          }
+
+          const completionEvent = {
+            event_type: "interaction.completed",
+            interaction: {
+              environment_id: "remote",
+              steps: [
+                {
+                  text: streamText
+                }
+              ]
+            }
+          };
+          res.write(`data: ${JSON.stringify(completionEvent)}\n\n`);
+
+          if (!res.writableEnded && !res.destroyed) {
+            res.end();
+          }
+          return;
+        }
+      }
+
       const isH2Request = (lowerPrompt.includes('h2') || lowerPrompt.includes('patient')) && 
                           (lowerPrompt.includes('track') || lowerPrompt.includes('plan') || lowerPrompt.includes('kanban') || lowerPrompt.includes('work') || lowerPrompt.includes('project') || lowerPrompt.includes('build'));
 
