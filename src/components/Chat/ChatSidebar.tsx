@@ -378,6 +378,20 @@ export function ChatSidebar({
                     if (msg.role === 'user') {
                       return <UserMessage key={index} text={msg.text} theme={theme} isGroupChat={isGroupChat} />;
                     }
+                    const isProactive = Boolean(
+                      msg.isProactiveReview ||
+                      (activeChatId && typeof activeChatId === 'string' && (activeChatId.includes('-proactive-') || activeChatId.endsWith('-inferred') || activeChatId.includes('-task-'))) ||
+                      (selectedFile && (selectedFile.isInferredTask || selectedFile.isProactiveDraft || selectedFile.isProactive)) ||
+                      (currentTask && (currentTask === 'inferred' || currentTask === 'tracking'))
+                    );
+
+                    const resolvedProactiveTask = msg.proactiveTask || (selectedFile?.task ? selectedFile.task : (selectedFile?.isInferredTask || selectedFile?.isProactiveDraft || selectedFile?.isProactive ? selectedFile : {
+                      title: selectedFile?.title || selectedFile?.name || spaceName || 'Proactive Task',
+                      sourceName: selectedFile?.name || spaceName || 'Google Workspace',
+                      description: selectedFile?.summaryOfChanges || selectedFile?.description || msg.text || 'Prepared proactive agent draft.',
+                      status: 'working'
+                    }));
+
                     return (
                       <BotMessage 
                         key={index} 
@@ -404,8 +418,8 @@ export function ChatSidebar({
                         targetSpaceName={msg.targetSpaceName}
                         onFinalizeSpace={onFinalizeSpace}
                         onSelectSpacePeople={onSelectSpacePeople}
-                        isProactiveReview={msg.isProactiveReview}
-                        proactiveTask={msg.proactiveTask}
+                        isProactiveReview={isProactive}
+                        proactiveTask={isProactive ? resolvedProactiveTask : undefined}
                         onApproveProactive={msg.onApproveProactive || onApproveProactive}
                         onFeedbackProactive={msg.onFeedbackProactive || onFeedbackProactive}
                         actionPills={msg.actionPills}

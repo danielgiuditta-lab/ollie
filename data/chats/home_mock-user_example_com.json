@@ -1,12 +1,15 @@
 {
+  "chatId": "home_mock-user_example_com",
   "projectName": "Home Dashboard",
   "chatName": null,
   "type": "space",
   "taskType": null,
+  "viewState": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [],
   "envId": null,
+  "activeSpaceId": "home_mock-user_example_com",
   "sandboxUrl": "",
   "sandboxFiles": [],
   "userEmail": "mock-user@example.com",
@@ -17,7 +20,5 @@
     "space-veritas-social",
     "space-nexus-pay"
   ],
-  "updatedAt": "2026-07-16T02:36:43.172Z",
-  "chatId": "home_mock-user_example_com",
-  "activeSpaceId": "home_mock-user_example_com"
+  "updatedAt": "2026-07-16T12:13:41.692Z"
 }

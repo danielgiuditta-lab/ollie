@@ -4,6 +4,7 @@
   "chatName": null,
   "type": "space",
   "taskType": null,
+  "viewState": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [
@@ -49,18 +50,25 @@
       "type": "code",
       "mimeType": "application/vnd.google-apps.presentation",
       "content": "# Presentation: Aegis AI LLM Red Teaming & Guardrails Board Review\n\n> **Executive Synthesis**: Comprehensive evaluation of LLM input/output safety guardrails, zero-day jailbreak mitigations, and performance latency SLAs.\n\n- **Classifier Overhead Target**: < 50ms budget (Achieved: 42ms median latency).\n- **Red Team Corpus**: 1,200+ multi-turn adversarial prompts evaluated with 0 critical escapes.\n- **PII Anonymization**: 100% automated NER stripping for private keys and identity credentials.\n\n---\n\n# Key Architectural Pillars & Milestones\n\n## Guardrail Pipeline Architecture\n- Pre-execution neural classifier filters adversarial prompt injections before LLM tokenization.\n- Parallel NER masking strips sensitive PII tokens prior to web socket streaming.\n\n## Next Horizon: Hallucination Verification\n- Fine-tuning RAG Fact-Check engine to reach > 98% evidence citation accuracy."
+    },
+    {
+      "name": "Project Ollie Executive Summary.doc",
+      "type": "code",
+      "content": "# Project Ollie: Executive Summary\n\nProject Ollie (formerly known as Project Friday or Work by Workspace) is an initiative to build an AI-native multiplayer collaboration surface. It brings together human teams and proactive AI agents as first-class, authenticated teammates within persistent, context-rich Workstreams. \n\nRather than acting as a passive, chat-based assistant, Ollie is a proactive system designed to organize, delegate, and track work at scale. It acts as a central System of Record, coordinating complex technical and cognitive tasks while eliminating tool fragmentation.\n\n## The Core Problem\n\nIn modern software engineering and program management, collaboration is hindered by:\n* **Tool Fragmentation:** Information and context are scattered across Gmail, Chat, Jira, Google Docs, and internal code-review trackers.\n* **Siloed Agent Interaction:** Traditional AI tools operate in private chats. When team members use AI, their progress, intermediate outputs, and context are hidden from the rest of the team.\n* **Hand-Off Friction:** No standard UX patterns exist to pass tasks seamlessly from human to agent, agent to agent, or agent back to human.\n* **Lack of Proactivity:** Existing assistants require continuous human prompting. They do not proactively monitor streams of work, synthesize background context, or execute routine maintenance.\n\n## Project Vision: The Self-Driving Workspace\n\nOllie establishes an environment where humans and agents co-steer projects. Instead of a standard chat window, Ollie provides a multiplayer canvas where agents operate in the background, track project goals, and surfacing actionable insights.\n\nThe platform relies on several foundational primitives:\n\n### Streams\nA stream is a dedicated space (similar to a project or workspace) that maintains persistent context. Humans collaborate in real-time within streams, and agents leverage this shared context to manage and execute specific tasks.\n\n### Tasks\nTasks within Ollie are organized in recursive parent-child hierarchies. They support semantic duplicate detection and automated routing. A task is the unit of work that can be directly delegated to either a human, a personal agent, or a workstream agent.\n\n### Feeds\nThe Feed is a high-level, real-time notification timeline. It replaces passive system logging with interactive notification cards. These cards show task progress, pose questions from agents, and surface morning digests.\n\n### Tiered Memory\nTo ensure secure and contextually appropriate operations, Ollie organizes knowledge into four distinct logical layers:\n* **Private Tier:** Bound to an individual’s credentials; private to the user and their personal agent.\n* **Workstream Tier:** Shared among teammates and agents active in a specific stream.\n* **Team Tier:** Houses cross-workstream organizational context, design standards, and shared practices.\n* **Global Tier:** System-wide baseline facts, development standards, and style guidelines.\n\n## Technical & Agent Architecture\n\nThe underlying system architecture consists of a set of microservices communicating over gRPC, tied to Spanner-backed relational and vector storage cylinders:\n\n* **Task Service:** Manages canonical task states and utilizes vector embeddings to automatically route inbound tasks to the correct workstreams or to merge duplicate entries.\n* **Task Fulfillment Service:** Decouples task declarations from runtime execution. It acts as an orchestrator that evaluates a task’s technical needs and security boundaries to select the correct execution environment.\n* **Sobi Harness (Cognitive Agency):** The runtime actor for reasoning and communication. It executes multi-step workflows using Workspace APIs (Drive, Gmail, Docs, Chat) while adhering to strict Human-in-the-Loop (HITL) policies.\n* **Jetski Harness (Technical Actuation):** Spawns hermetic, containerized sandboxes pre-loaded with internal development tools. It executes code modification, testing, and compilation tasks in secure, temporary workspaces.\n* **Memory Dream Cron:** A background optimization service that consolidates overlapping factual memories using vector clustering, suggests unassigned tasks based on skills, and synthesizes morning digests.\n\n## Human-in-the-Loop (HITL) Governance\n\nTo prevent automated mistakes, Ollie implements a two-stage governance model:\n* **Top-of-Loop Refinement:** Ambiguous or high-impact goals identified by agents must be explicitly reviewed and scoped by a human before background execution begins.\n* **Bottom-of-Loop Sign-off:** High-privilege outputs—such as code diffs, public communication drafts, and team memory updates—require explicit human validation and approval in the Feed before final deployment.\n\n## Evaluation & Strategic Validation\n\nAn immediate key milestone for Project Ollie is an upcoming prototype evaluation with professional business and product leaders (approximately 40 visiting MBA students). This research framework focuses on validating:\n* **Operational Trust:** How users react to inferred tasks versus explicit suggestions.\n* **Co-Steering Mechanics:** The mental models of how teams hand off, approve, and share ownership of agent-led deliverables.\n* **Workspace Positioning:** Defining the threshold of autonomy users are comfortable delegating to a \"self-driving workspace\" across daily coordination and strategic tasks.",
+      "mimeType": "application/vnd.google-apps.document",
+      "createdFromComposer": true,
+      "fontFamily": "Google Sans",
+      "isDocJourney": true,
+      "createdFromSpace": true,
+      "id": "created-artifact-1784211897260"
     }
   ],
   "userEmail": "mock-user@example.com",
-  "members": [
-    "Elena Vance",
-    "Dr. Marcus Thorne",
-    "Sarah Lin"
-  ],
+  "members": [],
   "pinnedArtifactIds": [
     "todo-card",
     "space-aegis-ai-file-0",
     "space-aegis-ai-file-1"
   ],
-  "updatedAt": "2026-07-16T02:36:43.172Z"
+  "updatedAt": "2026-07-16T14:25:21.409Z"
 }

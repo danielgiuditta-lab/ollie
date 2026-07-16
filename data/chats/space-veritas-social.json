@@ -1,9 +1,10 @@
 {
   "chatId": "space-veritas-social",
   "projectName": "Veritas Social",
-  "chatName": null,
+  "chatName": "Veritas Social",
   "type": "space",
-  "taskType": null,
+  "taskType": "space",
+  "viewState": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [
@@ -59,8 +60,7 @@
   ],
   "pinnedArtifactIds": [
     "todo-card",
-    "space-veritas-social-file-0",
-    "space-veritas-social-file-3"
+    "space-veritas-social-file-0"
   ],
-  "updatedAt": "2026-07-16T02:36:43.172Z"
+  "updatedAt": "2026-07-16T14:26:59.015Z"
 }

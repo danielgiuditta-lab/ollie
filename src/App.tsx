@@ -3188,6 +3188,14 @@ export default function App() {
     } : m));
   };
 
+  const handleFeedbackActiveProactiveTask = () => {
+    const composerInput = document.querySelector('textarea[placeholder*="Ask Gemini"], textarea[placeholder*="Ask anything"], textarea') as HTMLTextAreaElement | null;
+    if (composerInput) {
+      composerInput.value = "I'd like to do this differently: ";
+      composerInput.focus();
+    }
+  };
+
   const handleSelectSpacePeople = (name: string, selectedPeople: any[]) => {
     setMessages(prev => [
       ...prev,
@@ -5768,6 +5776,7 @@ export default function App() {
           isGroupChat={isGroupChat}
           spaceName={projectName}
           onApproveProactive={handleApproveActiveProactiveTask}
+          onFeedbackProactive={handleFeedbackActiveProactiveTask}
         />
       )}
 

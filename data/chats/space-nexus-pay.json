@@ -1,9 +1,10 @@
 {
   "chatId": "space-nexus-pay",
   "projectName": "Nexus Pay",
-  "chatName": null,
+  "chatName": "Nexus Pay",
   "type": "space",
-  "taskType": null,
+  "taskType": "space",
+  "viewState": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [
@@ -59,8 +60,7 @@
   ],
   "pinnedArtifactIds": [
     "todo-card",
-    "space-nexus-pay-file-0",
-    "space-nexus-pay-file-3"
+    "space-nexus-pay-file-0"
   ],
-  "updatedAt": "2026-07-16T02:36:43.172Z"
+  "updatedAt": "2026-07-16T14:25:45.891Z"
 }

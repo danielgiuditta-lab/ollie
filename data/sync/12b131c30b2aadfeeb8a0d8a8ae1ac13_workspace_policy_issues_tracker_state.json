@@ -1,0 +1,65 @@
+{
+  "envId": "12b131c30b2aadfeeb8a0d8a8ae1ac13",
+  "key": "workspace_policy_issues_tracker_state",
+  "data": {
+    "bugs": [
+      {
+        "severity": "Low",
+        "title": "LLM Jailbreak Escape",
+        "status": "Mitigation Testing",
+        "client": "Aegis AI",
+        "reportedDate": "2026-07-14",
+        "sourceTool": "Sentry Tracker",
+        "assigneeEmail": "sakura@example.com",
+        "id": "ISSUE-101",
+        "category": "AI Safety"
+      },
+      {
+        "client": "Veritas Social",
+        "status": "Model Retrained",
+        "reportedDate": "2026-07-15",
+        "severity": "Medium",
+        "title": "Harassment Classifier Bypass",
+        "id": "ISSUE-102",
+        "category": "Content Moderation",
+        "sourceTool": "Slack Integration",
+        "assigneeEmail": "malik@example.com"
+      },
+      {
+        "sourceTool": "External Scan",
+        "assigneeEmail": "adam@example.com",
+        "id": "ISSUE-103",
+        "category": "Fraud Ops",
+        "severity": "High",
+        "title": "Credential Stuffing ATO Spike",
+        "status": "Step-Up Auth Enforced",
+        "client": "Nexus Pay",
+        "reportedDate": "2026-07-12"
+      },
+      {
+        "status": "Resolved",
+        "client": "Veritas Social",
+        "reportedDate": "2026-07-13",
+        "severity": "Critical",
+        "title": "CSAM PhotoDNA Hash Sync Discrepancy",
+        "id": "ISSUE-104",
+        "category": "Content Moderation",
+        "assigneeEmail": "sakura@example.com",
+        "sourceTool": "PhotoDNA Sync"
+      },
+      {
+        "title": "EU DSA Transparency Audit Strategy",
+        "severity": "Medium",
+        "reportedDate": "2026-07-10",
+        "client": "Aegis AI",
+        "status": "Drafting Report",
+        "assigneeEmail": "malik@example.com",
+        "sourceTool": "Advisory Form",
+        "category": "Regulatory Compliance",
+        "id": "ISSUE-105"
+      }
+    ],
+    "nextIdNum": 106
+  },
+  "updatedAt": "2026-07-16T12:13:28.032Z"
+}

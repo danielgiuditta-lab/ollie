@@ -227,7 +227,8 @@ export function BotMessage({
     const [localApproved, setLocalApproved] = React.useState(false);
     const isApproved = localApproved || proactiveTask.status === 'done' || proactiveTask.status === 'approved';
     const sourceName = proactiveTask.sourceName || proactiveTask.workspace || 'Google Workspace';
-    const proposalTitle = proactiveTask.titleDone || proactiveTask.title || 'proposed changes';
+    const rawTitle = proactiveTask.titleDone || proactiveTask.title || 'proposed changes';
+    const actionText = /^\s*i\s+/i.test(rawTitle) ? rawTitle : `I did ${rawTitle}`;
     
     const handleApprove = () => {
       setLocalApproved(true);
@@ -237,10 +238,10 @@ export function BotMessage({
     };
 
     const handleFeedback = () => {
-      if (onDoDifferently) {
-        onDoDifferently();
-      } else if (onFeedbackProactive) {
+      if (onFeedbackProactive) {
         onFeedbackProactive();
+      } else if (onDoDifferently) {
+        onDoDifferently();
       } else {
         const composerInput = document.querySelector('textarea[placeholder*="Ask Gemini"], textarea[placeholder*="Ask anything"], textarea') as HTMLTextAreaElement | null;
         if (composerInput) {
@@ -255,7 +256,7 @@ export function BotMessage({
         <div className={`px-1 text-sm sm:text-base leading-relaxed font-normal ${
           isDark ? 'text-[#E3E3E3]' : 'text-slate-700'
         }`} style={{ fontFamily: '"Inter", sans-serif' }}>
-          Based on <strong>{sourceName}</strong> I've done <strong>{proposalTitle}</strong>, let me know what you think.
+          Based on <strong>{sourceName}</strong>, <strong>{actionText}</strong>, let me know what you think.
         </div>
 
         <div className={`flex flex-col border rounded-3xl p-5 w-full shadow-sm ${

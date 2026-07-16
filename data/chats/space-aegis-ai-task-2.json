@@ -15,7 +15,16 @@
     },
     {
       "role": "bot",
-      "text": "Updated `safety_guardrail_policy_spec.md` with 99.2% classifier confidence cutoffs and sub-50ms latency budgets."
+      "text": "Updated `safety_guardrail_policy_spec.md` with 99.2% classifier confidence cutoffs and sub-50ms latency budgets.",
+      "isProactiveReview": true,
+      "proactiveTask": {
+        "id": "space-aegis-ai-task-2",
+        "title": "Refine Toxicity Threshold Specs",
+        "workspace": "Aegis AI",
+        "sourceName": "safety_guardrail_policy_spec.md",
+        "description": "Updated safety_guardrail_policy_spec.md with 99.2% classifier confidence cutoffs and sub-50ms latency budgets.",
+        "status": "working"
+      }
     }
   ],
   "envId": null,

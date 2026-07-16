@@ -15,7 +15,16 @@
     },
     {
       "role": "bot",
-      "text": "The interactive prototype index.html with live prompt injection metrics and harm categorization tables is ready."
+      "text": "The interactive prototype index.html with live prompt injection metrics and harm categorization tables is ready.",
+      "isProactiveReview": true,
+      "proactiveTask": {
+        "id": "space-aegis-ai-task-3",
+        "title": "Build Safety Guardrail Console",
+        "workspace": "Aegis AI",
+        "sourceName": "index.html",
+        "description": "Built interactive prototype index.html with live prompt injection metrics and harm categorization tables.",
+        "status": "working"
+      }
     }
   ],
   "envId": null,

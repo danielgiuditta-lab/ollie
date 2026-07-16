@@ -1,8 +1,8 @@
 [
   {
     "id": "todo-1",
-    "title": "You have a presentation to give on safety policy to Aegis AI. I started the outline for you",
-    "titleDone": "You have a presentation to give on safety policy to Aegis AI. I started the outline for you",
+    "title": "I started an outline for the slideshow you are scheduled to present in a few days",
+    "titleDone": "I started an outline for the slideshow you are scheduled to present in a few days",
     "description": "Based on emails with Aegis AI.",
     "descriptionDone": "Based on emails with Aegis AI.",
     "workspace": "Aegis AI",

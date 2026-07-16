@@ -15,7 +15,16 @@
     },
     {
       "role": "bot",
-      "text": "I have compiled the jailbreak prevention metrics and latency overhead benchmarks from `ai_red_teaming_audit_summary.doc` ready for Slide 4."
+      "text": "I have compiled the jailbreak prevention metrics and latency overhead benchmarks from `ai_red_teaming_audit_summary.doc` ready for Slide 4.",
+      "isProactiveReview": true,
+      "proactiveTask": {
+        "id": "space-aegis-ai-task-1",
+        "title": "Update Red Teaming Slide Quotes",
+        "workspace": "Aegis AI",
+        "sourceName": "aegis_ai_safety_deck.gslides",
+        "description": "I updated Red Teaming Slide Quotes in aegis_ai_safety_deck.gslides based on safety audit findings.",
+        "status": "working"
+      }
     }
   ],
   "envId": null,

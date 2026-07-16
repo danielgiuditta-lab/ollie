@@ -1,0 +1,55 @@
+{
+  "envId": "c6ed64ffb383ef3149fb80253b5df753",
+  "key": "workspace_bug_tracker_state",
+  "data": {
+    "bugs": [
+      {
+        "id": "ISSUE-101",
+        "client": "Aegis AI",
+        "title": "LLM Jailbreak Escape",
+        "reportedDate": "2026-07-14",
+        "severity": "High",
+        "assigneeEmail": "elena_vance@example.com",
+        "status": "Mitigation Testing"
+      },
+      {
+        "id": "ISSUE-102",
+        "client": "Veritas Social",
+        "title": "Harassment Classifier Bypass",
+        "reportedDate": "2026-07-15",
+        "severity": "Medium",
+        "assigneeEmail": "priya_patel@example.com",
+        "status": "Model Retrained"
+      },
+      {
+        "id": "ISSUE-103",
+        "client": "Nexus Pay",
+        "title": "Credential Stuffing ATO Spike",
+        "reportedDate": "2026-07-12",
+        "severity": "High",
+        "assigneeEmail": "rachel_chang@example.com",
+        "status": "Step-Up Auth Enforced"
+      },
+      {
+        "id": "ISSUE-104",
+        "client": "Veritas Social",
+        "title": "CSAM PhotoDNA Hash Sync Discrepancy",
+        "reportedDate": "2026-07-13",
+        "severity": "Critical",
+        "assigneeEmail": "david_ross@example.com",
+        "status": "Resolved"
+      },
+      {
+        "id": "ISSUE-105",
+        "client": "Aegis AI",
+        "title": "EU DSA Transparency Audit Strategy",
+        "reportedDate": "2026-07-10",
+        "severity": "Medium",
+        "assigneeEmail": "dr_marcus_thorne@example.com",
+        "status": "Drafting Report"
+      }
+    ],
+    "nextIdNum": 106
+  },
+  "updatedAt": "2026-07-16T12:01:59.098Z"
+}
