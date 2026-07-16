@@ -2,8 +2,8 @@ import fetch from 'node-fetch';
 
 const BASE_URL = 'http://localhost:3000';
 
-async function verifyTrustSafetyMockData() {
-  console.log("🚀 Verifying Trust & Safety Freelance Consultant Mock Data & DB Separation...\n");
+async function verifyPolicyExpertMockData() {
+  console.log("🚀 Verifying Policy Expert & Op-Ed Columnist Mock Data & DB Separation...\n");
 
   const mockEmail = 'mock-user@example.com';
   const oauthEmail = 'danielgiuditta@google.com';
@@ -38,7 +38,7 @@ async function verifyTrustSafetyMockData() {
     c.associatedFileName.includes('.gslides')
   );
 
-  console.log(`\n2️⃣ Verifying Deck Update Inferred Tasks...`);
+  console.log(`\n2️⃣ Verifying Keynote & Briefing Slide Deck Inferred Tasks...`);
   console.log(`   Found ${deckTasks.length} inferred slide deck update task(s):`);
   deckTasks.forEach(t => {
     console.log(`   - 📌 [${t.chatName}] -> Deck: ${t.associatedFileName} (Space: ${t.activeSpaceId})`);
@@ -56,17 +56,17 @@ async function verifyTrustSafetyMockData() {
 
   const leakedSpaces = oauthChats.filter(c => c.chatId && (c.chatId.startsWith('space-aegis-') || c.chatId.startsWith('space-veritas-') || c.chatId.startsWith('space-nexus-')));
   console.log(`   OAuth user total chats: ${oauthChats.length}`);
-  console.log(`   Leaked T&S client spaces in OAuth DB: ${leakedSpaces.length}`);
+  console.log(`   Leaked Policy Expert spaces in OAuth DB: ${leakedSpaces.length}`);
 
   if (leakedSpaces.length > 0) {
-    throw new Error(`❌ SECURITY BREACH: Trust & Safety mock spaces leaked into OAuth database!`);
+    throw new Error(`❌ SECURITY BREACH: Policy Expert mock spaces leaked into OAuth database!`);
   }
 
   console.log("\n🎉 ALL CHECKS PASSED SUCCESSFULLY!");
-  console.log("Trust & Safety synthetic client spaces, slide deck tasks, and interactive previews are fully isolated in the Mock Database!");
+  console.log("Policy Expert policy opinions, op-ed decks, and high-level issue tracking tools are fully isolated in the Mock Database!");
 }
 
-verifyTrustSafetyMockData().catch(err => {
+verifyPolicyExpertMockData().catch(err => {
   console.error("\n❌ VERIFICATION ERROR:", err);
   process.exit(1);
 });

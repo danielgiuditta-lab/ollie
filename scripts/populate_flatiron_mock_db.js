@@ -21,7 +21,7 @@ function getAvatarPath(personName) {
   return `/people/${slug}.jpg`;
 }
 
-// --- POLARIS / M3 DESIGN SYSTEM HEAD (FROM src/agent-system-prompt.md Section 8) ---
+// --- POLARIS / M3 DESIGN SYSTEM HEAD ---
 const POLARIS_M3_HEAD = `
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -84,11 +84,11 @@ const homeChatHyphen = {
   activeSpaceId: 'home_mock-user_example_com'
 };
 
-// --- 2. SPACE 1: AEGIS AI (LLM Red Teaming & Guardrails) ---
+// --- 2. SPACE 1: AEGIS AI (AI Policy & Governance Review) ---
 const spaceAegisId = 'space-aegis-ai';
 const spaceAegis = {
   chatId: spaceAegisId,
-  projectName: 'Aegis AI',
+  projectName: 'AI Policy & Governance',
   chatName: null,
   type: 'space',
   taskType: null,
@@ -115,87 +115,87 @@ const spaceAegis = {
 <html lang="en">
 <head>
   ${POLARIS_M3_HEAD}
-  <title>Aegis AI - Safety Guardrails & Red Teaming Console</title>
+  <title>Global AI & Technology Policy Issues Tracker</title>
 </head>
 <body class="p-6 bg-white text-[#1f1f1f]">
   <div class="max-w-5xl mx-auto space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between border-b border-[#e2e8f0] pb-4">
       <div>
-        <h2 class="text-lg font-medium text-[#1f1f1f]">Aegis AI — LLM Safety Guardrails & Red Teaming</h2>
-        <p class="text-xs text-[#5f6368]">Client Advisory: Foundation Model Input/Output Moderation</p>
+        <h2 class="text-lg font-medium text-[#1f1f1f]">Global AI & Tech Policy Issues Tracker</h2>
+        <p class="text-xs text-[#5f6368]">Policy Commentary, Legislative Frameworks & Opinion Column Pipeline</p>
       </div>
       <div class="flex items-center gap-2">
-        <span class="px-3 py-1 bg-[#d3e3fd] text-[#041e49] text-xs rounded-full font-medium">99.4% Classifier Precision</span>
-        <button class="px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition shadow-xs cursor-pointer">Export Safety Audit</button>
+        <span class="px-3 py-1 bg-[#d3e3fd] text-[#041e49] text-xs rounded-full font-medium">18 Policy Articles Published</span>
+        <button class="px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition shadow-xs cursor-pointer">Export Policy Briefing</button>
       </div>
     </div>
 
     <!-- Metric Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl">
-        <div class="text-xs text-[#5f6368] font-medium">Daily Injections Blocked</div>
-        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">1.2M</div>
-        <div class="text-[11px] text-[#0b57d0] mt-1">0 Critical Escapes</div>
+        <div class="text-xs text-[#5f6368] font-medium">Published Op-Eds</div>
+        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">18</div>
+        <div class="text-[11px] text-[#0b57d0] mt-1">Foreign Affairs & Tech Journals</div>
       </div>
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl">
-        <div class="text-xs text-[#5f6368] font-medium">Guardrail Overhead</div>
-        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">42 ms</div>
-        <div class="text-[11px] text-[#5f6368] mt-1">Target &lt; 50ms</div>
+        <div class="text-xs text-[#5f6368] font-medium">Monitored Legislation</div>
+        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">12 Frameworks</div>
+        <div class="text-[11px] text-[#5f6368] mt-1">EU, US, UK & Multilateral</div>
       </div>
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl">
-        <div class="text-xs text-[#5f6368] font-medium">Red Team Benchmarks</div>
-        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">1,200+</div>
-        <div class="text-[11px] text-[#5f6368] mt-1">Jailbreak prompts tested</div>
+        <div class="text-xs text-[#5f6368] font-medium">Testimony & Keynotes</div>
+        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">6 Sessions</div>
+        <div class="text-[11px] text-[#5f6368] mt-1">Legislative policy briefings</div>
       </div>
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl">
-        <div class="text-xs text-[#5f6368] font-medium">PII & Leakage Score</div>
-        <div class="text-2xl font-bold text-[#0b57d0] mt-1">100% Cleared</div>
-        <div class="text-[11px] text-[#5f6368] mt-1">Automated anonymization</div>
+        <div class="text-xs text-[#5f6368] font-medium">Policy Citation Index</div>
+        <div class="text-2xl font-bold text-[#0b57d0] mt-1">98.4% Impact</div>
+        <div class="text-[11px] text-[#5f6368] mt-1">Cited in statutory debates</div>
       </div>
     </div>
 
-    <!-- Active Safety Guardrails Table -->
+    <!-- Active Policy Issues Tracker Table -->
     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4 space-y-3">
-      <h3 class="text-sm font-medium text-[#1f1f1f]">LLM Safety Vector Enforcement Matrix</h3>
+      <h3 class="text-sm font-medium text-[#1f1f1f]">High-Level Policy Proposals & Governance Commentary</h3>
       <table class="w-full text-left text-xs border-collapse">
         <thead class="text-[#5f6368] border-b border-[#e2e8f0]">
           <tr>
-            <th class="pb-2 font-medium">Harm Category</th>
-            <th class="pb-2 font-medium">Detection Model</th>
-            <th class="pb-2 font-medium">Action Trigger</th>
-            <th class="pb-2 font-medium">Confidence SLA</th>
-            <th class="pb-2 font-medium text-right">Status</th>
+            <th class="pb-2 font-medium">Policy Proposal & Debate</th>
+            <th class="pb-2 font-medium">Jurisdiction / Body</th>
+            <th class="pb-2 font-medium">Recommended Stance</th>
+            <th class="pb-2 font-medium">Legislative Stage</th>
+            <th class="pb-2 font-medium text-right">Article Status</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#e2e8f0] text-[#1f1f1f]">
           <tr>
-            <td class="py-3 font-medium">Adversarial Jailbreak & System Prompt Extraction</td>
-            <td>Neural Classifier v3.4</td>
-            <td>Block &amp; Reframe Prompt</td>
-            <td>99.8% Threshold</td>
-            <td class="text-right"><span class="px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium">Enforced</span></td>
+            <td class="py-3 font-medium">EU AI Act High-Risk Model Audits</td>
+            <td>EU Commission</td>
+            <td>Pro-Mandatory Independent Audits</td>
+            <td>Enacted / Implementation</td>
+            <td class="text-right"><span class="px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium">Op-Ed Published</span></td>
           </tr>
           <tr>
-            <td class="py-3 font-medium">Toxicity &amp; Hate Speech Filter</td>
-            <td>BERT Toxicity Guard</td>
-            <td>Sanitize Output Tokens</td>
-            <td>99.2% Threshold</td>
-            <td class="text-right"><span class="px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium">Enforced</span></td>
+            <td class="py-3 font-medium">US Executive Order AI Safety Rules</td>
+            <td>US White House / Commerce</td>
+            <td>Support Compute Disclosure Thresholds</td>
+            <td>Implementation Stage</td>
+            <td class="text-right"><span class="px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium">Brief Complete</span></td>
           </tr>
           <tr>
-            <td class="py-3 font-medium">PII / Credential Leakage Scanner</td>
-            <td>Regex + NER Entity Guard</td>
-            <td>Redact / Mask Matching Tokens</td>
-            <td>100% Deterministic</td>
-            <td class="text-right"><span class="px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium">Enforced</span></td>
+            <td class="py-3 font-medium">Open-Weights vs. Proprietary Model Licensing</td>
+            <td>US Senate Judiciary</td>
+            <td>Protect Open Scientific Research Rights</td>
+            <td>Committee Hearings</td>
+            <td class="text-right"><span class="px-2 py-0.5 bg-[#f0f4f9] text-[#1f1f1f] rounded text-[11px] font-medium">Draft Review</span></td>
           </tr>
           <tr>
-            <td class="py-3 font-medium">Hallucination &amp; Grounding Verification</td>
-            <td>RAG Fact-Check Engine</td>
-            <td>Attach Evidence Citations</td>
-            <td>94.5% Baseline</td>
-            <td class="text-right"><span class="px-2 py-0.5 bg-[#f0f4f9] text-[#1f1f1f] rounded text-[11px] font-medium">Tuning</span></td>
+            <td class="py-3 font-medium">Copyright & AI Training Dataset Transparency</td>
+            <td>WIPO & Federal Courts</td>
+            <td>Mandate Public Dataset Disclosures</td>
+            <td>Legal Precedent Review</td>
+            <td class="text-right"><span class="px-2 py-0.5 bg-[#f0f4f9] text-[#1f1f1f] rounded text-[11px] font-medium">Outline Stage</span></td>
           </tr>
         </tbody>
       </table>
@@ -209,87 +209,87 @@ const spaceAegis = {
       name: 'ai_red_teaming_audit_summary.doc',
       type: 'code',
       mimeType: 'application/vnd.google-apps.document',
-      content: `# Aegis AI — LLM Red Teaming & Adversarial Vulnerability Audit Report
+      content: `# Regulating Frontier AI — Public Policy & Institutional Oversight Strategy
 
-**Authors:** Elena Vance (Trust & Safety Lead Consultant) & Dr. Marcus Thorne (Staff Safety Engineer)  
-**Target Platform:** Aegis AI Foundation Model Gateway & Real-Time Prompt Pipeline  
-**Audit Period:** Q2 2026 Executive Review  
+**Authors:** Senior Policy Fellow & Technology Governance Board  
+**Publication Target:** Global Policy Briefing & Regulatory Review  
+**Subject:** High-Level Assessment of AI Governance, Democratic Accountability, and International Standards  
 
 ---
 
-### Executive Overview & Security Posture
-Aegis AI provides enterprise LLM safety guardrails, prompt injection filtering, and automated red-teaming evaluations. During the Q2 2026 audit, our red teaming team executed over 1,200 adversarial probe vectors testing multi-turn jailbreaks, role-playing bypasses, system prompt extraction, and PII exfiltration.
+### Executive Policy Outlook & Regulatory Philosophy
+As artificial intelligence foundation models rapidly expand in capability, national regulatory bodies face a fundamental governance choice: adopting static technology-specific mandates or building adaptive, risk-proportional policy frameworks. This paper outlines recommendations for democratic institutions balancing innovation with mandatory safety protocols.
 
-### Critical Telemetry & Performance Benchmarks
-1. **Prompt Injection SLA Overhead (< 42ms):**
-   - High-throughput neural classifiers analyze input prompt tokens in parallel prior to LLM execution.
-   - Total latency added to streaming socket connections is capped at 42ms (Target: < 50ms).
-2. **Jailbreak Escape Rate (0.0% Escapes):**
-   - 1,200+ known adversarial jailbreak templates tested; 100% blocked at input gateway without leakages into production endpoints.
-3. **PII & Credential NER Masking (100% Anonymized):**
-   - Automated Regex + Named Entity Recognition (NER) models sanitize sensitive tokens (SSNs, API keys, patient records) before response streaming.
-4. **Hallucination & Evidence Citation Baseline (94.5% Grounded):**
-   - RAG Fact-Check Engine matches model citations against retrieved source docs in real-time.
-
-### Vulnerability Vector Findings & Remediations
-- **Vector A: Cipher-Encoded Multi-Turn Jailbreaks:**
-  - *Risk Level:* High
-  - *Mitigation:* Deployed Neural Classifier v3.4 trained on Base64, ROT13, and Unicode multi-layer evasion payloads.
-- **Vector B: System Prompt Extraction via Context Wrapping:**
-  - *Risk Level:* Medium
-  - *Mitigation:* Enforced system prompt token immutability guard in LLM context middleware.
-
-### Advisory Recommendations for Q3 Engineering Roadmap
-- Implement sub-30ms distilled BERT toxicity classifiers for mobile SDK integrations.
-- Extend out-of-court dispute integration and biannual EU DSA compliance audit logging.`
+### Key Policy Recommendations & Pillars
+1. **Tiered Regulatory Oversight by Capabilities Threshold:**
+   - Legislative oversight should scale based on capability and compute thresholds rather than imposing blanket registration rules on academic and open-source developers.
+2. **Mandatory Public Provenance & Watermarking Rules:**
+   - Governments should mandate standardized cryptographic watermarking for synthetic media to protect election integrity and public trust.
+3. **Independent Third-Party Impact Assessments:**
+   - Enterprise model providers must submit to third-party safety audits prior to commercial deployment in critical societal infrastructure.
+4. **Preserving Academic & Open-Source Inquiry:**
+   - Statutory safe harbors must safeguard public-interest research, ensuring open model weights remain available for independent security inspection.`
     },
     {
       id: `${spaceAegisId}-file-2`,
       name: 'safety_guardrail_policy_spec.md',
       type: 'code',
       mimeType: 'text/markdown',
-      content: `# Aegis AI — Input/Output Safety Rules & Toxicity Threshold Specification
+      content: `# Governance Principles for Foundation Model Development
 
-**Document Version:** v3.4.1  
-**Lead Contributor:** Dr. Marcus Thorne  
+**Document Version:** Policy Strategy Brief v3.4  
+**Lead Author:** Senior Technology Policy Advisor  
 
-## 1. Classification Thresholds & Confidence Cutoffs
-- **Primary Design Token:** Safety Blue ('#0b57d0')
-- **Toxicity Classifier Confidence Cutoff:** Hard block triggered at **99.2%** certainty.
-- **Adversarial Jailbreak Confidence Cutoff:** Hard block triggered at **99.8%** certainty.
-- **PII Leakage Policy:** Deterministic 100% token redacting; redacts email addresses, social security numbers, OAuth secret tokens, and phone numbers.
+## 1. Statutory Transparency & Public Disclosure Standards
+- **Primary Stance:** Democratic Alignment & Proportional Governance
+- **Dataset Disclosure Principles:** Foundation model creators must publish high-level documentation regarding training data sources, copyright compliance, and privacy filtering.
+- **Systemic Risk Mitigation:** High-impact deployments must maintain documented evaluation protocols for civil rights, fairness, and non-discrimination.
 
-## 2. Real-Time Processing Budgets
-- **Maximum Input Latency Budget:** '< 50ms' total inspection overhead per prompt.
-- **Streaming Socket Buffer Limit:** Max 256 tokens per chunk inspection window.
-- **Emergency Circuit Breaker:** Automatic fallback to sterile default response if classifier processing exceeds 100ms.
-
-## 3. Escalation Protocols
-- High-risk zero-day jailbreak escapes automatically flag an incident for Elena Vance and trigger Slack notifications to '#aegis-safety-ops'.`
+## 2. Institutional Oversight & Compliance Frameworks
+- **Pre-Deployment Safety Verification:** Required independent audit sign-off for critical civic infrastructure deployment.
+- **Multilateral Harmonization:** Aligning federal directives with international norms to prevent regulatory arbitrage while preserving open market access.`
     },
     {
       id: `${spaceAegisId}-file-3`,
       name: 'aegis_ai_safety_deck.gslides',
       type: 'code',
       mimeType: 'application/vnd.google-apps.presentation',
-      content: `# Presentation: Aegis AI LLM Red Teaming & Guardrails Board Review
+      content: `# Presentation: AI Governance & International Technology Policy Keynote
 
-> **Executive Synthesis**: Comprehensive evaluation of LLM input/output safety guardrails, zero-day jailbreak mitigations, and performance latency SLAs.
+> **Executive Synthesis**: Policy options for regulating frontier foundation models, protecting open scientific inquiry, and establishing global transparency standards.
 
-- **Classifier Overhead Target**: < 50ms budget (Achieved: 42ms median latency).
-- **Red Team Corpus**: 1,200+ multi-turn adversarial prompts evaluated with 0 critical escapes.
-- **PII Anonymization**: 100% automated NER stripping for private keys and identity credentials.
+- **Regulatory Model**: Comparative analysis of risk-based rules versus innovation incentives.
+- **Public Trust**: Institutional recommendations on watermarking synthetic media and protecting election integrity.
+- **Democratic Accountability**: Independent audit frameworks for high-risk applications.
 
 ---
 
-# Key Architectural Pillars & Milestones
+# Strategic Architecture & International Policy Roadmap
 
-## Guardrail Pipeline Architecture
-- Pre-execution neural classifier filters adversarial prompt injections before LLM tokenization.
-- Parallel NER masking strips sensitive PII tokens prior to web socket streaming.
+## Pillar 1: Proportional Risk Classification
+- Statutory regulatory burdens scale based on deployment domain and system capabilities.
 
-## Next Horizon: Hallucination Verification
-- Fine-tuning RAG Fact-Check engine to reach > 98% evidence citation accuracy.`
+## Pillar 2: Open Source & Academic Safe Harbors
+- Safeguarding democratized scientific progress while enforcing provider liability at the frontier.
+
+---
+
+# Foundation Model Liability & IP Governance Protocols
+
+## Upstream Provider Liability
+- Imposing statutory duty-of-care obligations on base model creators for systemic harms.
+- Safe harbors for non-profit and academic developers.
+
+## Training Data Transparency
+- Public registry disclosure of copyright-protected ingestion corpora.
+
+---
+
+# Bilateral Trade Agreements & Global Governance Accords
+
+## Harmonized Safety Benchmarks
+- Multilateral recognition of capability benchmarks and synthetic media watermarking.
+- Establishing permanent international safety advisory councils.`
     }
   ],
   userEmail: MOCK_EMAIL,
@@ -298,11 +298,11 @@ Aegis AI provides enterprise LLM safety guardrails, prompt injection filtering, 
   updatedAt: now
 };
 
-// Child chats for Space 1 (Aegis AI)
+// Child chats for Space 1 (AI Policy & Governance)
 const space1Task1 = {
   chatId: `${spaceAegisId}-task-1`,
-  projectName: 'Aegis AI',
-  chatName: 'Update Red Teaming Slide Quotes',
+  projectName: 'AI Policy & Governance',
+  chatName: 'Update Governance Slide Quotes',
   type: 'inferred',
   taskType: 'inferred',
   personName: 'Sarah Lin',
@@ -310,8 +310,8 @@ const space1Task1 = {
   associatedFileId: `${spaceAegisId}-file-3`,
   associatedFileName: 'aegis_ai_safety_deck.gslides',
   messages: [
-    { role: 'user', text: 'Extract key insights from the red teaming audit report and incorporate them into Slide 4 of aegis_ai_safety_deck.gslides.' },
-    { role: 'bot', text: 'I have compiled the jailbreak prevention metrics and latency overhead benchmarks from `ai_red_teaming_audit_summary.doc` ready for Slide 4.' }
+    { role: 'user', text: 'Extract policy insights from the governance briefing and incorporate them into Slide 4 of aegis_ai_safety_deck.gslides.' },
+    { role: 'bot', text: 'I have compiled the policy recommendation points from `ai_red_teaming_audit_summary.doc` ready for Slide 4.' }
   ],
   envId: null,
   activeSpaceId: spaceAegisId,
@@ -325,8 +325,8 @@ const space1Task1 = {
 
 const space1Task2 = {
   chatId: `${spaceAegisId}-task-2`,
-  projectName: 'Aegis AI',
-  chatName: 'Refine Toxicity Threshold Specs',
+  projectName: 'AI Policy & Governance',
+  chatName: 'Refine Governance Stance Specs',
   type: 'inferred',
   taskType: 'inferred',
   personName: 'Elena Vance',
@@ -334,8 +334,8 @@ const space1Task2 = {
   associatedFileId: `${spaceAegisId}-file-2`,
   associatedFileName: 'safety_guardrail_policy_spec.md',
   messages: [
-    { role: 'user', text: 'Ensure toxicity thresholds meet strict enterprise AI governance standards.' },
-    { role: 'bot', text: 'Updated `safety_guardrail_policy_spec.md` with 99.2% classifier confidence cutoffs and sub-50ms latency budgets.' }
+    { role: 'user', text: 'Ensure governance principles align with global public interest standards.' },
+    { role: 'bot', text: 'Updated `safety_guardrail_policy_spec.md` with dataset transparency guidelines and statutory public audit frameworks.' }
   ],
   envId: null,
   activeSpaceId: spaceAegisId,
@@ -349,8 +349,8 @@ const space1Task2 = {
 
 const space1Task3 = {
   chatId: `${spaceAegisId}-task-3`,
-  projectName: 'Aegis AI',
-  chatName: 'Prepare Safety Review Prototype',
+  projectName: 'AI Policy & Governance',
+  chatName: 'Prepare Policy Issues Tracker',
   type: 'inferred',
   taskType: 'inferred',
   personName: 'Dr. Marcus Thorne',
@@ -358,8 +358,8 @@ const space1Task3 = {
   associatedFileId: `${spaceAegisId}-file-0`,
   associatedFileName: 'index.html',
   messages: [
-    { role: 'user', text: 'Verify the interactive guardrails console index.html is loaded for Dr. Thorne\'s AI safety review.' },
-    { role: 'bot', text: 'The interactive prototype index.html with live prompt injection metrics and harm categorization tables is ready.' }
+    { role: 'user', text: 'Verify the interactive policy issues tracker index.html is loaded for Dr. Thorne\'s regulatory review.' },
+    { role: 'bot', text: 'The interactive policy issues tracker index.html with global legislative debates and op-ed status tracking is ready.' }
   ],
   envId: null,
   activeSpaceId: spaceAegisId,
@@ -372,11 +372,11 @@ const space1Task3 = {
 };
 
 
-// --- 3. SPACE 2: VERITAS SOCIAL (Content Moderation & Harassment SOP) ---
+// --- 3. SPACE 2: VERITAS SOCIAL (Platform Regulation & Speech Policy) ---
 const spaceVeritasId = 'space-veritas-social';
 const spaceVeritas = {
   chatId: spaceVeritasId,
-  projectName: 'Veritas Social',
+  projectName: 'Platform Regulation & Speech',
   chatName: null,
   type: 'space',
   taskType: null,
@@ -403,77 +403,77 @@ const spaceVeritas = {
 <html lang="en">
 <head>
   ${POLARIS_M3_HEAD}
-  <title>Veritas Social - Trust & Safety Operations Queue</title>
+  <title>Digital Speech & Platform Policy Issues Tracker</title>
 </head>
 <body class="p-6 bg-white text-[#1f1f1f]">
   <div class="max-w-5xl mx-auto space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between border-b border-[#e2e8f0] pb-4">
       <div>
-        <h2 class="text-lg font-medium text-[#1f1f1f]">Veritas Social — Moderation Operations & Escalations</h2>
-        <p class="text-xs text-[#5f6368]">Community Guidelines &amp; Minor Protection Enforcement SLA</p>
+        <h2 class="text-lg font-medium text-[#1f1f1f]">Digital Speech & Platform Policy Tracker</h2>
+        <p class="text-xs text-[#5f6368]">Policy Commentary on Intermediary Liability, Section 230 & Public Speech</p>
       </div>
-      <button class="px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition cursor-pointer">Download Compliance Log</button>
+      <button class="px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition cursor-pointer">Download Policy Matrix</button>
     </div>
 
     <!-- Metric Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl">
-        <div class="text-xs text-[#5f6368] font-medium">Hourly Screened Posts</div>
-        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">12,450</div>
-        <div class="text-[11px] text-[#0b57d0] mt-1">85% Automated pre-filter</div>
+        <div class="text-xs text-[#5f6368] font-medium">Policy Articles</div>
+        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">24</div>
+        <div class="text-[11px] text-[#0b57d0] mt-1">Columns & Law Reviews</div>
       </div>
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl">
-        <div class="text-xs text-[#5f6368] font-medium">Median Review SLA</div>
-        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">4.2 min</div>
-        <div class="text-[11px] text-[#5f6368] mt-1">Target &lt; 15 min</div>
+        <div class="text-xs text-[#5f6368] font-medium">Platform Bills Tracked</div>
+        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">14 Laws</div>
+        <div class="text-[11px] text-[#5f6368] mt-1">Intermediary liability statutes</div>
       </div>
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl">
-        <div class="text-xs text-[#5f6368] font-medium">PhotoDNA CSAM Hash Alerts</div>
-        <div class="text-2xl font-bold text-[#0b57d0] mt-1">0 Pending</div>
-        <div class="text-[11px] text-[#5f6368] mt-1">Instant NCMEC automated dispatch</div>
+        <div class="text-xs text-[#5f6368] font-medium">Civil Liberties Briefs</div>
+        <div class="text-2xl font-bold text-[#0b57d0] mt-1">8 Briefs</div>
+        <div class="text-[11px] text-[#5f6368] mt-1">Amicus submissions & opinions</div>
       </div>
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl">
-        <div class="text-xs text-[#5f6368] font-medium">Appeal Turnaround</div>
-        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">100% Cleared</div>
-        <div class="text-[11px] text-[#5f6368] mt-1">Within 48h deadline</div>
+        <div class="text-xs text-[#5f6368] font-medium">Regulatory Alignment</div>
+        <div class="text-2xl font-bold text-[#1f1f1f] mt-1">100% Active</div>
+        <div class="text-[11px] text-[#5f6368] mt-1">Global free expression standards</div>
       </div>
     </div>
 
-    <!-- Active Moderation Queue Table -->
+    <!-- Active Platform Policy Tracker Table -->
     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4 space-y-3">
-      <h3 class="text-sm font-medium text-[#1f1f1f]">Priority Moderation Escalation Pipeline</h3>
+      <h3 class="text-sm font-medium text-[#1f1f1f]">Platform Regulation & Digital Freedom Policy Proposals</h3>
       <table class="w-full text-left text-xs border-collapse">
         <thead class="text-[#5f6368] border-b border-[#e2e8f0]">
           <tr>
-            <th class="pb-2 font-medium">Incident Category</th>
-            <th class="pb-2 font-medium">Report Queue</th>
-            <th class="pb-2 font-medium">Primary Risk Factor</th>
-            <th class="pb-2 font-medium">Current SLA</th>
-            <th class="pb-2 font-medium text-right">Status</th>
+            <th class="pb-2 font-medium">Policy Issue / Bill</th>
+            <th class="pb-2 font-medium">Legislative Body</th>
+            <th class="pb-2 font-medium">Policy Opinion Stance</th>
+            <th class="pb-2 font-medium">Timeline</th>
+            <th class="pb-2 font-medium text-right">Publication Status</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#e2e8f0] text-[#1f1f1f]">
           <tr>
-            <td class="py-3 font-medium">Targeted Harassment &amp; Doxxing Campaign</td>
-            <td>Tier 2 Safety Queue</td>
-            <td>Creator Harm &amp; Privacy Breach</td>
-            <td>3.1 min</td>
-            <td class="text-right"><span class="px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium">Active Review</span></td>
+            <td class="py-3 font-medium">Section 230 Modernization & Liability Shields</td>
+            <td>US Congress / Supreme Court</td>
+            <td>Distinguish Passive Hosting from Active Curation</td>
+            <td>Q3 Floor Debate</td>
+            <td class="text-right"><span class="px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium">Published Op-Ed</span></td>
           </tr>
           <tr>
-            <td class="py-3 font-medium">Bypassed Hate Speech Classifier (Leetspeak)</td>
-            <td>Policy Tuning Queue</td>
-            <td>Model Miss Vector</td>
-            <td>8.4 min</td>
-            <td class="text-right"><span class="px-2 py-0.5 bg-[#f0f4f9] text-[#1f1f1f] rounded text-[11px] font-medium">Classifier Updated</span></td>
+            <td class="py-3 font-medium">UK Online Safety Act Intermediary Scope</td>
+            <td>UK Parliament / Ofcom</td>
+            <td>Protect End-to-End Encryption Privacy Rights</td>
+            <td>Implementation Guidance</td>
+            <td class="text-right"><span class="px-2 py-0.5 bg-[#f0f4f9] text-[#1f1f1f] rounded text-[11px] font-medium">Policy Brief Review</span></td>
           </tr>
           <tr>
-            <td class="py-3 font-medium">Coordinated Automated Bot Spam Network</td>
-            <td>Security Ops Desk</td>
-            <td>Platform Abuse / Sybil Attack</td>
-            <td>1.8 min</td>
-            <td class="text-right"><span class="px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium">Purged</span></td>
+            <td class="py-3 font-medium">Algorithmic Amplification & Election Integrity</td>
+            <td>Federal Election Committee</td>
+            <td>Mandate Transparent Ad Registries & Data Access</td>
+            <td>Rulemaking Stage</td>
+            <td class="text-right"><span class="px-2 py-0.5 bg-[#d3e3fd] text-[#041e49] rounded text-[11px] font-medium">Column Complete</span></td>
           </tr>
         </tbody>
       </table>
@@ -487,71 +487,73 @@ const spaceVeritas = {
       name: 'content_moderation_policy_v2.doc',
       type: 'code',
       mimeType: 'application/vnd.google-apps.document',
-      content: `# Veritas Social — Community Standards & Harassment Enforcement SOP
+      content: `# Digital Speech & Intermediary Accountability — Policy Opinion
 
-**Authors:** Priya Patel (Community Safety Ops) & David Ross (Head of Trust & Safety)  
-**Scope:** Standard Operating Procedures (SOP) across global creator feeds, live chats, and direct messaging channels.  
+**Authors:** Senior Fellow in Platform Governance & Digital Rights  
+**Scope:** Policy Recommendations for Balancing Expression, Democratic Oversight, and Content Regulation  
 
 ---
 
-### Executive Summary & Operational SLAs
-Veritas Social serves millions of active daily creators. Protecting creator safety, enforcing anti-harassment standards, and maintaining rapid reviewer response times are critical operational mandates.
+### Policy Overview & Democratic Mandate
+Modern social media platforms function as contemporary public squares. Protecting freedom of expression while establishing procedural due process and algorithmic accountability requires updating legal frameworks beyond legacy immunity shields.
 
-### Core Metrics & Performance Targets
-1. **Median Human Review SLA (4.2 minutes):**
-   - High-severity escalated reports are reviewed within 4.2 minutes (Target: < 15 minutes).
-2. **Automated Pre-Filtering Efficiency (85% Auto-Quarantined):**
-   - Machine learning toxic language classifiers auto-hold 85% of hate speech, doxxing attempts, and targeted harassment prior to feed distribution.
-3. **Hourly Screened Content Volume (12,450 posts/hr):**
-   - Multi-stage moderation pipeline processes over 12,000 posts every hour across global regional hubs.
-4. **User Appeal Turnaround SLA (100% Cleared < 48 Hours):**
-   - Second-tier moderation board resolves all creator account strikes and content appeal tickets within the 48-hour SLA deadline.
-
-### Moderation Incident Triage Matrix
-- **Category 1: Targeted Harassment & Doxxing Campaigns:**
-  - *SLA Target:* < 5 minutes.
-  - *Action:* Route to Tier 2 Safety Desk, initiate instant profile protection mode, freeze suspect accounts.
-- **Category 2: Bypassed Toxicity Classifiers (Leetspeak & Evasion):**
-  - *SLA Target:* < 15 minutes.
-  - *Action:* Update BERT embedding dictionaries and retrain daily model weights.
-- **Category 3: Coordinated Sybil Bot Spam Networks:**
-  - *SLA Target:* Instant automated network purge via IP cluster fingerprinting.`
+### Core Policy Recommendations
+1. **Procedural Transparency & User Rights:**
+   - Content removal rules must require explicit statutory explanations and statutory appeal rights for creators before account termination.
+2. **Independent Researcher Audit Access:**
+   - Legislation must grant accredited academic researchers secure access to platform recommendation data to evaluate systemic risks.
+3. **Decoupling Curation from Distribution:**
+   - Policy should encourage open protocols allowing users to choose third-party curation services while preserving underlying platform hosting.`
     },
     {
       id: `${spaceVeritasId}-file-2`,
       name: 'csam_ncii_compliance_spec.doc',
       type: 'code',
       mimeType: 'text/markdown',
-      content: `# Veritas Social — Minor Safety & PhotoDNA Hash Matching Specification
+      content: `# Balancing Online Child Safety & Encryption Policy
 
-**Compliance Leads:** David Ross & Priya Patel  
+**Authors:** Digital Civil Liberties Policy Desk  
 
-## Real-Time Media Hashing & Compliance SLA
-- **SaferNet & PhotoDNA Database Sync:** Real-time hash comparison triggered instantly upon media payload upload.
-- **NCMEC CyberTipline Dispatch SLA:** Validated positive matches trigger an encrypted, automated API transmission to the NCMEC CyberTipline within **15 minutes**.
-- **Zero-Persistence Ephemeral Buffer:** Confirmed illegal media vectors are immediately quarantined and stripped from public storage buckets.
-- **EU Digital Services Act (DSA) Compliance:** Maintains automated log audits supporting biannual DSA transparency reports and out-of-court dispute integration.`
+## Policy Framework & Trade-Off Analysis
+- **Preserving End-to-End Encryption:** Public policy must resist client-side scanning mandates that compromise fundamental cybersecurity infrastructure.
+- **Targeted Law Enforcement Cooperation:** Policy frameworks should focus on server-side intelligence sharing, hash matching on public endpoints, and international law enforcement cooperation.
+- **Harmonized Transatlantic Standards:** Aligning child online protection acts with international human rights treaties.`
     },
     {
       id: `${spaceVeritasId}-file-3`,
       name: 'veritas_safety_roadmap.gslides',
       type: 'code',
       mimeType: 'application/vnd.google-apps.presentation',
-      content: `# Presentation: Veritas Social Trust & Safety Strategic Roadmap
+      content: `# Presentation: Platform Regulation & Speech Policy Roadmap
 
-> **Trust & Safety Milestones**: Scaling content moderation SLAs, perceptual hashing compliance, and creator protection tools.
+> **Policy Executive Summary**: Institutional policy options for reforming intermediary liability, preserving free expression, and requiring algorithmic transparency.
 
-- **Human Review SLA**: 4.2 min median turnaround (Target: < 15 min).
-- **Automated Pre-Filter**: 85% high-confidence toxicity pre-filter efficiency.
-- **Minor Protection**: 100% automated PhotoDNA hash matching & NCMEC reporting.
+- **Liability Reform**: Duty-of-care obligations for recommendation algorithms.
+- **Democratic Curation**: User control over feed parameters and open protocol standards.
+- **Civil Liberties Safeguards**: Statutory protections against over-broad private censorship.
 
 ---
 
-# Operational Roadmap & Metrics
+# Operational Policy Roadmap & Milestones
 
-## Triage Queue SLAs
-- Tier 2 escalation desk clearing harassment reports in 3.1 minutes.
-- Automated Sybil bot purge executing within 1.8 minutes of cluster discovery.`
+## Intermediary Reform Proposals
+- Legislative policy briefs delivered to Senate Judiciary Committee.
+- Comparative law recommendations on transatlantic digital speech rules.
+
+---
+
+# Algorithmic Transparency & Civic Discourse Safeguards
+
+## Independent Researcher Data Access
+- Legislation enabling vetted academics to inspect engagement-maximizing algorithms.
+- Establishing secure data cleanrooms preserving user privacy.
+
+---
+
+# Digital Rights & Global Human Rights Treaties
+
+## Universal Expression Declarations
+- Harmonizing platform moderation obligations with Article 19 expression guarantees.`
     }
   ],
   userEmail: MOCK_EMAIL,
@@ -560,11 +562,11 @@ Veritas Social serves millions of active daily creators. Protecting creator safe
   updatedAt: now
 };
 
-// Child chats for Space 2 (Veritas Social)
+// Child chats for Space 2 (Platform Regulation & Speech Policy)
 const space2Task1 = {
   chatId: `${spaceVeritasId}-task-1`,
-  projectName: 'Veritas Social',
-  chatName: 'Incorporate Moderation Metrics into Deck',
+  projectName: 'Platform Regulation & Speech',
+  chatName: 'Incorporate Policy Arguments into Deck',
   type: 'inferred',
   taskType: 'inferred',
   personName: 'Priya Patel',
@@ -572,8 +574,8 @@ const space2Task1 = {
   associatedFileId: `${spaceVeritasId}-file-3`,
   associatedFileName: 'veritas_safety_roadmap.gslides',
   messages: [
-    { role: 'user', text: 'Incorporate the latest 4.2-minute review SLA metrics into Slide 7 of veritas_safety_roadmap.gslides.' },
-    { role: 'bot', text: 'I have compiled the moderation SLA statistics and integrated them into the outline for Slide 7 in `veritas_safety_roadmap.gslides`.' }
+    { role: 'user', text: 'Incorporate the latest liability reform commentary into Slide 7 of veritas_safety_roadmap.gslides.' },
+    { role: 'bot', text: 'I have compiled the policy reform statistics and integrated them into the outline for Slide 7 in `veritas_safety_roadmap.gslides`.' }
   ],
   envId: null,
   activeSpaceId: spaceVeritasId,
@@ -587,8 +589,8 @@ const space2Task1 = {
 
 const space2Task2 = {
   chatId: `${spaceVeritasId}-task-2`,
-  projectName: 'Veritas Social',
-  chatName: 'Simplify Escalation Flow Diagram',
+  projectName: 'Platform Regulation & Speech',
+  chatName: 'Simplify Governance Flow Outline',
   type: 'inferred',
   taskType: 'inferred',
   personName: 'David Ross',
@@ -596,8 +598,8 @@ const space2Task2 = {
   associatedFileId: `${spaceVeritasId}-file-3`,
   associatedFileName: 'veritas_safety_roadmap.gslides',
   messages: [
-    { role: 'user', text: 'Simplify the escalation flow diagram on Slide 10 to highlight automated PhotoDNA hash blocking.' },
-    { role: 'bot', text: 'Slide 10 outline updated to emphasize zero-latency PhotoDNA and SaferNet media quarantine.' }
+    { role: 'user', text: 'Simplify the governance policy overview on Slide 10 to highlight procedural appeal rights.' },
+    { role: 'bot', text: 'Slide 10 outline updated to emphasize user due process and independent appeal channels.' }
   ],
   envId: null,
   activeSpaceId: spaceVeritasId,
@@ -611,8 +613,8 @@ const space2Task2 = {
 
 const space2Task3 = {
   chatId: `${spaceVeritasId}-task-3`,
-  projectName: 'Veritas Social',
-  chatName: 'Finalize Hash Matching SOP',
+  projectName: 'Platform Regulation & Speech',
+  chatName: 'Finalize Encryption Policy Brief',
   type: 'inferred',
   taskType: 'inferred',
   personName: 'Priya Patel',
@@ -620,8 +622,8 @@ const space2Task3 = {
   associatedFileId: `${spaceVeritasId}-file-2`,
   associatedFileName: 'csam_ncii_compliance_spec.doc',
   messages: [
-    { role: 'user', text: 'Finalize regulatory reporting timelines in the minor safety compliance spec.' },
-    { role: 'bot', text: 'Updated `csam_ncii_compliance_spec.doc` with sub-15 minute NCMEC reporting API SLAs.' }
+    { role: 'user', text: 'Finalize regulatory trade-off recommendations in the encryption policy paper.' },
+    { role: 'bot', text: 'Updated `csam_ncii_compliance_spec.doc` with cybersecurity and civil liberties protection policy options.' }
   ],
   envId: null,
   activeSpaceId: spaceVeritasId,
@@ -634,11 +636,11 @@ const space2Task3 = {
 };
 
 
-// --- 4. SPACE 3: NEXUS PAY (Fraud Prevention & Risk Ops) ---
+// --- 4. SPACE 3: NEXUS PAY (Fintech & Monetary Policy) ---
 const spaceNexusId = 'space-nexus-pay';
 const spaceNexus = {
   chatId: spaceNexusId,
-  projectName: 'Nexus Pay',
+  projectName: 'Fintech & Monetary Policy',
   chatName: null,
   type: 'space',
   taskType: null,
@@ -665,35 +667,35 @@ const spaceNexus = {
 <html lang="en">
 <head>
   ${POLARIS_M3_HEAD}
-  <title>Nexus Pay - Fraud Prevention & Risk Operations Center</title>
+  <title>Fintech & Digital Economy Policy Issues Tracker</title>
 </head>
 <body class="p-6 bg-white text-[#1f1f1f]">
   <div class="max-w-5xl mx-auto space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between border-b border-[#e2e8f0] pb-4">
       <div>
-        <h2 class="text-lg font-medium text-[#1f1f1f]">Nexus Pay — Fraud Prevention &amp; Account Takeover Operations</h2>
-        <p class="text-xs text-[#5f6368]">P2P Payments &amp; Merchant Identity Risk Telemetry</p>
+        <h2 class="text-lg font-medium text-[#1f1f1f]">Fintech & Digital Economy Policy Issues Tracker</h2>
+        <p class="text-xs text-[#5f6368]">Policy Analysis on Digital Currency, Financial Privacy & Market Competition</p>
       </div>
-      <button class="px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition cursor-pointer">Run Risk Audit Simulation</button>
+      <button class="px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition cursor-pointer">Run Policy Simulation</button>
     </div>
 
     <!-- Metric Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-2">
-        <span class="text-xs text-[#5f6368] font-medium">Prevented Fraud Losses</span>
-        <div class="text-3xl font-bold text-[#1f1f1f]">$4.2M</div>
-        <p class="text-xs text-[#444746]">Blocked credential stuffing &amp; ATO attacks in real-time.</p>
+        <span class="text-xs text-[#5f6368] font-medium">Financial Policy Columns</span>
+        <div class="text-3xl font-bold text-[#1f1f1f]">15 Articles</div>
+        <p class="text-xs text-[#444746]">Published commentary on CBDCs & digital assets.</p>
       </div>
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-2">
-        <span class="text-xs text-[#5f6368] font-medium">Chargeback Rate</span>
-        <div class="text-3xl font-bold text-[#1f1f1f]">0.04%</div>
-        <p class="text-xs text-[#444746]">Significantly below payment network 0.1% threshold.</p>
+        <span class="text-xs text-[#5f6368] font-medium">Monitored Financial Bills</span>
+        <div class="text-3xl font-bold text-[#1f1f1f]">9 Proposals</div>
+        <p class="text-xs text-[#444746]">SEC, Federal Reserve & EU MiCA legislation.</p>
       </div>
       <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-2">
-        <span class="text-xs text-[#5f6368] font-medium">Identity Verification (KYC)</span>
-        <div class="text-3xl font-bold text-[#0b57d0]">99.1% Pass</div>
-        <p class="text-xs text-[#444746]">Automated document validation &amp; biometric liveness check.</p>
+        <span class="text-xs text-[#5f6368] font-medium">Financial Inclusion Briefs</span>
+        <div class="text-3xl font-bold text-[#0b57d0]">5 Briefs</div>
+        <p class="text-xs text-[#444746]">Policy papers on consumer payment access.</p>
       </div>
     </div>
   </div>
@@ -705,70 +707,72 @@ const spaceNexus = {
       name: 'fraud_risk_audit_readout.doc',
       type: 'code',
       mimeType: 'application/vnd.google-apps.document',
-      content: `# Nexus Pay — Fraud & Account Takeover Risk Assessment Report
+      content: `# Digital Money & Sovereign Governance — Policy Opinion
 
-**Authors:** Rachel Chang (Lead Risk PM) & Dr. Jason Miller (Chief Security Counsel)  
-**Sample Corpus:** Audit of 1.4 Million P2P transactions and merchant API checkouts  
+**Authors:** Senior Fellow in Financial Governance  
+**Publication Target:** Economic Policy Journal & Parliamentary Policy Review  
 
 ---
 
-### Executive Assessment & Financial Recovery
-Nexus Pay operates high-volume peer-to-peer payment processing and digital wallet services. During the recent risk telemetry period, our fraud engine thwarted multiple automated credential stuffing campaigns and localized Sybil merchant risk networks.
+### Executive Policy Assessment
+As paper cash usage declines globally, digital payment infrastructure has become core sovereign utility. Policy makers face critical questions regarding monetary sovereignty, digital surveillance risks, and open competition in digital asset regulation.
 
-### Core Risk Telemetry & Achievements
-1. **$4.2 Million in Prevented Fraud Losses:**
-   - Real-time device fingerprinting and risk scoring blocked unauthorized account drain attempts.
-2. **94.2% Reduction in Account Takeover (ATO) Attacks:**
-   - Enforced dynamic WebAuthn passkey step-up authentication upon suspicious IP location shifts.
-3. **0.04% Chargeback Baseline (Target: < 0.10%):**
-   - Fraud chargeback ratio remains at less than half of major card network dispute caps.
-4. **99.1% Seamless KYC Verification Rate:**
-   - OCR document analysis combined with biometric liveness verification enables instant onboarding for 99.1% of low-risk users.
-
-### Key Risk Domain Findings
-- **Credential Stuffing Vectors:** Mitigated using progressive CAPTCHA challenges and rate-limiting endpoints.
-- **Merchant Synthetic Identity Risks:** Enforced micro-deposit verification and automated TIN matching.`
+### Key Policy Recommendations
+1. **Protecting Financial Transaction Privacy:**
+   - Sovereign digital currencies (CBDCs) must incorporate cryptographic privacy guarantees to prevent government overreach in consumer spending.
+2. **Prudential Rules for Private Stablecoins:**
+   - Reserve backing mandates must enforce strict 1:1 liquid asset requirements to prevent systemic financial contagion.
+3. **Open Banking & Consumer Data Ownership:**
+   - Statutory data portability rights empowering consumers to transfer financial history across competing fintech providers.`
     },
     {
       id: `${spaceNexusId}-file-2`,
       name: 'kyc_identity_verification_plan.doc',
       type: 'code',
       mimeType: 'application/vnd.google-apps.document',
-      content: `# Nexus Pay — KYC & Anti-Phishing Operational Launch Plan
+      content: `# Financial Inclusion & Anti-Money Laundering Policy Brief
 
-**Authors:** Rachel Chang & Dr. Jason Miller  
-**Target Rollout Date:** August 1, 2026  
-**SDK Platforms:** Web Application, iOS Native, Android Native  
+**Authors:** Economic Policy Advisory Council  
+**Target Release:** Congressional Economic Policy Hearing  
 
-## 1. Onboarding Identity Verification Strategy
-- **Step 1: Automated Document Capture:** Instant OCR extraction for government-issued passports and driver licenses.
-- **Step 2: Biometric Liveness Verification:** 3D depth map verification preventing video spoofing.
-- **Step 3: Sanctions & PEP Screening:** Real-time lookup against OFAC and global watchlist API endpoints.
-
-## 2. Compliance & SOC2 Controls
-- **SOC2 Type II Audit:** Completed with zero material exceptions reported by independent auditors.
-- **Data Encryption Standard:** AES-256 encryption at rest for all stored identity PII payload data.`
+## 1. Balancing Anti-Money Laundering (AML) Rules with Financial Inclusion
+- **Risk-Based Tiered Customer Verification:** Exempt low-value transactions from burdensome identity verification to prevent disenfranchising unbanked populations.
+- **Digital Identity Infrastructure:** Supporting public open-standard digital IDs to reduce onboarding friction for underserved consumers.`
     },
     {
       id: `${spaceNexusId}-file-3`,
       name: 'nexus_risk_review_deck.gslides',
       type: 'code',
       mimeType: 'application/vnd.google-apps.presentation',
-      content: `# Presentation: Nexus Pay Risk Operations & Fraud Mitigation Deck
+      content: `# Presentation: Congressional Briefing — Policy Options for Digital Money
 
-> **Risk Executive Summary**: Telemetry results from 1.4M transactions, ATO prevention milestones, and KYC onboarding metrics.
+> **Policy Executive Summary**: Analytical briefing on sovereign CBDC design, stablecoin reserve regulation, and financial privacy protections.
 
-- **Loss Prevention**: $4.2M in fraudulent transactions prevented.
-- **ATO Reduction**: 94.2% drop in account takeovers via passkey step-up auth.
-- **Chargeback Ratio**: 0.04% maintaining tier-1 card network status.
+- **Monetary Sovereignty**: Preserving central bank monetary policy controls.
+- **Consumer Privacy**: Codifying legal limits on transaction monitoring.
+- **Systemic Risk Mitigation**: Regulatory frameworks for digital asset liquidity.
 
 ---
 
-# Strategic Architecture & SOC2 Milestones
+# Strategic Architecture & Regulatory Options
 
-## KYC & Onboarding SDK
-- 99.1% automated pass rate for frictionless customer identity verification.
-- Complete SOC2 Type II compliance sign-off.`
+## CBDC vs. Private Innovation
+- Comparative evaluation of public digital currency options versus regulated private bank tokens.
+
+---
+
+# Financial Privacy & Zero-Knowledge Architecture
+
+## Surveillance Prevention Safeguards
+- Statutory limits preventing government inspection of sub-threshold transaction metadata.
+- Third-party cryptographic audits for central bank ledger endpoints.
+
+---
+
+# Interoperability & Global Cross-Border Remittances
+
+## Reducing Cross-Border Fees
+- Multilateral policy frameworks reducing payment settlement costs across developing economy corridors.`
     }
   ],
   userEmail: MOCK_EMAIL,
@@ -777,11 +781,11 @@ Nexus Pay operates high-volume peer-to-peer payment processing and digital walle
   updatedAt: now
 };
 
-// Child chats for Space 3 (Nexus Pay)
+// Child chats for Space 3 (Fintech & Monetary Policy)
 const space3Task1 = {
   chatId: `${spaceNexusId}-task-1`,
-  projectName: 'Nexus Pay',
-  chatName: 'Summarize ATO Metrics in Deck',
+  projectName: 'Fintech & Monetary Policy',
+  chatName: 'Summarize Monetary Policy Points in Deck',
   type: 'inferred',
   taskType: 'inferred',
   personName: 'Rachel Chang',
@@ -789,8 +793,8 @@ const space3Task1 = {
   associatedFileId: `${spaceNexusId}-file-3`,
   associatedFileName: 'nexus_risk_review_deck.gslides',
   messages: [
-    { role: 'user', text: 'Summarize the 94.2% ATO fraud drop and $4.2M prevented losses for Slide 6 in nexus_risk_review_deck.gslides.' },
-    { role: 'bot', text: 'I have compiled the risk operations statistics into bullet points formatted for Slide 6 of `nexus_risk_review_deck.gslides`.' }
+    { role: 'user', text: 'Summarize financial privacy arguments for Slide 6 in nexus_risk_review_deck.gslides.' },
+    { role: 'bot', text: 'I have compiled the monetary policy statistics into bullet points formatted for Slide 6 of `nexus_risk_review_deck.gslides`.' }
   ],
   envId: null,
   activeSpaceId: spaceNexusId,
@@ -804,8 +808,8 @@ const space3Task1 = {
 
 const space3Task2 = {
   chatId: `${spaceNexusId}-task-2`,
-  projectName: 'Nexus Pay',
-  chatName: 'Update KYC Compliance Checklist',
+  projectName: 'Fintech & Monetary Policy',
+  chatName: 'Update AML Compliance Recommendations',
   type: 'inferred',
   taskType: 'inferred',
   personName: 'Dr. Jason Miller',
@@ -813,8 +817,8 @@ const space3Task2 = {
   associatedFileId: `${spaceNexusId}-file-3`,
   associatedFileName: 'nexus_risk_review_deck.gslides',
   messages: [
-    { role: 'user', text: 'Update Slide 14 in nexus_risk_review_deck.gslides with confirmed SOC2 Type II and KYC sign-off status.' },
-    { role: 'bot', text: 'Slide 14 outline has been updated with the completed security and compliance checklist items.' }
+    { role: 'user', text: 'Update Slide 14 in nexus_risk_review_deck.gslides with confirmed policy recommendations on open banking.' },
+    { role: 'bot', text: 'Slide 14 outline has been updated with the completed consumer financial data ownership checklist.' }
   ],
   envId: null,
   activeSpaceId: spaceNexusId,
@@ -828,8 +832,8 @@ const space3Task2 = {
 
 const space3Task3 = {
   chatId: `${spaceNexusId}-task-3`,
-  projectName: 'Nexus Pay',
-  chatName: 'Review Anti-Fraud User Journeys',
+  projectName: 'Fintech & Monetary Policy',
+  chatName: 'Review Financial Inclusion Paper',
   type: 'inferred',
   taskType: 'inferred',
   personName: 'Elena Vance',
@@ -837,8 +841,8 @@ const space3Task3 = {
   associatedFileId: `${spaceNexusId}-file-1`,
   associatedFileName: 'fraud_risk_audit_readout.doc',
   messages: [
-    { role: 'user', text: 'Schedule a risk review session with Dr. Miller to review anti-fraud passkey step-up prompts.' },
-    { role: 'bot', text: 'Risk review notes attached to `fraud_risk_audit_readout.doc`.' }
+    { role: 'user', text: 'Schedule a policy review session with Dr. Miller to review digital currency transaction privacy recommendations.' },
+    { role: 'bot', text: 'Policy review notes attached to `fraud_risk_audit_readout.doc`.' }
   ],
   envId: null,
   activeSpaceId: spaceNexusId,
@@ -896,4 +900,4 @@ saveJson(`${spaceNexusId}-task-1.json`, space3Task1);
 saveJson(`${spaceNexusId}-task-2.json`, space3Task2);
 saveJson(`${spaceNexusId}-task-3.json`, space3Task3);
 
-console.log("🎉 Successfully updated Trust & Safety Freelance Consultant mock database!");
+console.log("🎉 Successfully updated Policy Expert & Op-Ed Columnist mock database!");
