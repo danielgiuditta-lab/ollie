@@ -1162,6 +1162,21 @@ export function NativeViewer({
 
     // 4. Document/Markdown Premium Reader View
     if (isDocFile && mode === 'preview') {
+      const isDocNullState = Boolean(
+        (file.createdFromComposer || file.isDocJourney || isCreatedDocFromSpace || file.name === 'document.doc') &&
+        (!file.content || file.content.trim() === '' || file.content.includes('Tell me what'))
+      );
+
+      if (isDocNullState) {
+        return (
+          <div className="w-full h-full bg-white dark:bg-[#1E1F22] flex flex-col items-center justify-center select-none p-8 animate-fade-in">
+            <NullTitle theme={theme}>
+              Tell me what <br /> you want to create
+            </NullTitle>
+          </div>
+        );
+      }
+
       const lines = (file.content || '').split('\n');
       let title = (file.name || 'Document').replace(/\.[a-zA-Z]+$/, '');
       title = title.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');

@@ -106,9 +106,18 @@ export function CanvasHeader({
   const mimeLower = selectedFile?.mimeType?.toLowerCase() || '';
   const nameLower = selectedFile?.name?.toLowerCase() || '';
 
-  const isDoc = mimeLower.includes('document') || nameLower.endsWith('.gdoc') || nameLower.endsWith('.docx') || nameLower.endsWith('.doc');
   const isSheet = mimeLower.includes('spreadsheet') || nameLower.endsWith('.gsheet') || nameLower.endsWith('.xlsx') || nameLower.endsWith('.xls') || nameLower.endsWith('.csv');
-  const isSlide = mimeLower.includes('presentation') || nameLower.endsWith('.gslides') || nameLower.endsWith('.pptx') || nameLower.endsWith('.ppt');
+  const isSlide = mimeLower.includes('presentation') || nameLower.endsWith('.gslides') || nameLower.endsWith('.pptx') || nameLower.endsWith('.ppt') || selectedFile?.type === 'slide' || selectedFile?.taskType === 'slide';
+  const isDoc = !isSlide && !isSheet && (
+    mimeLower.includes('document') || 
+    nameLower.endsWith('.gdoc') || 
+    nameLower.endsWith('.docx') || 
+    nameLower.endsWith('.doc') || 
+    selectedFile?.type === 'doc' || 
+    selectedFile?.taskType === 'doc' || 
+    selectedFile?.isDocJourney ||
+    Boolean(selectedFile?.createdFromComposer && (selectedFile?.name === 'document.doc' || selectedFile?.type === 'doc'))
+  );
   const isForm = mimeLower.includes('form') || nameLower.includes('form');
 
   const isNativeDrive = selectedFile && (isDoc || isSheet || isSlide || isForm);
@@ -319,6 +328,27 @@ export function CanvasHeader({
             title="Open in Google Slides"
           >
             <span>Open in Slides</span>
+          </button>
+        )}
+
+        {/* Open in Docs button on direct doc view */}
+        {selectedFile && isDoc && (
+          <button
+            onClick={() => {
+              if (onOpenInDrive) {
+                onOpenInDrive(selectedFile);
+              } else {
+                const docDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
+                const targetUrl = (docDriveId && docDriveId.length > 5 && !docDriveId.includes('local') && !docDriveId.includes('mock')) 
+                  ? `https://docs.google.com/document/d/${docDriveId}/edit` 
+                  : 'https://docs.google.com/document';
+                window.open(targetUrl, '_blank');
+              }
+            }}
+            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
+            title="Open in Google Docs"
+          >
+            <span>Open in Docs</span>
           </button>
         )}
 
