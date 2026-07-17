@@ -1573,6 +1573,36 @@ export default function App() {
     const isToolOrSiteSession = directTargetDomain === 'tool' || currentChatSession?.taskType === 'site' || currentChatSession?.taskType === 'tool' || currentChatSession?.type === 'site';
 
     let activeTaskMode: any = currentTask;
+    if (selectedFile && selectedFile.name) {
+      const fileNameLower = selectedFile.name.toLowerCase();
+      const mimeLower = (selectedFile.mimeType || '').toLowerCase();
+      const isSlide = selectedFile.type === 'slide' ||
+                      selectedFile.taskType === 'slide' ||
+                      fileNameLower.endsWith('.gslides') ||
+                      fileNameLower.endsWith('.pptx') ||
+                      fileNameLower.endsWith('.ppt') ||
+                      fileNameLower.includes('slide') ||
+                      mimeLower.includes('presentation') ||
+                      mimeLower.includes('slide');
+                      
+      const isDoc = selectedFile.type === 'doc' ||
+                    selectedFile.taskType === 'doc' ||
+                    fileNameLower.endsWith('.doc') ||
+                    fileNameLower.endsWith('.gdoc') ||
+                    fileNameLower.endsWith('.md') ||
+                    fileNameLower.endsWith('.txt') ||
+                    fileNameLower.includes('document') ||
+                    mimeLower.includes('document');
+      
+      if (isSlide) {
+        activeTaskMode = 'slide';
+      } else if (isDoc) {
+        activeTaskMode = 'doc';
+      } else {
+        activeTaskMode = 'app';
+      }
+    }
+
     if (isToolOrSiteSession) {
       activeTaskMode = 'app';
       setCurrentTask('app');

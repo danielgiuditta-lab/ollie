@@ -378,12 +378,7 @@ export function ChatSidebar({
                     if (msg.role === 'user') {
                       return <UserMessage key={index} text={msg.text} theme={theme} isGroupChat={isGroupChat} />;
                     }
-                    const isProactive = Boolean(
-                      msg.isProactiveReview ||
-                      (activeChatId && typeof activeChatId === 'string' && (activeChatId.includes('-proactive-') || activeChatId.endsWith('-inferred') || activeChatId.includes('-task-'))) ||
-                      (selectedFile && (selectedFile.isInferredTask || selectedFile.isProactiveDraft || selectedFile.isProactive)) ||
-                      (currentTask && (currentTask === 'inferred' || currentTask === 'tracking'))
-                    );
+                    const isProactive = Boolean(msg.isProactiveReview);
 
                     const resolvedProactiveTask = msg.proactiveTask || (selectedFile?.task ? selectedFile.task : (selectedFile?.isInferredTask || selectedFile?.isProactiveDraft || selectedFile?.isProactive ? selectedFile : {
                       title: selectedFile?.title || selectedFile?.name || spaceName || 'Proactive Task',

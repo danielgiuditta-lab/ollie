@@ -59,4 +59,9 @@ assert.strictEqual(taskMode, 'slide', "Task mode should update to 'slide' when a
 const routeToDocJourney = shouldRouteToDocJourney(taskMode, "make more concise");
 assert.strictEqual(routeToDocJourney, true, "Should route directly to doc-journey when active task mode is 'slide'");
 
+// Scenario 3: Stale task mode (e.g. 'app') from previous message, but slide is still active
+const staleTaskMode = 'app';
+const resolvedTaskMode = determineTaskMode(slideFile, staleTaskMode);
+assert.strictEqual(resolvedTaskMode, 'slide', "Task mode should evaluate to 'slide' because the active selected file is a presentation");
+
 console.log("✔ Slide Task Mode Routing Verification Passed successfully!");
