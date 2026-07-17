@@ -3,7 +3,7 @@ import { SUGGESTED_ITEMS } from '../components/Canvas/HomeLanding';
 
 export const MOCK_USER_PROFILE = {
   email: 'mock-user@example.com',
-  name: 'Mock User',
+  name: 'Andrew',
   picture: ''
 };
 
