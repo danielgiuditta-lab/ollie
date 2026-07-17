@@ -495,9 +495,9 @@ export function LeftNav({
                   : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
               }`}
             >
-              <span>Model A: Replies</span>
+              <span>Model A: Classic UI</span>
               <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
-                Single canonical chat per space.
+                Original layout & classic inferred tasks.
               </span>
             </button>
             <button
@@ -511,9 +511,9 @@ export function LeftNav({
                   : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
               }`}
             >
-              <span>Model B: Multi-Chat</span>
+              <span>Model B: Experimental UI</span>
               <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
-                Multiple chats per space.
+                New layouts, task cells & canvas flow.
               </span>
             </button>
           </div>

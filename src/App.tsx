@@ -13,7 +13,9 @@ import { PeerCursors } from './components/Canvas/PeerCursors';
 import { CanvasSidebar } from './components/Canvas/CanvasSidebar';
 import { NativeViewer } from './components/Canvas/NativeViewer';
 import { SpaceDashboard } from './components/Canvas/SpaceDashboard';
+import { SpaceDashboardExperimental } from './components/Canvas/SpaceDashboardExperimental';
 import { HomeLanding, SUGGESTED_ITEMS, DEFAULT_TODO_ITEMS, cleanWorkspaceName } from './components/Canvas/HomeLanding';
+import { HomeLandingExperimental } from './components/Canvas/HomeLandingExperimental';
 import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
 import { InferredTaskDiffView } from './components/Canvas/InferredTaskDiffView';
@@ -2912,7 +2914,264 @@ export default function App() {
     setActiveSidebar('gemini');
   };
 
+  const handleProactiveTaskClickExperimental = (task: any) => {
+    console.log("Experimental canvas open treatment active", task);
+    const spaceName = cleanWorkspaceName(task.workspace || task.sourceName || 'Workspace');
+    setProjectName(spaceName);
+    setViewState('files');
+    setActiveProactiveTask(task);
+
+    let resolvedSpaceId = 'home';
+    let resolvedSpaceName = spaceName;
+    const isHomeTask = spaceName.toLowerCase() === 'home' || spaceName.toLowerCase() === 'home dashboard' || isHomeChatId(spaceName);
+
+    if (!isHomeTask) {
+      let matchingSpace: any = null;
+      const targetSpaceId = task.activeSpaceId || task.spaceId || task.parentSpaceId || activeSpaceId;
+      if (targetSpaceId && !isHomeChatId(targetSpaceId)) {
+        matchingSpace = projects.find(p => p.id === targetSpaceId || p.activeSpaceId === targetSpaceId) || 
+                        recentTasks.find(s => (s.id === targetSpaceId || s.activeSpaceId === targetSpaceId) && !isHomeChatId(s.activeSpaceId || s.id)) || 
+                        { id: targetSpaceId, name: spaceName };
+      }
+      resolvedSpaceId = matchingSpace ? (matchingSpace.activeSpaceId || matchingSpace.id) : 'home';
+      resolvedSpaceName = matchingSpace ? matchingSpace.name : spaceName;
+    }
+    setActiveSpaceId(resolvedSpaceId);
+    setActiveChatId(resolvedSpaceId);
+
+    const allKnownDriveFiles = [...driveFiles, ...suggestedListCache];
+    const searchString = [
+      spaceName,
+      task.sourceName,
+      task.source,
+      task.title,
+      task.description,
+      task.workspace,
+      task.filesToLoad?.[0]?.name
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    const matchedInDrive = allKnownDriveFiles.find(f => {
+      if (!f || !f.name) return false;
+      const fNameLower = f.name.toLowerCase();
+      const fNameClean = fNameLower.replace(/\.[^/.]+$/, "").trim();
+      if (!fNameClean || fNameClean.length < 2) return false;
+      return fNameLower === (task.filesToLoad?.[0]?.name || '').toLowerCase() ||
+             fNameClean === spaceName.toLowerCase() ||
+             searchString.includes(fNameClean);
+    });
+    const isSlideTask = Boolean(
+      task.type === 'slide' ||
+      task.taskType === 'slide' ||
+      task.sourceMimeType?.includes('presentation') ||
+      task.sourceMimeType?.includes('slide') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('presentation') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('slide') ||
+      matchedInDrive?.mimeType?.includes('presentation') ||
+      matchedInDrive?.mimeType?.includes('slide') ||
+      task.sourceName?.endsWith('.gslides') ||
+      task.sourceName?.endsWith('.pptx') ||
+      matchedInDrive?.name?.endsWith('.gslides') ||
+      task.title?.toLowerCase().includes('slide') ||
+      task.title?.toLowerCase().includes('presentation') ||
+      task.description?.toLowerCase().includes('slide') ||
+      task.description?.toLowerCase().includes('presentation') ||
+      task.titleDone?.toLowerCase().includes('slide') ||
+      task.titleDone?.toLowerCase().includes('presentation')
+    );
+
+    const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id;
+    const targetMime = task.filesToLoad?.[0]?.mimeType ||
+      task.sourceMimeType ||
+      matchedInDrive?.mimeType ||
+      (isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document');
+
+    let targetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || spaceName || 'Proactive Output';
+    if (isSlideTask) {
+      if (!targetName.toLowerCase().endsWith('.gslides') && !targetName.toLowerCase().endsWith('.pptx')) {
+        targetName = targetName.replace(/\.[^/.]+$/, "") + '.gslides';
+      }
+    }
+
+    const slideContent = task.updatedMarkdown || task.draftData?.draftContent || `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Proactive Agent Output'}\n- ${task.descriptionDone || task.description || 'Incorporated feedback and updated presentation slides.'}\n- Aligned visual layout and content for team review.\n- Autosaved slide draft to workspace.`;
+
+    const proactiveSlideFile = {
+      ...task,
+      name: targetName,
+      type: isSlideTask ? 'slide' : 'doc',
+      taskType: isSlideTask ? 'slide' : 'doc',
+      content: slideContent,
+      driveId: targetId || `mock-drive-${task.id}`,
+      id: `proactive-slide-${task.id}`,
+      mimeType: isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document',
+      isProactiveDraft: !task.directSlideView && task.showDiffView !== false,
+      directSlideView: task.directSlideView,
+      showDiffView: task.showDiffView,
+      summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive presentation draft.",
+      originalMarkdown: task.originalMarkdown,
+      updatedMarkdown: task.updatedMarkdown,
+      task: task
+    };
+
+    setSandboxFiles([proactiveSlideFile]);
+    setSelectedFile(proactiveSlideFile);
+
+    if (targetId && accessToken) {
+      (async () => {
+        try {
+          const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${targetId}?fields=id,name,mimeType`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
+          if (metaRes.ok) {
+            const meta = await metaRes.json();
+            const mType = (meta.mimeType || '').toLowerCase();
+            let expUrl = '';
+            if (mType.includes('document')) {
+              expUrl = `https://www.googleapis.com/drive/v3/files/${targetId}/export?mimeType=text/plain`;
+            } else if (mType.includes('spreadsheet')) {
+              expUrl = `https://www.googleapis.com/drive/v3/files/${targetId}/export?mimeType=text/csv`;
+            } else if (mType.includes('presentation') || mType.includes('slide')) {
+              expUrl = `https://www.googleapis.com/drive/v3/files/${targetId}/export?mimeType=text/plain`;
+            } else {
+              expUrl = `https://www.googleapis.com/drive/v3/files/${targetId}?alt=media`;
+            }
+            
+            const contentRes = await fetch(expUrl, {
+              headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            if (contentRes.ok) {
+              const textOrDataUrl = await contentRes.text();
+              const isResolvedSlide = isSlideTask || mType.includes('presentation') || mType.includes('slide');
+              const isResolvedDoc = !isResolvedSlide && (mType.includes('document') || mType.includes('text'));
+
+              let fileType = 'code';
+              if (isResolvedSlide) fileType = 'slide';
+              else if (isResolvedDoc) fileType = 'doc';
+
+              let finalName = meta.name || spaceName;
+              if (isResolvedSlide && !finalName.toLowerCase().endsWith('.gslides') && !finalName.toLowerCase().endsWith('.pptx')) {
+                finalName = finalName.replace(/\.[^/.]+$/, "") + '.gslides';
+              }
+
+              const realFileObj: any = {
+                name: finalName,
+                type: fileType,
+                taskType: fileType,
+                content: task.draftData?.draftContent || textOrDataUrl,
+                driveId: targetId,
+                mimeType: isResolvedSlide ? 'application/vnd.google-apps.presentation' : meta.mimeType,
+                id: `real-file-${targetId}`,
+                isProactiveDraft: true,
+                summaryOfChanges: task.draftData?.summaryOfChanges || task.descriptionDone || task.description
+              };
+              setSandboxFiles([realFileObj]);
+              setSelectedFile(realFileObj);
+
+              if (!task.draftData?.draftContent) {
+                fetch('/api/proactive-draft', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ task, originalContent: textOrDataUrl })
+                }).then(r => r.json()).then(draft => {
+                  if (draft.draftContent) {
+                    const updatedDraftObj = {
+                      ...realFileObj,
+                      content: draft.draftContent,
+                      isProactiveDraft: true,
+                      summaryOfChanges: draft.summaryOfChanges
+                    };
+                    setSandboxFiles([updatedDraftObj]);
+                    setSelectedFile(updatedDraftObj);
+                    setActiveProactiveTask((prev: any) => prev ? { ...prev, draftData: draft } : null);
+                  }
+                }).catch(e => console.error("Error drafting against live drive:", e));
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching live Drive content in handleProactiveTaskClick:", err);
+        }
+      })();
+    }
+
+    const tempChatId = `${spaceName}-proactive-${task.id || Date.now()}`;
+    
+    const handleApproveProactive = () => {
+      setTodoItems(prev => {
+        const updated = prev.map(t => t.id === task.id ? { ...t, status: 'done', title: t.titleDone || t.title, description: t.descriptionDone || t.description } : t);
+        const spaceKey = activeSpaceId || 'home';
+        if (todoCacheRef.current) {
+          todoCacheRef.current[spaceKey] = updated;
+        }
+        return updated;
+      });
+      setActiveProactiveTask((prev: any) => prev ? { ...prev, status: 'done', title: prev.titleDone || prev.title, description: prev.descriptionDone || prev.description } : null);
+      setMessages(prev => prev.map(m => m.isProactiveReview ? {
+        ...m,
+        proactiveTask: { ...m.proactiveTask, status: 'done', title: m.proactiveTask.titleDone || m.proactiveTask.title, description: m.proactiveTask.descriptionDone || m.proactiveTask.description }
+      } : m));
+    };
+
+    const handleFeedbackProactive = () => {
+      const composerInput = document.querySelector('textarea[placeholder*="Ask Gemini"], textarea[placeholder*="Ask anything"], textarea') as HTMLTextAreaElement | null;
+      if (composerInput) {
+        composerInput.value = "I'd like to do this differently: ";
+        composerInput.focus();
+      }
+    };
+
+    const proactiveMsgs = [
+      { role: 'user', text: `Review Proactive Action: ${task.titleDone || task.title}` },
+      {
+        role: 'bot',
+        text: '',
+        isProactiveReview: true,
+        proactiveTask: task,
+        onApproveProactive: handleApproveProactive,
+        onFeedbackProactive: handleFeedbackProactive
+      }
+    ];
+
+    chatSessionsCacheRef.current[tempChatId] = { messages: proactiveMsgs };
+    workspaceCacheRef.current[tempChatId] = {
+      ingestedFiles: [],
+      sandboxFiles: [proactiveSlideFile],
+      envId: null,
+      sandboxUrl: '',
+      messages: proactiveMsgs,
+      projectName: spaceName,
+      selectedFile: proactiveSlideFile,
+      indexFileSelected: false,
+      viewState: 'files'
+    };
+
+    setRecentTasks(prev => {
+      const exists = prev.some(item => item && (item.id === tempChatId || item.chatId === tempChatId));
+      if (!exists) {
+        let cName = task.titleDone || task.title || task.description || 'Task';
+        if (cName.length > 22) {
+          cName = cName.substring(0, 20).trim() + '...';
+        }
+        return [{
+          id: tempChatId,
+          chatId: tempChatId,
+          chatName: cName,
+          activeSpaceId: resolvedSpaceId,
+          name: resolvedSpaceName,
+          messages: proactiveMsgs
+        }, ...prev];
+      }
+      return prev;
+    });
+
+    setActiveChatId(tempChatId);
+    setMessages(proactiveMsgs);
+    setActiveSidebar('gemini');
+  };
+
   const handleProactiveTaskClick = (task: any) => {
+    if (chatModel === 'B') {
+      return handleProactiveTaskClickExperimental(task);
+    }
     const spaceName = cleanWorkspaceName(task.workspace || task.sourceName || 'Workspace');
     setProjectName(spaceName);
     setViewState('files');
@@ -5859,47 +6118,91 @@ export default function App() {
                   selectedFile={selectedFile}
                 >
                   <div className={(!isIngesting && ((viewState === 'home' && !selectedFile) || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
-                    <HomeLanding 
-                      accessToken={accessToken} 
-                      userProfile={userProfile} 
-                      onLogin={() => login()} 
-                      setViewState={setViewState} 
-                      setSandboxFiles={setSandboxFiles} 
-                      setSelectedFile={setSelectedFile} 
-                      setProjectName={setProjectName}
-                      handleSendMessage={handleSendMessage}
-                      setActiveSpaceId={setActiveSpaceId}
-                      handleSpaceIngest={handleDirectoryNavigate}
-                      suggestedList={suggestedListCache}
-                      setSuggestedList={setSuggestedListCache}
-                      isLoadingDrive={isDriveSuggestLoading}
-                      setIsLoadingDrive={setIsDriveSuggestLoading}
-                      sandboxUrl={sandboxUrl}
-                      envId={envId}
-                      setActiveSidebar={setActiveSidebar}
-                      theme={appTheme}
-                      journey={homeJourney}
-                      onFileRemove={handleRemoveFile}
-                      onCreateArtifact={handleCreateArtifactApp}
-                      onResetChat={resetChatForDirectoryItem}
-                      activeSpaceId={activeSpaceId}
-                      projectName={projectName}
-                      sandboxFiles={getAllSpaceFiles(activeSpaceId || getHomeChatId())}
-                      todoItems={todoItems}
-                      setTodoItems={setTodoItems}
-                      isLoggedIn={isLoggedIn}
-                      onBypassAuth={() => setBypassAuth(true)}
-                      todoCacheRef={todoCacheRef}
-                      onProactiveTaskClick={handleProactiveTaskClick}
-                      spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
-                      onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
-                      selectedFile={selectedFile}
-                      pinnedArtifactIds={getSpacePins(activeSpaceId || getHomeChatId())}
-                      onRemovePin={handleUnpinArtifact}
-                      onPinArtifact={handlePinArtifact}
-                      onReorderPins={handleReorderPins}
-                      onSelectArtifact={handleArtifactSelect}
-                    />
+                    {chatModel === 'B' ? (
+                      <HomeLandingExperimental 
+                        accessToken={accessToken} 
+                        userProfile={userProfile} 
+                        onLogin={() => login()} 
+                        setViewState={setViewState} 
+                        setSandboxFiles={setSandboxFiles} 
+                        setSelectedFile={setSelectedFile} 
+                        setProjectName={setProjectName}
+                        handleSendMessage={handleSendMessage}
+                        setActiveSpaceId={setActiveSpaceId}
+                        handleSpaceIngest={handleDirectoryNavigate}
+                        suggestedList={suggestedListCache}
+                        setSuggestedList={setSuggestedListCache}
+                        isLoadingDrive={isDriveSuggestLoading}
+                        setIsLoadingDrive={setIsDriveSuggestLoading}
+                        sandboxUrl={sandboxUrl}
+                        envId={envId}
+                        setActiveSidebar={setActiveSidebar}
+                        theme={appTheme}
+                        journey={homeJourney}
+                        onFileRemove={handleRemoveFile}
+                        onCreateArtifact={handleCreateArtifactApp}
+                        onResetChat={resetChatForDirectoryItem}
+                        activeSpaceId={activeSpaceId}
+                        projectName={projectName}
+                        sandboxFiles={getAllSpaceFiles(activeSpaceId || getHomeChatId())}
+                        todoItems={todoItems}
+                        setTodoItems={setTodoItems}
+                        isLoggedIn={isLoggedIn}
+                        onBypassAuth={() => setBypassAuth(true)}
+                        todoCacheRef={todoCacheRef}
+                        onProactiveTaskClick={handleProactiveTaskClick}
+                        spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
+                        onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
+                        selectedFile={selectedFile}
+                        pinnedArtifactIds={getSpacePins(activeSpaceId || getHomeChatId())}
+                        onRemovePin={handleUnpinArtifact}
+                        onPinArtifact={handlePinArtifact}
+                        onReorderPins={handleReorderPins}
+                        onSelectArtifact={handleArtifactSelect}
+                      />
+                    ) : (
+                      <HomeLanding 
+                        accessToken={accessToken} 
+                        userProfile={userProfile} 
+                        onLogin={() => login()} 
+                        setViewState={setViewState} 
+                        setSandboxFiles={setSandboxFiles} 
+                        setSelectedFile={setSelectedFile} 
+                        setProjectName={setProjectName}
+                        handleSendMessage={handleSendMessage}
+                        setActiveSpaceId={setActiveSpaceId}
+                        handleSpaceIngest={handleDirectoryNavigate}
+                        suggestedList={suggestedListCache}
+                        setSuggestedList={setSuggestedListCache}
+                        isLoadingDrive={isDriveSuggestLoading}
+                        setIsLoadingDrive={setIsDriveSuggestLoading}
+                        sandboxUrl={sandboxUrl}
+                        envId={envId}
+                        setActiveSidebar={setActiveSidebar}
+                        theme={appTheme}
+                        journey={homeJourney}
+                        onFileRemove={handleRemoveFile}
+                        onCreateArtifact={handleCreateArtifactApp}
+                        onResetChat={resetChatForDirectoryItem}
+                        activeSpaceId={activeSpaceId}
+                        projectName={projectName}
+                        sandboxFiles={getAllSpaceFiles(activeSpaceId || getHomeChatId())}
+                        todoItems={todoItems}
+                        setTodoItems={setTodoItems}
+                        isLoggedIn={isLoggedIn}
+                        onBypassAuth={() => setBypassAuth(true)}
+                        todoCacheRef={todoCacheRef}
+                        onProactiveTaskClick={handleProactiveTaskClick}
+                        spaceMode={activeSpaceId ? spaceModes[activeSpaceId] : undefined}
+                        onSelectSpaceMode={(mode) => activeSpaceId && handleSelectSpaceMode(activeSpaceId, mode)}
+                        selectedFile={selectedFile}
+                        pinnedArtifactIds={getSpacePins(activeSpaceId || getHomeChatId())}
+                        onRemovePin={handleUnpinArtifact}
+                        onPinArtifact={handlePinArtifact}
+                        onReorderPins={handleReorderPins}
+                        onSelectArtifact={handleArtifactSelect}
+                      />
+                    )}
                   </div>
                   {isIngesting && (
                     <div className="w-full h-full relative flex items-center justify-center overflow-hidden bg-white dark:bg-[#1E1F22] rounded-[32px]">
@@ -5965,20 +6268,37 @@ export default function App() {
                     </div>
                   )}
                   {viewState === 'dashboard' && (
-                    <SpaceDashboard 
-                      spaceId={activeSpaceId || ''}
-                      spaceName={projectName || 'Space'}
-                      pinnedArtifactIds={getSpacePins(activeSpaceId)}
-                      sandboxFiles={getAllSpaceFiles(activeSpaceId)}
-                      onSelectArtifact={handleArtifactSelect}
-                      onRemovePin={handleUnpinArtifact}
-                      onPinArtifact={handlePinArtifact}
-                      onReorderPins={handleReorderPins}
-                      onCreateArtifact={handleCreateArtifactApp}
-                      sandboxUrl={sandboxUrl}
-                      envId={envId}
-                      theme={appTheme}
-                    />
+                    chatModel === 'B' ? (
+                      <SpaceDashboardExperimental 
+                        spaceId={activeSpaceId || ''}
+                        spaceName={projectName || 'Space'}
+                        pinnedArtifactIds={getSpacePins(activeSpaceId)}
+                        sandboxFiles={getAllSpaceFiles(activeSpaceId)}
+                        onSelectArtifact={handleArtifactSelect}
+                        onRemovePin={handleUnpinArtifact}
+                        onPinArtifact={handlePinArtifact}
+                        onReorderPins={handleReorderPins}
+                        onCreateArtifact={handleCreateArtifactApp}
+                        sandboxUrl={sandboxUrl}
+                        envId={envId}
+                        theme={appTheme}
+                      />
+                    ) : (
+                      <SpaceDashboard 
+                        spaceId={activeSpaceId || ''}
+                        spaceName={projectName || 'Space'}
+                        pinnedArtifactIds={getSpacePins(activeSpaceId)}
+                        sandboxFiles={getAllSpaceFiles(activeSpaceId)}
+                        onSelectArtifact={handleArtifactSelect}
+                        onRemovePin={handleUnpinArtifact}
+                        onPinArtifact={handlePinArtifact}
+                        onReorderPins={handleReorderPins}
+                        onCreateArtifact={handleCreateArtifactApp}
+                        sandboxUrl={sandboxUrl}
+                        envId={envId}
+                        theme={appTheme}
+                      />
+                    )
                   )}
                 </CanvasMain>
               )}
