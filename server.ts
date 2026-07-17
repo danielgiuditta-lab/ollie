@@ -1867,10 +1867,64 @@ Guidelines:
     }
   });
 
+function tightenSlideMarkdown(slideMarkdown: string): string {
+  const lines = slideMarkdown.split('\n');
+  const updatedLines = lines.map(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+      let prefix = "";
+      let mainText = trimmed;
+      const bulletMatch = trimmed.match(/^([\-\*]\s*(?:\*\*[^*]+\*\*:\s*)?)(.*)$/);
+      if (bulletMatch) {
+        prefix = bulletMatch[1]; 
+        mainText = bulletMatch[2];
+      }
+      
+      const shortText = mainText
+        .replace(/Foreign Policy Advisory Board & Technology Policy Summit/g, "Foreign Policy Advisory Board")
+        .replace(/Democratic governance must institute proactive institutional oversight without stifling open scientific inquiry/g, "Proactive governance without stifling open scientific inquiry")
+        .replace(/Harmonizing safety standards across international jurisdictions while maintaining public transparency/g, "Harmonizing safety standards while maintaining transparency")
+        .replace(/Statutory compliance requirements tied to system deployment domain/g, "Compliance tied to deployment domain")
+        .replace(/Mandatory third-party impact assessments for foundational models prior to market access/g, "Mandatory third-party assessments prior to market access")
+        .replace(/Voluntary red-teaming standards and federal procurement policy levers/g, "Voluntary standards and procurement levers")
+        .replace(/Shifting accountability to foundation model creators for systemic downstream harms/g, "Accountability shifted to model creators")
+        .replace(/Statutory exemptions protecting public-interest academic research/g, "Exemptions for academic research")
+        .replace(/Universal provenance standards for synthesized media in civic elections/g, "Provenance standards for synthesized media")
+        .replace(/Shared benchmark definitions for foundation model capabilities/g, "Shared capability benchmarks")
+        .replace(/Joint oversight bodies monitoring cross-border AI deployment risks/g, "Joint monitoring of cross-border risks")
+        .replace(/Imposing statutory liability on base model creators for foreseeable systemic harms/g, "Statutory liability for model creators")
+        .replace(/Protecting downstream small businesses and non-profit application developers/g, "Protecting downstream developers")
+        .replace(/Mandatory documentation of copyright-protected ingestion corpora/g, "Mandatory training data documentation")
+        .replace(/Clear guidelines establishing legal rights for public-interest model training/g, "Legal rights for public-interest training")
+        .replace(/Funding open compute infrastructure to prevent monopoly concentrations of technological power/g, "Funding open compute infrastructure")
+        .replace(/Enforcing strict regulatory reporting triggers only above massive training limits \(`10\^26 FLOPs`\)/g, "Reporting triggers only above `10^26 FLOPs`")
+        .replace(/Protecting open distribution of weights to allow independent safety audits and public accountability/g, "Open distribution of weights for independent audits")
+        .replace(/Ensuring incumbent AI firms cannot leverage compliance costs to eliminate independent competition/g, "Preventing regulatory capture by incumbents")
+        .replace(/Multidisciplinary body composed of ethicists, security experts, and public advocates/g, "Multidisciplinary body of experts and advocates")
+        .replace(/Universal C2PA watermarking legislation ahead of major civic election cycles/g, "Universal watermarking before elections")
+        .replace(/Codifying transatlantic mutual recognition of safety benchmarks and risk mitigation protocols/g, "Transatlantic safety benchmark alignment")
+        .replace(/ tensions? between (.*?) and (.*?)(?=\.|$)/gi, " tension between $1 & $2")
+        .replace(/ established /gi, " ")
+        .replace(/ implementation of /gi, " ")
+        .replace(/ particularly /gi, " ")
+        .replace(/ which includes? /gi, " including ")
+        .replace(/ with the goal of /gi, " to ")
+        .replace(/ in order to /gi, " to ")
+        .replace(/ through the use of /gi, " via ")
+        .replace(/ is designed to /gi, " to ")
+        .replace(/ is responsible for /gi, " handles ");
+      
+      return prefix + shortText;
+    }
+    return line;
+  });
+  return updatedLines.join('\n');
+}
+
   app.post("/api/doc-journey", async (req, res) => {
     console.log("[DocJourney Server] Received request at /api/doc-journey");
     try {
-      const { prompt, activeFileContent, activeFileName, contextFileIds, history } = req.body;
+      const { prompt, activeFileContent, activeFileName, contextFileIds, history, activeSlideIndex } = req.body;
       const authHeader = req.headers.authorization;
       console.log(`[DocJourney Server] Prompt: "${prompt}", activeFileName: "${activeFileName}", contextFileIds count: ${contextFileIds?.length || 0}`);
       
@@ -1899,7 +1953,38 @@ Guidelines:
           console.error("[DocJourney Server] Error reading mock tasks for streaming:", err);
         }
 
-        if (foundTask) {
+        const isSlide = (activeFileName || '').toLowerCase().includes('slide') || 
+                        (activeFileName || '').toLowerCase().endsWith('.ppt') || 
+                        (activeFileName || '').toLowerCase().endsWith('.pptx') || 
+                        (activeFileName || '').toLowerCase().endsWith('.gslides');
+
+        const promptLower = (prompt || '').toLowerCase();
+        const isTightenRequest = ['concise', 'tighten', 'shorten', 'reduce', 'simplify', 'tighter', 'clean'].some(kw => promptLower.includes(kw));
+        const isAddRequest = ['add', 'new', 'more', 'insert', 'append'].some(kw => promptLower.includes(kw));
+        const targetIdx = activeSlideIndex !== undefined ? Number(activeSlideIndex) : 0;
+        const isUserEditRequest = isTightenRequest || isAddRequest || promptLower.includes("concise") || promptLower.includes("tighten") || promptLower.includes("shorten");
+
+        if (isSlide && (isUserEditRequest || promptLower.length > 0) && (!foundTask || isUserEditRequest)) {
+          try {
+            const rawSlides = (activeFileContent || '').split(/(?=\n# )|(?=^# )|\n---|(?=\n---\n)/g).map((s: string) => s.trim()).filter((s: string) => s.length > 0 && s !== '---');
+            if (rawSlides.length > 0 && targetIdx >= 0 && targetIdx < rawSlides.length) {
+              let slideMarkdown = rawSlides[targetIdx];
+              if (isTightenRequest) {
+                slideMarkdown = tightenSlideMarkdown(slideMarkdown);
+              } else if (isAddRequest) {
+                slideMarkdown = slideMarkdown + "\n- **Added Point**: " + (prompt.length > 45 ? prompt.substring(0, 42) + "..." : prompt);
+              } else {
+                slideMarkdown = slideMarkdown + "\n- Modified: " + prompt;
+              }
+              rawSlides[targetIdx] = slideMarkdown;
+            }
+            const newContent = rawSlides.join('\n\n---\n\n');
+            mockResponse = `<chat>I've updated Slide ${targetIdx + 1} to be ${isTightenRequest ? 'more concise' : 'updated'} based on your request.</chat>\n<doc>${newContent}</doc>`;
+          } catch (e) {
+            console.error("Failed to execute rule-based mock slide edit:", e);
+            mockResponse = `<chat>I've updated the presentation "${activeFileName || 'presentation.gslides'}" based on your request.</chat>\n<doc>${activeFileContent || '# Presentation'}\n\n---\n\n# Slide\n- Updated content based on prompt: "${prompt}"</doc>`;
+          }
+        } else if (foundTask) {
           mockResponse = `<chat>${foundTask.summaryOfChanges || 'I have completed the task and updated the draft.'}</chat>\n<doc>${foundTask.updatedMarkdown || foundTask.originalMarkdown || ''}</doc>`;
         } else {
           mockResponse = `<chat>I've updated the document "${activeFileName || 'document.doc'}" based on your request.</chat>\n<doc>${activeFileContent || '# Document'}\n\n- Updated content based on prompt: "${prompt}"</doc>`;
@@ -1923,12 +2008,16 @@ Guidelines:
           res.write(`data: ${JSON.stringify({ action: "sources", files: mockSources })}\n\n`);
         }
 
-        const chunkSize = 40;
+        // Send changes extremely fast!
+        const isEditAction = isSlide && !foundTask;
+        const chunkSize = isEditAction ? 150 : 40;
+        const chunkDelay = isEditAction ? 5 : 20;
+
         for (let i = 0; i < mockResponse.length; i += chunkSize) {
           if (res.writableEnded || res.destroyed) break;
           const chunk = mockResponse.substring(i, i + chunkSize);
           res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
-          await new Promise(r => setTimeout(r, 20));
+          await new Promise(r => setTimeout(r, chunkDelay));
           if (typeof (res as any).flush === 'function') {
             (res as any).flush();
           }
@@ -2061,13 +2150,18 @@ Guidelines:
         ? "2. <doc>...</doc>: The COMPLETE updated Markdown content for the presentation slides. Each slide MUST begin with a level 1 markdown heading ('# Slide Title'), followed by bullet points ('- Point 1', '- Point 2') for the content of that slide. Do NOT write standard paragraphs; organize all content into distinct slide pages with titles and bullets. DO NOT use horizontal rules or dividers (---, ***, <hr>)."
         : "2. <doc>...</doc>: The COMPLETE updated Markdown content for the document. This section will be rendered live inside their document canvas editor. Ensure it is formatted cleanly with clear Markdown headings (#, ##), bullet points, and paragraphs. DO NOT use horizontal rules or dividers (---, ***, <hr>) in the document content.";
 
+      let activeSlideContext = "";
+      if (isSlide && activeSlideIndex !== undefined) {
+        activeSlideContext = `\n\nCRITICAL CONTEXT: The user is currently viewing Slide #${Number(activeSlideIndex) + 1} (1-based index). If their prompt/request is relative or edits the content (such as "make this more concise", "tighten", "add a point here", "rewrite title"), it specifically targets Slide #${Number(activeSlideIndex) + 1}. Modify that slide accordingly, keeping the rest of the presentation slides intact unless requested otherwise. Do NOT change slide headers or general slide organization unless requested.`;
+      }
+
       const systemPrompt = `You are an expert AI authoring assistant working in a collaborative workspace.
 The user is writing a ${docTypeLabel} titled "${activeFileName || 'document.doc'}".
 Current content:
 ---
 ${activeFileContent || ''}
 ---
-${contextText ? `\nReference files from Google Drive provided by user:\n${contextText}\n` : ''}
+${contextText ? `\nReference files from Google Drive provided by user:\n${contextText}\n` : ''}${activeSlideContext}
 
 CRITICAL RULES FOR AUTHORING NEW DOCUMENTS:
 - The Reference files from Google Drive provided below are strictly for background context (e.g. project details, terminology).

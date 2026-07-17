@@ -49,6 +49,8 @@ interface NativeViewerProps {
   theme?: 'light' | 'dark';
   todoItems?: any[];
   onProactiveTaskClick?: (task: any) => void;
+  activeSlideIndex?: number;
+  onActiveSlideIndexChange?: (index: number) => void;
 }
 
 const isIframeViewer = false;
@@ -63,7 +65,9 @@ export function NativeViewer({
   isPreviewCard = false,
   theme = 'light',
   todoItems,
-  onProactiveTaskClick
+  onProactiveTaskClick,
+  activeSlideIndex: propActiveSlideIndex,
+  onActiveSlideIndexChange
 }: NativeViewerProps) {
   if (isPreviewCard && isIframeViewer) {
     const rawId = file.driveId || file.id || '';
@@ -142,7 +146,14 @@ export function NativeViewer({
 
   const [internalMode, setInternalMode] = useState<'file' | 'preview'>('preview');
 
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [localActiveSlideIndex, setLocalActiveSlideIndex] = useState(0);
+  const activeSlideIndex = propActiveSlideIndex !== undefined ? propActiveSlideIndex : localActiveSlideIndex;
+  const handleSelectSlide = (idx: number) => {
+    if (onActiveSlideIndexChange) {
+      onActiveSlideIndexChange(idx);
+    }
+    setLocalActiveSlideIndex(idx);
+  };
 
   const previewRef = React.useRef<HTMLDivElement>(null);
   const [previewDims, setPreviewDims] = useState({ width: 0, height: 0 });
@@ -952,7 +963,7 @@ export function NativeViewer({
                         {idx + 1}
                       </span>
                       <button
-                        onClick={() => setActiveSlideIndex(idx)}
+                        onClick={() => handleSelectSlide(idx)}
                         className={`w-[164px] h-[104px] rounded-xl border transition-all duration-200 overflow-hidden relative cursor-pointer text-left p-2 flex flex-col justify-start ${
                           isActive
                             ? 'ring-2 ring-blue-500 border-blue-500 dark:border-blue-400 bg-white dark:bg-[#1E1F22] shadow-md scale-[1.02]'

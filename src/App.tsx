@@ -104,6 +104,7 @@ export default function App() {
   });
 
   useEffect(() => {
+    setActiveSlideIndex(0);
     if (selectedFile && selectedFile.name) {
       const fileName = selectedFile.name;
       if (fileName !== lastSelectedFileRef.current) {
@@ -120,6 +121,7 @@ export default function App() {
   }, [selectedFile]);
 
   const [messages, setMessages] = useState<any[]>([]);
+  const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
   const [envId, setEnvId] = useState<string | null>(null);
   const [sandboxUrl, setSandboxUrl] = useState<string>('');
   const [sandboxFiles, setSandboxFiles] = useState<any[]>([]);
@@ -1657,7 +1659,8 @@ export default function App() {
             activeFileContent: activeDoc.content || '',
             contextFileIds: contextFiles ? contextFiles.map(c => c.id || c.driveId) : [],
             activeSpaceId: activeSpaceIdRef.current || activeSpaceId,
-            history: messages.filter(m => m.text)
+            history: messages.filter(m => m.text),
+            activeSlideIndex: activeSlideIndex
           })
         });
 
@@ -6286,6 +6289,8 @@ export default function App() {
                           theme={appTheme}
                           todoItems={todoItems}
                           onProactiveTaskClick={handleProactiveTaskClick}
+                          activeSlideIndex={activeSlideIndex}
+                          onActiveSlideIndexChange={setActiveSlideIndex}
                         />
                       )}
                     </div>
