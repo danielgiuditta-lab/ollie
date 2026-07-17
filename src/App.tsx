@@ -1508,7 +1508,10 @@ export default function App() {
       try {
         const res = await fetch('/api/organize-files', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
+          },
           body: JSON.stringify({ files: activeFilesToOrganize })
         });
         const data = await res.json();
@@ -1565,7 +1568,10 @@ export default function App() {
         console.log("[HandleSendMessage Debug] Invoking /api/classify-intent for prompt:", text);
         const classRes = await fetch('/api/classify-intent', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
+          },
           body: JSON.stringify({ prompt: text, activeFileName: selectedFile?.name })
         });
         if (classRes.ok) {
@@ -2207,7 +2213,10 @@ export default function App() {
     // Summarize the prompt
     fetch('/api/summarize-task', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
+      },
       body: JSON.stringify({ prompt: text })
     })
       .then(res => res.json())
@@ -3072,7 +3081,10 @@ export default function App() {
               if (!task.draftData?.draftContent) {
                 fetch('/api/proactive-draft', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
+                  },
                   body: JSON.stringify({ task, originalContent: textOrDataUrl })
                 }).then(r => r.json()).then(draft => {
                   if (draft.draftContent) {
@@ -3328,7 +3340,10 @@ export default function App() {
               if (!task.draftData?.draftContent) {
                 fetch('/api/proactive-draft', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
+                  },
                   body: JSON.stringify({ task, originalContent: textOrDataUrl })
                 }).then(r => r.json()).then(draft => {
                   if (draft.draftContent) {
@@ -3653,7 +3668,10 @@ export default function App() {
         try {
           const sumRes = await fetch('/api/summarize-task', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
+            },
             body: JSON.stringify({ prompt: sourcePrompt })
           });
           const sumData = await sumRes.json();

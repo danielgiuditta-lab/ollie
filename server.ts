@@ -1322,6 +1322,17 @@ Ensure all IDs are unique. CRITICAL: All task titles, descriptions, and actions 
         return res.status(400).json({ error: "Task object is required" });
       }
 
+      const authHeader = req.headers.authorization;
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+      if (!isValidAuth) {
+        console.log("[Server /api/proactive-draft] Mock path. Bypassing Gemini API.");
+        return res.json({
+          draftType: "file_edit",
+          draftContent: task.updatedMarkdown || task.originalMarkdown || "",
+          summaryOfChanges: task.summaryOfChanges || task.descriptionDone || task.description || "Prepared draft."
+        });
+      }
+
       const ai = getGenAI();
       if (!ai) {
         return res.status(550).json({ error: "Gemini API key is not configured on the server." });
@@ -1567,6 +1578,35 @@ Do not include any markdown formatting, code block wrappers (like \`\`\`json), o
         return res.status(400).json({ error: "Prompt is required" });
       }
 
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+      if (!isValidAuth) {
+        console.log("[AI Summary Server] Mock path. Bypassing Gemini API and streaming mock summary.");
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        if (typeof (res as any).flushHeaders === 'function') {
+          (res as any).flushHeaders();
+        }
+
+        const mockSummaryText = `# Workspace Summary Report (Mock)\n\nBased on your simulated workspace activity and files in the Fintech & Digital Policy folders:\n\n- **Policy Development**: 3 slide presentations and 2 governance docs have been drafted.\n- **Action Items**: Ollie is currently tracking 3 pending tasks for you.\n- **Recent Collaboration**: Sarah Lin and Elena Vance updated the AI red teaming audit logs yesterday.\n\n*This is a simulated workspace report generated in mock demo mode.*`;
+        
+        const chunkSize = 40;
+        for (let i = 0; i < mockSummaryText.length; i += chunkSize) {
+          if (res.writableEnded || res.destroyed) break;
+          const chunk = mockSummaryText.substring(i, i + chunkSize);
+          res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+          await new Promise(r => setTimeout(r, 20));
+          if (typeof (res as any).flush === 'function') {
+            (res as any).flush();
+          }
+        }
+        if (!res.writableEnded && !res.destroyed) {
+          res.end();
+        }
+        return;
+      }
+
       const ai = getGenAI();
       if (!ai) {
         return res.status(550).json({ error: "Gemini API key is not configured on the server." });
@@ -1578,8 +1618,6 @@ Do not include any markdown formatting, code block wrappers (like \`\`\`json), o
       res.setHeader('Connection', 'keep-alive');
       res.setHeader('X-Accel-Buffering', 'no');
       res.flushHeaders();
-
-      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
 
       let files: any[] = [];
       let driveQuery = "";
@@ -1841,6 +1879,67 @@ Guidelines:
         return res.status(400).json({ error: "Prompt is required" });
       }
 
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+      if (!isValidAuth) {
+        console.log("[DocJourney Server] Mock path detected. Bypassing Gemini API and streaming pre-baked response.");
+        
+        let mockResponse = "";
+        let foundTask: any = null;
+        try {
+          const filePath = path.join(process.cwd(), "data", "mock_inferred_tasks.json");
+          if (fs.existsSync(filePath)) {
+            const raw = fs.readFileSync(filePath, "utf-8");
+            const tasks = JSON.parse(raw);
+            foundTask = tasks.find((t: any) => 
+              (t.sourceName && activeFileName && t.sourceName.toLowerCase().trim() === activeFileName.toLowerCase().trim()) ||
+              (t.title && prompt && prompt.toLowerCase().includes(t.title.toLowerCase().split(' ').slice(0, 3).join(' ')))
+            );
+          }
+        } catch (err) {
+          console.error("[DocJourney Server] Error reading mock tasks for streaming:", err);
+        }
+
+        if (foundTask) {
+          mockResponse = `<chat>${foundTask.summaryOfChanges || 'I have completed the task and updated the draft.'}</chat>\n<doc>${foundTask.updatedMarkdown || foundTask.originalMarkdown || ''}</doc>`;
+        } else {
+          mockResponse = `<chat>I've updated the document "${activeFileName || 'document.doc'}" based on your request.</chat>\n<doc>${activeFileContent || '# Document'}\n\n- Updated content based on prompt: "${prompt}"</doc>`;
+        }
+
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        if (typeof (res as any).flushHeaders === 'function') {
+          (res as any).flushHeaders();
+        }
+
+        const mockSources = foundTask && foundTask.filesToLoad ? foundTask.filesToLoad.map((f: any, idx: number) => ({
+          id: f.driveId || `mock-file-${idx}`,
+          name: f.name,
+          mimeType: f.mimeType
+        })) : [];
+
+        if (mockSources.length > 0) {
+          res.write(`data: ${JSON.stringify({ action: "sources", files: mockSources })}\n\n`);
+        }
+
+        const chunkSize = 40;
+        for (let i = 0; i < mockResponse.length; i += chunkSize) {
+          if (res.writableEnded || res.destroyed) break;
+          const chunk = mockResponse.substring(i, i + chunkSize);
+          res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+          await new Promise(r => setTimeout(r, 20));
+          if (typeof (res as any).flush === 'function') {
+            (res as any).flush();
+          }
+        }
+        
+        if (!res.writableEnded && !res.destroyed) {
+          res.end();
+        }
+        return;
+      }
+
       const ai = getGenAI();
       if (!ai) {
         console.error("[DocJourney Server] Gemini API client missing!");
@@ -1850,7 +1949,6 @@ Guidelines:
       let contextText = "";
       let sources: any[] = [];
 
-      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
       if (isValidAuth) {
         console.log("[DocJourney Server] Performing Drive RAG search for prompt...");
         let files: any[] = [];
@@ -2110,6 +2208,58 @@ The user is modifying their Out-of-the-Box "To-dos" (Inferred Tasks) tool with n
       let resolvedContext = ingestedContext;
       const authHeader = req.headers.authorization;
       const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+
+      if (!isValidAuth) {
+        console.log("[Server /api/vibe-code] Mock path. Bypassing Gemini API and streaming pre-cached tool.");
+        
+        let cachedPath = path.join(process.cwd(), "data", "cached_policy_issues_tracker.html");
+        let toolTitle = "Policy Issues Tracker";
+
+        const activeSpaceId = req.body.activeSpaceId || req.body.spaceId;
+        const lowerPrompt = prompt.toLowerCase();
+        
+        if (activeSpaceId === 'space-nexus-pay') {
+          cachedPath = path.join(process.cwd(), "data", "cached_client_request_tracker.html");
+          toolTitle = "Client Request Tracker";
+        } else if (lowerPrompt.includes('kanban') || lowerPrompt.includes('h2') || activeSpaceId === 'space-h2-kanban') {
+          cachedPath = path.join(process.cwd(), "data", "cached_h2_kanban.html");
+          toolTitle = "H2 Patient Journey Kanban Board";
+        }
+
+        let htmlContent = "<div>Mock Tool</div>";
+        if (fs.existsSync(cachedPath)) {
+          htmlContent = fs.readFileSync(cachedPath, "utf-8");
+        }
+
+        const streamText = `I'll create an interactive ${toolTitle} tailored to your space to centralize workflows and track progress.\n\n\`\`\`html\n<!-- index.html -->\n${htmlContent}\n\`\`\`\n\nYour tool is ready!`;
+
+        const chunkSize = 600;
+        for (let i = 0; i < streamText.length; i += chunkSize) {
+          if (res.writableEnded || res.destroyed) break;
+          const chunk = streamText.substring(i, i + chunkSize);
+          res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+          await new Promise(r => setTimeout(r, 25));
+        }
+
+        const completionEvent = {
+          event_type: "interaction.completed",
+          interaction: {
+            environment_id: "remote",
+            steps: [
+              {
+                text: streamText
+              }
+            ]
+          }
+        };
+        res.write(`data: ${JSON.stringify(completionEvent)}\n\n`);
+
+        if (!res.writableEnded && !res.destroyed) {
+          res.end();
+        }
+        return;
+      }
+
       if ((!resolvedContext || !Array.isArray(resolvedContext) || resolvedContext.length === 0) && !isValidAuth) {
         const activeSpaceId = req.body.activeSpaceId || req.body.spaceId;
         const mockRes = await getMockLibraryContext(prompt, activeSpaceId);
@@ -2335,6 +2485,22 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
         return res.json({ proposedMoves: [] });
       }
 
+      const authHeader = req.headers.authorization;
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+
+      if (!isValidAuth) {
+        console.log("[Server /api/organize-files] Mock path. Bypassing Gemini API.");
+        const fallbackMoves = files.map((f: any) => ({
+          fileId: f.id || f.driveId || f.name,
+          fileName: f.name,
+          actionType: "CREATE_AND_MOVE",
+          targetFolderId: `folder_${f.type || 'docs'}`,
+          targetFolderName: f.name.endsWith('.csv') || f.name.endsWith('.json') || f.name.endsWith('.xlsx') ? "Data & Assets" : (f.name.endsWith('.gslides') || f.name.endsWith('.ppt') ? "Presentations" : "Documents & Notes"),
+          reasoning: "Grouped by extension pattern (Mock organization plan)"
+        }));
+        return res.json({ proposedMoves: fallbackMoves });
+      }
+
       const ai = getGenAI();
       if (!ai) {
         // Fallback move generator if Gemini client is unavailable
@@ -2491,6 +2657,13 @@ JSON output:`;
         return res.json(fallbackClassification(""));
       }
 
+      const authHeader = req.headers.authorization;
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+      if (!isValidAuth) {
+        console.log("[Server /api/classify-intent] Mock path. Using local rule-based classifier.");
+        return res.json(fallbackClassification(prompt));
+      }
+
       const ai = getGenAI();
       if (!ai) {
         return res.json(fallbackClassification(prompt));
@@ -2582,6 +2755,13 @@ OUTPUT ONLY VALID JSON:
       const { prompt } = req.body;
       if (!prompt) {
         return res.json({ summary: "app" });
+      }
+
+      const authHeader = req.headers.authorization;
+      const isValidAuth = !!(authHeader && !authHeader.includes("null") && !authHeader.includes("undefined"));
+      if (!isValidAuth) {
+        console.log("[Server /api/summarize-task] Mock path. Bypassing Gemini API.");
+        return res.json({ summary: "custom tool" });
       }
       
       const ai = getGenAI();
