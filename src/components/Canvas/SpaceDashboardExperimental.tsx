@@ -29,6 +29,7 @@ interface SpaceDashboardProps {
   setProjectName?: (name: string) => void;
   setViewState?: (state: any) => void;
   setActiveSidebar?: (sidebar: any) => void;
+  userProfile?: any;
 }
 
 export function SpaceDashboardExperimental({
@@ -51,7 +52,8 @@ export function SpaceDashboardExperimental({
   setSelectedFile,
   setProjectName,
   setViewState,
-  setActiveSidebar
+  setActiveSidebar,
+  userProfile
 }: SpaceDashboardProps) {
   const [cardWidths, setCardWidths] = useState<Record<string, number>>({});
   const [activeMenuCardId, setActiveMenuCardId] = useState<string | null>(null);
@@ -123,11 +125,12 @@ export function SpaceDashboardExperimental({
     return list;
   }, [sandboxFiles, hasTodoCard, todoArtifact]);
 
+  const isHomeDashboard = spaceId === 'home';
   const pinnedFiles = pinnedArtifactIds
     .map(id => {
       const isTodoId = id === 'todo-card' || id === 'inferred-tasks' || String(id).toLowerCase().includes('todo') || String(id).toLowerCase().includes('inferred');
       if (isTodoId) {
-        return hasTodoCard ? todoArtifact : null;
+        return (hasTodoCard && !isHomeDashboard) ? todoArtifact : null;
       }
       return sandboxFiles.find(f => f && (
         f.id === id || 
@@ -450,6 +453,88 @@ export function SpaceDashboardExperimental({
     }
   }
 
+  if (isHomeDashboard) {
+    const decisionTasks = (todoItems || []).filter(item => {
+      const title = (item.title || '').toLowerCase();
+      const desc = (item.description || '').toLowerCase();
+      return title.includes('rsvp') || title.includes('approve') || title.includes('review') || title.includes('confirm') ||
+             desc.includes('rsvp') || desc.includes('approve') || desc.includes('review') || desc.includes('confirm');
+    });
+    const workingTasks = (todoItems || []).filter(item => !decisionTasks.includes(item));
+    
+    let section1Items = decisionTasks;
+    let section2Items = workingTasks;
+    if (section1Items.length === 0 && (todoItems || []).length > 0) {
+      const mid = Math.ceil(todoItems.length / 2);
+      section1Items = todoItems.slice(0, mid);
+      section2Items = todoItems.slice(mid);
+    }
+
+    const name = userProfile?.given_name || userProfile?.name || 'User';
+
+    return (
+      <div className="w-full h-full overflow-y-auto bg-[#F8FAFC] dark:bg-[#111214] select-text">
+        <div className="max-w-4xl mx-auto px-12 py-12 flex flex-col gap-8">
+          {/* Welcome Greeting */}
+          <div className="flex flex-col text-left gap-1 mt-2">
+            <h1 className="text-[45px] leading-[52px] font-normal font-sans text-slate-900 dark:text-white">
+              Welcome back, {name}.
+            </h1>
+            <p className="text-[15px] text-slate-650 dark:text-neutral-300 font-sans">
+              Your next meeting, <span className="font-semibold">"New Drive"</span>, starts in 10 minutes. <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Join Call.</a>
+            </p>
+          </div>
+
+          {/* Section 1: Let's knock these off your to-dos */}
+          {section1Items.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1">
+                Let’s knock these off your to-dos...
+              </h2>
+              <div className="bg-white dark:bg-[#1E1F22] rounded-[24px] shadow-sm overflow-hidden flex flex-col divide-y divide-slate-100 dark:divide-white/5">
+                {section1Items.map((item) => (
+                  <InferredTaskCardExperimental
+                    key={item.id}
+                    item={item}
+                    sectionType="decision"
+                    onClick={() => {
+                      if (onProactiveTaskClick) {
+                        onProactiveTaskClick(item);
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Section 2: Let's start working on */}
+          {section2Items.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1">
+                Let’s start working on...
+              </h2>
+              <div className="bg-white dark:bg-[#1E1F22] rounded-[24px] shadow-sm overflow-hidden flex flex-col divide-y divide-slate-100 dark:divide-white/5">
+                {section2Items.map((item) => (
+                  <InferredTaskCardExperimental
+                    key={item.id}
+                    item={item}
+                    sectionType="generative"
+                    onClick={() => {
+                      if (onProactiveTaskClick) {
+                        onProactiveTaskClick(item);
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full flex flex-col min-h-0 relative select-none">
 
@@ -629,7 +714,6 @@ export function SpaceDashboardExperimental({
                             key={item.id}
                             item={item}
                             getFileIcon={getFileIcon || (() => '')}
-                            isNarrow={isNarrowDashboardCard}
                             onClick={() => {
                               if (onProactiveTaskClick) {
                                 onProactiveTaskClick(item);

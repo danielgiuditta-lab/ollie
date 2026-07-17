@@ -52,6 +52,7 @@ interface CanvasHeaderProps {
   isPinned?: boolean;
   projects?: any[];
   recentTasks?: any[];
+  chatModel?: 'A' | 'B';
 }
 
 export function CanvasHeader({
@@ -75,7 +76,8 @@ export function CanvasHeader({
   getHomeChatId,
   isPinned = false,
   projects = [],
-  recentTasks = []
+  recentTasks = [],
+  chatModel = 'A'
 }: CanvasHeaderProps) {
   const [isPinMenuOpen, setIsPinMenuOpen] = useState(false);
   const isHome = viewState === 'home';
@@ -139,6 +141,9 @@ export function CanvasHeader({
   }
 
   const renderBreadcrumbs = () => {
+    if (chatModel === 'B' && !selectedFile && viewState !== 'ai_summary' && !activeProactiveTask) {
+      return null;
+    }
     if (isHome) {
       return (
         <span className="text-slate-800 dark:text-white text-lg font-medium">

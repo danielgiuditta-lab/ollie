@@ -89,7 +89,10 @@ export default function App() {
     isOrganizingFiles, setIsOrganizingFiles
   } = useVisualEffects();
 
-  const [chatDockPosition, setChatDockPosition] = useState<'side' | 'bottom'>('side');
+  const [chatDockPosition, setChatDockPosition] = useState<'side' | 'bottom'>(() => {
+    const savedModel = (localStorage.getItem('chat-model') as 'A' | 'B') || 'A';
+    return savedModel === 'B' ? 'bottom' : 'side';
+  });
   const [aiSummarySources, setAiSummarySources] = useState<any[]>([]);
   const [aiSummaryMessages, setAiSummaryMessages] = useState<any[]>([]);
   const [activeAiSummaryTaskId, setActiveAiSummaryTaskId] = useState<string | null>(null);
@@ -5903,6 +5906,7 @@ export default function App() {
         chatModel={chatModel}
         onChangeChatModel={(model) => {
           setChatModel(model);
+          setChatDockPosition(model === 'B' ? 'bottom' : 'side');
           try {
             localStorage.setItem('chat-model', model);
           } catch (e) {
@@ -6046,6 +6050,7 @@ export default function App() {
           projects={projects}
           recentTasks={recentTasks}
           viewState={viewState}
+          chatModel={chatModel}
           onHomeClick={() => {
             setActiveProactiveTask(null);
             if (activeSpaceId && !isHomeChatId(activeSpaceId)) {
