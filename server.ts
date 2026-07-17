@@ -1258,9 +1258,13 @@ Provide the response as a JSON object matching the following structure:
       "titleDone": "Completed task title in first-person ('I...') (e.g., I addressed Miriam's comment on your post)",
       "description": "Task description in first-person ('I...') as if the agent completed the action (e.g., I replied to Miriam's comment and updated branding.doc for your review)",
       "descriptionDone": "Completed description in first-person ('I...') (e.g., I replied to Miriam's comment and updated branding.doc for your review)",
-      "source": "Details about source (e.g., Email from Sarah / Comment in branding.doc)",
+      "source": "Details about source (e.g., Email from Sarah / Comment in branding.doc / Calendar Conflict)",
       "action": "Exact action completed in first-person ('I...') (e.g., I replied to Miriam's comment and updated branding.doc for your review)",
-      "type": "email" | "chat" | "comment"
+      "type": "email" | "chat" | "comment" | "calendar" | "buganizer" | "doc" | "slide" | "sheet" | "fyi",
+      "category": "needs_approval" | "needs_input" | "fyi",
+      "links": [
+        { "label": "string", "url": "string" }
+      ]
     }
   ],
   "followUps": [
@@ -1272,7 +1276,11 @@ Provide the response as a JSON object matching the following structure:
       "descriptionDone": "Completed description in first-person ('I...')...",
       "source": "Details about source...",
       "action": "Exact action completed in first-person ('I...')...",
-      "type": "email" | "chat" | "comment"
+      "type": "email" | "chat" | "comment" | "calendar" | "buganizer" | "doc" | "slide" | "sheet" | "fyi",
+      "category": "needs_approval" | "needs_input" | "fyi",
+      "links": [
+        { "label": "string", "url": "string" }
+      ]
     }
   ],
   "updates": [
@@ -1280,7 +1288,11 @@ Provide the response as a JSON object matching the following structure:
       "id": "string",
       "description": "General update info written in first-person ('I...')...",
       "source": "Details about source...",
-      "type": "email" | "chat" | "comment"
+      "type": "email" | "chat" | "comment" | "calendar" | "buganizer" | "doc" | "slide" | "sheet" | "fyi",
+      "category": "needs_approval" | "needs_input" | "fyi",
+      "links": [
+        { "label": "string", "url": "string" }
+      ]
     }
   ]
 }

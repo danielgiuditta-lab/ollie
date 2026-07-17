@@ -6,21 +6,25 @@ This guide walks through the complete end-to-end user journey for **Inferred Pro
 
 ## 🚀 Step 1: Authentication & Global Scanned Ingestion
 1. The user visits the Spaces Platform homepage.
-2. If unauthenticated, the **Google OAuth gate** displays. The user clicks **Login to Drive** to grant read/write access to Gmail, Chat, and Drive.
+2. If unauthenticated, the **Google OAuth gate** displays. The user clicks **Login to Drive** to grant read/write access to Gmail, Calendar, Chat, Drive/Docs/Sheets/Slides, Buganizer, and Context Service.
 3. Upon successful sign-in, the viewport defaults to the **Home Dashboard** (`viewState === 'home'`, `activeSpaceId === 'home_guest'`).
 4. In the background, the client triggers the `/api/workspace-digest` scanner.
-5. The backend fetches active unread email threads, Google Chat messages, and document comment threads from the past 7 days, and relays them to Gemini to synthesize today's To-Do list.
+5. The backend fetches active unread email threads, Google Chat messages, document comment threads, Calendar events, Buganizer issues, and queries the Context Service, then relays them to Gemini to synthesize today's task agenda.
 
 ---
 
-## 📊 Step 2: Aggregated Home Dashboard View
+## 📊 Step 2: Aggregated Home Dashboard View & Segmentations
 1. The Home Dashboard aggregates and displays **all inferred tasks** across every space.
-2. The user sees a list of To-Do items (e.g. Slide deck updates for "Galaxy Deck", H2 Planning Doc updates, Spreadsheet edits for "Team priorities").
-3. The very first task automatically initiates the **Proactive Agent drafting timeline**:
+2. Under **UI Model B (Experimental Mode)**, tasks are segmented into three distinct groups:
+   - **Needs yes or no**: Displays cards for tasks the agent can execute (e.g., calendar bookings or file sending) with Accept/Decline action buttons.
+   - **Needs input**: Displays tasks where the agent has prepared a draft outline or file edits, featuring a "Get Started" / "Continue" button which directs the user to the files workspace canvas.
+   - **For your information**: Displays read-only alerts, calendar conflict warnings, and reminders (e.g., corporate training or lunches) without any action buttons on the right, but offering direct links and resources.
+3. Under **UI Model A (Standard Mode)**, tasks are rendered as a single unified list with visual icons and statuses indicating their category.
+4. The very first actionable task automatically initiates the **Proactive Agent drafting timeline**:
    - The status circle displays the rotating SVG gradient loader (status: `working`).
    - The description says: `Working on task...`
    - The right side shows a dark preview thumbnail block containing `Drafting...` text and a pulsing `Sparkles` icon.
-4. Other tasks in the list show a green `CheckCircle2` (status: `done`).
+5. Other tasks in the list show a green `CheckCircle2` (status: `done`).
 
 ---
 

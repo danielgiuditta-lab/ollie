@@ -1,12 +1,15 @@
 # Feature Specification — Inferred Proactive Tasks
 
-**Inferred Proactive Tasks** is an AI-powered context aggregation and synthesis engine. By scanning a user's Google Workspace footprint (recent email threads, Google Chat messages, and document comment threads) via active OAuth credentials, the platform compiles a centralized To-Do agenda list. It simulates a proactive background agent working to draft necessary file changes, allowing users to review, edit, and publish drafts directly within the Spaces staging workspace.
+**Inferred Proactive Tasks** is an AI-powered context aggregation and synthesis engine. By scanning a user's Google footprint (Gmail threads, Google Chat messages, document comment threads, Google Calendar events, Buganizer issues, and Google Workspace Context Service) via active OAuth credentials, the platform compiles a centralized To-Do agenda list. It categorizes these tasks into three distinct actionability buckets:
+1. **Needs yes or no** (`needs_approval`): Simple tasks the agent can handle autonomously but requires a binary confirmation from the user (e.g. scheduling a focus meeting block, proposing a meeting slot to resolve a conflict, or sending requested files in chat).
+2. **Needs input** (`needs_input`): Tasks where the agent starts drafting or modifying an asset, but the user must inspect/edit the artifact to complete the workflow (e.g. creating slide outline drafts, drafting document proposals, writing draft emails).
+3. **FYI** (`fyi`): Read-only informational updates or alerts that require no direct agent execution, but provide the user with important context, materials, and links (e.g. HR training tasks, lunch reminders, or calendar warnings).
 
 ---
 
 ## 1. Product & Architecture Overview
 
-The feature uses a lightweight state machine. When the user logs in, the Home Dashboard queries the backend, which aggregates live Workspace records and routes them to Gemini to synthesize actionable agenda items.
+The feature uses a lightweight state machine. When the user logs in, the Home Dashboard queries the backend, which aggregates live Workspace and Scope records and routes them to Gemini to synthesize actionable agenda items segmented into these buckets.
 
 ```
        ┌──────────────────────┐      ┌──────────────────────┐      ┌──────────────────────┐
@@ -46,7 +49,10 @@ The feature uses a lightweight state machine. When the user logs in, the Home Da
 *   **Data Aggregated**:
     *   **Gmail**: Up to 5 threads modified within the past 48 hours.
     *   **Google Chat**: Search query filters for messages across all spaces within the past 48 hours.
-    *   **Drive Comments**: Queries active Docs, Sheets, and Slides modified in the past 7 days, fetching unresolved comment threads and author details.
+    *   **Drive & Docs/Slides/Sheets**: Queries active files modified in the past 7 days, fetching unresolved comments/feedback.
+    *   **Google Calendar**: Queries active upcoming meetings, event invites, and focus block slots.
+    *   **Buganizer**: Queries assigned work items and issue status changes.
+    *   **Context Service**: Unified search index query across target documents and workspace activities.
 *   **Prompt Synthesis**: Aggregated raw blocks are structured into a prompt and submitted to `gemini-3.5-flash` with a JSON-controlled schema.
 
 #### JSON Output Format
@@ -58,11 +64,38 @@ The feature uses a lightweight state machine. When the user logs in, the Home Da
       "id": "todo-proactive-1",
       "title": "I addressed Emily's comment on Brand Guidelines",
       "titleDone": "I addressed Emily's comment on Brand Guidelines",
-      "description": "I addressed Emily's comment on Brand Guidelines",
-      "descriptionDone": "I addressed Emily's comment on Brand Guidelines",
-      "action": "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
+      "description": "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
+      "descriptionDone": "Emily commented to consolidate the Brand Kit layout. I consolidated the layout for your review.",
+      "action": "I consolidated the brand layout slides.",
       "source": "Branding",
-      "type": "comment"
+      "type": "comment",
+      "category": "needs_input",
+      "filesToLoad": [
+        { "name": "Brand Guidelines.gslides", "type": "slide", "mimeType": "application/vnd.google-apps.presentation" }
+      ]
+    },
+    {
+      "id": "todo-proactive-2",
+      "title": "I proposed a meeting slot to resolve a focus block conflict",
+      "titleDone": "I proposed a meeting slot to resolve a focus block conflict",
+      "description": "Chloe requested a sync during your afternoon focus block. I proposed an alternative slot.",
+      "descriptionDone": "Chloe requested a sync during your afternoon focus block. I proposed an alternative slot.",
+      "action": "Proposed alternative time.",
+      "source": "Calendar",
+      "type": "calendar",
+      "category": "needs_approval"
+    },
+    {
+      "id": "todo-proactive-3",
+      "title": "Complete Corporate Compliance Training",
+      "description": "Your mandatory corporate compliance module is pending completion.",
+      "action": "Review training instructions.",
+      "source": "HR Portal",
+      "type": "fyi",
+      "category": "fyi",
+      "links": [
+        { "label": "Launch Training Portal", "url": "https://hr-training.example.com" }
+      ]
     }
   ],
   "followUps": [],

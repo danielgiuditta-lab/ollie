@@ -614,26 +614,33 @@ export function SpaceDashboardExperimental({
 
   if (isHomeDashboard) {
     console.log("[DEBUG] SpaceDashboardExperimental isHomeDashboard todoItems:", todoItems);
-    const decisionTasks = (todoItems || []).filter(item => {
-      const title = (item.title || '').toLowerCase();
-      const desc = (item.description || '').toLowerCase();
-      return title.includes('rsvp') || title.includes('approve') || title.includes('review') || title.includes('confirm') ||
-             desc.includes('rsvp') || desc.includes('approve') || desc.includes('review') || desc.includes('confirm');
-    });
-    const workingTasks = (todoItems || []).filter(item => !decisionTasks.includes(item));
     
-    let section1Items = decisionTasks;
-    let section2Items = workingTasks;
-    if (section1Items.length === 0 && (todoItems || []).length > 0) {
-      const mid = Math.ceil(todoItems.length / 2);
-      section1Items = todoItems.slice(0, mid);
-      section2Items = todoItems.slice(mid);
-    }
+    // Segment items based on category
+    const needsApprovalTasks = (todoItems || []).filter(item => 
+      item.category === 'needs_approval' || 
+      (item.category === undefined && (
+        (item.title || '').toLowerCase().includes('rsvp') || 
+        (item.title || '').toLowerCase().includes('approve') ||
+        (item.title || '').toLowerCase().includes('confirm') ||
+        (item.description || '').toLowerCase().includes('rsvp') ||
+        (item.description || '').toLowerCase().includes('approve') ||
+        (item.description || '').toLowerCase().includes('confirm')
+      ))
+    );
+
+    const needsInputTasks = (todoItems || []).filter(item => 
+      item.category === 'needs_input' ||
+      (item.category === undefined && !needsApprovalTasks.includes(item))
+    );
+
+    const fyiTasks = (todoItems || []).filter(item => 
+      item.category === 'fyi'
+    );
 
     const name = userProfile?.given_name || userProfile?.name || 'User';
 
     return (
-      <div className="w-full h-full overflow-y-auto bg-[#F8FAFC] dark:bg-[#111214] select-text">
+      <div className="w-full h-full overflow-y-auto bg-white dark:bg-[#111214] select-text">
         <div className="max-w-4xl mx-auto px-12 py-12 flex flex-col gap-8">
           {/* Welcome Greeting */}
           <div className="flex flex-col text-left gap-1 mt-2">
@@ -645,14 +652,14 @@ export function SpaceDashboardExperimental({
             </p>
           </div>
 
-          {/* Section 1: Let's knock these off your to-dos */}
-          {section1Items.length > 0 && (
+          {/* Section 1: Needs your approval */}
+          {needsApprovalTasks.length > 0 && (
             <div className="flex flex-col gap-2">
               <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1">
-                Let’s knock these off your to-dos...
+                Needs your approval...
               </h2>
-              <div className="bg-white dark:bg-[#1E1F22] rounded-[24px] shadow-sm overflow-hidden flex flex-col divide-y divide-slate-100 dark:divide-white/5">
-                {section1Items.map((item) => (
+              <div className="w-full flex flex-col gap-[4px] py-1 bg-transparent">
+                {needsApprovalTasks.map((item) => (
                   <InferredTaskCardExperimental
                     key={item.id}
                     item={item}
@@ -668,18 +675,41 @@ export function SpaceDashboardExperimental({
             </div>
           )}
 
-          {/* Section 2: Let's start working on */}
-          {section2Items.length > 0 && (
+          {/* Section 2: Continue working on */}
+          {needsInputTasks.length > 0 && (
             <div className="flex flex-col gap-2">
               <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1">
-                Let’s start working on...
+                Continue working on...
               </h2>
-              <div className="bg-white dark:bg-[#1E1F22] rounded-[24px] shadow-sm overflow-hidden flex flex-col divide-y divide-slate-100 dark:divide-white/5">
-                {section2Items.map((item) => (
+              <div className="w-full flex flex-col gap-[4px] py-1 bg-transparent">
+                {needsInputTasks.map((item) => (
                   <InferredTaskCardExperimental
                     key={item.id}
                     item={item}
                     sectionType="generative"
+                    onClick={() => {
+                      if (onProactiveTaskClick) {
+                        onProactiveTaskClick(item);
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Section 3: For your information */}
+          {fyiTasks.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1">
+                For your information...
+              </h2>
+              <div className="w-full flex flex-col gap-[4px] py-1 bg-transparent">
+                {fyiTasks.map((item) => (
+                  <InferredTaskCardExperimental
+                    key={item.id}
+                    item={item}
+                    sectionType="fyi"
                     onClick={() => {
                       if (onProactiveTaskClick) {
                         onProactiveTaskClick(item);

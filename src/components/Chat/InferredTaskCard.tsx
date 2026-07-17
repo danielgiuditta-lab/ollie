@@ -26,6 +26,8 @@ interface InferredTaskCardProps {
     content?: string;
     isReal?: boolean;
     isOAuth?: boolean;
+    category?: string;
+    links?: Array<{ label: string; url: string }>;
   };
   getFileIcon: (mimeType?: string) => string;
   onClick: () => void;
@@ -231,7 +233,7 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
     ))
   );
 
-  const showThumbnail = !isNonNativeEmailOrChat && !effectiveNarrow;
+  const showThumbnail = !isNonNativeEmailOrChat && !effectiveNarrow && item.category !== 'fyi';
 
   return (
     <div 
@@ -253,6 +255,23 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
           <p className="text-[14px] leading-[20px] font-normal font-['Google_Sans_Text','Inter',sans-serif] text-[#575B5F] dark:text-neutral-400 truncate">
             {item.description}
           </p>
+          
+          {/* Render links for FYI tasks if they exist */}
+          {item.category === 'fyi' && item.links && item.links.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
+              {item.links.map((link: any, idx: number) => (
+                <a
+                  key={idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-1 rounded-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-semibold transition-colors"
+                >
+                  {link.label || 'Open Link'}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
         {/* Source and Person capsule chips: single line truncation when narrow to prevent 4th line */}
         <div className={`flex items-center gap-2 mt-2 min-w-0 max-w-full ${effectiveNarrow ? 'flex-nowrap overflow-hidden' : 'flex-wrap'}`}>
