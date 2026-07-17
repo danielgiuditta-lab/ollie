@@ -125,7 +125,7 @@ export function SpaceDashboardExperimental({
     return list;
   }, [sandboxFiles, hasTodoCard, todoArtifact]);
 
-  const isHomeDashboard = spaceId === 'home';
+  const isHomeDashboard = spaceId === 'home' || spaceId === 'home_guest' || String(spaceId).toLowerCase().startsWith('home_') || String(spaceId).toLowerCase().startsWith('home-') || String(spaceId).toLowerCase() === 'home dashboard';
   const pinnedFiles = pinnedArtifactIds
     .map(id => {
       const isTodoId = id === 'todo-card' || id === 'inferred-tasks' || String(id).toLowerCase().includes('todo') || String(id).toLowerCase().includes('inferred');
@@ -387,52 +387,6 @@ export function SpaceDashboardExperimental({
     setActiveMenuCardId(null);
   };
 
-  const totalCardsCount = pinnedFiles.length;
-
-  if (totalCardsCount === 0) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-transparent text-center select-none animate-in fade-in duration-300">
-        <div 
-          onClick={() => {
-            if (availableWidgets.length === 0) {
-              if (onCreateArtifact) {
-                onCreateArtifact('site');
-              }
-            } else {
-              setIsWidgetModalOpen(true);
-            }
-          }}
-          className="group flex flex-col items-center justify-center cursor-pointer select-none"
-        >
-          <NullTitle theme={theme}>
-            Add a Widget <br /> to your Dashboard
-          </NullTitle>
-
-          <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 group-hover:scale-110 transition-transform duration-200 flex items-center justify-center text-[#3186FF] shadow-2xs mt-6">
-            <Plus size={24} className="stroke-[2.5px]" />
-          </div>
-        </div>
-
-        {isWidgetModalOpen && (
-          <AddWidgetModal
-            isOpen={isWidgetModalOpen}
-            onClose={() => setIsWidgetModalOpen(false)}
-            availableWidgets={availableWidgets}
-            pinnedArtifactIds={pinnedArtifactIds}
-            onPinWidget={(file) => {
-              if (onPinArtifact) onPinArtifact(file);
-            }}
-            onUnpinWidget={onRemovePin}
-            onCreateCustomTool={() => {
-              if (onCreateArtifact) onCreateArtifact('site');
-            }}
-            theme={theme}
-          />
-        )}
-      </div>
-    );
-  }
-
   const isTwoColumns = dashboardLayoutMode === 'cols' || (dashboardLayoutMode === 'auto' && pinnedFiles.length >= 2);
   const isNarrowDashboardCard = isTwoColumns || (containerWidth > 0 && (containerWidth < 900 || (containerWidth / Math.max(1, pinnedFiles.length)) < 520));
 
@@ -442,18 +396,224 @@ export function SpaceDashboardExperimental({
   } else if (dashboardLayoutMode === 'cols') {
     gridLayoutClass = "grid-cols-1 md:grid-cols-2 md:grid-rows-1 auto-rows-fr";
   } else {
-    if (totalCardsCount === 1) {
+    if (pinnedFiles.length === 1) {
       gridLayoutClass = "grid-cols-1 auto-rows-fr";
-    } else if (totalCardsCount === 2) {
+    } else if (pinnedFiles.length === 2) {
       gridLayoutClass = "grid-cols-1 md:grid-cols-2 md:grid-rows-1 auto-rows-fr";
-    } else if (totalCardsCount <= 4) {
+    } else if (pinnedFiles.length <= 4) {
       gridLayoutClass = "grid-cols-1 md:grid-cols-2 md:grid-rows-2 auto-rows-fr";
     } else {
       gridLayoutClass = "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr";
     }
   }
 
+  const renderCard = (file: any, idx: number) => {
+    if (!file) return null;
+    const fileId = file.id || file.driveId || 'file-' + idx;
+    const isTodo = file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos';
+    const isHtml = !isTodo && file.name && (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase() === 'index.html');
+    const isDragOver = dragOverCardId === fileId;
+    const isSelected = activeMenuCardId === fileId || draggedCardId === fileId;
+    let todoTitle = 'To-dos';
+    if (isTodo && file.content) {
+      try {
+        const parsed = JSON.parse(file.content);
+        if (parsed.title) todoTitle = parsed.title;
+      } catch (e) {}
+    }
+    let cardTitle = file.name;
+    if (isTodo) {
+      cardTitle = todoTitle;
+    } else if (isHtml) {
+      let extractedTitle = file.title;
+      if (!extractedTitle && file.content && typeof file.content === 'string') {
+        const titleMatch = file.content.match(/<title>([^<]+)<\/title>/i);
+        if (titleMatch && titleMatch[1] && titleMatch[1].trim() !== 'App' && titleMatch[1].trim() !== 'My Web Workspace') {
+          extractedTitle = titleMatch[1].trim();
+        }
+      }
+      if (!extractedTitle && file.chatName && file.chatName !== 'Custom Tool' && file.chatName !== 'New Site Workspace') {
+        extractedTitle = file.chatName;
+      }
+      if (extractedTitle) {
+        cardTitle = extractedTitle;
+      } else if (file.name) {
+        const cleaned = file.name.replace(/\.(html|htm)$/i, '');
+        cardTitle = (cleaned.toLowerCase() === 'index' || cleaned.toLowerCase() === 'custom tool') ? 'Custom Tool' : cleaned;
+      }
+    }
+
+    const isGhost = draggedCardId === fileId;
+
+    return (
+      <div 
+        key={fileId} 
+        className="card-container-item relative w-full h-full min-h-[340px] flex flex-col min-w-0"
+        onDragOver={(e) => handleDragOver(e, fileId)}
+        onDragLeave={() => {
+          setDragOverCardId(null);
+          setDragOverPosition(null);
+        }}
+        onDrop={(e) => handleDrop(e, fileId)}
+      >
+        {/* Dynamic Destination Line Indicators */}
+        {isDragOver && dragOverPosition === 'top' && (
+          <div className="absolute -top-3.5 left-0 right-0 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+        )}
+        {isDragOver && dragOverPosition === 'bottom' && (
+          <div className="absolute -bottom-3.5 left-0 right-0 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+        )}
+        {isDragOver && dragOverPosition === 'left' && (
+          <div className="absolute -left-3.5 top-0 bottom-0 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+        )}
+        {isDragOver && dragOverPosition === 'right' && (
+          <div className="absolute -right-3.5 top-0 bottom-0 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
+        )}
+        <Card
+          theme={theme}
+          isSelected={isSelected}
+          isGhost={isGhost}
+          isDragOver={isDragOver}
+          className="w-full h-full flex-1 flex flex-col overflow-hidden"
+          header={
+            <div 
+              draggable
+              onDragStart={(e) => handleDragStart(e, fileId)}
+              className="cursor-grab active:cursor-grabbing w-full"
+            >
+              <CardHeader
+                title={cardTitle}
+                count={isTodo && todoItems && todoItems.length > 0 ? todoItems.length : undefined}
+                onTitleClick={(e) => {
+                  e.stopPropagation();
+                  onSelectArtifact(file);
+                }}
+                titleTooltip="Click to open artifact authoring chat"
+                theme={theme}
+                actions={
+                  <div className="relative">
+                    <button
+                      type="button"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, fileId)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenuCardId(activeMenuCardId === fileId ? null : fileId);
+                      }}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-grab active:cursor-grabbing ${
+                        isSelected
+                          ? 'text-[#3186FF] bg-blue-50 dark:bg-blue-950/50'
+                          : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-neutral-800'
+                      }`}
+                      title="Drag to reorder or click for options"
+                    >
+                      <MoreHorizontal size={16} />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {activeMenuCardId === fileId && (
+                      <div 
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-0 top-9 w-36 rounded-xl bg-white dark:bg-[#2B2D31] border border-slate-200 dark:border-white/10 shadow-xl p-1 z-30 animate-in fade-in zoom-in-95 duration-100"
+                      >
+                        <button
+                          onClick={() => {
+                            setActiveMenuCardId(null);
+                            onSelectArtifact(file);
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <Edit2 size={14} />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setActiveMenuCardId(null);
+                            onRemovePin(fileId);
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                }
+              />
+            </div>
+          }
+        >
+          {/* Interactive Live Viewport */}
+          <div className={`flex-1 w-full h-full relative overflow-hidden bg-slate-50/30 dark:bg-black/20 ${draggedCardId ? 'pointer-events-none' : 'pointer-events-auto select-auto'}`}>
+            <div className="absolute inset-0 w-full h-full">
+              {isTodo ? (
+                isHtml ? (
+                  <AppView
+                    sandboxUrl={file.sandboxUrl || sandboxUrl}
+                    files={sandboxFiles}
+                    envId={file.envId || file.activeSpaceId || file.chatId || envId}
+                    selectedFile={file}
+                    theme={theme}
+                  />
+                ) : (
+                  <div className="w-full h-full overflow-y-auto p-4 flex flex-col gap-[4px]">
+                    {todoItems && todoItems.map((item) => (
+                      <InferredTaskCardExperimental 
+                        key={item.id}
+                        item={item}
+                        getFileIcon={getFileIcon || (() => '')}
+                        onClick={() => {
+                          if (onProactiveTaskClick) {
+                            onProactiveTaskClick(item);
+                          } else {
+                            if (item.filesToLoad && setSandboxFiles && setSelectedFile) {
+                              setSandboxFiles(item.filesToLoad);
+                              setSelectedFile(item.filesToLoad[0]);
+                            } else if (setSandboxFiles && setSelectedFile) {
+                              setSandboxFiles([]);
+                              setSelectedFile(null);
+                            }
+                            if (setProjectName) {
+                              setProjectName(item.workspace.split(' · ')[0]);
+                            }
+                            if (setViewState) {
+                              setViewState('files');
+                            }
+                            if (setActiveSidebar) {
+                              setActiveSidebar('gemini');
+                            }
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                )
+              ) : isHtml ? (
+                <AppView
+                  sandboxUrl={file.sandboxUrl || sandboxUrl}
+                  files={sandboxFiles}
+                  envId={file.envId || file.activeSpaceId || file.chatId || envId}
+                  selectedFile={file}
+                  theme={theme}
+                />
+              ) : (
+                <NativeViewer
+                  file={file}
+                  hideHeader={true}
+                  mode="preview"
+                  theme={theme}
+                />
+              )}
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
   if (isHomeDashboard) {
+    console.log("[DEBUG] SpaceDashboardExperimental isHomeDashboard todoItems:", todoItems);
     const decisionTasks = (todoItems || []).filter(item => {
       const title = (item.title || '').toLowerCase();
       const desc = (item.description || '').toLowerCase();
@@ -530,15 +690,71 @@ export function SpaceDashboardExperimental({
               </div>
             </div>
           )}
+
+          {/* Section 3: Pinned Widgets / Cards */}
+          {pinnedFiles.length > 0 && (
+            <div className="flex flex-col gap-4">
+              <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left font-sans">
+                Pinned
+              </h2>
+              <div className={`grid ${gridLayoutClass} gap-4 items-stretch justify-stretch relative`}>
+                {pinnedFiles.map((file, idx) => renderCard(file, idx))}
+              </div>
+            </div>
+          )}
         </div>
+      </div>
+    );
+  }
+
+  const totalCardsCount = pinnedFiles.length;
+
+  if (totalCardsCount === 0) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-transparent text-center select-none animate-in fade-in duration-300">
+        <div 
+          onClick={() => {
+            if (availableWidgets.length === 0) {
+              if (onCreateArtifact) {
+                onCreateArtifact('site');
+              }
+            } else {
+              setIsWidgetModalOpen(true);
+            }
+          }}
+          className="group flex flex-col items-center justify-center cursor-pointer select-none"
+        >
+          <NullTitle theme={theme}>
+            Add a Widget <br /> to your Dashboard
+          </NullTitle>
+
+          <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 group-hover:scale-110 transition-transform duration-200 flex items-center justify-center text-[#3186FF] shadow-2xs mt-6">
+            <Plus size={24} className="stroke-[2.5px]" />
+          </div>
+        </div>
+
+        {isWidgetModalOpen && (
+          <AddWidgetModal
+            isOpen={isWidgetModalOpen}
+            onClose={() => setIsWidgetModalOpen(false)}
+            availableWidgets={availableWidgets}
+            pinnedArtifactIds={pinnedArtifactIds}
+            onPinWidget={(file) => {
+              if (onPinArtifact) onPinArtifact(file);
+            }}
+            onUnpinWidget={onRemovePin}
+            onCreateCustomTool={() => {
+              if (onCreateArtifact) onCreateArtifact('site');
+            }}
+            theme={theme}
+          />
+        )}
       </div>
     );
   }
 
   return (
     <div className="w-full h-full flex flex-col min-h-0 relative select-none">
-
-
       <div 
         ref={containerRef}
         onDragOver={handleContainerDragOver}
@@ -558,227 +774,24 @@ export function SpaceDashboardExperimental({
         {dragOverCardId === 'container-right' && (
           <div className="absolute right-2 top-2 bottom-6 w-2 bg-[#3186FF] rounded-full shadow-[0_0_16px_rgba(49,134,255,1)] z-40 pointer-events-none animate-pulse" />
         )}
-      {pinnedFiles.map((file, idx) => {
-        if (!file) return null;
-        const fileId = file.id || file.driveId || 'file-' + idx;
-        const isTodo = file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos';
-        const isHtml = !isTodo && file.name && (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase() === 'index.html');
-        const isDragOver = dragOverCardId === fileId;
-        const isSelected = activeMenuCardId === fileId || draggedCardId === fileId;
-        let todoTitle = 'To-dos';
-        if (isTodo && file.content) {
-          try {
-            const parsed = JSON.parse(file.content);
-            if (parsed.title) todoTitle = parsed.title;
-          } catch (e) {}
-        }
-        let cardTitle = file.name;
-        if (isTodo) {
-          cardTitle = todoTitle;
-        } else if (isHtml) {
-          let extractedTitle = file.title;
-          if (!extractedTitle && file.content && typeof file.content === 'string') {
-            const titleMatch = file.content.match(/<title>([^<]+)<\/title>/i);
-            if (titleMatch && titleMatch[1] && titleMatch[1].trim() !== 'App' && titleMatch[1].trim() !== 'My Web Workspace') {
-              extractedTitle = titleMatch[1].trim();
-            }
-          }
-          if (!extractedTitle && file.chatName && file.chatName !== 'Custom Tool' && file.chatName !== 'New Site Workspace') {
-            extractedTitle = file.chatName;
-          }
-          if (extractedTitle) {
-            cardTitle = extractedTitle;
-          } else if (file.name) {
-            const cleaned = file.name.replace(/\.(html|htm)$/i, '');
-            cardTitle = (cleaned.toLowerCase() === 'index' || cleaned.toLowerCase() === 'custom tool') ? 'Custom Tool' : cleaned;
-          }
-        }
+        {pinnedFiles.map((file, idx) => renderCard(file, idx))}
 
-        const isGhost = draggedCardId === fileId;
-
-        return (
-          <div 
-            key={fileId} 
-            className="card-container-item relative w-full h-full min-h-[340px] flex flex-col min-w-0"
-            onDragOver={(e) => handleDragOver(e, fileId)}
-            onDragLeave={() => {
-              setDragOverCardId(null);
-              setDragOverPosition(null);
+        {isWidgetModalOpen && (
+          <AddWidgetModal
+            isOpen={isWidgetModalOpen}
+            onClose={() => setIsWidgetModalOpen(false)}
+            availableWidgets={availableWidgets}
+            pinnedArtifactIds={pinnedArtifactIds}
+            onPinWidget={(file) => {
+              if (onPinArtifact) onPinArtifact(file);
             }}
-            onDrop={(e) => handleDrop(e, fileId)}
-          >
-            {/* Dynamic Destination Line Indicators */}
-            {isDragOver && dragOverPosition === 'top' && (
-              <div className="absolute -top-3.5 left-0 right-0 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
-            )}
-            {isDragOver && dragOverPosition === 'bottom' && (
-              <div className="absolute -bottom-3.5 left-0 right-0 h-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
-            )}
-            {isDragOver && dragOverPosition === 'left' && (
-              <div className="absolute -left-3.5 top-0 bottom-0 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
-            )}
-            {isDragOver && dragOverPosition === 'right' && (
-              <div className="absolute -right-3.5 top-0 bottom-0 w-1.5 bg-[#3186FF] rounded-full shadow-[0_0_12px_rgba(49,134,255,0.9)] z-40 pointer-events-none animate-pulse" />
-            )}
-            <Card
-              theme={theme}
-              isSelected={isSelected}
-              isGhost={isGhost}
-              isDragOver={isDragOver}
-              className="w-full h-full flex-1 flex flex-col overflow-hidden"
-              header={
-                <div 
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, fileId)}
-                  className="cursor-grab active:cursor-grabbing w-full"
-                >
-                  <CardHeader
-                    title={cardTitle}
-                    count={isTodo && todoItems && todoItems.length > 0 ? todoItems.length : undefined}
-                    onTitleClick={(e) => {
-                      e.stopPropagation();
-                      onSelectArtifact(file);
-                    }}
-                    titleTooltip="Click to open artifact authoring chat"
-                    theme={theme}
-                    actions={
-                      <div className="relative">
-                        <button
-                          type="button"
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, fileId)}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveMenuCardId(activeMenuCardId === fileId ? null : fileId);
-                          }}
-                          className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-grab active:cursor-grabbing ${
-                            isSelected
-                              ? 'text-[#3186FF] bg-blue-50 dark:bg-blue-950/50'
-                              : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-neutral-800'
-                          }`}
-                          title="Drag to reorder or click for options"
-                        >
-                          <MoreHorizontal size={16} />
-                        </button>
-
-                        {/* Dropdown Menu */}
-                        {activeMenuCardId === fileId && (
-                          <div 
-                            onClick={(e) => e.stopPropagation()}
-                            className="absolute right-0 top-9 w-36 rounded-xl bg-white dark:bg-[#2B2D31] border border-slate-200 dark:border-white/10 shadow-xl p-1 z-30 animate-in fade-in zoom-in-95 duration-100"
-                          >
-                            <button
-                              onClick={() => {
-                                setActiveMenuCardId(null);
-                                onSelectArtifact(file);
-                              }}
-                              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center gap-2 transition-colors cursor-pointer"
-                            >
-                              <Edit2 size={14} />
-                              <span>Edit</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                setActiveMenuCardId(null);
-                                onRemovePin(fileId);
-                              }}
-                              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer"
-                            >
-                              <Trash2 size={14} />
-                              <span>Remove</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    }
-                  />
-                </div>
-              }
-            >
-              {/* Interactive Live Viewport */}
-              <div className={`flex-1 w-full h-full relative overflow-hidden bg-slate-50/30 dark:bg-black/20 ${draggedCardId ? 'pointer-events-none' : 'pointer-events-auto select-auto'}`}>
-                <div className="absolute inset-0 w-full h-full">
-                  {isTodo ? (
-                    isHtml ? (
-                      <AppView
-                        sandboxUrl={file.sandboxUrl || sandboxUrl}
-                        files={sandboxFiles}
-                        envId={file.envId || file.activeSpaceId || file.chatId || envId}
-                        selectedFile={file}
-                        theme={theme}
-                      />
-                    ) : (
-                      <div className="w-full h-full overflow-y-auto p-4 flex flex-col gap-[4px]">
-                        {todoItems && todoItems.map((item) => (
-                          <InferredTaskCardExperimental 
-                            key={item.id}
-                            item={item}
-                            getFileIcon={getFileIcon || (() => '')}
-                            onClick={() => {
-                              if (onProactiveTaskClick) {
-                                onProactiveTaskClick(item);
-                              } else {
-                                if (item.filesToLoad && setSandboxFiles && setSelectedFile) {
-                                  setSandboxFiles(item.filesToLoad);
-                                  setSelectedFile(item.filesToLoad[0]);
-                                } else if (setSandboxFiles && setSelectedFile) {
-                                  setSandboxFiles([]);
-                                  setSelectedFile(null);
-                                }
-                                if (setProjectName) {
-                                  setProjectName(item.workspace.split(' · ')[0]);
-                                }
-                                if (setViewState) {
-                                  setViewState('files');
-                                }
-                                if (setActiveSidebar) {
-                                  setActiveSidebar('gemini');
-                                }
-                              }
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )
-                  ) : isHtml ? (
-                    <AppView
-                      sandboxUrl={file.sandboxUrl || sandboxUrl}
-                      files={sandboxFiles}
-                      envId={file.envId || file.activeSpaceId || file.chatId || envId}
-                      selectedFile={file}
-                      theme={theme}
-                    />
-                  ) : (
-                    <NativeViewer
-                      file={file}
-                      hideHeader={true}
-                      mode="preview"
-                      theme={theme}
-                    />
-                  )}
-                </div>
-              </div>
-            </Card>
-          </div>
-        );
-      })}
-
-      {isWidgetModalOpen && (
-        <AddWidgetModal
-          isOpen={isWidgetModalOpen}
-          onClose={() => setIsWidgetModalOpen(false)}
-          availableWidgets={availableWidgets}
-          pinnedArtifactIds={pinnedArtifactIds}
-          onPinWidget={(file) => {
-            if (onPinArtifact) onPinArtifact(file);
-          }}
-          onUnpinWidget={onRemovePin}
-          onCreateCustomTool={() => {
-            if (onCreateArtifact) onCreateArtifact('site');
-          }}
-          theme={theme}
-        />
-      )}
+            onUnpinWidget={onRemovePin}
+            onCreateCustomTool={() => {
+              if (onCreateArtifact) onCreateArtifact('site');
+            }}
+            theme={theme}
+          />
+        )}
       </div>
     </div>
   );
