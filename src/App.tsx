@@ -107,6 +107,35 @@ export default function App() {
     setActiveSlideIndex(0);
     if (selectedFile && selectedFile.name) {
       const fileName = selectedFile.name;
+      const fileNameLower = fileName.toLowerCase();
+      const mimeLower = (selectedFile.mimeType || '').toLowerCase();
+      
+      const isSlide = selectedFile.type === 'slide' ||
+                      selectedFile.taskType === 'slide' ||
+                      fileNameLower.endsWith('.gslides') ||
+                      fileNameLower.endsWith('.pptx') ||
+                      fileNameLower.endsWith('.ppt') ||
+                      fileNameLower.includes('slide') ||
+                      mimeLower.includes('presentation') ||
+                      mimeLower.includes('slide');
+                      
+      const isDoc = selectedFile.type === 'doc' ||
+                    selectedFile.taskType === 'doc' ||
+                    fileNameLower.endsWith('.doc') ||
+                    fileNameLower.endsWith('.gdoc') ||
+                    fileNameLower.endsWith('.md') ||
+                    fileNameLower.endsWith('.txt') ||
+                    fileNameLower.includes('document') ||
+                    mimeLower.includes('document');
+
+      if (isSlide) {
+        setCurrentTask('slide');
+      } else if (isDoc) {
+        setCurrentTask('doc');
+      } else {
+        setCurrentTask('app');
+      }
+
       if (fileName !== lastSelectedFileRef.current) {
         lastSelectedFileRef.current = fileName;
         if (fileName.includes('/')) {
