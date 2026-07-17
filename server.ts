@@ -2147,8 +2147,44 @@ You MUST strictly follow Robert Murdock's Polaris (Workspace Design System) and 
       }
 
       const lowerPrompt = prompt.toLowerCase();
-      const isPolicyRequest = lowerPrompt.includes('policy') && 
-                                (lowerPrompt.includes('organize') || lowerPrompt.includes('track') || lowerPrompt.includes('client') || lowerPrompt.includes('issue') || lowerPrompt.includes('build') || lowerPrompt.includes('tool'));
+      const isClientRequest = lowerPrompt.includes('client request') || lowerPrompt.includes('client_request') || lowerPrompt.includes('track client requests') || (lowerPrompt.includes('client') && lowerPrompt.includes('request'));
+
+      if (isClientRequest) {
+        const cachedPath = path.join(process.cwd(), "data", "cached_client_request_tracker.html");
+        if (fs.existsSync(cachedPath)) {
+          console.log("[Server /api/vibe-code] Intercepted Client Request Tracker prompt. Fast streaming pre-cached Client Request Tracker HTML tool!");
+          const htmlContent = fs.readFileSync(cachedPath, "utf-8");
+          const streamText = `I'll create an interactive Trust & Safety Client Request Tracker tailored to your space to centralize client policy requests, track safety audit intake, and assign triage leads across advisory platforms.\n\n\`\`\`html\n<!-- index.html -->\n${htmlContent}\n\`\`\`\n\nYour Client Request Tracker is ready! You can filter client requests by platform, request type, priority, or status, log new client policy requests, and assign advisory leads in real time.`;
+
+          const chunkSize = 600;
+          for (let i = 0; i < streamText.length; i += chunkSize) {
+            if (res.writableEnded || res.destroyed) break;
+            const chunk = streamText.substring(i, i + chunkSize);
+            res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+            await new Promise(r => setTimeout(r, 25));
+          }
+
+          const completionEvent = {
+            event_type: "interaction.completed",
+            interaction: {
+              environment_id: "remote",
+              steps: [
+                {
+                  text: streamText
+                }
+              ]
+            }
+          };
+          res.write(`data: ${JSON.stringify(completionEvent)}\n\n`);
+
+          if (!res.writableEnded && !res.destroyed) {
+            res.end();
+          }
+          return;
+        }
+      }
+
+      const isPolicyRequest = lowerPrompt.includes('policy') || lowerPrompt.includes('policy_tracker');
 
       if (isPolicyRequest) {
         const cachedPath = path.join(process.cwd(), "data", "cached_policy_issues_tracker.html");
@@ -2373,6 +2409,24 @@ JSON output:`;
           archetypePrompt: userPrompt
         };
       }
+      if (lower.includes("client request") || lower.includes("track client requests") || (lower.includes("client") && lower.includes("request"))) {
+        return {
+          domain: "tool",
+          toolArchetype: "client_request_tracker",
+          proposalText: `Would you like me to build a **Client Request Tracker** to track Trust & Safety policy requests across your advisory clients?`,
+          pillLabel: `Build Client Request Tracker`,
+          archetypePrompt: `help me track client requests`
+        };
+      }
+      if (lower.includes("policy")) {
+        return {
+          domain: "tool",
+          toolArchetype: "policy_tracker",
+          proposalText: `Would you like me to build a **Policy Tracker** to organize client policy issues?`,
+          pillLabel: `Build Policy Tracker`,
+          archetypePrompt: userPrompt.includes("policy") ? userPrompt : `help me organize policy issues from all clients`
+        };
+      }
       if (lower.includes("decision") || lower.includes("risk") || lower.includes("mitigation")) {
         return {
           domain: "tool",
@@ -2382,7 +2436,7 @@ JSON output:`;
           archetypePrompt: `Build a comprehensive decision and risk tracking system to document team decisions, outcomes, ownership, and mitigations.`
         };
       }
-      if (lower.includes("bug") || lower.includes("defect") || lower.includes("issue")) {
+      if (lower.includes("bug") || lower.includes("defect") || lower.includes("software defect")) {
         return {
           domain: "tool",
           toolArchetype: "bug_tracker",
@@ -2449,17 +2503,21 @@ CRITICAL CLASSIFICATION RULES:
    - IF the user asks to organize, sort, move, or clean up workspace files (e.g., "organize my files"), set "domain": "organize" and "toolArchetype": null.
 
 4. DOMAIN = "tool":
-   - IF the user describes a workflow problem, task tracking, bug tracking, risk management, approval queue, or requests an interactive software application or web app (e.g., "help me track the team's work", "help me manage software bugs", "track our project decisions and risk mitigations", "manage design approvals and sign-offs", "help me track unreplied emails"):
+   - IF the user describes a workflow problem, task tracking, bug tracking, risk management, approval queue, or requests an interactive software application or web app (e.g., "help me track the team's work", "help me manage software bugs", "track our project decisions and risk mitigations", "manage design approvals and sign-offs", "help me track unreplied emails", "help me organize policy issues", "help me track client requests"):
    - Set "domain": "tool"
    - Select the optimal "toolArchetype":
+     * "client_request_tracker": MANDATORY for any request mentioning "client requests", "track client requests", "client policy requests" ("help me track client requests", "client request tracker")
+     * "policy_tracker": for policy issues, policy violations, governance ("help me organize policy issues from all clients", "policy tracker")
      * "kanban": MANDATORY for any prompt mentioning "track work", "track team work", "track tasks", "kanban board" (e.g. "help me track the team's work", "help me track my team's tasks")
-     * "bug_tracker": for software defects, bug reports, issues, feedback ("help me manage software bugs", "bug tracker")
+     * "bug_tracker": for software code defects, software bugs, technical defect reports ("help me manage software bugs", "bug tracker")
      * "decision_risk_log": for decisions, risk registers, mitigations ("track project decisions and risk mitigations", "risk log")
      * "approval_queue": for review queues, sign-offs, pending approvals ("manage design approvals", "approval queue")
      * "action_agenda": for task lists, meeting action items, unreplied emails ("track unreplied emails", "action item list")
      * "custom": for any other interactive tool.
 
 EXAMPLES:
+Input: "help me track client requests" -> {"domain": "tool", "toolArchetype": "client_request_tracker", "proposalText": "Would you like me to build a **Client Request Tracker** to track Trust & Safety policy requests across your advisory clients?", "pillLabel": "Build Client Request Tracker", "archetypePrompt": "help me track client requests"}
+Input: "help me organize policy issues from all my clients" -> {"domain": "tool", "toolArchetype": "policy_tracker", "proposalText": "Would you like me to build a **Policy Tracker** to organize client policy issues?", "pillLabel": "Build Policy Tracker", "archetypePrompt": "help me organize policy issues from all clients"}
 Input: "write a PRD for this space" -> {"domain": "doc", "toolArchetype": null, "proposalText": "Would you like me to draft a Product Requirement Document (PRD) for this space?", "pillLabel": "Draft PRD"}
 Input: "write a roadmap document based on this project" -> {"domain": "doc", "toolArchetype": null, "proposalText": "Would you like me to draft a Roadmap document for this project?", "pillLabel": "Draft Roadmap"}
 Input: "help me track the team's work" -> {"domain": "tool", "toolArchetype": "kanban", "proposalText": "Would you like me to build a **Kanban Board** to track the team's work?", "pillLabel": "Build Kanban Board"}
@@ -2470,7 +2528,7 @@ Input: "manage design approvals and sign-offs" -> {"domain": "tool", "toolArchet
 OUTPUT ONLY VALID JSON:
 {
   "domain": "doc" | "slide" | "organize" | "tool",
-  "toolArchetype": "kanban" | "bug_tracker" | "decision_risk_log" | "approval_queue" | "action_agenda" | "custom" | null,
+  "toolArchetype": "client_request_tracker" | "policy_tracker" | "kanban" | "bug_tracker" | "decision_risk_log" | "approval_queue" | "action_agenda" | "custom" | null,
   "proposalText": string,
   "pillLabel": string,
   "archetypePrompt": string

@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trust & Safety Client Request Tracker</title>
+  <!-- Google Sans & Google Sans Text Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Google Sans"', '"Google Sans Text"', 'sans-serif'],
+            body: ['"Google Sans Text"', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      font-family: "Google Sans Text", sans-serif;
+      background-color: #ffffff;
+      color: #1f1f1f;
+    }
+    h1, h2, h3, h4, h5, h6, button {
+      font-family: "Google Sans", sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-white p-6 text-[#1f1f1f]">
+
+<div class="max-w-7xl mx-auto space-y-6">
+
+  <!-- Header Banner & Action -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#e2e8f0]">
+    <div>
+      <div class="flex items-center space-x-2">
+        <h1 class="text-xl font-bold text-[#1f1f1f] tracking-tight">Trust & Safety Client Request Tracker</h1>
+        <span class="px-2.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#0b57d0] text-xs font-semibold">T&S Advisory Ops</span>
+      </div>
+      <p class="text-xs text-[#5f6368] mt-1">Manage, triage, and fulfill client policy review requests, custom guardrail configurations, and safety audit inquiries across startup platforms.</p>
+    </div>
+
+    <button onclick="startCreateNewRequest()" class="px-4 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white text-xs font-medium rounded-lg transition duration-150 flex items-center space-x-1.5 shadow-sm cursor-pointer self-start md:self-auto">
+      <span class="text-base font-semibold">+</span>
+      <span>Log Client Request</span>
+    </button>
+  </div>
+
+  <!-- Metric Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-1">
+      <div class="text-xs text-[#5f6368] font-medium">Total Client Requests</div>
+      <div id="metric-total-count" class="text-2xl font-bold text-[#1f1f1f]">5 Requests</div>
+      <div class="text-[11px] text-[#5f6368]">Logged across all client spaces</div>
+    </div>
+    <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-1">
+      <div class="text-xs text-[#5f6368] font-medium">Urgent Audit Requests</div>
+      <div id="metric-urgent-count" class="text-2xl font-bold text-red-600">2 Urgent</div>
+      <div class="text-[11px] text-red-600 font-medium">SLA response target < 24 hrs</div>
+    </div>
+    <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-1">
+      <div class="text-xs text-[#5f6368] font-medium">Fulfillment Rate</div>
+      <div class="text-2xl font-bold text-[#0b57d0]">94.8%</div>
+      <div class="text-[11px] text-[#0b57d0] font-medium">On-time policy delivery</div>
+    </div>
+    <div class="bg-[#f0f4f9] border border-[#e2e8f0] p-4 rounded-xl space-y-1">
+      <div class="text-xs text-[#5f6368] font-medium">Active Clients Serviced</div>
+      <div id="metric-clients-count" class="text-2xl font-bold text-[#1f1f1f]">3 Clients</div>
+      <div class="text-[11px] text-[#5f6368]">Aegis AI, Veritas Social, Nexus Pay</div>
+    </div>
+  </div>
+
+  <!-- Split View Panel Layout -->
+  <div class="flex flex-col lg:flex-row border border-[#e2e8f0] rounded-xl overflow-hidden min-h-[520px] bg-white">
+
+    <!-- Left Directory List -->
+    <div class="w-full lg:w-[420px] flex flex-col border-r border-[#e2e8f0] bg-white">
+      <!-- Search & Filters Toolbar -->
+      <div class="p-4 border-b border-[#e2e8f0] space-y-3 bg-[#f8fafc]">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[#5f6368] uppercase tracking-wider">Client Requests Queue</span>
+          <span id="requests-counter" class="text-[11px] text-[#5f6368] font-medium">5 total</span>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative">
+          <input type="text" id="search-input" oninput="renderRequestsList()" placeholder="Search client, request type, or title..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-white rounded-lg border border-[#e2e8f0] focus:border-[#0b57d0] outline-none transition">
+          <svg class="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#5f6368]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+
+        <!-- Filter Dropdowns -->
+        <div class="grid grid-cols-3 gap-2">
+          <select id="filter-client" onchange="renderRequestsList()" class="bg-white border border-[#e2e8f0] rounded-lg px-2 py-1 text-[11px] text-[#1f1f1f] outline-none focus:border-[#0b57d0]">
+            <option value="">All Clients</option>
+          </select>
+          <select id="filter-type" onchange="renderRequestsList()" class="bg-white border border-[#e2e8f0] rounded-lg px-2 py-1 text-[11px] text-[#1f1f1f] outline-none focus:border-[#0b57d0]">
+            <option value="">All Types</option>
+            <option value="Policy Audit">Policy Audit</option>
+            <option value="Guardrail Review">Guardrail Review</option>
+            <option value="Classifier Tuning">Classifier Tuning</option>
+            <option value="Escalation Exemption">Escalation Exemption</option>
+            <option value="DSA Export">DSA Export</option>
+          </select>
+          <select id="filter-status" onchange="renderRequestsList()" class="bg-white border border-[#e2e8f0] rounded-lg px-2 py-1 text-[11px] text-[#1f1f1f] outline-none focus:border-[#0b57d0]">
+            <option value="">All Statuses</option>
+            <option value="New Intake">New Intake</option>
+            <option value="Under Review">Under Review</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Fulfilled">Fulfilled</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Scrollable Queue List -->
+      <div id="requests-list" class="flex-1 overflow-y-auto divide-y divide-[#e2e8f0] no-scrollbar max-h-[580px]">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Right Details / Form View -->
+    <div id="details-pane" class="flex-1 flex flex-col bg-white">
+      <!-- Rendered via JavaScript -->
+    </div>
+  </div>
+</div>
+
+<script>
+  // Team Leads Directory
+  const teamMembers = [
+    { name: "Elena Vance", email: "elena_vance@example.com", initials: "EV", color: "#e8f0fe", textColor: "#0b57d0" },
+    { name: "David Ross", email: "david_ross@example.com", initials: "DR", color: "#fce8e6", textColor: "#c5221f" },
+    { name: "Priya Patel", email: "priya_patel@example.com", initials: "PP", color: "#e6f4ea", textColor: "#137333" },
+    { name: "Dr. Marcus Thorne", email: "dr_marcus_thorne@example.com", initials: "MT", color: "#feefc3", textColor: "#b06000" }
+  ];
+
+  // Default Mock Client Requests Dataset
+  const defaultRequests = [
+    {
+      id: "REQ-201",
+      client: "Aegis AI",
+      requestTitle: "Zero-Day Prompt Injection Guardrail Configuration",
+      requestType: "Guardrail Review",
+      priority: "Urgent",
+      status: "In Progress",
+      assignedLead: "elena_vance@example.com",
+      description: "Client requested custom system prompt guardrails to neutralize customer chatbot prompt injection exploits.",
+      deliverableNotes: "Configured custom pre-LLM classifier rules. Currently running red-teaming validation suite.",
+      dateSubmitted: "2026-07-15"
+    },
+    {
+      id: "REQ-202",
+      client: "Veritas Social",
+      requestTitle: "Unicode Homoglyph Classifier Fine-Tuning Request",
+      requestType: "Classifier Tuning",
+      priority: "High",
+      status: "Fulfilled",
+      assignedLead: "priya_patel@example.com",
+      description: "Request to update toxicity moderation models to detect obfuscated Unicode text variants used to bypass filters.",
+      deliverableNotes: "Trained and deployed updated neural model patch v2.1. Confirmed 99.4% detection accuracy.",
+      dateSubmitted: "2026-07-14"
+    },
+    {
+      id: "REQ-203",
+      client: "Nexus Pay",
+      requestTitle: "Authentication Endpoint Rate-Limiting Policy Audit",
+      requestType: "Policy Audit",
+      priority: "Urgent",
+      status: "Under Review",
+      assignedLead: "david_ross@example.com",
+      description: "Urgent advisory request to audit credential stuffing protection protocols following automated brute-force login attempt spikes.",
+      deliverableNotes: "Conducting architecture audit of step-up MFA and bot defense rules.",
+      dateSubmitted: "2026-07-16"
+    },
+    {
+      id: "REQ-204",
+      client: "Veritas Social",
+      requestTitle: "PhotoDNA Media Queue SLA Resilience Review",
+      requestType: "Policy Audit",
+      priority: "High",
+      status: "Fulfilled",
+      assignedLead: "dr_marcus_thorne@example.com",
+      description: "Review media hash matching queue stability during peak traffic periods to ensure zero SLA breaches.",
+      deliverableNotes: "Patched core queue lock contention. Automated failover pipeline verified operating cleanly.",
+      dateSubmitted: "2026-07-13"
+    },
+    {
+      id: "REQ-205",
+      client: "Aegis AI",
+      requestTitle: "EU Digital Services Act Transparency Export Compliance",
+      requestType: "DSA Export",
+      priority: "Standard",
+      status: "New Intake",
+      assignedLead: "priya_patel@example.com",
+      description: "Request for automated quarterly transparency data export templates matching EU DSA mandate specifications.",
+      deliverableNotes: "Drafting standard data schemas for client reporting export.",
+      dateSubmitted: "2026-07-12"
+    }
+  ];
+
+  let requests = [];
+  let selectedRequestId = null;
+
+  const envId = window.__sandboxEnvId;
+  const syncKey = "ts_client_requests_state_v1";
+
+  function escapeHTML(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function getMemberByEmail(email) {
+    return teamMembers.find(m => m.email === email) || {
+      name: email || "Unassigned",
+      email: email,
+      initials: email ? email.substring(0, 2).toUpperCase() : "?",
+      color: "#f1f3f4",
+      textColor: "#5f6368"
+    };
+  }
+
+  function isUserEditing() {
+    const active = document.activeElement;
+    if (!active) return false;
+    return active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT";
+  }
+
+  async function loadState() {
+    if (envId) {
+      try {
+        const res = await fetch(`/api/sync/${envId}/${syncKey}`);
+        const json = await res.json();
+        if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+          applyNewRequestsData(json.data);
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to fetch synced state:", err);
+      }
+    }
+    
+    const local = localStorage.getItem(syncKey);
+    if (local) {
+      try {
+        applyNewRequestsData(JSON.parse(local));
+      } catch (e) {
+        applyNewRequestsData(defaultRequests);
+      }
+    } else {
+      applyNewRequestsData(defaultRequests);
+    }
+  }
+
+  function applyNewRequestsData(data) {
+    const stringifiedNew = JSON.stringify(data);
+    const stringifiedCurrent = JSON.stringify(requests);
+    
+    if (stringifiedNew !== stringifiedCurrent) {
+      requests = data;
+      updateClientFiltersDropdown();
+      updateMetrics();
+      renderRequestsList();
+      
+      if (selectedRequestId && !isUserEditing()) {
+        renderDetailsPane();
+      }
+    }
+  }
+
+  async function saveState() {
+    localStorage.setItem(syncKey, JSON.stringify(requests));
+    updateClientFiltersDropdown();
+    updateMetrics();
+    
+    if (envId) {
+      try {
+        await fetch(`/api/sync/${envId}/${syncKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: requests })
+        });
+      } catch (err) {
+        console.error("Failed to save synced state:", err);
+      }
+    }
+  }
+
+  function updateMetrics() {
+    const totalElem = document.getElementById("metric-total-count");
+    const urgentElem = document.getElementById("metric-urgent-count");
+    const clientsElem = document.getElementById("metric-clients-count");
+    const counterElem = document.getElementById("requests-counter");
+
+    if (totalElem) totalElem.textContent = `${requests.length} Requests`;
+    if (counterElem) counterElem.textContent = `${requests.length} total`;
+    
+    const urgentCount = requests.filter(r => r.priority === 'Urgent').length;
+    if (urgentElem) urgentElem.textContent = `${urgentCount} Urgent`;
+
+    const uniqueClients = [...new Set(requests.map(r => r.client))].filter(Boolean);
+    if (clientsElem) clientsElem.textContent = `${uniqueClients.length} Clients`;
+  }
+
+  function updateClientFiltersDropdown() {
+    const clientSelect = document.getElementById("filter-client");
+    if (!clientSelect) return;
+    const currentVal = clientSelect.value;
+    
+    const clients = [...new Set(requests.map(r => r.client))].filter(Boolean).sort();
+    
+    let html = `<option value="">All Clients</option>`;
+    clients.forEach(c => {
+      html += `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`;
+    });
+    clientSelect.innerHTML = html;
+    clientSelect.value = currentVal;
+  }
+
+  function renderRequestsList() {
+    const container = document.getElementById("requests-list");
+    if (!container) return;
+
+    const searchVal = document.getElementById("search-input").value.toLowerCase();
+    const filterType = document.getElementById("filter-type").value;
+    const filterStat = document.getElementById("filter-status").value;
+    const filterClient = document.getElementById("filter-client").value;
+
+    let filtered = requests.filter(req => {
+      const matchSearch = req.client.toLowerCase().includes(searchVal) || 
+                          req.requestTitle.toLowerCase().includes(searchVal) ||
+                          req.description.toLowerCase().includes(searchVal) ||
+                          req.id.toLowerCase().includes(searchVal);
+      const matchType = !filterType || req.requestType === filterType;
+      const matchStat = !filterStat || req.status === filterStat;
+      const matchClient = !filterClient || req.client === filterClient;
+      
+      return matchSearch && matchType && matchStat && matchClient;
+    });
+
+    filtered.sort((a, b) => b.id.localeCompare(a.id));
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="p-8 text-center text-[#5f6368] text-xs space-y-1">
+          <p class="font-medium text-[#1f1f1f]">No matching client requests</p>
+          <p>Try adjusting your search query or dropdown filters.</p>
+        </div>
+      `;
+      return;
+    }
+
+    let html = "";
+    filtered.forEach(req => {
+      const member = getMemberByEmail(req.assignedLead);
+      const isActive = selectedRequestId === req.id;
+      
+      const activeClass = isActive 
+        ? 'bg-[#e8f0fe] border-l-[3px] border-l-[#0b57d0]' 
+        : 'hover:bg-[#f8fafc] border-l-[3px] border-l-transparent';
+      
+      let priorityBadge = "bg-[#f1f3f4] text-[#5f6368]";
+      if (req.priority === "Urgent") priorityBadge = "bg-red-50 text-red-700 font-semibold border border-red-200";
+      else if (req.priority === "High") priorityBadge = "bg-orange-50 text-orange-700 font-medium border border-orange-200";
+      else if (req.priority === "Standard") priorityBadge = "bg-blue-50 text-blue-700 font-medium border border-blue-200";
+
+      let statusBadge = "bg-[#f1f3f4] text-[#5f6368]";
+      if (req.status === "Fulfilled") statusBadge = "bg-emerald-50 text-emerald-700 font-medium";
+      else if (req.status === "In Progress") statusBadge = "bg-purple-50 text-purple-700 font-medium";
+      else if (req.status === "Under Review") statusBadge = "bg-amber-50 text-amber-700 font-medium";
+      else if (req.status === "New Intake") statusBadge = "bg-blue-50 text-blue-700 font-medium";
+
+      html += `
+        <div onclick="selectRequest('${req.id}')" class="p-4 cursor-pointer transition-colors ${activeClass} flex flex-col space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono font-semibold text-[#5f6368] tracking-wider">${req.id}</span>
+            <span class="text-[10px] text-[#5f6368]">${req.dateSubmitted}</span>
+          </div>
+          <div class="text-xs font-semibold text-[#1f1f1f] flex items-center justify-between">
+            <span>${escapeHTML(req.client)}</span>
+            <span class="text-[10px] px-2 py-0.5 rounded ${priorityBadge}">${req.priority}</span>
+          </div>
+          <p class="text-xs font-medium text-[#0b57d0] line-clamp-1">${escapeHTML(req.requestTitle)}</p>
+          <p class="text-[11px] text-[#444746] line-clamp-2 leading-relaxed">${escapeHTML(req.description)}</p>
+          
+          <div class="flex items-center justify-between pt-1">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[10px] px-2 py-0.5 rounded bg-[#f0f4f9] text-[#1f1f1f] font-medium">${escapeHTML(req.requestType)}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded ${statusBadge}">${req.status}</span>
+            </div>
+            
+            <div class="flex items-center space-x-1.5" title="Lead: ${escapeHTML(member.name)}">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style="background-color: ${member.color}; color: ${member.textColor};">
+                ${member.initials}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  function selectRequest(id) {
+    selectedRequestId = id;
+    renderRequestsList();
+    renderDetailsPane();
+  }
+
+  function startCreateNewRequest() {
+    selectedRequestId = "NEW";
+    renderRequestsList();
+    renderDetailsPane();
+  }
+
+  function cancelEdit() {
+    selectedRequestId = null;
+    renderRequestsList();
+    renderDetailsPane();
+  }
+
+  function renderDetailsPane() {
+    const pane = document.getElementById("details-pane");
+    if (!pane) return;
+
+    if (!selectedRequestId) {
+      pane.innerHTML = `
+        <div class="flex-1 flex flex-col items-center justify-center p-8 text-center h-full select-none">
+          <div class="w-12 h-12 rounded-full bg-[#f0f4f9] flex items-center justify-center text-[#0b57d0] mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+          </div>
+          <p class="text-sm font-semibold text-[#1f1f1f]">Select a Client Request</p>
+          <p class="text-xs text-[#5f6368] mt-1 max-w-sm">Select an intake request from the list on the left to review scope specifications, update T&S deliverables, or log a new client request.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const isNew = selectedRequestId === "NEW";
+    let reqItem = null;
+
+    if (isNew) {
+      const today = new Date().toISOString().split('T')[0];
+      reqItem = {
+        id: "",
+        client: "",
+        requestTitle: "",
+        requestType: "Policy Audit",
+        priority: "High",
+        status: "New Intake",
+        assignedLead: "elena_vance@example.com",
+        description: "",
+        deliverableNotes: "",
+        dateSubmitted: today
+      };
+    } else {
+      reqItem = requests.find(r => r.id === selectedRequestId);
+      if (!reqItem) {
+        pane.innerHTML = `
+          <div class="p-8 text-center text-red-600 text-xs font-medium">
+            Error: Selected client request could not be located or was deleted.
+          </div>
+        `;
+        return;
+      }
+    }
+
+    pane.innerHTML = `
+      <div class="p-6 max-w-2xl w-full mx-auto space-y-5">
+        
+        <div class="flex items-center justify-between border-b border-[#e2e8f0] pb-3">
+          <div>
+            <span class="text-[10px] text-[#5f6368] font-mono tracking-wider font-semibold uppercase">
+              ${isNew ? 'New Client Request Entry' : `Request Reference: ${reqItem.id}`}
+            </span>
+            <h2 class="text-base font-semibold text-[#1f1f1f] mt-0.5">
+              ${isNew ? 'Log New T&S Client Request' : `Edit Request Details — ${escapeHTML(reqItem.client)}`}
+            </h2>
+          </div>
+          
+          <button onclick="cancelEdit()" class="text-[#5f6368] hover:text-[#1f1f1f] p-1 rounded-md hover:bg-[#f0f4f9]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <form id="request-form" class="space-y-4" onsubmit="handleFormSubmit(event)">
+          <input type="hidden" id="form-request-id" value="${reqItem.id}">
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col space-y-1">
+              <label for="form-client" class="text-xs font-medium text-[#5f6368]">Client Platform <span class="text-red-500">*</span></label>
+              <input type="text" id="form-client" required class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none" value="${escapeHTML(reqItem.client)}" placeholder="e.g. Aegis AI">
+            </div>
+
+            <div class="flex flex-col space-y-1">
+              <label for="form-title" class="text-xs font-medium text-[#5f6368]">Request Title <span class="text-red-500">*</span></label>
+              <input type="text" id="form-title" required class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none" value="${escapeHTML(reqItem.requestTitle)}" placeholder="e.g. Guardrail Policy Audit">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="flex flex-col space-y-1">
+              <label for="form-type" class="text-xs font-medium text-[#5f6368]">Request Type</label>
+              <select id="form-type" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs bg-white focus:border-[#0b57d0] outline-none">
+                <option value="Policy Audit" ${reqItem.requestType === 'Policy Audit' ? 'selected' : ''}>Policy Audit</option>
+                <option value="Guardrail Review" ${reqItem.requestType === 'Guardrail Review' ? 'selected' : ''}>Guardrail Review</option>
+                <option value="Classifier Tuning" ${reqItem.requestType === 'Classifier Tuning' ? 'selected' : ''}>Classifier Tuning</option>
+                <option value="Escalation Exemption" ${reqItem.requestType === 'Escalation Exemption' ? 'selected' : ''}>Escalation Exemption</option>
+                <option value="DSA Export" ${reqItem.requestType === 'DSA Export' ? 'selected' : ''}>DSA Export</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col space-y-1">
+              <label for="form-priority" class="text-xs font-medium text-[#5f6368]">Priority SLA</label>
+              <select id="form-priority" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs bg-white focus:border-[#0b57d0] outline-none">
+                <option value="Urgent" ${reqItem.priority === 'Urgent' ? 'selected' : ''}>Urgent (< 24 hr)</option>
+                <option value="High" ${reqItem.priority === 'High' ? 'selected' : ''}>High (< 48 hr)</option>
+                <option value="Standard" ${reqItem.priority === 'Standard' ? 'selected' : ''}>Standard (5 days)</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col space-y-1">
+              <label for="form-status" class="text-xs font-medium text-[#5f6368]">Fulfillment Status</label>
+              <select id="form-status" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs bg-white focus:border-[#0b57d0] outline-none">
+                <option value="New Intake" ${reqItem.status === 'New Intake' ? 'selected' : ''}>New Intake</option>
+                <option value="Under Review" ${reqItem.status === 'Under Review' ? 'selected' : ''}>Under Review</option>
+                <option value="In Progress" ${reqItem.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value="Fulfilled" ${reqItem.status === 'Fulfilled' ? 'selected' : ''}>Fulfilled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col space-y-1">
+              <label for="form-owner" class="text-xs font-medium text-[#5f6368]">Assigned T&S Lead</label>
+              <select id="form-owner" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs bg-white focus:border-[#0b57d0] outline-none">
+                ${teamMembers.map(m => `<option value="${m.email}" ${reqItem.assignedLead === m.email ? 'selected' : ''}>${m.name}</option>`).join('')}
+              </select>
+            </div>
+
+            <div class="flex flex-col space-y-1">
+              <label for="form-date" class="text-xs font-medium text-[#5f6368]">Submission Date</label>
+              <input type="date" id="form-date" required class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none" value="${reqItem.dateSubmitted}">
+            </div>
+          </div>
+
+          <div class="flex flex-col space-y-1">
+            <label for="form-description" class="text-xs font-medium text-[#5f6368]">Client Request Context & Policy Scope <span class="text-red-500">*</span></label>
+            <textarea id="form-description" rows="3" required class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none resize-none" placeholder="Describe policy guidelines, guardrail specifications, or compliance requirements...">${escapeHTML(reqItem.description)}</textarea>
+          </div>
+
+          <div class="flex flex-col space-y-1">
+            <label for="form-notes" class="text-xs font-medium text-[#5f6368]">T&S Advisory Deliverables & Resolution Notes</label>
+            <textarea id="form-notes" rows="3" class="border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-xs focus:border-[#0b57d0] outline-none resize-none" placeholder="Detail model patch status, guardrail code snippets, or delivered compliance reports...">${escapeHTML(reqItem.deliverableNotes || '')}</textarea>
+          </div>
+
+          <div class="flex items-center justify-between pt-4 border-t border-[#e2e8f0]">
+            <div>
+              ${!isNew ? `
+                <button type="button" onclick="deleteRequest('${reqItem.id}')" class="text-red-600 hover:text-red-800 text-xs font-medium flex items-center space-x-1 transition cursor-pointer">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                  <span>Delete Request</span>
+                </button>
+              ` : '<div></div>'}
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <button type="button" onclick="cancelEdit()" class="border border-[#e2e8f0] hover:bg-[#f8fafc] text-[#1f1f1f] px-3.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer">
+                Cancel
+              </button>
+              <button type="submit" class="bg-[#0b57d0] hover:bg-[#0842a0] text-white px-4 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer shadow-sm">
+                ${isNew ? 'Create Request Log' : 'Save Deliverables'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    `;
+  }
+
+  async function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    const idVal = document.getElementById("form-request-id").value;
+    const clientVal = document.getElementById("form-client").value.trim();
+    const titleVal = document.getElementById("form-title").value.trim();
+    const typeVal = document.getElementById("form-type").value;
+    const priorityVal = document.getElementById("form-priority").value;
+    const statusVal = document.getElementById("form-status").value;
+    const ownerEmailVal = document.getElementById("form-owner").value;
+    const dateVal = document.getElementById("form-date").value;
+    const descriptionVal = document.getElementById("form-description").value.trim();
+    const notesVal = document.getElementById("form-notes").value.trim();
+
+    if (selectedRequestId === "NEW") {
+      let maxNum = 200;
+      requests.forEach(r => {
+        const match = r.id.match(/^REQ-(\d+)$/);
+        if (match) {
+          const num = parseInt(match[1]);
+          if (num > maxNum) maxNum = num;
+        }
+      });
+      const nextId = `REQ-${maxNum + 1}`;
+
+      const newReq = {
+        id: nextId,
+        client: clientVal,
+        requestTitle: titleVal,
+        requestType: typeVal,
+        priority: priorityVal,
+        status: statusVal,
+        assignedLead: ownerEmailVal,
+        dateSubmitted: dateVal,
+        description: descriptionVal,
+        deliverableNotes: notesVal
+      };
+
+      requests.push(newReq);
+      selectedRequestId = nextId;
+    } else {
+      const idx = requests.findIndex(r => r.id === idVal);
+      if (idx !== -1) {
+        requests[idx].client = clientVal;
+        requests[idx].requestTitle = titleVal;
+        requests[idx].requestType = typeVal;
+        requests[idx].priority = priorityVal;
+        requests[idx].status = statusVal;
+        requests[idx].assignedLead = ownerEmailVal;
+        requests[idx].dateSubmitted = dateVal;
+        requests[idx].description = descriptionVal;
+        requests[idx].deliverableNotes = notesVal;
+      }
+    }
+
+    await saveState();
+    renderRequestsList();
+    renderDetailsPane();
+  }
+
+  async function deleteRequest(id) {
+    if (!confirm(`Are you sure you want to delete client request ${id}?`)) {
+      return;
+    }
+
+    requests = requests.filter(r => r.id !== id);
+    selectedRequestId = null;
+    
+    await saveState();
+    renderRequestsList();
+    renderDetailsPane();
+  }
+
+  async function init() {
+    await loadState();
+    if (envId) {
+      setInterval(loadState, 2000);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

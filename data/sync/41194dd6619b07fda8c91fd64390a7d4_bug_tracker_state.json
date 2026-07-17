@@ -1,0 +1,52 @@
+{
+  "envId": "41194dd6619b07fda8c91fd64390a7d4",
+  "key": "bug_tracker_state",
+  "data": [
+    {
+      "id": "ISSUE-101",
+      "title": "LLM Jailbreak Escape",
+      "platform": "Aegis AI",
+      "severity": "High",
+      "assignee": "Elena Vance",
+      "status": "Mitigation Testing",
+      "date": "2026-07-14"
+    },
+    {
+      "id": "ISSUE-102",
+      "title": "Harassment Classifier Bypass",
+      "platform": "Veritas Social",
+      "severity": "Medium",
+      "assignee": "Priya Patel",
+      "status": "Model Retrained",
+      "date": "2026-07-15"
+    },
+    {
+      "id": "ISSUE-103",
+      "title": "Credential Stuffing ATO Spike",
+      "platform": "Nexus Pay",
+      "severity": "High",
+      "assignee": "Rachel Chang",
+      "status": "Step-Up Auth Enforced",
+      "date": "2026-07-12"
+    },
+    {
+      "id": "ISSUE-104",
+      "title": "CSAM PhotoDNA Hash Sync Discrepancy",
+      "platform": "Veritas Social",
+      "severity": "Critical",
+      "assignee": "David Ross",
+      "status": "Resolved",
+      "date": "2026-07-13"
+    },
+    {
+      "id": "ISSUE-105",
+      "title": "EU DSA Transparency Audit",
+      "platform": "Aegis AI",
+      "severity": "Medium",
+      "assignee": "Elena Vance",
+      "status": "Drafting Report",
+      "date": "2026-07-10"
+    }
+  ],
+  "updatedAt": "2026-07-16T16:43:30.333Z"
+}
