@@ -7,6 +7,7 @@ import { Card } from '../Shared/Card';
 import { CardHeader } from '../Shared/CardHeader';
 import { NullTitle } from '../Shared/NullTitle';
 import { AddWidgetModal } from './AddWidgetModal';
+import { useCalendarMeeting } from '../../hooks/useCalendarMeeting';
 
 interface SpaceDashboardProps {
   spaceId: string;
@@ -29,6 +30,8 @@ interface SpaceDashboardProps {
   setProjectName?: (name: string) => void;
   setViewState?: (state: any) => void;
   setActiveSidebar?: (sidebar: any) => void;
+  userProfile?: any;
+  accessToken?: string | null;
 }
 
 export function SpaceDashboard({
@@ -51,9 +54,12 @@ export function SpaceDashboard({
   setSelectedFile,
   setProjectName,
   setViewState,
-  setActiveSidebar
+  setActiveSidebar,
+  userProfile,
+  accessToken
 }: SpaceDashboardProps) {
   const [cardWidths, setCardWidths] = useState<Record<string, number>>({});
+  const meeting = useCalendarMeeting(accessToken, userProfile);
   const [activeMenuCardId, setActiveMenuCardId] = useState<string | null>(null);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
   const [dragOverCardId, setDragOverCardId] = useState<string | null>(null);

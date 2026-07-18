@@ -1028,12 +1028,14 @@ export function HomeLandingExperimental({
                       if (!isIframeChild) {
                         try {
                           let expUrl = '';
-                          if (mType.includes('google-apps.spreadsheet')) {
+                          if (mType.includes('google-apps.spreadsheet') || mType.includes('spreadsheet')) {
                             expUrl = `https://www.googleapis.com/drive/v3/files/${bestChild.id}/export?mimeType=text/csv`;
-                          } else if (mType.includes('google-apps.document')) {
+                          } else if (mType.includes('google-apps.document') || mType.includes('document')) {
                             expUrl = `https://www.googleapis.com/drive/v3/files/${bestChild.id}/export?mimeType=text/plain`;
-                          } else if (mType.includes('google-apps.presentation')) {
-                            expUrl = `https://www.googleapis.com/drive/v3/files/${bestChild.id}?fields=description,name,mimeType`;
+                          } else if (mType.includes('google-apps.presentation') || mType.includes('presentation')) {
+                            expUrl = `https://www.googleapis.com/drive/v3/files/${bestChild.id}/export?mimeType=text/plain`;
+                          } else if (mType.includes('google-apps.')) {
+                            expUrl = `https://www.googleapis.com/drive/v3/files/${bestChild.id}/export?mimeType=text/plain`;
                           } else {
                             expUrl = `https://www.googleapis.com/drive/v3/files/${bestChild.id}?alt=media`;
                           }
@@ -1094,7 +1096,7 @@ export function HomeLandingExperimental({
                     let expUrl = '';
                     if (mType.includes('spreadsheet')) {
                       expUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv`;
-                    } else if (mType.includes('document')) {
+                    } else if (mType.includes('document') || mType.includes('presentation') || mType.includes('google-apps.')) {
                       expUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`;
                     } else {
                       expUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
@@ -1436,6 +1438,7 @@ export function HomeLandingExperimental({
           pinnedArtifactIds={pinnedArtifactIds}
           sandboxFiles={sandboxFiles}
           userProfile={userProfile}
+          accessToken={accessToken}
           onSelectArtifact={onSelectArtifact || (() => {})}
           onRemovePin={onRemovePin || (() => {})}
           onPinArtifact={onPinArtifact}

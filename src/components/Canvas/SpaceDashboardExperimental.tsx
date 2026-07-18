@@ -7,6 +7,7 @@ import { Card } from '../Shared/Card';
 import { CardHeader } from '../Shared/CardHeader';
 import { NullTitle } from '../Shared/NullTitle';
 import { AddWidgetModal } from './AddWidgetModal';
+import { useCalendarMeeting } from '../../hooks/useCalendarMeeting';
 
 interface SpaceDashboardProps {
   spaceId: string;
@@ -30,6 +31,7 @@ interface SpaceDashboardProps {
   setViewState?: (state: any) => void;
   setActiveSidebar?: (sidebar: any) => void;
   userProfile?: any;
+  accessToken?: string | null;
 }
 
 export function SpaceDashboardExperimental({
@@ -53,9 +55,11 @@ export function SpaceDashboardExperimental({
   setProjectName,
   setViewState,
   setActiveSidebar,
-  userProfile
+  userProfile,
+  accessToken
 }: SpaceDashboardProps) {
   const [cardWidths, setCardWidths] = useState<Record<string, number>>({});
+  const meeting = useCalendarMeeting(accessToken, userProfile);
   const [activeMenuCardId, setActiveMenuCardId] = useState<string | null>(null);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
   const [dragOverCardId, setDragOverCardId] = useState<string | null>(null);
@@ -648,7 +652,23 @@ export function SpaceDashboardExperimental({
               Welcome back, {name}.
             </h1>
             <p className="text-[15px] text-slate-650 dark:text-neutral-300 font-sans">
-              Your next meeting, <span className="font-semibold">"New Drive"</span>, starts in 10 minutes. <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Join Call.</a>
+              {meeting.hasMeeting ? (
+                <>
+                  Your next meeting, <span className="font-semibold">"{meeting.title}"</span>, {meeting.relativeTimeText}.{' '}
+                  {meeting.joinLink && (
+                    <a
+                      href={meeting.joinLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                    >
+                      Join Call.
+                    </a>
+                  )}
+                </>
+              ) : (
+                meeting.relativeTimeText
+              )}
             </p>
           </div>
 

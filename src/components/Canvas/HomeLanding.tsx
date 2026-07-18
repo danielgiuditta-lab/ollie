@@ -1435,6 +1435,8 @@ export function HomeLanding({
           spaceName="Home Dashboard"
           pinnedArtifactIds={pinnedArtifactIds}
           sandboxFiles={sandboxFiles}
+          userProfile={userProfile}
+          accessToken={accessToken}
           onSelectArtifact={onSelectArtifact || (() => {})}
           onRemovePin={onRemovePin || (() => {})}
           onPinArtifact={onPinArtifact}

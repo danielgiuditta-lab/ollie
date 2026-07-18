@@ -1,3 +1,11 @@
 {
-  "workbench.startupEditor": "readme"
+  "workbench.startupEditor": "readme",
+  "remote.portsAttributes": {
+    "3000": {
+      "label": "App Dev Server",
+      "onAutoForward": "notify"
+    }
+  },
+  "remote.restoreForwardedPorts": true
 }
+

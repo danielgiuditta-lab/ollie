@@ -952,46 +952,88 @@ export function NativeViewer({
           ? `https://docs.google.com/presentation/d/${slideDriveId}/preview?rm=minimal` 
           : (file.embedUrl || file.previewUrl || file.url);
 
-        if (isIframeViewer && nativeSlideUrl) {
+        if (nativeSlideUrl) {
           return (
-            <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
-              <iframe 
-                src={nativeSlideUrl}
-                className="w-full h-full border-none bg-white shadow-none pointer-events-none"
-                allow="autoplay; fullscreen"
-                title={file.name}
-              />
+            <div className="w-full h-full bg-white dark:bg-[#1E1F22] flex flex-col overflow-hidden relative select-none">
+              {!hideHeader && (
+                <div className={`shrink-0 flex items-center justify-between px-6 py-3.5 border-b ${theme === 'dark' ? 'border-neutral-800 bg-[#1E1F22] text-white' : 'border-slate-150 bg-white text-slate-800'}`}>
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-amber-500/20 text-amber-500">
+                      <FileText size={16} />
+                    </div>
+                    <span className="font-semibold text-xs text-slate-800 dark:text-gray-200">{file.name}</span>
+                    <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[10px] font-bold">Google Slides</span>
+                  </div>
+                  {slideDriveId && isRealDriveId(slideDriveId) && (
+                    <a 
+                      href={`https://docs.google.com/presentation/d/${slideDriveId}/edit`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <Eye size={13} />
+                      Open in Slides
+                    </a>
+                  )}
+                </div>
+              )}
+              <div className="flex-1 w-full h-full relative overflow-hidden bg-slate-900">
+                <iframe 
+                  src={nativeSlideUrl}
+                  className="w-full h-full border-none shadow-none"
+                  allow="autoplay; fullscreen"
+                  title={file.name}
+                />
+              </div>
             </div>
           );
         }
 
         const contentStr = file.content || '';
-        let rawSlides = contentStr.split(/(?=\n# )|(?=^# )|\n---|(?=\n---\n)/g).map((s: string) => s.trim()).filter((s: string) => s.length > 0 && s !== '---');
+        let normalizedContent = contentStr.replace(/[\f\x0c\u000c]/g, '\n\n---\n\n');
 
-        if (rawSlides.length <= 1) {
-          const cleanName = (file.name || '').replace(/\.[^/.]+$/, '');
-          const lowerName = cleanName.toLowerCase();
-          const lowerDesc = (file.description || '').toLowerCase();
-          const lowerContent = contentStr.toLowerCase();
+        let rawSlides = normalizedContent
+          .split(/(?=\n# )|(?=^# )|\n---|(?=\n---\n)/g)
+          .map((s: string) => s.trim())
+          .filter((s: string) => s.length > 0 && s !== '---');
 
-          if (lowerName.includes('new drive') || lowerName.includes('drive') || lowerDesc.includes('new drive') || lowerContent.includes('new drive')) {
-            rawSlides = [
-              `# Drive\n\n# New Drive`,
-              `Hopefully everyone here has used Claude code...\n\nIt really feels magic.`,
-              `## Interactive Workspace Canvas\n\n- Real-time multi-session chat persistence\n- Direct Google Drive API integration\n- Custom tool & app environment sandboxing`,
-              `## Inferred Proactive Tasks\n\n> 100% Seamless Execution\n\n- Autonomous email & document drafting\n- Immediate action list tracking`,
-              `## Native Workspace Viewer\n\n- Zero-latency native slides & document rendering\n- Interactive thumbnail gallery navigation`
-            ];
-          } else {
-            const baseText = rawSlides[0] || `# ${cleanName}\n\n${file.description || 'Presentation deck'}`;
-            rawSlides = [
-              baseText,
-              `## Overview & Scope\n\n- Key objectives and project milestones\n- Cross-functional team alignment`,
-              `## Key Metrics & Impact\n\n> 98% Positive Feedback\n\n- Accelerated preview rendering\n- Enhanced gallery slide navigation`,
-              `## Implementation Details\n\n- Modular component architecture\n- High-fidelity visual styling`,
-              `## Next Steps & Summary\n\n- Finalize workspace review\n- Export updated presentation deck`
-            ];
+        if (rawSlides.length <= 1 && normalizedContent.includes('\n\n\n')) {
+          rawSlides = normalizedContent
+            .split(/\n\n\n+/g)
+            .map((s: string) => s.trim())
+            .filter((s: string) => s.length > 0);
+        }
+
+        rawSlides = rawSlides.map((slideText: string) => {
+          const trimmed = slideText.trim();
+          if (!trimmed) return `# ${(file.name || 'Presentation').replace(/\.[^/.]+$/, '')}`;
+          if (trimmed.startsWith('#')) return trimmed;
+
+          const lines = trimmed.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+          if (lines.length === 0) return `# ${(file.name || 'Presentation').replace(/\.[^/.]+$/, '')}`;
+
+          const firstLine = lines[0].replace(/^#+\s*/, '');
+          const remainingLines = lines.slice(1);
+
+          if (remainingLines.length === 0) {
+            return `# ${firstLine}`;
           }
+
+          const formattedRemaining = remainingLines.map(line => {
+            if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || line.startsWith('#') || line.startsWith('>')) {
+              return line;
+            }
+            if (line.toLowerCase().startsWith('pic file') || line.startsWith('http')) {
+              return `> ${line}`;
+            }
+            return `- ${line}`;
+          }).join('\n');
+
+          return `# ${firstLine}\n\n${formattedRemaining}`;
+        });
+
+        if (rawSlides.length === 0) {
+          rawSlides = [`# ${(file.name || 'Presentation').replace(/\.[^/.]+$/, '')}\n\nNo slide content available.`];
         }
 
         const safeIndex = Math.min(activeSlideIndex, rawSlides.length - 1);
@@ -1081,7 +1123,7 @@ export function NativeViewer({
         );
       }
 
-      if (isGoogleDoc && isIframeViewer) {
+      if (isGoogleDoc) {
         const docDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = docDriveId && isRealDriveId(docDriveId);
         const nativeDocUrl = hasNativeUrl 
@@ -1093,7 +1135,7 @@ export function NativeViewer({
             <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
               <iframe 
                 src={nativeDocUrl}
-                className="w-full h-full border-none bg-white shadow-none pointer-events-none"
+                className="w-full h-full border-none bg-white shadow-none"
                 allow="autoplay"
                 title={file.name}
               />
@@ -1102,7 +1144,7 @@ export function NativeViewer({
         }
       }
 
-      if (isGoogleSheet && isIframeViewer) {
+      if (isGoogleSheet) {
         const sheetDriveId = (driveId || (file.id ? String(file.id) : '')).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
         const hasNativeUrl = sheetDriveId && isRealDriveId(sheetDriveId);
         const nativeSheetUrl = hasNativeUrl 
@@ -1114,7 +1156,7 @@ export function NativeViewer({
             <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
               <iframe 
                 src={nativeSheetUrl}
-                className="w-full h-full border-none bg-white shadow-none pointer-events-none"
+                className="w-full h-full border-none bg-white shadow-none"
                 allow="autoplay"
                 title={file.name}
               />

@@ -452,7 +452,7 @@ export default function App() {
       }
     },
     onError: () => console.log('Login Failed'),
-    scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/chat.messages.readonly profile email',
+    scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/chat.messages.readonly profile email',
   });
 
   const logout = () => {
@@ -3188,11 +3188,15 @@ export default function App() {
                 finalName = finalName.replace(/\.[^/.]+$/, "") + '.gslides';
               }
 
+              const resolvedContent = isResolvedSlide && textOrDataUrl
+                ? textOrDataUrl.replace(/[\f\x0c\u000c]/g, '\n\n---\n\n')
+                : (textOrDataUrl || task.draftData?.draftContent || fileContent);
+
               const realFileObj: any = {
                 name: finalName,
                 type: resolvedFileType,
                 taskType: resolvedFileType,
-                content: task.draftData?.draftContent || textOrDataUrl || fileContent,
+                content: resolvedContent,
                 driveId: targetId,
                 mimeType: meta.mimeType,
                 id: `real-file-${targetId}`,
@@ -6531,6 +6535,8 @@ export default function App() {
                         sandboxUrl={sandboxUrl}
                         envId={envId}
                         theme={appTheme}
+                        userProfile={userProfile}
+                        accessToken={accessToken}
                       />
                     ) : (
                       <SpaceDashboard 
@@ -6546,6 +6552,8 @@ export default function App() {
                         sandboxUrl={sandboxUrl}
                         envId={envId}
                         theme={appTheme}
+                        userProfile={userProfile}
+                        accessToken={accessToken}
                       />
                     )
                   )}
