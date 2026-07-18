@@ -819,6 +819,21 @@ export function SpaceDashboardExperimental({
             theme={theme}
           />
         )}
+
+        {isTheatreOpen && (
+          <TheatreView
+            todoItems={todoListState.length > 0 ? todoListState : (todoItems || [])}
+            onClose={() => setIsTheatreOpen(false)}
+            onSendMessage={handleSendMessage || (() => {})}
+            setActiveSidebar={setActiveSidebar}
+            onUpdateTaskStatus={(taskId, status) => {
+              setTodoListState(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+            }}
+            userProfile={userProfile}
+            accessToken={accessToken}
+            theme="dark"
+          />
+        )}
       </div>
     );
   }
