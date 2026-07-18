@@ -1454,6 +1454,7 @@ export function HomeLandingExperimental({
           setProjectName={setProjectName}
           setViewState={setViewState}
           setActiveSidebar={setActiveSidebar}
+          handleSendMessage={handleSendMessage}
         />
       </div>
     </div>

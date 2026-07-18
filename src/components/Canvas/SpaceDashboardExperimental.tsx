@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Edit2, Trash2, Pin, Plus, Columns3, LayoutGrid, List } from 'lucide-react';
+import { MoreHorizontal, Edit2, Trash2, Pin, Plus, Columns3, LayoutGrid, List, Play } from 'lucide-react';
 import { AppView } from './AppView';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskCardExperimental } from '../Chat/InferredTaskCardExperimental';
@@ -7,6 +7,7 @@ import { Card } from '../Shared/Card';
 import { CardHeader } from '../Shared/CardHeader';
 import { NullTitle } from '../Shared/NullTitle';
 import { AddWidgetModal } from './AddWidgetModal';
+import { TheatreView } from './TheatreView';
 import { useCalendarMeeting } from '../../hooks/useCalendarMeeting';
 
 interface SpaceDashboardProps {
@@ -30,6 +31,7 @@ interface SpaceDashboardProps {
   setProjectName?: (name: string) => void;
   setViewState?: (state: any) => void;
   setActiveSidebar?: (sidebar: any) => void;
+  handleSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
   userProfile?: any;
   accessToken?: string | null;
 }
@@ -55,9 +57,19 @@ export function SpaceDashboardExperimental({
   setProjectName,
   setViewState,
   setActiveSidebar,
+  handleSendMessage,
   userProfile,
   accessToken
 }: SpaceDashboardProps) {
+  const [isTheatreOpen, setIsTheatreOpen] = useState(false);
+  const [todoListState, setTodoListState] = useState<any[]>(todoItems || []);
+
+  useEffect(() => {
+    if (todoItems && todoItems.length > 0) {
+      setTodoListState(todoItems);
+    }
+  }, [todoItems]);
+
   const [cardWidths, setCardWidths] = useState<Record<string, number>>({});
   const meeting = useCalendarMeeting(accessToken, userProfile);
   const [activeMenuCardId, setActiveMenuCardId] = useState<string | null>(null);
@@ -648,8 +660,16 @@ export function SpaceDashboardExperimental({
         <div className="max-w-4xl mx-auto px-12 py-12 flex flex-col gap-8">
           {/* Welcome Greeting */}
           <div className="flex flex-col text-left gap-1 mt-2">
-            <h1 className="text-[45px] leading-[52px] font-normal font-sans text-slate-900 dark:text-white">
-              Welcome back, {name}.
+            <h1 className="text-[45px] leading-[52px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
+              <span>Welcome back, {name}.</span>
+              <button
+                id="play-theatre-btn"
+                onClick={() => setIsTheatreOpen(true)}
+                className="inline-flex items-center justify-center p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-800 dark:text-white transition-all cursor-pointer border border-slate-200 dark:border-neutral-700 shadow-xs group"
+                title="Play Theatre View"
+              >
+                <Play className="w-5 h-5 fill-current text-slate-800 dark:text-white group-hover:scale-105 transition-transform" />
+              </button>
             </h1>
             <p className="text-[15px] text-slate-650 dark:text-neutral-300 font-sans">
               {meeting.hasMeeting ? (
@@ -843,6 +863,21 @@ export function SpaceDashboardExperimental({
           />
         )}
       </div>
+
+      {isTheatreOpen && (
+        <TheatreView
+          todoItems={todoListState.length > 0 ? todoListState : (todoItems || [])}
+          onClose={() => setIsTheatreOpen(false)}
+          onSendMessage={handleSendMessage || (() => {})}
+          setActiveSidebar={setActiveSidebar}
+          onUpdateTaskStatus={(taskId, status) => {
+            setTodoListState(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+          }}
+          userProfile={userProfile}
+          accessToken={accessToken}
+          theme="dark"
+        />
+      )}
     </div>
   );
 }
