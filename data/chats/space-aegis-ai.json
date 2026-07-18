@@ -1,9 +1,10 @@
 {
   "chatId": "space-aegis-ai",
   "projectName": "AI Policy & Governance",
-  "chatName": null,
+  "chatName": "AI Policy & Governance",
   "type": "space",
-  "taskType": null,
+  "taskType": "space",
+  "viewState": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [
@@ -59,8 +60,7 @@
   ],
   "pinnedArtifactIds": [
     "todo-card",
-    "space-aegis-ai-file-0",
-    "space-aegis-ai-file-1"
+    "space-aegis-ai-file-0"
   ],
-  "updatedAt": "2026-07-16T14:30:58.819Z"
+  "updatedAt": "2026-07-17T17:55:51.656Z"
 }

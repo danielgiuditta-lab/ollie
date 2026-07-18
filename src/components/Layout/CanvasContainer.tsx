@@ -83,7 +83,16 @@ export function CanvasContainer({
   }
 
   if (selectedFile) {
-    const isDiffItem = !accessToken && Boolean(
+    const isEmail = selectedFile.type === 'email' || selectedFile.taskType === 'email';
+    const hasDiffData = Boolean(
+      selectedFile.originalMarkdown ||
+      selectedFile.updatedMarkdown ||
+      selectedFile.originalContentLines ||
+      selectedFile.updatedContentLines ||
+      selectedFile.task?.originalMarkdown ||
+      selectedFile.task?.updatedMarkdown
+    );
+    const isDiffItem = !accessToken && !isEmail && hasDiffData && Boolean(
       selectedFile.isProactiveDraft || 
       selectedFile.isInferredTask || 
       selectedFile.isProactive || 

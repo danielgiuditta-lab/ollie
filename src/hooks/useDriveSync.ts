@@ -22,6 +22,28 @@ export function useDriveSync() {
   const [isIngesting, setIsIngesting] = useState(false);
   const [ingestedFiles, setIngestedFiles] = useState<any[]>([]);
 
+  const handleSetAccessToken = (valOrFn: string | null | ((prev: string | null) => string | null)) => {
+    setAccessToken(prev => {
+      const nextToken = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn;
+      if (nextToken) {
+        setBypassAuth(false);
+      }
+      return nextToken;
+    });
+  };
+
+  const handleSetBypassAuth = (valOrFn: boolean | ((prev: boolean) => boolean)) => {
+    setBypassAuth(prev => {
+      const nextBypass = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn;
+      if (nextBypass) {
+        setAccessToken(null);
+        setUserProfile(null);
+        setDriveFiles([]);
+      }
+      return nextBypass;
+    });
+  };
+
   const userProfile = useMemo(() => {
     if (userProfileState) return userProfileState;
     if (bypassAuth) return MOCK_USER_PROFILE;
@@ -44,9 +66,9 @@ export function useDriveSync() {
     isDriveSuggestLoading,
     setIsDriveSuggestLoading,
     accessToken,
-    setAccessToken,
+    setAccessToken: handleSetAccessToken,
     bypassAuth,
-    setBypassAuth,
+    setBypassAuth: handleSetBypassAuth,
     isLoggedIn,
     isIngesting,
     setIsIngesting,

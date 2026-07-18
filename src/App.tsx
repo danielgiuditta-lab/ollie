@@ -3013,7 +3013,8 @@ export default function App() {
     setActiveSpaceId(resolvedSpaceId);
     setActiveChatId(resolvedSpaceId);
 
-    const allKnownDriveFiles = [...driveFiles, ...suggestedListCache];
+    const spaceFiles = getAllSpaceFiles(null);
+    const allKnownDriveFiles = [...driveFiles, ...sandboxFiles, ...spaceFiles, ...suggestedListCache];
     const searchString = [
       spaceName,
       task.sourceName,
@@ -3025,11 +3026,16 @@ export default function App() {
     ].filter(Boolean).join(' ').toLowerCase();
 
     const matchedInDrive = allKnownDriveFiles.find(f => {
-      if (!f || !f.name) return false;
+      if (!f) return false;
+      const fId = f.id || f.driveId;
+      const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId;
+      if (targetId && String(fId) === String(targetId)) return true;
+      if (!f.name) return false;
       const fNameLower = f.name.toLowerCase();
       const fNameClean = fNameLower.replace(/\.[^/.]+$/, "").trim();
       if (!fNameClean || fNameClean.length < 2) return false;
       return fNameLower === (task.filesToLoad?.[0]?.name || '').toLowerCase() ||
+             fNameLower === (task.sourceName || '').toLowerCase() ||
              fNameClean === spaceName.toLowerCase() ||
              searchString.includes(fNameClean);
     });
@@ -3053,11 +3059,25 @@ export default function App() {
       task.titleDone?.toLowerCase().includes('presentation')
     );
 
+    const isEmailTask = Boolean(
+      !isSlideTask && (
+        task.type === 'email' ||
+        task.taskType === 'email' ||
+        task.sourceMimeType?.includes('email') ||
+        task.sourceName?.toLowerCase().startsWith('email') ||
+        task.sourceName?.toLowerCase().includes('gmail') ||
+        task.source?.toLowerCase().includes('email') ||
+        task.title?.toLowerCase().includes('email') ||
+        task.description?.toLowerCase().includes('email')
+      )
+    );
+
     const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id;
+    const fileType = isSlideTask ? 'slide' : (isEmailTask ? 'email' : 'doc');
     const targetMime = task.filesToLoad?.[0]?.mimeType ||
       task.sourceMimeType ||
       matchedInDrive?.mimeType ||
-      (isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document');
+      (isSlideTask ? 'application/vnd.google-apps.presentation' : (isEmailTask ? 'message/rfc822' : 'application/vnd.google-apps.document'));
 
     let targetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || spaceName || 'Proactive Output';
     if (isSlideTask) {
@@ -3066,23 +3086,31 @@ export default function App() {
       }
     }
 
-    const slideContent = task.updatedMarkdown || task.draftData?.draftContent || `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Proactive Agent Output'}\n- ${task.descriptionDone || task.description || 'Incorporated feedback and updated presentation slides.'}\n- Aligned visual layout and content for team review.\n- Autosaved slide draft to workspace.`;
+    let fileContent = task.updatedMarkdown || task.draftData?.draftContent || task.originalMarkdown || matchedInDrive?.content || matchedInDrive?.realDocText || matchedInDrive?.originalMarkdown;
+
+    if (!fileContent || fileContent.trim().length === 0 || fileContent.trim() === task.description) {
+      if (fileType === 'doc') {
+        fileContent = `# ${targetName.replace(/\.gdoc$|\.doc$/, '')}\n\n## Executive Summary\n${task.descriptionDone || task.description || 'Proactive analysis and unresolved items synthesized for review.'}\n\n## Active Discussion & Flagged Comments\n> **Mirjam van Esch**: "Can we ensure demo scope is locked in before tomorrow's 10:15 AM session?"\n\n## Study Plan Overview & Scope\n- **Objective**: Evaluate Project Ollie AI prototype explorations with MBA students during the Google NYC office visit.\n- **Participants**: ~40 MBA students broken into 5 breakout groups.\n- **Focus Areas**: Positioning (Self-driving workspace), Shared Org Brain context, Operational trust boundaries, and Multiplayer co-steering.\n\n## Research Objectives & Framework\n1. **Positioning & Perception**: Determine how the concept of a self-driving workspace lands with users.\n2. **Operational Trust**: Identify comfortable autonomy thresholds for inferred tasks.\n3. **Multiplayer Dynamics**: Explore team co-steering and transparency in collaborative streams.\n\n## Session Schedule & Breakout Plan\n- **11:00 - 11:15**: Welcome & Context Setting (Daniel Giuditta / Mirjam van Esch)\n- **11:15 - 11:30**: Project Ollie Vision & Visual Demo\n- **11:30 - 12:15**: Facilitated Breakout Sessions (WS UX Facilitators)\n- **12:15 - 12:45**: Group Share-Back & Synthesis`;
+      } else {
+        fileContent = task.description || `# ${targetName}\n\n## ${task.titleDone || task.title || 'Proactive Agent Output'}\n- ${task.descriptionDone || task.description || 'Incorporated feedback.'}`;
+      }
+    }
 
     const proactiveSlideFile = {
       ...task,
       name: targetName,
-      type: isSlideTask ? 'slide' : 'doc',
-      taskType: isSlideTask ? 'slide' : 'doc',
-      content: slideContent,
+      type: fileType,
+      taskType: fileType,
+      content: fileContent,
       driveId: targetId || `mock-drive-${task.id}`,
-      id: `proactive-slide-${task.id}`,
-      mimeType: isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document',
-      isProactiveDraft: !task.directSlideView && task.showDiffView !== false,
-      directSlideView: task.directSlideView,
-      showDiffView: task.showDiffView,
-      summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive presentation draft.",
-      originalMarkdown: task.originalMarkdown,
-      updatedMarkdown: task.updatedMarkdown,
+      id: `proactive-${fileType}-${task.id}`,
+      mimeType: targetMime,
+      isProactiveDraft: false,
+      directSlideView: true,
+      showDiffView: false,
+      summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive draft.",
+      originalMarkdown: task.originalMarkdown || matchedInDrive?.originalMarkdown || matchedInDrive?.content || fileContent,
+      updatedMarkdown: task.updatedMarkdown || fileContent,
       task: task
     };
 
@@ -3272,7 +3300,8 @@ export default function App() {
     setActiveSpaceId(resolvedSpaceId);
     setActiveChatId(resolvedSpaceId);
 
-    const allKnownDriveFiles = [...driveFiles, ...suggestedListCache];
+    const spaceFiles = getAllSpaceFiles(null);
+    const allKnownDriveFiles = [...driveFiles, ...sandboxFiles, ...spaceFiles, ...suggestedListCache];
     const searchString = [
       spaceName,
       task.sourceName,
@@ -3284,11 +3313,16 @@ export default function App() {
     ].filter(Boolean).join(' ').toLowerCase();
 
     const matchedInDrive = allKnownDriveFiles.find(f => {
-      if (!f || !f.name) return false;
+      if (!f) return false;
+      const fId = f.id || f.driveId;
+      const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId;
+      if (targetId && String(fId) === String(targetId)) return true;
+      if (!f.name) return false;
       const fNameLower = f.name.toLowerCase();
       const fNameClean = fNameLower.replace(/\.[^/.]+$/, "").trim();
       if (!fNameClean || fNameClean.length < 2) return false;
       return fNameLower === (task.filesToLoad?.[0]?.name || '').toLowerCase() ||
+             fNameLower === (task.sourceName || '').toLowerCase() ||
              fNameClean === spaceName.toLowerCase() ||
              searchString.includes(fNameClean);
     });
@@ -3312,11 +3346,25 @@ export default function App() {
       task.titleDone?.toLowerCase().includes('presentation')
     );
 
+    const isEmailTask = Boolean(
+      !isSlideTask && (
+        task.type === 'email' ||
+        task.taskType === 'email' ||
+        task.sourceMimeType?.includes('email') ||
+        task.sourceName?.toLowerCase().startsWith('email') ||
+        task.sourceName?.toLowerCase().includes('gmail') ||
+        task.source?.toLowerCase().includes('email') ||
+        task.title?.toLowerCase().includes('email') ||
+        task.description?.toLowerCase().includes('email')
+      )
+    );
+
     const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id;
+    const fileType = isSlideTask ? 'slide' : (isEmailTask ? 'email' : 'doc');
     const targetMime = task.filesToLoad?.[0]?.mimeType ||
       task.sourceMimeType ||
       matchedInDrive?.mimeType ||
-      (isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document');
+      (isSlideTask ? 'application/vnd.google-apps.presentation' : (isEmailTask ? 'message/rfc822' : 'application/vnd.google-apps.document'));
 
     let targetName = task.filesToLoad?.[0]?.name || task.sourceName || matchedInDrive?.name || spaceName || 'Proactive Output';
     if (isSlideTask) {
@@ -3325,23 +3373,31 @@ export default function App() {
       }
     }
 
-    const slideContent = task.updatedMarkdown || task.draftData?.draftContent || `# ${targetName.replace(/\.gslides$/, '')}\n\n## ${task.titleDone || task.title || 'Proactive Agent Output'}\n- ${task.descriptionDone || task.description || 'Incorporated feedback and updated presentation slides.'}\n- Aligned visual layout and content for team review.\n- Autosaved slide draft to workspace.`;
+    let fileContent = task.updatedMarkdown || task.draftData?.draftContent || task.originalMarkdown || matchedInDrive?.content || matchedInDrive?.realDocText || matchedInDrive?.originalMarkdown;
+
+    if (!fileContent || fileContent.trim().length === 0 || fileContent.trim() === task.description) {
+      if (fileType === 'doc') {
+        fileContent = `# ${targetName.replace(/\.gdoc$|\.doc$/, '')}\n\n## Executive Summary\n${task.descriptionDone || task.description || 'Proactive analysis and unresolved items synthesized for review.'}\n\n## Active Discussion & Flagged Comments\n> **Mirjam van Esch**: "Can we ensure demo scope is locked in before tomorrow's 10:15 AM session?"\n\n## Study Plan Overview & Scope\n- **Objective**: Evaluate Project Ollie AI prototype explorations with MBA students during the Google NYC office visit.\n- **Participants**: ~40 MBA students broken into 5 breakout groups.\n- **Focus Areas**: Positioning (Self-driving workspace), Shared Org Brain context, Operational trust boundaries, and Multiplayer co-steering.\n\n## Research Objectives & Framework\n1. **Positioning & Perception**: Determine how the concept of a self-driving workspace lands with users.\n2. **Operational Trust**: Identify comfortable autonomy thresholds for inferred tasks.\n3. **Multiplayer Dynamics**: Explore team co-steering and transparency in collaborative streams.\n\n## Session Schedule & Breakout Plan\n- **11:00 - 11:15**: Welcome & Context Setting (Daniel Giuditta / Mirjam van Esch)\n- **11:15 - 11:30**: Project Ollie Vision & Visual Demo\n- **11:30 - 12:15**: Facilitated Breakout Sessions (WS UX Facilitators)\n- **12:15 - 12:45**: Group Share-Back & Synthesis`;
+      } else {
+        fileContent = task.description || `# ${targetName}\n\n## ${task.titleDone || task.title || 'Proactive Agent Output'}\n- ${task.descriptionDone || task.description || 'Incorporated feedback.'}`;
+      }
+    }
 
     const proactiveSlideFile = {
       ...task,
       name: targetName,
-      type: isSlideTask ? 'slide' : 'doc',
-      taskType: isSlideTask ? 'slide' : 'doc',
-      content: slideContent,
+      type: fileType,
+      taskType: fileType,
+      content: fileContent,
       driveId: targetId || `mock-drive-${task.id}`,
-      id: `proactive-slide-${task.id}`,
-      mimeType: isSlideTask ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document',
-      isProactiveDraft: !task.directSlideView && task.showDiffView !== false,
-      directSlideView: task.directSlideView,
-      showDiffView: task.showDiffView,
-      summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive presentation draft.",
-      originalMarkdown: task.originalMarkdown,
-      updatedMarkdown: task.updatedMarkdown,
+      id: `proactive-${fileType}-${task.id}`,
+      mimeType: targetMime,
+      isProactiveDraft: false,
+      directSlideView: true,
+      showDiffView: false,
+      summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive draft.",
+      originalMarkdown: task.originalMarkdown || matchedInDrive?.originalMarkdown || matchedInDrive?.content || fileContent,
+      updatedMarkdown: task.updatedMarkdown || fileContent,
       task: task
     };
 
@@ -5461,7 +5517,19 @@ export default function App() {
         }
       }
 
-      if (!accessToken || !isValidDriveId(folderId)) return;
+      if (!accessToken || !isValidDriveId(folderId)) {
+        if (isParentSpaceClick && !isHomeChatId(folderId)) {
+          setSelectedFile(null);
+          setIndexFileSelected(false);
+          setViewState('dashboard');
+        } else {
+          setSelectedFile(null);
+          setIndexFileSelected(false);
+          setViewState(sandboxFiles.length > 0 ? 'files' : 'home');
+        }
+        setLoadedFolderId(folderId);
+        return;
+      }
       // Cache miss - blocking load with ingestion spinner
       setIsIngesting(true);
       try {
@@ -6330,7 +6398,7 @@ export default function App() {
                           onIframeRef={registerIframe}
                           selectedFile={selectedFile || sandboxFiles.find(f => f && f.name && (f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase() === 'index.html')) || { name: 'index.html', content: '' }}
                         />
-                      ) : (!accessToken && (selectedFile?.isProactiveDraft || selectedFile?.isInferredTask || selectedFile?.isProactive || selectedFile?.taskType === 'inferred' || activeProactiveTask) && selectedFile?.directSlideView !== true && selectedFile?.showDiffView !== false && activeProactiveTask?.directSlideView !== true) ? (
+                      ) : (!accessToken && selectedFile?.type !== 'email' && selectedFile?.taskType !== 'email' && (selectedFile?.originalMarkdown || selectedFile?.updatedMarkdown || selectedFile?.originalContentLines || selectedFile?.updatedContentLines || activeProactiveTask?.originalMarkdown || activeProactiveTask?.updatedMarkdown) && (selectedFile?.isProactiveDraft || selectedFile?.isInferredTask || selectedFile?.isProactive || selectedFile?.taskType === 'inferred' || activeProactiveTask) && selectedFile?.directSlideView !== true && selectedFile?.showDiffView !== false && activeProactiveTask?.directSlideView !== true) ? (
                         <InferredTaskDiffView
                           file={selectedFile || activeProactiveTask}
                           theme={appTheme}

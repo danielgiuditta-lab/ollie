@@ -416,6 +416,7 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
     file?.originalMarkdown || 
     (Array.isArray(task?.originalContentLines) ? task.originalContentLines.join('\n') : null) ||
     (Array.isArray(file?.originalContentLines) ? file.originalContentLines.join('\n') : null) ||
+    (typeof file?.content === 'string' && file.content.trim().length > 0 ? file.content : null) ||
     `# ${cleanTitle}\n\n- Baseline content before collaborator review.\n- ${col1Description}`;
 
   const col2Markdown = 
@@ -423,6 +424,7 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
     file?.updatedMarkdown || 
     (Array.isArray(task?.updatedContentLines) ? task.updatedContentLines.join('\n') : null) ||
     (Array.isArray(file?.updatedContentLines) ? file.updatedContentLines.join('\n') : null) ||
+    (typeof file?.content === 'string' && file.content.trim().length > 0 ? file.content : null) ||
     `# ${cleanTitle}\n\n- ${col2Description}`;
 
   return (

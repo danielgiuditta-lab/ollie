@@ -1,0 +1,103 @@
+{
+  "chatId": "space-1784310569968",
+  "projectName": "Policy Issues",
+  "chatName": null,
+  "type": null,
+  "taskType": null,
+  "viewState": null,
+  "associatedFileId": null,
+  "associatedFileName": null,
+  "messages": [
+    {
+      "role": "bot",
+      "text": "Elena Vance, David Ross, and 2 others added to this chat, you can create a new private chat any time",
+      "isMembersAddedNotice": true,
+      "addedMembers": [
+        {
+          "name": "Elena Vance",
+          "email": "elena_vance@example.com",
+          "avatar": "/people/sarah_lin.jpg"
+        },
+        {
+          "name": "David Ross",
+          "email": "david_ross@example.com",
+          "avatar": "/people/david.jpg"
+        },
+        {
+          "name": "Priya Patel",
+          "email": "priya_patel@example.com",
+          "avatar": "/people/rachel_chang.jpg"
+        },
+        {
+          "name": "Dr. Marcus Thorne",
+          "email": "dr_marcus_thorne@example.com",
+          "avatar": "/people/dr_marcus_thorne.jpg"
+        }
+      ]
+    }
+  ],
+  "envId": null,
+  "activeSpaceId": "space-1784310569968",
+  "sandboxUrl": "",
+  "sandboxFiles": [
+    {
+      "name": "client_policy_issues_tracker.doc",
+      "type": "code",
+      "content": "# Client Trust & Safety Policy Issues Log\n\n**Author:** Elena Vance (Trust & Safety Lead Consultant) & David Ross (Head of T&S)\n\n### Executive Summary\nCentralized intake log tracking active Trust & Safety issues, jailbreak escapes, content moderation escalations, and fraud vulnerabilities reported across advisory clients.\n\n### Key Intake Benchmarks\n1. **Policy Issue Categorization**: Tag issues by risk domain (AI Safety, Content Moderation, Fraud Ops, Regulatory Compliance).\n2. **Triage SLA Target**: Severity 1 safety issues evaluated within < 15 minutes.\n3. **Remediation SLAs**: Mitigate high-risk policy escapes within 48 hours of intake.",
+      "driveId": "client_policy_issues_tracker.doc",
+      "mimeType": "application/vnd.google-apps.document",
+      "id": "copied-1784310569969-0-od5"
+    },
+    {
+      "name": "policy_issue_triage_framework.gdoc",
+      "type": "code",
+      "content": "# Policy Issue Triage & Escalation SOP\n\n**Author:** Priya Patel (Policy & Moderation PM) & Dr. Marcus Thorne (Staff AI Safety Engineer)\n\n### Core Objective\nEstablish standard triage procedures for assessing client safety policy breaches, prompt injection vectors, and moderation classifier bypasses.\n\n### Strategic Directives\n1. **Severity 1 (Critical)**: Active CSAM hash errors, zero-day LLM jailbreak escapes, or major ATO credential attacks.\n2. **Severity 2 (High)**: Harassment classifier bypasses or unhandled toxicity vectors.\n3. **Severity 3 (Medium)**: DSA transparency reporting gaps or user appeal queue backlogs.",
+      "driveId": "policy_issue_triage_framework.gdoc",
+      "mimeType": "application/vnd.google-apps.document",
+      "id": "copied-1784310569969-1-7sr"
+    },
+    {
+      "name": "cross_client_policy_issues_matrix.csv",
+      "type": "code",
+      "content": "Issue ID,Client Platform,Policy Category,Reported Date,Severity,Assigned Lead,Status\nISSUE-101,Aegis AI,LLM Jailbreak Escape,2026-07-14,High,Elena Vance,Mitigation Testing\nISSUE-102,Veritas Social,Harassment Classifier Bypass,2026-07-15,Medium,Priya Patel,Model Retrained\nISSUE-103,Nexus Pay,Credential Stuffing ATO Spike,2026-07-12,High,Rachel Chang,Step-Up Auth Enforced\nISSUE-104,Veritas Social,CSAM PhotoDNA Hash Sync Discrepancy,2026-07-13,Critical,David Ross,Resolved\nISSUE-105,Aegis AI,EU DSA Transparency Audit,2026-07-10,Medium,Sarah Lin,Drafting Report",
+      "driveId": "cross_client_policy_issues_matrix.csv",
+      "mimeType": "text/csv",
+      "id": "copied-1784310569969-2-75o"
+    },
+    {
+      "name": "client_policy_issues_deck.gslides",
+      "type": "code",
+      "content": "# Client Trust & Safety Policy Issues — Executive Synthesis\n\n> **Cross-Client Safety Telemetry**: Tracking policy issues, AI red teaming escapes, and moderation SLAs across startup platforms.\n\n- **Client Satisfaction Target**: Maintain 100% policy resolution SLA compliance across all advisory startups.\n- **Risk Mitigations**: 100% of high-severity prompt injection escapes and moderation bypasses resolved.\n\n---\n\n# Key Milestones & Advisory Roadmap\n\n## Client Policy Issues Resolution\n\n- **AI Red Teaming Escapes**: Rapid patch deployment and neural classifier fine-tuning.\n- **Moderation SLA Backlog**: Automated escalation queue routing and PhotoDNA hash synchronization.\n- **Regulatory Audits**: Biannual DSA transparency reports and out-of-court dispute integration.",
+      "driveId": "client_policy_issues_deck.gslides",
+      "mimeType": "application/vnd.google-apps.presentation",
+      "id": "copied-1784310569969-3-zg6"
+    }
+  ],
+  "userEmail": "mock-user@example.com",
+  "members": [
+    {
+      "name": "Elena Vance",
+      "email": "elena_vance@example.com",
+      "avatar": "/people/sarah_lin.jpg"
+    },
+    {
+      "name": "David Ross",
+      "email": "david_ross@example.com",
+      "avatar": "/people/david.jpg"
+    },
+    {
+      "name": "Priya Patel",
+      "email": "priya_patel@example.com",
+      "avatar": "/people/rachel_chang.jpg"
+    },
+    {
+      "name": "Dr. Marcus Thorne",
+      "email": "dr_marcus_thorne@example.com",
+      "avatar": "/people/dr_marcus_thorne.jpg"
+    }
+  ],
+  "pinnedArtifactIds": [
+    "todo-card"
+  ],
+  "updatedAt": "2026-07-17T17:49:30.092Z"
+}

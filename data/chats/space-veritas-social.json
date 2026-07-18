@@ -1,9 +1,10 @@
 {
   "chatId": "space-veritas-social",
   "projectName": "Platform Regulation & Speech",
-  "chatName": null,
+  "chatName": "Platform Regulation & Speech",
   "type": "space",
-  "taskType": null,
+  "taskType": "space",
+  "viewState": null,
   "associatedFileId": null,
   "associatedFileName": null,
   "messages": [
@@ -59,8 +60,7 @@
   ],
   "pinnedArtifactIds": [
     "todo-card",
-    "space-veritas-social-file-0",
-    "space-veritas-social-file-3"
+    "space-veritas-social-file-0"
   ],
-  "updatedAt": "2026-07-16T14:30:58.819Z"
+  "updatedAt": "2026-07-17T17:56:17.643Z"
 }

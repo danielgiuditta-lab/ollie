@@ -32,7 +32,9 @@ import {
   Play,
   Video,
   Music,
-  FileJson
+  FileJson,
+  Sparkles,
+  Mail
 } from 'lucide-react';
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
 import { NullTitle } from '../Shared/NullTitle';
@@ -54,6 +56,70 @@ interface NativeViewerProps {
 }
 
 const isIframeViewer = false;
+
+export const RenderEmailViewer = ({ file, theme = 'light' }: { file: any; theme?: 'light' | 'dark' }) => {
+  const isDark = theme === 'dark';
+  const task = file.task || file || {};
+  const subject = file.subject || task.title || file.name || 'Email Message';
+  const senderName = file.from || task.personName || file.sender || 'Sender';
+  const snippet = file.content || task.description || file.snippet || '';
+  const date = file.date || task.commentTime || 'Recent';
+
+  const draftReply = task.draftData?.emailDraft?.body || file.draftReply || (task.action && task.action !== snippet ? task.action : null);
+
+  return (
+    <div className={`w-full h-full flex flex-col items-center justify-start p-6 sm:p-10 overflow-y-auto ${
+      isDark ? 'bg-[#18191B] text-white' : 'bg-[#F8FAFD] text-slate-800'
+    }`}>
+      <div className="w-full max-w-3xl flex flex-col gap-6">
+        {/* Email Header Card */}
+        <div className={`p-6 rounded-2xl border shadow-sm ${
+          isDark ? 'bg-[#222427] border-neutral-700' : 'bg-white border-slate-200'
+        }`}>
+          <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-neutral-700 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-base border border-blue-500/20">
+                {senderName.substring(0, 1).toUpperCase()}
+              </div>
+              <div className="flex flex-col">
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">{senderName}</h3>
+                <span className="text-xs text-slate-500 dark:text-neutral-400">To: You</span>
+              </div>
+            </div>
+            <span className="text-xs text-slate-400 font-medium px-2.5 py-1 rounded-full bg-slate-100 dark:bg-neutral-800">
+              {date}
+            </span>
+          </div>
+
+          <h2 className="text-xl font-bold tracking-tight mb-3 text-slate-900 dark:text-white">
+            {subject}
+          </h2>
+
+          <div className="text-sm leading-relaxed text-slate-700 dark:text-neutral-300 whitespace-pre-wrap font-sans">
+            {snippet}
+          </div>
+        </div>
+
+        {/* Agent Draft Reply (if available) */}
+        {draftReply && (
+          <div className={`p-6 rounded-2xl border ${
+            isDark ? 'bg-blue-950/30 border-blue-800 text-blue-200' : 'bg-blue-50/70 border-blue-200 text-slate-800'
+          }`}>
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                Agent Prepared Draft Reply
+              </span>
+            </div>
+            <div className="text-sm leading-relaxed whitespace-pre-wrap font-sans">
+              {draftReply}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export function NativeViewer({ 
   file, 
@@ -535,7 +601,41 @@ export function NativeViewer({
     nameLower.endsWith('.json5') ||
     nameLower.endsWith('.geojson');
 
+  const isEmailFile = 
+    file.type === 'email' ||
+    file.taskType === 'email' ||
+    (file.mimeType && (
+      file.mimeType.toLowerCase().includes('message/rfc822') ||
+      file.mimeType.toLowerCase().includes('email') ||
+      file.mimeType.toLowerCase().includes('gmail')
+    )) ||
+    nameLower.includes('email') ||
+    nameLower.includes('gmail') ||
+    nameLower.endsWith('.eml');
+
   const renderContent = () => {
+
+    // Email view support
+    if (isEmailFile) {
+      return (
+        <div className="w-full h-full flex flex-col overflow-hidden relative">
+          {!hideHeader && (
+            <div className="shrink-0 w-full flex items-center justify-between px-6 py-3.5 bg-slate-900 border-b border-slate-800 text-white animate-fade-in">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded bg-blue-500/20 text-blue-400">
+                  <Mail size={16} />
+                </div>
+                <span className="font-semibold text-xs text-slate-200">{file.name || 'Email Message'}</span>
+                <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-bold">Email View</span>
+              </div>
+            </div>
+          )}
+          <div className="flex-1 w-full h-full overflow-hidden">
+            <RenderEmailViewer file={file} theme={theme} />
+          </div>
+        </div>
+      );
+    }
 
     // Image view support
     if (isImageFile) {
@@ -940,7 +1040,7 @@ export function NativeViewer({
             <div className="flex-1 w-full h-full p-4 sm:p-6 flex flex-col items-center justify-between overflow-y-auto">
               {/* Active Main Viewport Slide Card - Full Width with 16px (px-4) canvas side padding */}
               <div className="w-full px-4 flex-1 flex flex-col items-center justify-center max-w-full">
-                <div className={`w-full aspect-[16/9] max-h-[62vh] rounded-[24px] sm:rounded-[28px] p-8 sm:p-12 flex flex-col justify-between border relative overflow-hidden transition-all duration-300 ${
+                <div className={`w-full aspect-[16/9] max-h-[62vh] max-w-[110vh] rounded-[24px] sm:rounded-[28px] p-8 sm:p-12 flex flex-col justify-between border relative overflow-hidden transition-all duration-300 ${
                   isDark ? 'border-neutral-800 bg-[#1E1F22] text-white shadow-none' : 'border-slate-200/90 bg-white text-slate-900 shadow-sm'
                 }`}>
                   <div className="w-full text-slate-800 dark:text-slate-100 text-[16px] sm:text-[18px] leading-relaxed flex-1 flex flex-col justify-center overflow-y-auto">
