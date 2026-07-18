@@ -32,6 +32,7 @@ interface SpaceDashboardProps {
   setViewState?: (state: any) => void;
   setActiveSidebar?: (sidebar: any) => void;
   handleSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
+  onOpenTheatre?: () => void;
   userProfile?: any;
   accessToken?: string | null;
 }
@@ -58,6 +59,7 @@ export function SpaceDashboardExperimental({
   setViewState,
   setActiveSidebar,
   handleSendMessage,
+  onOpenTheatre,
   userProfile,
   accessToken
 }: SpaceDashboardProps) {
@@ -664,7 +666,13 @@ export function SpaceDashboardExperimental({
               <span>Welcome back, {name}.</span>
               <button
                 id="play-theatre-btn"
-                onClick={() => setIsTheatreOpen(true)}
+                onClick={() => {
+                  console.log('[THEATRE DEBUG] Play button clicked in SpaceDashboardExperimental!');
+                  if (onOpenTheatre) {
+                    onOpenTheatre();
+                  }
+                  setIsTheatreOpen(true);
+                }}
                 className="inline-flex items-center justify-center p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-800 dark:text-white transition-all cursor-pointer border border-slate-200 dark:border-neutral-700 shadow-xs group"
                 title="Play Theatre View"
               >

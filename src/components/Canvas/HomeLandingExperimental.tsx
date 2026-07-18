@@ -90,6 +90,7 @@ interface HomeLandingProps {
   onReorderPins?: (newOrderedIds: string[]) => void;
   onSelectArtifact?: (file: any) => void;
   envId?: string | null;
+  onOpenTheatre?: () => void;
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -471,7 +472,8 @@ export function HomeLandingExperimental({
   onPinArtifact,
   onReorderPins,
   onSelectArtifact,
-  envId
+  envId,
+  onOpenTheatre
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localBypassAuth, setLocalBypassAuth] = useState(false);
@@ -1455,6 +1457,7 @@ export function HomeLandingExperimental({
           setViewState={setViewState}
           setActiveSidebar={setActiveSidebar}
           handleSendMessage={handleSendMessage}
+          onOpenTheatre={onOpenTheatre}
         />
       </div>
     </div>

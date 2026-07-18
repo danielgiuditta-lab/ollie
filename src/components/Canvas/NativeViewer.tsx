@@ -465,7 +465,7 @@ export function NativeViewer({
   const isRealDriveId = (id: string | undefined | null) => {
     if (!id) return false;
     const str = String(id).replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
-    return str.length > 5 && !str.includes('local') && !str.includes('mock');
+    return str.length > 20 && !str.includes('local') && !str.includes('mock') && !str.includes('todo') && !str.includes('task') && !str.includes('proactive');
   };
   
   const isComposerDoc = !!(file.createdFromComposer || 

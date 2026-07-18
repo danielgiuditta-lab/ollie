@@ -1,30 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, 
   Check, 
   ArrowLeft, 
   ArrowRight, 
   ExternalLink, 
-  Play, 
-  Sparkles, 
-  PanelRight, 
-  Send,
+  X,
+  ChevronRight,
   FileText,
   Presentation,
   Mail,
   Calendar,
-  User,
   MessageSquare
 } from 'lucide-react';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
+import { Composer } from '../Chat/Composer';
 
 interface TheatreViewProps {
   todoItems: any[];
   initialIndex?: number;
   onClose: () => void;
   onSendMessage: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
-  setActiveSidebar?: (sidebar: 'gemini' | 'files' | null) => void;
+  setActiveSidebar?: any;
   onUpdateTaskStatus?: (taskId: string, status: 'done' | 'working' | 'rejected') => void;
   userProfile?: any;
   accessToken?: string | null;
@@ -44,8 +41,6 @@ export function TheatreView({
 }: TheatreViewProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
-  const [steerText, setSteerText] = useState('');
-  const [isMorphed, setIsMorphed] = useState(false);
 
   // Sync initial index if todoItems changes
   useEffect(() => {
@@ -98,20 +93,18 @@ export function TheatreView({
     setActiveIndex(prev => Math.min(todoItems.length - 1, prev + 1));
   };
 
-  // Handle text steer submission
-  const handleSteerSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!steerText.trim()) return;
+  // Handle steer submission using shared Composer
+  const handleSteerSubmit = (val: string) => {
+    if (!val.trim()) return;
 
     const fullMsg = activeTask 
-      ? `Regarding task "${activeTask.title || activeTask.description}": ${steerText}`
-      : steerText;
+      ? `Regarding task "${activeTask.title || activeTask.description}": ${val}`
+      : val;
 
     onSendMessage(fullMsg);
     if (setActiveSidebar) {
       setActiveSidebar('gemini');
     }
-    setSteerText('');
   };
 
   // Helper to open source link in a new tab
@@ -120,7 +113,6 @@ export function TheatreView({
     if (urlOrName.startsWith('http')) {
       window.open(urlOrName, '_blank', 'noopener,noreferrer');
     } else {
-      // Search or open drive search
       window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(urlOrName)}`, '_blank', 'noopener,noreferrer');
     }
   };
@@ -130,10 +122,10 @@ export function TheatreView({
   const startedTasks = todoItems.filter(t => t.status !== 'done' && t.type !== 'fyi' && t.category !== 'fyi' && !completedTaskIds.has(t.id));
   const fyiTasks = todoItems.filter(t => (t.type === 'fyi' || t.category === 'fyi') && !completedTaskIds.has(t.id));
 
-  // Determine native tool button text
+  // Determine native tool button label
   const getNativeToolLabel = () => {
     if (!activeTask) return 'Open in Drive';
-    const type = activeTask.type || activeTask.sourceMimeType || '';
+    const type = (activeTask.type || activeTask.sourceMimeType || '').toLowerCase();
     if (type.includes('slide') || type.includes('presentation')) return 'Open in Slides';
     if (type.includes('doc') || type.includes('word')) return 'Open in Docs';
     if (type.includes('sheet') || type.includes('csv') || type.includes('excel')) return 'Open in Sheets';
@@ -142,14 +134,18 @@ export function TheatreView({
     return 'Open in native tool';
   };
 
-  // Construct file object for NativeViewer/DiffView
+  // Construct target document file object for NativeViewer/DiffView
   const getTaskFileObject = (task: any) => {
     if (!task) return null;
+    
+    // If explicit filesToLoad array exists on the task, load the first target file
     if (task.filesToLoad && task.filesToLoad.length > 0) {
+      const target = task.filesToLoad[0];
       return {
-        ...task.filesToLoad[0],
-        id: task.id,
-        isInferredTask: true,
+        ...target,
+        id: target.id || task.id,
+        name: target.name || task.sourceName || task.title || 'Document',
+        mimeType: target.mimeType || (task.type === 'slide' ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document'),
         title: task.title,
         description: task.description,
         originalMarkdown: task.originalMarkdown,
@@ -160,13 +156,28 @@ export function TheatreView({
         personAvatar: task.personAvatar
       };
     }
+
+    // Resolve file type based on mimeType / source text
+    const textForMime = `${task.sourceName || ''} ${task.sourceMimeType || ''} ${task.type || ''} ${task.description || ''}`.toLowerCase();
+    let resolvedMime = 'application/vnd.google-apps.document';
+    let resolvedType = 'doc';
+
+    if (textForMime.includes('slide') || textForMime.includes('presentation')) {
+      resolvedMime = 'application/vnd.google-apps.presentation';
+      resolvedType = 'slide';
+    } else if (textForMime.includes('sheet') || textForMime.includes('csv') || textForMime.includes('spreadsheet')) {
+      resolvedMime = 'application/vnd.google-apps.spreadsheet';
+      resolvedType = 'sheet';
+    }
+
     return {
       id: task.id,
-      name: task.sourceName || task.title || 'Task Details',
-      mimeType: task.sourceMimeType || (task.type === 'slide' ? 'application/vnd.google-apps.presentation' : 'application/vnd.google-apps.document'),
-      isInferredTask: true,
+      name: task.sourceName || task.title || 'Task Document',
+      mimeType: task.sourceMimeType || resolvedMime,
+      type: resolvedType,
       title: task.title,
       description: task.description,
+      content: task.updatedMarkdown || task.description || '',
       originalMarkdown: task.originalMarkdown,
       updatedMarkdown: task.updatedMarkdown,
       summaryOfChanges: task.summaryOfChanges,
@@ -179,80 +190,48 @@ export function TheatreView({
   const activeFileObject = getTaskFileObject(activeTask);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col select-none text-white font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
-      {/* Top Menu Bar */}
-      <div className="w-full shrink-0 flex items-center justify-between pb-4 px-2">
-        {/* Left Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm font-medium text-neutral-400">
-          <span className="hover:text-white transition-colors cursor-pointer" onClick={onClose}>Home</span>
-          <span>&gt;</span>
-          <span className="text-white font-semibold">Taskview</span>
+    <div className="dark fixed inset-0 z-50 bg-[#141517] text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
+      {/* Top Header Bar matching design specs */}
+      <div className="w-full shrink-0 flex items-center justify-between pb-3 px-1">
+        {/* Left Breadcrumbs */}
+        <div className="flex items-center gap-2 text-[17px] font-normal text-neutral-400">
+          <span 
+            onClick={onClose}
+            className="cursor-pointer hover:text-white transition-colors font-normal text-neutral-300"
+          >
+            Home
+          </span>
+          <ChevronRight size={18} className="text-neutral-500 shrink-0" />
+          <span className="text-white font-medium">Taskview</span>
         </div>
 
-        {/* Right Action Buttons */}
+        {/* Right Action Buttons (Open in Native Tool + Close) */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleOpenSourceChip(activeTask?.sourceName || activeTask?.title)}
-            className="h-9 px-4 rounded-full bg-[#222428] hover:bg-[#2C2E33] text-neutral-200 hover:text-white text-xs font-medium border border-neutral-700 transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+            className="h-9 px-4 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white text-xs font-medium border border-neutral-700/60 flex items-center justify-center transition-all cursor-pointer shadow-xs"
           >
-            <span>{getNativeToolLabel()}</span>
-            <ExternalLink size={13} />
+            {getNativeToolLabel()}
           </button>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-[#222428] hover:bg-[#2C2E33] text-neutral-300 hover:text-white border border-neutral-700 flex items-center justify-center transition-all cursor-pointer"
-            title="Close Theatre View"
+            className="w-9 h-9 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white border border-neutral-700/60 flex items-center justify-center transition-all cursor-pointer"
+            title="Close Taskview"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
       </div>
 
       {/* Main Split Container */}
       <div className="flex-1 w-full min-h-0 flex gap-6 overflow-hidden pb-4">
-        {/* Left Panel: Tasks Directory & Selected Task Card */}
-        <div className="w-80 md:w-96 shrink-0 flex flex-col gap-6 overflow-y-auto pr-2 select-text">
-          {/* Section 1: What I did... */}
-          {doneTasks.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-semibold text-neutral-400 tracking-wide">What I did...</h3>
-              <div className="flex flex-col gap-2">
-                {doneTasks.map((item) => {
-                  const itemIndex = todoItems.findIndex(t => t.id === item.id);
-                  const isSelected = itemIndex === activeIndex;
-                  return (
-                    <div
-                      key={item.id}
-                      onClick={() => setActiveIndex(itemIndex)}
-                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                        isSelected 
-                          ? 'bg-[#26282D] border-neutral-600 shadow-md' 
-                          : 'bg-[#1E1F22] border-neutral-800/80 hover:bg-[#24262B] hover:border-neutral-700'
-                      }`}
-                    >
-                      <div className="flex flex-col gap-1 min-w-0 flex-1">
-                        <div className="text-xs font-medium text-neutral-200 line-clamp-1">
-                          {item.titleDone || item.title || item.description}
-                        </div>
-                        <div className="text-[11px] text-neutral-400 line-clamp-1">
-                          {item.descriptionDone || item.description || 'Task completed'}
-                        </div>
-                      </div>
-                      <div className="w-6 h-6 rounded-full bg-black/60 border border-neutral-700 flex items-center justify-center text-neutral-200 shrink-0">
-                        <Check size={13} className="stroke-[2.5]" />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Section 2: What I started... */}
+        {/* Left Panel: Home Tasks Directory */}
+        <div className="w-80 md:w-96 shrink-0 flex flex-col gap-5 overflow-y-auto pr-2 select-text">
+          {/* Active Tasks ("What I started...") */}
           {startedTasks.length > 0 && (
             <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-semibold text-neutral-400 tracking-wide">What I started...</h3>
-              <div className="flex flex-col gap-2.5">
+              <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider px-1">What I started</h3>
+              <div className="flex flex-col gap-2">
                 {startedTasks.map((item) => {
                   const itemIndex = todoItems.findIndex(t => t.id === item.id);
                   const isSelected = itemIndex === activeIndex;
@@ -260,31 +239,29 @@ export function TheatreView({
                     <div
                       key={item.id}
                       onClick={() => setActiveIndex(itemIndex)}
-                      className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-2.5 ${
+                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-2 ${
                         isSelected 
-                          ? 'bg-[#24262B] border-neutral-500 ring-1 ring-neutral-500/50 shadow-lg' 
-                          : 'bg-[#1E1F22] border-neutral-800 hover:bg-[#24262B] hover:border-neutral-700'
+                          ? 'bg-[#24262B] border-blue-500/80 ring-1 ring-blue-500/30 shadow-lg' 
+                          : 'bg-[#1C1D20] border-neutral-800 hover:bg-[#222428] hover:border-neutral-700'
                       }`}
                     >
-                      {/* 2 lines title of what needs to be done */}
-                      <div className="text-xs leading-snug font-medium text-neutral-100 line-clamp-2">
+                      <div className="text-xs font-semibold text-neutral-100 line-clamp-2 leading-snug">
                         {item.title || item.titleDone || item.description}
                       </div>
 
-                      {/* 2 meta lines about sources & who asked for it + what agent is proposing */}
-                      <div className="text-[11px] leading-relaxed text-neutral-400 line-clamp-2">
-                        {item.description || item.summaryOfChanges || item.action || 'Agent initialized task response and outlines.'}
+                      <div className="text-[11px] text-neutral-400 line-clamp-2 leading-relaxed">
+                        {item.description || item.action || 'Task review and outline draft'}
                       </div>
 
-                      {/* Source Chips */}
-                      <div className="flex items-center gap-2 flex-wrap pt-1">
+                      {/* Metadata Chips */}
+                      <div className="flex items-center gap-2 flex-wrap pt-0.5">
                         {item.personName && (
                           <div 
                             onClick={(e) => {
                               e.stopPropagation();
                               handleOpenSourceChip(item.personName);
                             }}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/70 text-[10.5px] text-neutral-300 font-medium transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/60 text-[10px] text-neutral-300 font-medium transition-colors"
                           >
                             {item.personAvatar ? (
                               <img src={item.personAvatar} alt={item.personName} className="w-3.5 h-3.5 rounded-full object-cover" />
@@ -301,7 +278,7 @@ export function TheatreView({
                               e.stopPropagation();
                               handleOpenSourceChip(item.sourceName);
                             }}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/70 text-[10.5px] text-neutral-300 font-medium transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/60 text-[10px] text-neutral-300 font-medium transition-colors"
                           >
                             <Presentation size={11} className="text-amber-400" />
                             <span className="line-clamp-1">{item.sourceName}</span>
@@ -315,10 +292,46 @@ export function TheatreView({
             </div>
           )}
 
-          {/* Section 3: FYI */}
+          {/* Completed Tasks ("What I did...") */}
+          {doneTasks.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider px-1">What I did</h3>
+              <div className="flex flex-col gap-2">
+                {doneTasks.map((item) => {
+                  const itemIndex = todoItems.findIndex(t => t.id === item.id);
+                  const isSelected = itemIndex === activeIndex;
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => setActiveIndex(itemIndex)}
+                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                        isSelected 
+                          ? 'bg-[#24262B] border-blue-500/80 shadow-md' 
+                          : 'bg-[#1C1D20] border-neutral-800/80 hover:bg-[#222428] hover:border-neutral-700'
+                      }`}
+                    >
+                      <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                        <div className="text-xs font-medium text-neutral-200 line-clamp-1">
+                          {item.titleDone || item.title || item.description}
+                        </div>
+                        <div className="text-[11px] text-neutral-400 line-clamp-1">
+                          {item.descriptionDone || item.description || 'Task completed'}
+                        </div>
+                      </div>
+                      <div className="w-5 h-5 rounded-full bg-emerald-950/60 border border-emerald-600/60 flex items-center justify-center text-emerald-400 shrink-0">
+                        <Check size={12} className="stroke-[2.5]" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* FYI Tasks */}
           {fyiTasks.length > 0 && (
             <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-semibold text-neutral-400 tracking-wide">FYI</h3>
+              <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider px-1">FYI</h3>
               <div className="flex flex-col gap-2">
                 {fyiTasks.map((item) => {
                   const itemIndex = todoItems.findIndex(t => t.id === item.id);
@@ -327,10 +340,10 @@ export function TheatreView({
                     <div
                       key={item.id}
                       onClick={() => setActiveIndex(itemIndex)}
-                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-1 ${
+                      className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-1 ${
                         isSelected 
-                          ? 'bg-[#26282D] border-neutral-600 shadow-md' 
-                          : 'bg-[#1E1F22] border-neutral-800/80 hover:bg-[#24262B] hover:border-neutral-700'
+                          ? 'bg-[#24262B] border-blue-500/80 shadow-md' 
+                          : 'bg-[#1C1D20] border-neutral-800/80 hover:bg-[#222428] hover:border-neutral-700'
                       }`}
                     >
                       <div className="text-xs font-medium text-neutral-200 line-clamp-1">
@@ -347,12 +360,12 @@ export function TheatreView({
           )}
         </div>
 
-        {/* Right Panel: Artifact Canvas View */}
-        <div className="flex-1 h-full rounded-2xl overflow-hidden bg-[#111214] border border-neutral-800/80 relative shadow-2xl flex flex-col">
+        {/* Right Center Canvas: Selected Task Target Artifact View */}
+        <div className="flex-1 h-full rounded-2xl overflow-hidden bg-[#18191B] border border-neutral-800 relative shadow-2xl flex flex-col">
           {activeFileObject ? (
             <div 
               key={activeTask?.id || activeIndex}
-              className="w-full h-full animate-in slide-in-from-bottom-6 duration-300 ease-out flex flex-col overflow-hidden"
+              className="w-full h-full animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col overflow-hidden"
             >
               {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
                 <InferredTaskDiffView 
@@ -365,7 +378,6 @@ export function TheatreView({
                   hideHeader={true}
                   mode="preview"
                   theme="dark"
-                  todoItems={todoItems}
                 />
               )}
             </div>
@@ -377,90 +389,55 @@ export function TheatreView({
         </div>
       </div>
 
-      {/* Bottom Controls Bar */}
+      {/* Bottom Controls Dock: Reusing Shared Bottom Composer */}
       <div className="w-full shrink-0 flex items-center justify-center gap-3 pt-2 pb-1 relative z-10">
-        {/* Previous Task Arrow */}
+        {/* Previous Task Arrow Button */}
         <button
           onClick={handlePrev}
           disabled={activeIndex === 0}
-          className="w-11 h-11 rounded-full bg-[#222428] hover:bg-[#2C2E33] disabled:opacity-40 disabled:hover:bg-[#222428] text-white border border-neutral-700/80 flex items-center justify-center transition-all cursor-pointer shadow-md"
+          className="w-12 h-12 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
           title="Previous task"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={20} />
         </button>
 
-        {/* Reject / No Button */}
+        {/* Reject / Decline Button matching InferredTaskCard style */}
         <button
           onClick={handleReject}
-          className="w-11 h-11 rounded-full bg-[#222428] hover:bg-red-950/40 hover:border-red-600/60 text-red-400 border border-neutral-700/80 flex items-center justify-center transition-all cursor-pointer shadow-md group"
-          title="Reject task suggestion"
+          className="w-12 h-12 rounded-full bg-[#FCE8E6] dark:bg-red-950/40 hover:bg-[#FAD2CF] dark:hover:bg-red-900/60 text-[#C5221F] dark:text-red-400 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-md"
+          title="Decline"
         >
-          <X size={20} className="group-hover:scale-110 transition-transform" />
+          <X size={24} className="stroke-[2.5]" />
         </button>
 
-        {/* Text Steer Input Bar */}
-        <form 
-          onSubmit={handleSteerSubmit}
-          className={`bg-[#18191B] border border-neutral-700/90 rounded-full px-4 py-2 flex items-center gap-2.5 transition-all duration-300 shadow-xl ${
-            isMorphed || steerText.trim().length > 0 ? 'w-96 md:w-[480px] border-blue-500/70 ring-1 ring-blue-500/30' : 'w-72 md:w-96'
-          }`}
-        >
-          <input
-            type="text"
-            value={steerText}
-            onChange={(e) => {
-              setSteerText(e.target.value);
-              if (!isMorphed && e.target.value.length > 0) setIsMorphed(true);
-            }}
-            onFocus={() => setIsMorphed(true)}
-            onBlur={() => {
-              if (!steerText.trim()) setIsMorphed(false);
-            }}
+        {/* Center Steer Input using bottom layout Composer */}
+        <div className="w-96 md:w-[600px] flex items-center">
+          <Composer
+            onSend={handleSteerSubmit}
+            disabled={false}
             placeholder={activeTask?.type === 'slide' ? "Suggest an update to the slides..." : "Give agent a steer..."}
-            className="flex-1 bg-transparent border-none outline-none text-xs text-neutral-100 placeholder-neutral-500 font-medium"
+            theme="dark"
+            layout="bottom"
           />
+        </div>
 
-          {/* Morph controls: Side Chat toggle & Send button */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {setActiveSidebar && (
-              <button
-                type="button"
-                onClick={() => setActiveSidebar('gemini')}
-                className="p-1.5 rounded-full hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors cursor-pointer"
-                title="Open Side Chat Panel"
-              >
-                <PanelRight size={15} />
-              </button>
-            )}
-
-            <button
-              type="submit"
-              disabled={!steerText.trim()}
-              className="p-1.5 rounded-full bg-blue-600 hover:bg-blue-500 disabled:opacity-30 text-white transition-colors cursor-pointer flex items-center justify-center"
-              title="Send steer to agent"
-            >
-              <Send size={13} />
-            </button>
-          </div>
-        </form>
-
-        {/* Approve / Yes Button */}
+        {/* Approve / Accept Button matching InferredTaskCard style */}
         <button
           onClick={handleApprove}
-          className="w-11 h-11 rounded-full bg-[#222428] hover:bg-emerald-950/40 hover:border-emerald-600/60 text-emerald-400 border border-neutral-700/80 flex items-center justify-center transition-all cursor-pointer shadow-md group"
-          title="Approve task suggestion"
+          className="w-12 h-12 rounded-full bg-[#E6F4EA] dark:bg-green-950/40 hover:bg-[#CEEAD6] dark:hover:bg-green-900/60 text-[#137333] dark:text-green-400 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-md"
+          title="Accept"
         >
-          <Check size={20} className="group-hover:scale-110 transition-transform stroke-[2.5]" />
+          <Check size={24} className="stroke-[2.5]" />
         </button>
 
-        {/* Next Task Arrow */}
+        {/* Next Task Arrow Button */}
         <button
           onClick={handleNext}
           disabled={activeIndex === todoItems.length - 1}
-          className="w-11 h-11 rounded-full bg-[#222428] hover:bg-[#2C2E33] disabled:opacity-40 disabled:hover:bg-[#222428] text-white border border-neutral-700/80 flex items-center justify-center transition-all cursor-pointer shadow-md"
+          className="w-12 h-12 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
           title="Next task"
         >
-          <ArrowRight size={18} />
+          <ArrowRight size={20} />
         </button>
       </div>
     </div>

@@ -19,6 +19,7 @@ import { HomeLandingExperimental } from './components/Canvas/HomeLandingExperime
 import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
 import { InferredTaskDiffView } from './components/Canvas/InferredTaskDiffView';
+import { TheatreView } from './components/Canvas/TheatreView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
@@ -161,6 +162,7 @@ export default function App() {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'failed'>('idle');
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
+  const [isTheatreOpen, setIsTheatreOpen] = useState(false);
   const [activeProactiveTask, setActiveProactiveTask] = useState<any | null>(null);
   const [homePins, setHomePins] = useState<string[]>(['todo-card']);
 
@@ -6410,6 +6412,7 @@ export default function App() {
                         onPinArtifact={handlePinArtifact}
                         onReorderPins={handleReorderPins}
                         onSelectArtifact={handleArtifactSelect}
+                        onOpenTheatre={() => setIsTheatreOpen(true)}
                       />
                     ) : (
                       <HomeLanding 
@@ -6452,6 +6455,7 @@ export default function App() {
                         onPinArtifact={handlePinArtifact}
                         onReorderPins={handleReorderPins}
                         onSelectArtifact={handleArtifactSelect}
+                        onOpenTheatre={() => setIsTheatreOpen(true)}
                       />
                     )}
                   </div>
@@ -6738,6 +6742,22 @@ export default function App() {
           }}
         />
       ))}
+
+      {/* Top-Level Theatre View Overlay */}
+      {isTheatreOpen && (
+        <TheatreView
+          todoItems={todoItems}
+          onClose={() => setIsTheatreOpen(false)}
+          onSendMessage={handleSendMessage}
+          setActiveSidebar={setActiveSidebar}
+          onUpdateTaskStatus={(taskId, status) => {
+            setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+          }}
+          userProfile={userProfile}
+          accessToken={accessToken}
+          theme={appTheme}
+        />
+      )}
 
     </div>
   );

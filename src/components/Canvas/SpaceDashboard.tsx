@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Edit2, Trash2, Pin, Plus, Columns3, LayoutGrid, List } from 'lucide-react';
+import { MoreHorizontal, Edit2, Trash2, Pin, Plus, Columns3, LayoutGrid, List, Play } from 'lucide-react';
 import { AppView } from './AppView';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
@@ -32,6 +32,7 @@ interface SpaceDashboardProps {
   setActiveSidebar?: (sidebar: any) => void;
   userProfile?: any;
   accessToken?: string | null;
+  onOpenTheatre?: () => void;
 }
 
 export function SpaceDashboard({
@@ -56,7 +57,8 @@ export function SpaceDashboard({
   setViewState,
   setActiveSidebar,
   userProfile,
-  accessToken
+  accessToken,
+  onOpenTheatre
 }: SpaceDashboardProps) {
   const [cardWidths, setCardWidths] = useState<Record<string, number>>({});
   const meeting = useCalendarMeeting(accessToken, userProfile);
@@ -456,8 +458,31 @@ export function SpaceDashboard({
     }
   }
 
+  const name = userProfile?.given_name || userProfile?.name || 'User';
+  const isHomeDashboard = spaceId === 'home' || spaceId === 'home_guest' || spaceId === '';
+
   return (
     <div className="w-full h-full flex flex-col min-h-0 relative select-none">
+      {isHomeDashboard && (
+        <div className="px-6 pt-6 pb-2 flex items-center justify-between">
+          <h1 className="text-[36px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
+            <span>Welcome back, {name}.</span>
+            <button
+              id="play-theatre-btn"
+              onClick={() => {
+                console.log('[THEATRE DEBUG] Play button clicked in SpaceDashboard!');
+                if (onOpenTheatre) {
+                  onOpenTheatre();
+                }
+              }}
+              className="inline-flex items-center justify-center p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-800 dark:text-white transition-all cursor-pointer border border-slate-200 dark:border-neutral-700 shadow-xs group"
+              title="Play Theatre View"
+            >
+              <Play className="w-5 h-5 fill-current text-slate-800 dark:text-white group-hover:scale-105 transition-transform" />
+            </button>
+          </h1>
+        </div>
+      )}
 
 
       <div 

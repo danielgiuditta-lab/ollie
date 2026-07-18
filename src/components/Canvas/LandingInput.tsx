@@ -199,10 +199,10 @@ export function LandingInput({
         <RainbowRimOverlay active={aiMode} borderRadiusClass="rounded-full" />
 
         <div 
-          className={`w-full min-h-[64px] py-2 bg-white dark:bg-[#1E1F22] border ${
+          className={`w-full min-h-[64px] py-2 ${theme === 'dark' ? 'bg-[#1E1F22] text-white border-[#2B2D31]' : 'bg-white dark:bg-[#1E1F22] border-gray-200 dark:border-[#2B2D31]'} border ${
             aiMode 
               ? 'border-transparent' 
-              : 'border-gray-200 dark:border-[#2B2D31] hover:border-gray-300 dark:hover:border-gray-700 shadow-sm focus-within:shadow-md focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100'
+              : 'hover:border-gray-300 dark:hover:border-gray-700 shadow-sm focus-within:shadow-md focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100'
           } transition-all duration-300 flex items-center flex-wrap px-6 relative z-50 rounded-full`}
         >
           {/* Left icon toggle indicator for search mode */}
