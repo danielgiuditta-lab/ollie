@@ -3015,15 +3015,6 @@ export default function App() {
 
     const spaceFiles = getAllSpaceFiles(null);
     const allKnownDriveFiles = [...driveFiles, ...sandboxFiles, ...spaceFiles, ...suggestedListCache];
-    const searchString = [
-      spaceName,
-      task.sourceName,
-      task.source,
-      task.title,
-      task.description,
-      task.workspace,
-      task.filesToLoad?.[0]?.name
-    ].filter(Boolean).join(' ').toLowerCase();
 
     const matchedInDrive = allKnownDriveFiles.find(f => {
       if (!f) return false;
@@ -3033,47 +3024,87 @@ export default function App() {
       if (!f.name) return false;
       const fNameLower = f.name.toLowerCase();
       const fNameClean = fNameLower.replace(/\.[^/.]+$/, "").trim();
-      if (!fNameClean || fNameClean.length < 2) return false;
-      return fNameLower === (task.filesToLoad?.[0]?.name || '').toLowerCase() ||
-             fNameLower === (task.sourceName || '').toLowerCase() ||
-             fNameClean === spaceName.toLowerCase() ||
-             searchString.includes(fNameClean);
+      const taskSourceNameLower = (task.sourceName || '').toLowerCase();
+      const filesToLoadNameLower = (task.filesToLoad?.[0]?.name || '').toLowerCase();
+      if (filesToLoadNameLower && fNameLower === filesToLoadNameLower) return true;
+      if (taskSourceNameLower && fNameLower === taskSourceNameLower) return true;
+      
+      if (fNameClean.length >= 6) {
+        if (taskSourceNameLower && taskSourceNameLower.includes(fNameClean)) return true;
+        if (filesToLoadNameLower && filesToLoadNameLower.includes(fNameClean)) return true;
+      }
+      return false;
     });
-    const isSlideTask = Boolean(
-      task.type === 'slide' ||
-      task.taskType === 'slide' ||
+
+    let fileType = 'doc';
+
+    const rawType = (task.type || task.taskType || '').toLowerCase();
+    if (rawType === 'doc') fileType = 'doc';
+    else if (rawType === 'slide') fileType = 'slide';
+    else if (rawType === 'sheet') fileType = 'sheet';
+    else if (rawType === 'email') fileType = 'email';
+    else if (
+      task.sourceMimeType?.includes('document') ||
+      task.sourceMimeType?.includes('text') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('document') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('text') ||
+      task.sourceName?.endsWith('.gdoc') ||
+      task.sourceName?.endsWith('.doc') ||
+      task.sourceName?.endsWith('.docx') ||
+      task.filesToLoad?.[0]?.name?.endsWith('.gdoc')
+    ) {
+      fileType = 'doc';
+    } else if (
       task.sourceMimeType?.includes('presentation') ||
       task.sourceMimeType?.includes('slide') ||
       task.filesToLoad?.[0]?.mimeType?.includes('presentation') ||
       task.filesToLoad?.[0]?.mimeType?.includes('slide') ||
-      matchedInDrive?.mimeType?.includes('presentation') ||
-      matchedInDrive?.mimeType?.includes('slide') ||
       task.sourceName?.endsWith('.gslides') ||
       task.sourceName?.endsWith('.pptx') ||
-      matchedInDrive?.name?.endsWith('.gslides') ||
-      task.title?.toLowerCase().includes('slide') ||
-      task.title?.toLowerCase().includes('presentation') ||
-      task.description?.toLowerCase().includes('slide') ||
-      task.description?.toLowerCase().includes('presentation') ||
-      task.titleDone?.toLowerCase().includes('slide') ||
-      task.titleDone?.toLowerCase().includes('presentation')
-    );
+      task.filesToLoad?.[0]?.name?.endsWith('.gslides')
+    ) {
+      fileType = 'slide';
+    } else if (
+      task.sourceMimeType?.includes('spreadsheet') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('spreadsheet') ||
+      task.sourceName?.endsWith('.csv') ||
+      task.sourceName?.endsWith('.gsheet')
+    ) {
+      fileType = 'sheet';
+    } else if (
+      task.sourceMimeType?.includes('email') ||
+      task.sourceName?.toLowerCase().startsWith('email') ||
+      task.sourceName?.toLowerCase().includes('gmail') ||
+      task.source?.toLowerCase().includes('email')
+    ) {
+      fileType = 'email';
+    } else if (matchedInDrive) {
+      const mType = (matchedInDrive.mimeType || '').toLowerCase();
+      const mName = (matchedInDrive.name || '').toLowerCase();
+      if (mType.includes('presentation') || mName.endsWith('.gslides') || mName.endsWith('.pptx')) {
+        fileType = 'slide';
+      } else if (mType.includes('spreadsheet') || mName.endsWith('.csv') || mName.endsWith('.gsheet')) {
+        fileType = 'sheet';
+      } else if (mType.includes('document') || mType.includes('text') || mName.endsWith('.gdoc') || mName.endsWith('.doc')) {
+        fileType = 'doc';
+      }
+    } else {
+      const titleDesc = `${task.title || ''} ${task.description || ''} ${task.titleDone || ''}`.toLowerCase();
+      if (titleDesc.includes('slide') || titleDesc.includes('presentation') || titleDesc.includes('deck')) {
+        fileType = 'slide';
+      } else if (titleDesc.includes('spreadsheet') || titleDesc.includes('csv') || titleDesc.includes('sheet')) {
+        fileType = 'sheet';
+      } else if (titleDesc.includes('email') || titleDesc.includes('gmail')) {
+        fileType = 'email';
+      } else {
+        fileType = 'doc';
+      }
+    }
 
-    const isEmailTask = Boolean(
-      !isSlideTask && (
-        task.type === 'email' ||
-        task.taskType === 'email' ||
-        task.sourceMimeType?.includes('email') ||
-        task.sourceName?.toLowerCase().startsWith('email') ||
-        task.sourceName?.toLowerCase().includes('gmail') ||
-        task.source?.toLowerCase().includes('email') ||
-        task.title?.toLowerCase().includes('email') ||
-        task.description?.toLowerCase().includes('email')
-      )
-    );
+    const isSlideTask = fileType === 'slide';
+    const isEmailTask = fileType === 'email';
 
-    const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id;
-    const fileType = isSlideTask ? 'slide' : (isEmailTask ? 'email' : 'doc');
+    const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id || matchedInDrive?.driveId;
     const targetMime = task.filesToLoad?.[0]?.mimeType ||
       task.sourceMimeType ||
       matchedInDrive?.mimeType ||
@@ -3084,6 +3115,8 @@ export default function App() {
       if (!targetName.toLowerCase().endsWith('.gslides') && !targetName.toLowerCase().endsWith('.pptx')) {
         targetName = targetName.replace(/\.[^/.]+$/, "") + '.gslides';
       }
+    } else if (fileType === 'doc') {
+      targetName = targetName.replace(/\.gslides$|\.pptx$/i, '');
     }
 
     let fileContent = task.updatedMarkdown || task.draftData?.draftContent || task.originalMarkdown || matchedInDrive?.content || matchedInDrive?.realDocText || matchedInDrive?.originalMarkdown;
@@ -3106,7 +3139,7 @@ export default function App() {
       id: `proactive-${fileType}-${task.id}`,
       mimeType: targetMime,
       isProactiveDraft: false,
-      directSlideView: true,
+      directSlideView: isSlideTask,
       showDiffView: false,
       summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive draft.",
       originalMarkdown: task.originalMarkdown || matchedInDrive?.originalMarkdown || matchedInDrive?.content || fileContent,
@@ -3117,7 +3150,7 @@ export default function App() {
     setSandboxFiles([proactiveSlideFile]);
     setSelectedFile(proactiveSlideFile);
 
-    if (targetId && accessToken) {
+    if (targetId && accessToken && !targetId.startsWith('mock-') && !targetId.startsWith('copied-') && !targetId.startsWith('local-')) {
       (async () => {
         try {
           const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${targetId}?fields=id,name,mimeType`, {
@@ -3142,12 +3175,12 @@ export default function App() {
             });
             if (contentRes.ok) {
               const textOrDataUrl = await contentRes.text();
-              const isResolvedSlide = isSlideTask || mType.includes('presentation') || mType.includes('slide');
+              const isResolvedSlide = mType.includes('presentation') || mType.includes('slide');
               const isResolvedDoc = !isResolvedSlide && (mType.includes('document') || mType.includes('text'));
 
-              let fileType = 'code';
-              if (isResolvedSlide) fileType = 'slide';
-              else if (isResolvedDoc) fileType = 'doc';
+              let resolvedFileType = fileType;
+              if (isResolvedSlide) resolvedFileType = 'slide';
+              else if (isResolvedDoc) resolvedFileType = 'doc';
 
               let finalName = meta.name || spaceName;
               if (isResolvedSlide && !finalName.toLowerCase().endsWith('.gslides') && !finalName.toLowerCase().endsWith('.pptx')) {
@@ -3156,12 +3189,13 @@ export default function App() {
 
               const realFileObj: any = {
                 name: finalName,
-                type: fileType,
-                taskType: fileType,
-                content: task.draftData?.draftContent || textOrDataUrl,
+                type: resolvedFileType,
+                taskType: resolvedFileType,
+                content: task.draftData?.draftContent || textOrDataUrl || fileContent,
                 driveId: targetId,
-                mimeType: isResolvedSlide ? 'application/vnd.google-apps.presentation' : meta.mimeType,
+                mimeType: meta.mimeType,
                 id: `real-file-${targetId}`,
+                directSlideView: resolvedFileType === 'slide',
                 isProactiveDraft: true,
                 summaryOfChanges: task.draftData?.summaryOfChanges || task.descriptionDone || task.description
               };
@@ -3302,15 +3336,6 @@ export default function App() {
 
     const spaceFiles = getAllSpaceFiles(null);
     const allKnownDriveFiles = [...driveFiles, ...sandboxFiles, ...spaceFiles, ...suggestedListCache];
-    const searchString = [
-      spaceName,
-      task.sourceName,
-      task.source,
-      task.title,
-      task.description,
-      task.workspace,
-      task.filesToLoad?.[0]?.name
-    ].filter(Boolean).join(' ').toLowerCase();
 
     const matchedInDrive = allKnownDriveFiles.find(f => {
       if (!f) return false;
@@ -3320,47 +3345,87 @@ export default function App() {
       if (!f.name) return false;
       const fNameLower = f.name.toLowerCase();
       const fNameClean = fNameLower.replace(/\.[^/.]+$/, "").trim();
-      if (!fNameClean || fNameClean.length < 2) return false;
-      return fNameLower === (task.filesToLoad?.[0]?.name || '').toLowerCase() ||
-             fNameLower === (task.sourceName || '').toLowerCase() ||
-             fNameClean === spaceName.toLowerCase() ||
-             searchString.includes(fNameClean);
+      const taskSourceNameLower = (task.sourceName || '').toLowerCase();
+      const filesToLoadNameLower = (task.filesToLoad?.[0]?.name || '').toLowerCase();
+      if (filesToLoadNameLower && fNameLower === filesToLoadNameLower) return true;
+      if (taskSourceNameLower && fNameLower === taskSourceNameLower) return true;
+      
+      if (fNameClean.length >= 6) {
+        if (taskSourceNameLower && taskSourceNameLower.includes(fNameClean)) return true;
+        if (filesToLoadNameLower && filesToLoadNameLower.includes(fNameClean)) return true;
+      }
+      return false;
     });
-    const isSlideTask = Boolean(
-      task.type === 'slide' ||
-      task.taskType === 'slide' ||
+
+    let fileType = 'doc';
+
+    const rawType = (task.type || task.taskType || '').toLowerCase();
+    if (rawType === 'doc') fileType = 'doc';
+    else if (rawType === 'slide') fileType = 'slide';
+    else if (rawType === 'sheet') fileType = 'sheet';
+    else if (rawType === 'email') fileType = 'email';
+    else if (
+      task.sourceMimeType?.includes('document') ||
+      task.sourceMimeType?.includes('text') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('document') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('text') ||
+      task.sourceName?.endsWith('.gdoc') ||
+      task.sourceName?.endsWith('.doc') ||
+      task.sourceName?.endsWith('.docx') ||
+      task.filesToLoad?.[0]?.name?.endsWith('.gdoc')
+    ) {
+      fileType = 'doc';
+    } else if (
       task.sourceMimeType?.includes('presentation') ||
       task.sourceMimeType?.includes('slide') ||
       task.filesToLoad?.[0]?.mimeType?.includes('presentation') ||
       task.filesToLoad?.[0]?.mimeType?.includes('slide') ||
-      matchedInDrive?.mimeType?.includes('presentation') ||
-      matchedInDrive?.mimeType?.includes('slide') ||
       task.sourceName?.endsWith('.gslides') ||
       task.sourceName?.endsWith('.pptx') ||
-      matchedInDrive?.name?.endsWith('.gslides') ||
-      task.title?.toLowerCase().includes('slide') ||
-      task.title?.toLowerCase().includes('presentation') ||
-      task.description?.toLowerCase().includes('slide') ||
-      task.description?.toLowerCase().includes('presentation') ||
-      task.titleDone?.toLowerCase().includes('slide') ||
-      task.titleDone?.toLowerCase().includes('presentation')
-    );
+      task.filesToLoad?.[0]?.name?.endsWith('.gslides')
+    ) {
+      fileType = 'slide';
+    } else if (
+      task.sourceMimeType?.includes('spreadsheet') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('spreadsheet') ||
+      task.sourceName?.endsWith('.csv') ||
+      task.sourceName?.endsWith('.gsheet')
+    ) {
+      fileType = 'sheet';
+    } else if (
+      task.sourceMimeType?.includes('email') ||
+      task.sourceName?.toLowerCase().startsWith('email') ||
+      task.sourceName?.toLowerCase().includes('gmail') ||
+      task.source?.toLowerCase().includes('email')
+    ) {
+      fileType = 'email';
+    } else if (matchedInDrive) {
+      const mType = (matchedInDrive.mimeType || '').toLowerCase();
+      const mName = (matchedInDrive.name || '').toLowerCase();
+      if (mType.includes('presentation') || mName.endsWith('.gslides') || mName.endsWith('.pptx')) {
+        fileType = 'slide';
+      } else if (mType.includes('spreadsheet') || mName.endsWith('.csv') || mName.endsWith('.gsheet')) {
+        fileType = 'sheet';
+      } else if (mType.includes('document') || mType.includes('text') || mName.endsWith('.gdoc') || mName.endsWith('.doc')) {
+        fileType = 'doc';
+      }
+    } else {
+      const titleDesc = `${task.title || ''} ${task.description || ''} ${task.titleDone || ''}`.toLowerCase();
+      if (titleDesc.includes('slide') || titleDesc.includes('presentation') || titleDesc.includes('deck')) {
+        fileType = 'slide';
+      } else if (titleDesc.includes('spreadsheet') || titleDesc.includes('csv') || titleDesc.includes('sheet')) {
+        fileType = 'sheet';
+      } else if (titleDesc.includes('email') || titleDesc.includes('gmail')) {
+        fileType = 'email';
+      } else {
+        fileType = 'doc';
+      }
+    }
 
-    const isEmailTask = Boolean(
-      !isSlideTask && (
-        task.type === 'email' ||
-        task.taskType === 'email' ||
-        task.sourceMimeType?.includes('email') ||
-        task.sourceName?.toLowerCase().startsWith('email') ||
-        task.sourceName?.toLowerCase().includes('gmail') ||
-        task.source?.toLowerCase().includes('email') ||
-        task.title?.toLowerCase().includes('email') ||
-        task.description?.toLowerCase().includes('email')
-      )
-    );
+    const isSlideTask = fileType === 'slide';
+    const isEmailTask = fileType === 'email';
 
-    const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id;
-    const fileType = isSlideTask ? 'slide' : (isEmailTask ? 'email' : 'doc');
+    const targetId = task.filesToLoad?.[0]?.driveId || task.fileId || task.driveId || matchedInDrive?.id || matchedInDrive?.driveId;
     const targetMime = task.filesToLoad?.[0]?.mimeType ||
       task.sourceMimeType ||
       matchedInDrive?.mimeType ||
@@ -3371,6 +3436,8 @@ export default function App() {
       if (!targetName.toLowerCase().endsWith('.gslides') && !targetName.toLowerCase().endsWith('.pptx')) {
         targetName = targetName.replace(/\.[^/.]+$/, "") + '.gslides';
       }
+    } else if (fileType === 'doc') {
+      targetName = targetName.replace(/\.gslides$|\.pptx$/i, '');
     }
 
     let fileContent = task.updatedMarkdown || task.draftData?.draftContent || task.originalMarkdown || matchedInDrive?.content || matchedInDrive?.realDocText || matchedInDrive?.originalMarkdown;
@@ -3393,7 +3460,7 @@ export default function App() {
       id: `proactive-${fileType}-${task.id}`,
       mimeType: targetMime,
       isProactiveDraft: false,
-      directSlideView: true,
+      directSlideView: isSlideTask,
       showDiffView: false,
       summaryOfChanges: task.descriptionDone || task.description || "Prepared proactive draft.",
       originalMarkdown: task.originalMarkdown || matchedInDrive?.originalMarkdown || matchedInDrive?.content || fileContent,
@@ -3404,7 +3471,7 @@ export default function App() {
     setSandboxFiles([proactiveSlideFile]);
     setSelectedFile(proactiveSlideFile);
 
-    if (targetId && accessToken) {
+    if (targetId && accessToken && !targetId.startsWith('mock-') && !targetId.startsWith('copied-') && !targetId.startsWith('local-')) {
       (async () => {
         try {
           const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${targetId}?fields=id,name,mimeType`, {
@@ -3429,12 +3496,12 @@ export default function App() {
             });
             if (contentRes.ok) {
               const textOrDataUrl = await contentRes.text();
-              const isResolvedSlide = isSlideTask || mType.includes('presentation') || mType.includes('slide');
+              const isResolvedSlide = mType.includes('presentation') || mType.includes('slide');
               const isResolvedDoc = !isResolvedSlide && (mType.includes('document') || mType.includes('text'));
 
-              let fileType = 'code';
-              if (isResolvedSlide) fileType = 'slide';
-              else if (isResolvedDoc) fileType = 'doc';
+              let resolvedFileType = fileType;
+              if (isResolvedSlide) resolvedFileType = 'slide';
+              else if (isResolvedDoc) resolvedFileType = 'doc';
 
               let finalName = meta.name || spaceName;
               if (isResolvedSlide && !finalName.toLowerCase().endsWith('.gslides') && !finalName.toLowerCase().endsWith('.pptx')) {
@@ -3443,12 +3510,13 @@ export default function App() {
 
               const realFileObj: any = {
                 name: finalName,
-                type: fileType,
-                taskType: fileType,
-                content: task.draftData?.draftContent || textOrDataUrl,
+                type: resolvedFileType,
+                taskType: resolvedFileType,
+                content: task.draftData?.draftContent || textOrDataUrl || fileContent,
                 driveId: targetId,
-                mimeType: isResolvedSlide ? 'application/vnd.google-apps.presentation' : meta.mimeType,
+                mimeType: meta.mimeType,
                 id: `real-file-${targetId}`,
+                directSlideView: resolvedFileType === 'slide',
                 isProactiveDraft: true,
                 summaryOfChanges: task.draftData?.summaryOfChanges || task.descriptionDone || task.description
               };

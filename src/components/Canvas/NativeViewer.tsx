@@ -373,103 +373,68 @@ export function NativeViewer({
   }
 
   const nameLower = (file.name || '').toLowerCase();
-  
+  const typeLower = (file.type || file.taskType || '').toLowerCase();
+  const mimeLower = (file.mimeType || '').toLowerCase();
+
+  const isExplicitDoc = 
+    typeLower === 'doc' ||
+    file.createdFromComposer ||
+    file.isDocJourney ||
+    nameLower.endsWith('.gdoc') ||
+    nameLower.endsWith('.docx') ||
+    nameLower.endsWith('.doc') ||
+    nameLower.endsWith('.txt') ||
+    nameLower.endsWith('.md') ||
+    nameLower.endsWith('.markdown') ||
+    mimeLower.includes('vnd.google-apps.document') ||
+    mimeLower.includes('wordprocessingml') ||
+    mimeLower.includes('msword') ||
+    mimeLower.includes('gdoc') ||
+    mimeLower.includes('text/plain');
+
   const isGoogleSlide = 
-    file.type === 'slide' ||
-    file.taskType === 'slide' ||
-    nameLower.endsWith('.gslides') ||
-    nameLower.endsWith('.pptx') ||
-    nameLower.endsWith('.ppt') ||
-    nameLower.includes('drive refresh') ||
-    nameLower.includes('big rock') ||
-    nameLower.includes('presentation') ||
-    nameLower.includes('slide') ||
-    nameLower.includes('deck') ||
-    nameLower.includes('talking point') ||
-    (file.mimeType && (
-      file.mimeType.toLowerCase().includes('vnd.google-apps.presentation') ||
-      file.mimeType.toLowerCase().includes('officedocument.presentationml') ||
-      file.mimeType.toLowerCase().includes('ms-powerpoint') ||
-      file.mimeType.toLowerCase().includes('presentation') ||
-      file.mimeType.toLowerCase().includes('slide')
-    )) ||
-    (file.isProactiveDraft && (file.type === 'slide' || file.taskType === 'slide' || nameLower.endsWith('.gslides') || nameLower.includes('slide') || nameLower.includes('presentation') || nameLower.includes('drive refresh')));
-
-  const isGoogleSheet = 
-    !isGoogleSlide &&
-    file.type !== 'doc' &&
-    file.taskType !== 'doc' &&
-    !nameLower.endsWith('.doc') &&
-    !nameLower.endsWith('.docx') &&
-    !nameLower.endsWith('.gdoc') &&
-    !nameLower.endsWith('.md') &&
-    !nameLower.endsWith('.markdown') &&
-    !nameLower.endsWith('.txt') &&
-    !file.createdFromComposer &&
-    !file.isDocJourney &&
-    ((file.mimeType && (
-      file.mimeType.toLowerCase().includes('vnd.google-apps.spreadsheet') ||
-      file.mimeType.toLowerCase().includes('officedocument.spreadsheetml') ||
-      file.mimeType.toLowerCase().includes('ms-excel') ||
-      file.mimeType.toLowerCase().includes('sheet')
-    )) ||
-    nameLower.endsWith('.gsheet') ||
-    nameLower.endsWith('.xlsx') ||
-    nameLower.endsWith('.xls') ||
-    nameLower.endsWith('.csv') ||
-    ((nameLower.includes('spend') || nameLower.includes('inventory')) && !nameLower.includes('doc') && !nameLower.includes('report')));
-
-  const isGoogleDoc = 
-    !isGoogleSlide && 
-    !isGoogleSheet && (
-      file.type === 'doc' ||
-      file.taskType === 'doc' ||
-      file.createdFromComposer ||
-      file.isDocJourney ||
-      (file.mimeType && (
-        file.mimeType.toLowerCase().includes('vnd.google-apps.document') ||
-        file.mimeType.toLowerCase().includes('wordprocessingml') ||
-        file.mimeType.toLowerCase().includes('msword') ||
-        file.mimeType.toLowerCase().includes('gdoc') ||
-        file.mimeType.toLowerCase().includes('text/plain')
-      )) ||
-      nameLower.endsWith('.gdoc') ||
-      nameLower.endsWith('.docx') ||
-      nameLower.endsWith('.doc') ||
-      nameLower.endsWith('.txt') ||
-      nameLower.endsWith('.md') ||
-      nameLower.endsWith('.markdown') ||
-      nameLower.includes('suppliers') ||
-      nameLower.includes('proposal') ||
-      nameLower.includes('report') ||
-      nameLower.includes('contract') ||
-      nameLower.includes('document')
+    !isExplicitDoc && (
+      typeLower === 'slide' ||
+      nameLower.endsWith('.gslides') ||
+      nameLower.endsWith('.pptx') ||
+      nameLower.endsWith('.ppt') ||
+      mimeLower.includes('vnd.google-apps.presentation') ||
+      mimeLower.includes('officedocument.presentationml') ||
+      mimeLower.includes('ms-powerpoint') ||
+      mimeLower.includes('presentation') ||
+      (file.isProactiveDraft && (typeLower === 'slide' || nameLower.endsWith('.gslides'))) ||
+      nameLower.includes('presentation')
     );
 
-  const isDoc = 
-    isGoogleDoc ||
-    (!isGoogleSlide && !isGoogleSheet && (
-      file.type === 'doc' ||
-      file.taskType === 'doc' ||
-      file.createdFromComposer ||
-      file.isDocJourney ||
-      nameLower.endsWith('.doc') || 
-      nameLower.endsWith('.docx') || 
-      nameLower.endsWith('.gdoc') ||
-      nameLower.endsWith('.md') ||
-      nameLower.endsWith('.markdown') ||
-      nameLower.endsWith('.txt') ||
-      (file.mimeType && (
-        file.mimeType.toLowerCase().includes('document') || 
-        file.mimeType.toLowerCase().includes('gdoc')
-      )) ||
-      nameLower.includes('proposal') ||
-      nameLower.includes('doc')
-    ));
+  const isGoogleSheet = 
+    !isExplicitDoc &&
+    !isGoogleSlide && (
+      typeLower === 'sheet' ||
+      nameLower.endsWith('.gsheet') ||
+      nameLower.endsWith('.xlsx') ||
+      nameLower.endsWith('.xls') ||
+      nameLower.endsWith('.csv') ||
+      mimeLower.includes('vnd.google-apps.spreadsheet') ||
+      mimeLower.includes('officedocument.spreadsheetml') ||
+      mimeLower.includes('ms-excel') ||
+      mimeLower.includes('spreadsheet') ||
+      mimeLower.includes('csv') ||
+      ((nameLower.includes('spend') || nameLower.includes('inventory')) && !nameLower.includes('doc') && !nameLower.includes('report'))
+    );
 
-  const isSlide = isGoogleSlide || nameLower.includes('presentation') || file.type === 'slide' || file.taskType === 'slide';
+  const isGoogleDoc = 
+    isExplicitDoc || (
+      !isGoogleSlide && 
+      !isGoogleSheet && 
+      typeLower !== 'email' &&
+      !mimeLower.includes('message/rfc822') &&
+      !mimeLower.includes('email')
+    );
+
+  const isDoc = isGoogleDoc;
+  const isSlide = isGoogleSlide;
   
-  const isNativeGoogleFile = isGoogleDoc || isGoogleSlide || isSlide || isGoogleSheet;
+  const isNativeGoogleFile = isGoogleDoc || isGoogleSlide || isGoogleSheet;
   
   const mode = propMode !== undefined ? propMode : (isNativeGoogleFile ? 'preview' : internalMode);
   const setMode = propMode !== undefined || isNativeGoogleFile ? () => {} : setInternalMode;
