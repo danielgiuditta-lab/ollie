@@ -126,7 +126,8 @@ export function CanvasTopBar({
     // Determine Editor type and safe link URL
     let editorName = 'Docs';
     let url = 'https://docs.google.com/document';
-    const driveId = file.driveId || (file.id && !String(file.id).includes('copied') && !String(file.id).includes('sandbox') && !String(file.id).includes('suggested') && !String(file.id).includes('uploaded') && !String(file.id).includes('created-') && !String(file.id).includes('ingested-') ? file.id : null);
+    const rawDriveId = (file.driveId || file.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-|proactive-doc-|proactive-slide-|proactive-sheet-|proactive-)+/, '').replace(/(-preview)+$/, '');
+    const driveId = (rawDriveId && rawDriveId.length > 5 && !rawDriveId.includes('local') && !rawDriveId.includes('mock') && !rawDriveId.includes('space') && !rawDriveId.includes('workspace')) ? rawDriveId : null;
 
     if (isSheet) {
       editorName = 'Sheets';

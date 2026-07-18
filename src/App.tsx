@@ -3044,6 +3044,24 @@ export default function App() {
     else if (rawType === 'sheet') fileType = 'sheet';
     else if (rawType === 'email') fileType = 'email';
     else if (
+      task.sourceName?.endsWith('.gslides') ||
+      task.sourceName?.endsWith('.pptx') ||
+      task.filesToLoad?.[0]?.name?.endsWith('.gslides') ||
+      task.sourceMimeType?.includes('presentation') ||
+      task.sourceMimeType?.includes('slide') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('presentation') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('slide')
+    ) {
+      fileType = 'slide';
+    } else if (
+      task.sourceName?.endsWith('.gsheet') ||
+      task.sourceName?.endsWith('.csv') ||
+      task.filesToLoad?.[0]?.name?.endsWith('.gsheet') ||
+      task.sourceMimeType?.includes('spreadsheet') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('spreadsheet')
+    ) {
+      fileType = 'sheet';
+    } else if (
       task.sourceMimeType?.includes('document') ||
       task.sourceMimeType?.includes('text') ||
       task.filesToLoad?.[0]?.mimeType?.includes('document') ||
@@ -3054,23 +3072,6 @@ export default function App() {
       task.filesToLoad?.[0]?.name?.endsWith('.gdoc')
     ) {
       fileType = 'doc';
-    } else if (
-      task.sourceMimeType?.includes('presentation') ||
-      task.sourceMimeType?.includes('slide') ||
-      task.filesToLoad?.[0]?.mimeType?.includes('presentation') ||
-      task.filesToLoad?.[0]?.mimeType?.includes('slide') ||
-      task.sourceName?.endsWith('.gslides') ||
-      task.sourceName?.endsWith('.pptx') ||
-      task.filesToLoad?.[0]?.name?.endsWith('.gslides')
-    ) {
-      fileType = 'slide';
-    } else if (
-      task.sourceMimeType?.includes('spreadsheet') ||
-      task.filesToLoad?.[0]?.mimeType?.includes('spreadsheet') ||
-      task.sourceName?.endsWith('.csv') ||
-      task.sourceName?.endsWith('.gsheet')
-    ) {
-      fileType = 'sheet';
     } else if (
       task.sourceMimeType?.includes('email') ||
       task.sourceName?.toLowerCase().startsWith('email') ||
@@ -3365,6 +3366,24 @@ export default function App() {
     else if (rawType === 'sheet') fileType = 'sheet';
     else if (rawType === 'email') fileType = 'email';
     else if (
+      task.sourceName?.endsWith('.gslides') ||
+      task.sourceName?.endsWith('.pptx') ||
+      task.filesToLoad?.[0]?.name?.endsWith('.gslides') ||
+      task.sourceMimeType?.includes('presentation') ||
+      task.sourceMimeType?.includes('slide') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('presentation') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('slide')
+    ) {
+      fileType = 'slide';
+    } else if (
+      task.sourceName?.endsWith('.gsheet') ||
+      task.sourceName?.endsWith('.csv') ||
+      task.filesToLoad?.[0]?.name?.endsWith('.gsheet') ||
+      task.sourceMimeType?.includes('spreadsheet') ||
+      task.filesToLoad?.[0]?.mimeType?.includes('spreadsheet')
+    ) {
+      fileType = 'sheet';
+    } else if (
       task.sourceMimeType?.includes('document') ||
       task.sourceMimeType?.includes('text') ||
       task.filesToLoad?.[0]?.mimeType?.includes('document') ||
@@ -3375,23 +3394,6 @@ export default function App() {
       task.filesToLoad?.[0]?.name?.endsWith('.gdoc')
     ) {
       fileType = 'doc';
-    } else if (
-      task.sourceMimeType?.includes('presentation') ||
-      task.sourceMimeType?.includes('slide') ||
-      task.filesToLoad?.[0]?.mimeType?.includes('presentation') ||
-      task.filesToLoad?.[0]?.mimeType?.includes('slide') ||
-      task.sourceName?.endsWith('.gslides') ||
-      task.sourceName?.endsWith('.pptx') ||
-      task.filesToLoad?.[0]?.name?.endsWith('.gslides')
-    ) {
-      fileType = 'slide';
-    } else if (
-      task.sourceMimeType?.includes('spreadsheet') ||
-      task.filesToLoad?.[0]?.mimeType?.includes('spreadsheet') ||
-      task.sourceName?.endsWith('.csv') ||
-      task.sourceName?.endsWith('.gsheet')
-    ) {
-      fileType = 'sheet';
     } else if (
       task.sourceMimeType?.includes('email') ||
       task.sourceName?.toLowerCase().startsWith('email') ||
@@ -5801,32 +5803,56 @@ export default function App() {
 
   const handleOpenInDrive = async (file: any) => {
     if (!file) return;
-    const matchingIngested = ingestedFiles.find(f => f.filename === file.name);
-    let driveId = file.driveId || (matchingIngested ? matchingIngested.id : (isValidDriveId(file.id) ? file.id : null));
-    if (!isValidDriveId(driveId)) {
-      driveId = null;
-    }
+
+    const getCleanDriveId = (id: any) => {
+      if (!id || typeof id !== 'string') return null;
+      const cleaned = id.replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-|proactive-doc-|proactive-slide-|proactive-sheet-|proactive-email-|proactive-)+/, '').replace(/(-preview)+$/, '');
+      if (cleaned.startsWith('mock-') || cleaned.startsWith('local-') || cleaned.startsWith('space-') || cleaned.startsWith('workspace-')) {
+        return null;
+      }
+      return cleaned.length >= 8 ? cleaned : null;
+    };
+
+    const matchingIngested = ingestedFiles.find(f => f.filename === file.name || f.id === file.id || f.id === file.driveId);
+    const matchingDrive = driveFiles.find(f => f.id === file.driveId || f.id === file.id || (f.name && f.name.toLowerCase() === (file.name || '').toLowerCase()));
+
+    let driveId = getCleanDriveId(file.driveId) || 
+                  getCleanDriveId(file.id) || 
+                  (matchingIngested ? getCleanDriveId(matchingIngested.id) : null) ||
+                  (matchingDrive ? getCleanDriveId(matchingDrive.id) : null);
 
     const nameLower = file.name?.toLowerCase() || '';
-    const mimeLower = file.mimeType?.toLowerCase() || (matchingIngested ? matchingIngested.mimeType?.toLowerCase() : '') || '';
+    const typeLower = (file.type || file.taskType || '').toLowerCase();
+    const mimeLower = file.mimeType?.toLowerCase() || (matchingIngested ? matchingIngested.mimeType?.toLowerCase() : '') || (matchingDrive ? matchingDrive.mimeType?.toLowerCase() : '') || '';
+
+    const isEmail = typeLower === 'email' || mimeLower.includes('email') || mimeLower.includes('message/rfc822') || nameLower.startsWith('email') || nameLower.includes('gmail');
+    const isSheet = !isEmail && (mimeLower.includes('spreadsheet') || nameLower.endsWith('.csv') || nameLower.endsWith('.xlsx') || nameLower.endsWith('.gsheet') || typeLower === 'sheet');
+    const isSlide = !isEmail && !isSheet && (mimeLower.includes('presentation') || nameLower.endsWith('.gslides') || nameLower.endsWith('.pptx') || typeLower === 'slide');
+
     let editorBaseUrl = 'https://docs.google.com/document';
-    if (mimeLower.includes('spreadsheet') || nameLower.endsWith('.csv') || nameLower.endsWith('.xlsx') || nameLower.endsWith('.gsheet')) {
+    if (isEmail) {
+      window.open('https://mail.google.com', '_blank');
+      return;
+    } else if (isSheet) {
       editorBaseUrl = 'https://docs.google.com/spreadsheets';
-    } else if (mimeLower.includes('presentation') || nameLower.endsWith('.gslides') || nameLower.endsWith('.pptx')) {
+    } else if (isSlide) {
       editorBaseUrl = 'https://docs.google.com/presentation';
     }
 
     if (accessToken) {
       try {
-        const targetFolder = isValidDriveId(activeSpaceId) ? activeSpaceId : 'root';
-        console.log(`[Open in Drive] Syncing latest content of ${file.name} to Drive (folder: ${targetFolder}) prior to opening...`);
-        delete lastSavedContentsRef.current[file.name.toLowerCase()];
-        await autoSaveToDrive([file], targetFolder);
+        if (!driveId) {
+          const targetFolder = isValidDriveId(activeSpaceId) ? activeSpaceId : 'root';
+          console.log(`[Open in Drive] Syncing latest content of ${file.name} to Drive (folder: ${targetFolder}) prior to opening...`);
+          delete lastSavedContentsRef.current[file.name.toLowerCase()];
+          await autoSaveToDrive([file], targetFolder);
+          
+          const updatedFile = sandboxFiles.find(f => f.name.toLowerCase() === file.name.toLowerCase()) || file;
+          driveId = getCleanDriveId(updatedFile.driveId) || getCleanDriveId(file.driveId);
+        }
         
-        const updatedFile = sandboxFiles.find(f => f.name.toLowerCase() === file.name.toLowerCase()) || file;
-        const newDriveId = isValidDriveId(updatedFile.driveId) ? updatedFile.driveId : (isValidDriveId(file.driveId) ? file.driveId : driveId);
-        if (newDriveId) {
-          window.open(`${editorBaseUrl}/d/${newDriveId}/edit`, '_blank');
+        if (driveId) {
+          window.open(`${editorBaseUrl}/d/${driveId}/edit`, '_blank');
         } else {
           window.open(editorBaseUrl, '_blank');
         }

@@ -322,8 +322,8 @@ export function CanvasHeader({
               if (onOpenInDrive) {
                 onOpenInDrive(selectedFile);
               } else {
-                const slideDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
-                const targetUrl = (slideDriveId && slideDriveId.length > 5 && !slideDriveId.includes('local') && !slideDriveId.includes('mock')) 
+                const slideDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-|proactive-doc-|proactive-slide-|proactive-sheet-|proactive-)+/, '').replace(/(-preview)+$/, '');
+                const targetUrl = (slideDriveId && slideDriveId.length > 5 && !slideDriveId.includes('local') && !slideDriveId.includes('mock') && !slideDriveId.includes('space') && !slideDriveId.includes('workspace')) 
                   ? `https://docs.google.com/presentation/d/${slideDriveId}/edit` 
                   : 'https://docs.google.com/presentation';
                 window.open(targetUrl, '_blank');
@@ -343,8 +343,8 @@ export function CanvasHeader({
               if (onOpenInDrive) {
                 onOpenInDrive(selectedFile);
               } else {
-                const docDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, '').replace(/(-preview)+$/, '');
-                const targetUrl = (docDriveId && docDriveId.length > 5 && !docDriveId.includes('local') && !docDriveId.includes('mock')) 
+                const docDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-|proactive-doc-|proactive-slide-|proactive-sheet-|proactive-)+/, '').replace(/(-preview)+$/, '');
+                const targetUrl = (docDriveId && docDriveId.length > 5 && !docDriveId.includes('local') && !docDriveId.includes('mock') && !docDriveId.includes('space') && !docDriveId.includes('workspace')) 
                   ? `https://docs.google.com/document/d/${docDriveId}/edit` 
                   : 'https://docs.google.com/document';
                 window.open(targetUrl, '_blank');
@@ -354,6 +354,27 @@ export function CanvasHeader({
             title="Open in Google Docs"
           >
             <span>Open in Docs</span>
+          </button>
+        )}
+
+        {/* Open in Sheets button */}
+        {selectedFile && isSheet && (
+          <button
+            onClick={() => {
+              if (onOpenInDrive) {
+                onOpenInDrive(selectedFile);
+              } else {
+                const sheetDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-|proactive-doc-|proactive-slide-|proactive-sheet-|proactive-)+/, '').replace(/(-preview)+$/, '');
+                const targetUrl = (sheetDriveId && sheetDriveId.length > 5 && !sheetDriveId.includes('local') && !sheetDriveId.includes('mock') && !sheetDriveId.includes('space') && !sheetDriveId.includes('workspace')) 
+                  ? `https://docs.google.com/spreadsheets/d/${sheetDriveId}/edit` 
+                  : 'https://docs.google.com/spreadsheets';
+                window.open(targetUrl, '_blank');
+              }
+            }}
+            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
+            title="Open in Google Sheets"
+          >
+            <span>Open in Sheets</span>
           </button>
         )}
 

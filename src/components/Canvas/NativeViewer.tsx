@@ -376,39 +376,20 @@ export function NativeViewer({
   const typeLower = (file.type || file.taskType || '').toLowerCase();
   const mimeLower = (file.mimeType || '').toLowerCase();
 
-  const isExplicitDoc = 
-    typeLower === 'doc' ||
-    file.createdFromComposer ||
-    file.isDocJourney ||
-    nameLower.endsWith('.gdoc') ||
-    nameLower.endsWith('.docx') ||
-    nameLower.endsWith('.doc') ||
-    nameLower.endsWith('.txt') ||
-    nameLower.endsWith('.md') ||
-    nameLower.endsWith('.markdown') ||
-    mimeLower.includes('vnd.google-apps.document') ||
-    mimeLower.includes('wordprocessingml') ||
-    mimeLower.includes('msword') ||
-    mimeLower.includes('gdoc') ||
-    mimeLower.includes('text/plain');
+  const isExplicitSlide = 
+    typeLower === 'slide' ||
+    file.directSlideView === true ||
+    nameLower.endsWith('.gslides') ||
+    nameLower.endsWith('.pptx') ||
+    nameLower.endsWith('.ppt') ||
+    mimeLower.includes('vnd.google-apps.presentation') ||
+    mimeLower.includes('officedocument.presentationml') ||
+    mimeLower.includes('ms-powerpoint') ||
+    mimeLower.includes('gslides') ||
+    (file.isProactiveDraft && (typeLower === 'slide' || nameLower.endsWith('.gslides')));
 
-  const isGoogleSlide = 
-    !isExplicitDoc && (
-      typeLower === 'slide' ||
-      nameLower.endsWith('.gslides') ||
-      nameLower.endsWith('.pptx') ||
-      nameLower.endsWith('.ppt') ||
-      mimeLower.includes('vnd.google-apps.presentation') ||
-      mimeLower.includes('officedocument.presentationml') ||
-      mimeLower.includes('ms-powerpoint') ||
-      mimeLower.includes('presentation') ||
-      (file.isProactiveDraft && (typeLower === 'slide' || nameLower.endsWith('.gslides'))) ||
-      nameLower.includes('presentation')
-    );
-
-  const isGoogleSheet = 
-    !isExplicitDoc &&
-    !isGoogleSlide && (
+  const isExplicitSheet = 
+    !isExplicitSlide && (
       typeLower === 'sheet' ||
       nameLower.endsWith('.gsheet') ||
       nameLower.endsWith('.xlsx') ||
@@ -417,22 +398,60 @@ export function NativeViewer({
       mimeLower.includes('vnd.google-apps.spreadsheet') ||
       mimeLower.includes('officedocument.spreadsheetml') ||
       mimeLower.includes('ms-excel') ||
-      mimeLower.includes('spreadsheet') ||
-      mimeLower.includes('csv') ||
-      ((nameLower.includes('spend') || nameLower.includes('inventory')) && !nameLower.includes('doc') && !nameLower.includes('report'))
+      mimeLower.includes('gsheet')
+    );
+
+  const isExplicitDoc = 
+    !isExplicitSlide &&
+    !isExplicitSheet && (
+      typeLower === 'doc' ||
+      file.createdFromComposer ||
+      file.isDocJourney ||
+      nameLower.endsWith('.gdoc') ||
+      nameLower.endsWith('.docx') ||
+      nameLower.endsWith('.doc') ||
+      nameLower.endsWith('.txt') ||
+      nameLower.endsWith('.md') ||
+      nameLower.endsWith('.markdown') ||
+      mimeLower.includes('vnd.google-apps.document') ||
+      mimeLower.includes('wordprocessingml') ||
+      mimeLower.includes('msword') ||
+      mimeLower.includes('gdoc') ||
+      (mimeLower.includes('text/plain') && !nameLower.endsWith('.gslides') && !nameLower.endsWith('.pptx') && !nameLower.endsWith('.gsheet') && !nameLower.endsWith('.csv'))
+    );
+
+  const isGoogleSlide = 
+    isExplicitSlide || (
+      !isExplicitDoc &&
+      !isExplicitSheet && (
+        mimeLower.includes('presentation') ||
+        nameLower.includes('presentation')
+      )
+    );
+
+  const isGoogleSheet = 
+    isExplicitSheet || (
+      !isExplicitDoc &&
+      !isGoogleSlide && (
+        mimeLower.includes('spreadsheet') ||
+        mimeLower.includes('excel') ||
+        ((nameLower.includes('spend') || nameLower.includes('inventory')) && !nameLower.includes('doc') && !nameLower.includes('report'))
+      )
     );
 
   const isGoogleDoc = 
-    isExplicitDoc || (
-      !isGoogleSlide && 
-      !isGoogleSheet && 
-      typeLower !== 'email' &&
-      !mimeLower.includes('message/rfc822') &&
-      !mimeLower.includes('email')
+    !isGoogleSlide &&
+    !isGoogleSheet && (
+      isExplicitDoc || (
+        typeLower !== 'email' &&
+        !mimeLower.includes('message/rfc822') &&
+        !mimeLower.includes('email')
+      )
     );
 
   const isDoc = isGoogleDoc;
   const isSlide = isGoogleSlide;
+  const isSheet = isGoogleSheet;
   
   const isNativeGoogleFile = isGoogleDoc || isGoogleSlide || isGoogleSheet;
   
