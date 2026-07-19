@@ -141,7 +141,7 @@ export function TheatreView({
     </div>
   );
 
-  const isCurrentSignedOff = activeTask ? (activeTask.status === 'done' || completedTaskIds.has(activeTask.id)) : false;
+  const isCurrentSignedOff = activeTask ? completedTaskIds.has(activeTask.id) : false;
 
   const canvasTitleText = activeTask ? (
     isCurrentSignedOff 
@@ -201,6 +201,16 @@ export function TheatreView({
   const handleSteerSubmit = (val: string) => {
     if (!val.trim()) return;
 
+    if (activeTask) {
+      const nextCompleted = new Set(completedTaskIds);
+      nextCompleted.add(activeTask.id);
+      setCompletedTaskIds(nextCompleted);
+
+      if (onUpdateTaskStatus) {
+        onUpdateTaskStatus(activeTask.id, 'done');
+      }
+    }
+
     const fullMsg = activeTask 
       ? `Regarding task "${activeTask.title || activeTask.description}": ${val}`
       : val;
@@ -208,6 +218,11 @@ export function TheatreView({
     onSendMessage(fullMsg);
     if (setActiveSidebar) {
       setActiveSidebar('gemini');
+    }
+
+    // Advance to next task if available
+    if (activeTask && activeIndex < todoItems.length - 1) {
+      setActiveIndex(prev => prev + 1);
     }
   };
 
@@ -334,7 +349,7 @@ export function TheatreView({
 
   const activeFileObject = getTaskFileObject(activeTask);
 
-  const hasAnyDone = todoItems.some(t => t.status === 'done' || completedTaskIds.has(t.id));
+  const hasAnyDone = todoItems.some(t => completedTaskIds.has(t.id));
 
   return (
     <div className="dark fixed inset-0 z-50 bg-[#141517] text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
@@ -385,7 +400,7 @@ export function TheatreView({
                 {startedTasks.map((item) => {
                   const itemIndex = todoItems.findIndex(t => t.id === item.id);
                   const isSelected = itemIndex === activeIndex;
-                  const isSignedOff = item.status === 'done' || completedTaskIds.has(item.id);
+                  const isSignedOff = completedTaskIds.has(item.id);
                   return (
                     <TheatreTaskCell
                       key={item.id}
@@ -412,7 +427,7 @@ export function TheatreView({
                 {fyiTasks.map((item) => {
                   const itemIndex = todoItems.findIndex(t => t.id === item.id);
                   const isSelected = itemIndex === activeIndex;
-                  const isSignedOff = item.status === 'done' || completedTaskIds.has(item.id);
+                  const isSignedOff = completedTaskIds.has(item.id);
                   return (
                     <TheatreTaskCell
                       key={item.id}

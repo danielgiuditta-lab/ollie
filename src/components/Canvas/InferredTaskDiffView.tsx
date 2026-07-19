@@ -4,6 +4,7 @@ interface InferredTaskDiffViewProps {
   file: any;
   theme?: 'light' | 'dark';
   className?: string;
+  hideFooterText?: boolean;
 }
 
 export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
@@ -386,7 +387,7 @@ const DocCard = ({
   );
 };
 
-export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file, theme = 'light', className }) => {
+export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file, theme = 'light', className, hideFooterText = false }) => {
   const isDark = theme === 'dark';
 
   const task = file?.task || file || {};
@@ -448,17 +449,19 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
             Original
           </h2>
 
-          <div className="mb-4">
+          <div className={hideFooterText ? "mb-0" : "mb-4"}>
             <SlideCard markdown={col1Markdown} isDark={isDark} />
           </div>
 
-          <p 
-            className={`font-['Google_Sans_Text','Inter',sans-serif] text-[16px] leading-[24px] font-medium ${
-              isDark ? 'text-neutral-300' : 'text-[#3C4043]'
-            }`}
-          >
-            {col1Description}
-          </p>
+          {!hideFooterText && (
+            <p 
+              className={`font-['Google_Sans_Text','Inter',sans-serif] text-[16px] leading-[24px] font-medium ${
+                isDark ? 'text-neutral-300' : 'text-[#3C4043]'
+              }`}
+            >
+              {col1Description}
+            </p>
+          )}
         </div>
 
         {/* Column 2: Suggested Update */}
@@ -472,17 +475,19 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
             Suggested Update
           </h2>
 
-          <div className="mb-4">
+          <div className={hideFooterText ? "mb-0" : "mb-4"}>
             <SlideCard markdown={col2Markdown} isDark={isDark} />
           </div>
 
-          <p 
-            className={`font-['Google_Sans_Text','Inter',sans-serif] text-[16px] leading-[24px] font-medium ${
-              isDark ? 'text-neutral-300' : 'text-[#3C4043]'
-            }`}
-          >
-            {col2Description}
-          </p>
+          {!hideFooterText && (
+            <p 
+              className={`font-['Google_Sans_Text','Inter',sans-serif] text-[16px] leading-[24px] font-medium ${
+                isDark ? 'text-neutral-300' : 'text-[#3C4043]'
+              }`}
+            >
+              {col2Description}
+            </p>
+          )}
         </div>
 
       </div>
