@@ -593,6 +593,8 @@ export function HomeLanding({
         involvesMe: idx !== 3,
         hasPreview: isProactive,
         previewContent: item.description || "Consolidated details draft",
+        category: item.category,
+        type: item.type || (mimeType.includes('chat') ? 'chat' : 'doc'),
         filesToLoad: [
           {
             name: fileName,
@@ -629,6 +631,8 @@ export function HomeLanding({
             involvesMe: true,
             hasPreview: true,
             previewContent: `Proposed index structure for ${spaceName}`,
+            category: 'needs_input',
+            type: 'doc',
             filesToLoad: [
               {
                 name: 'index.html',
@@ -652,6 +656,8 @@ export function HomeLanding({
             involvesMe: true,
             hasPreview: false,
             previewContent: '',
+            category: 'needs_input',
+            type: 'slide',
             filesToLoad: []
           }
         ];
@@ -659,9 +665,14 @@ export function HomeLanding({
       }
     }
 
-    setTodoItems(finalTodos);
+    const approvalTasks = finalTodos.filter((t: any) => t.category === 'needs_approval' || t.type === 'chat');
+    const continueWorkingTasks = finalTodos.filter((t: any) => t.category === 'needs_input' || t.category === 'continue_working' || (t.type !== 'chat' && t.type !== 'fyi' && t.category !== 'needs_approval' && t.category !== 'fyi'));
+    const fyiTasks = finalTodos.filter((t: any) => t.type === 'fyi' || t.category === 'fyi');
+    const sortedTodos = [...approvalTasks, ...continueWorkingTasks, ...fyiTasks];
+
+    setTodoItems(sortedTodos);
     const spaceKey = activeSpaceId || 'home';
-    todoCacheRef.current[spaceKey] = finalTodos;
+    todoCacheRef.current[spaceKey] = sortedTodos;
   }, [digestData, activeSpaceId, projectName]);
 
   // Proactive background draft generation and simulation timer

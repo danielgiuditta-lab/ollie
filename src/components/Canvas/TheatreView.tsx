@@ -186,15 +186,24 @@ export function TheatreView({
     }),
   };
 
+  // Group tasks for Left List maintaining fixed section structure matching inferred task list
+  const approvalTasks = React.useMemo(() => todoItems.filter(t => t.category === 'needs_approval' || t.type === 'chat'), [todoItems]);
+  const continueWorkingTasks = React.useMemo(() => todoItems.filter(t => t.category === 'needs_input' || t.category === 'continue_working' || (t.type !== 'chat' && t.type !== 'fyi' && t.category !== 'needs_approval' && t.category !== 'fyi')), [todoItems]);
+  const fyiTasks = React.useMemo(() => todoItems.filter(t => t.type === 'fyi' || t.category === 'fyi'), [todoItems]);
+
+  const orderedTodoItems = React.useMemo(() => {
+    return [...approvalTasks, ...continueWorkingTasks, ...fyiTasks];
+  }, [approvalTasks, continueWorkingTasks, fyiTasks]);
+
   // Sync initial index if todoItems changes
   useEffect(() => {
-    if (initialIndex >= 0 && initialIndex < todoItems.length) {
+    if (initialIndex >= 0 && initialIndex < orderedTodoItems.length) {
       setActiveIndex(initialIndex);
       setSteerInput('');
     }
-  }, [initialIndex, todoItems.length]);
+  }, [initialIndex, orderedTodoItems.length]);
 
-  const activeTask = todoItems[activeIndex] || todoItems[0] || null;
+  const activeTask = orderedTodoItems[activeIndex] || orderedTodoItems[0] || null;
 
   const isChatReplyTask = Boolean(
     activeTask && (
@@ -370,11 +379,6 @@ export function TheatreView({
     }
   };
 
-  // Group tasks for Left List maintaining fixed section structure matching inferred task list
-  const continueWorkingTasks = todoItems.filter(t => t.category === 'needs_input' || t.category === 'continue_working' || (t.type !== 'chat' && t.type !== 'fyi' && t.category !== 'needs_approval' && t.category !== 'fyi'));
-  const approvalTasks = todoItems.filter(t => t.category === 'needs_approval' || t.type === 'chat');
-  const fyiTasks = todoItems.filter(t => t.type === 'fyi' || t.category === 'fyi');
-
   // Determine native tool button label
   const getNativeToolLabel = () => {
     if (!activeTask) return 'Open in Drive';
@@ -471,7 +475,7 @@ export function TheatreView({
 
   const activeFileObject = getTaskFileObject(activeTask);
 
-  const hasAnyDone = todoItems.some(t => completedTaskIds.has(t.id));
+  const hasAnyDone = orderedTodoItems.some(t => completedTaskIds.has(t.id));
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
@@ -500,7 +504,7 @@ export function TheatreView({
             </span>
             <ChevronRight size={18} className="text-neutral-500 shrink-0" />
             <span className="text-white font-medium">
-              Taskviewer <span className="text-neutral-400 font-normal">({todoItems.length > 0 ? activeIndex + 1 : 0} of {todoItems.length})</span>
+              Taskviewer <span className="text-neutral-400 font-normal">({orderedTodoItems.length > 0 ? activeIndex + 1 : 0} of {orderedTodoItems.length})</span>
             </span>
           </div>
         </div>
@@ -538,42 +542,15 @@ export function TheatreView({
               className="shrink-0 h-full overflow-hidden"
             >
               <div className="w-80 md:w-[380px] h-full bg-[#131314]/90 backdrop-blur-md rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] shadow-2xl border border-white/5">
-                {/* Continue working on... */}
-                {continueWorkingTasks.length > 0 && (
-                  <div className="flex flex-col">
-                    <h3 className="text-[20px] leading-[28px] font-normal text-[#E3E3E3] pt-2 mb-4 px-1">
-                      Continue working on...
-                    </h3>
-                    <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
-                      {continueWorkingTasks.map((item) => {
-                        const itemIndex = todoItems.findIndex(t => t.id === item.id);
-                        const isSelected = itemIndex === activeIndex;
-                        const isSignedOff = completedTaskIds.has(item.id);
-                        return (
-                          <TheatreTaskCell
-                            key={item.id}
-                            item={item}
-                            isSelected={isSelected}
-                            isSignedOff={isSignedOff}
-                            onClick={() => handleSelectIndex(itemIndex)}
-                            onOpenSource={handleOpenSourceChip}
-                            onToggleComplete={handleToggleComplete}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
                 {/* Needs your approval */}
                 {approvalTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${continueWorkingTasks.length > 0 ? 'pt-6' : 'pt-2'}`}>
+                    <h3 className="text-[20px] leading-[28px] font-normal text-[#E3E3E3] pt-2 mb-4 px-1">
                       Needs your approval
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
                       {approvalTasks.map((item) => {
-                        const itemIndex = todoItems.findIndex(t => t.id === item.id);
+                        const itemIndex = orderedTodoItems.findIndex(t => t.id === item.id);
                         const isSelected = itemIndex === activeIndex;
                         const isSignedOff = completedTaskIds.has(item.id);
                         return (
@@ -592,15 +569,42 @@ export function TheatreView({
                   </div>
                 )}
 
-                {/* FYI Tasks ("FYI") */}
+                {/* Continue working on... */}
+                {continueWorkingTasks.length > 0 && (
+                  <div className="flex flex-col">
+                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${approvalTasks.length > 0 ? 'pt-6' : 'pt-2'}`}>
+                      Continue working on...
+                    </h3>
+                    <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
+                      {continueWorkingTasks.map((item) => {
+                        const itemIndex = orderedTodoItems.findIndex(t => t.id === item.id);
+                        const isSelected = itemIndex === activeIndex;
+                        const isSignedOff = completedTaskIds.has(item.id);
+                        return (
+                          <TheatreTaskCell
+                            key={item.id}
+                            item={item}
+                            isSelected={isSelected}
+                            isSignedOff={isSignedOff}
+                            onClick={() => handleSelectIndex(itemIndex)}
+                            onOpenSource={handleOpenSourceChip}
+                            onToggleComplete={handleToggleComplete}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* FYI Tasks ("For your FYI") */}
                 {fyiTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${(continueWorkingTasks.length > 0 || approvalTasks.length > 0) ? 'pt-6' : 'pt-2'}`}>
-                      FYI
+                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${(approvalTasks.length > 0 || continueWorkingTasks.length > 0) ? 'pt-6' : 'pt-2'}`}>
+                      For your FYI
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
                       {fyiTasks.map((item) => {
-                        const itemIndex = todoItems.findIndex(t => t.id === item.id);
+                        const itemIndex = orderedTodoItems.findIndex(t => t.id === item.id);
                         const isSelected = itemIndex === activeIndex;
                         const isSignedOff = completedTaskIds.has(item.id);
                         return (

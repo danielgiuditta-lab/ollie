@@ -685,25 +685,6 @@ export function SpaceDashboard({
 
                           return (
                             <>
-                              {continueWorking.length > 0 && (
-                                <div className="flex flex-col gap-1">
-                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
-                                    Continue working on...
-                                  </span>
-                                  <div className="flex flex-col gap-[2px]">
-                                    {continueWorking.map((item) => (
-                                      <InferredTaskCard
-                                        key={item.id}
-                                        item={item}
-                                        getFileIcon={getFileIcon || (() => '')}
-                                        isNarrow={isNarrowDashboardCard}
-                                        onClick={() => handleItemClick(item)}
-                                      />
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
                               {needsApproval.length > 0 && (
                                 <div className="flex flex-col gap-1">
                                   <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
@@ -723,10 +704,29 @@ export function SpaceDashboard({
                                 </div>
                               )}
 
+                              {continueWorking.length > 0 && (
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
+                                    Continue working on...
+                                  </span>
+                                  <div className="flex flex-col gap-[2px]">
+                                    {continueWorking.map((item) => (
+                                      <InferredTaskCard
+                                        key={item.id}
+                                        item={item}
+                                        getFileIcon={getFileIcon || (() => '')}
+                                        isNarrow={isNarrowDashboardCard}
+                                        onClick={() => handleItemClick(item)}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
                               {fyiItems.length > 0 && (
                                 <div className="flex flex-col gap-1">
                                   <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
-                                    FYI
+                                    For your FYI
                                   </span>
                                   <div className="flex flex-col gap-[2px]">
                                     {fyiItems.map((item) => (
