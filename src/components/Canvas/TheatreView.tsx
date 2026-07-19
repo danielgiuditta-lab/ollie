@@ -3,18 +3,157 @@ import {
   Check, 
   ArrowLeft, 
   ArrowRight, 
-  ExternalLink, 
   X,
-  ChevronRight,
-  FileText,
-  Presentation,
-  Mail,
-  Calendar,
-  MessageSquare
+  ChevronRight
 } from 'lucide-react';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { Composer } from '../Chat/Composer';
+import { getFileIcon } from '../Shared/FileIcon';
+import { getAvatarForPerson } from '../../utils/personAvatars';
+
+interface TheatreTaskCellProps {
+  item: any;
+  isSelected: boolean;
+  onClick: () => void;
+  onOpenSource: (urlOrName?: string) => void;
+}
+
+function TheatreTaskCell({ item, isSelected, onClick, onOpenSource }: TheatreTaskCellProps) {
+  const [avatarFailed, setAvatarFailed] = useState(false);
+
+  const titleText = isSelected 
+    ? (item.titleDone || item.title || item.description)
+    : (item.title || item.titleDone || item.description);
+
+  const descText = isSelected
+    ? (item.descriptionDone || item.description || item.action || 'Task review and draft outline')
+    : (item.description || item.action || 'Task review');
+
+  const resolvedSourceName = item.sourceName || item.workspace || 'Google Drive';
+  const resolvedPersonName = item.personName || 'Maya Lin';
+  const resolvedAvatar = item.personAvatar || getAvatarForPerson(resolvedPersonName, Boolean(item.isReal || item.driveId || item.isOAuth));
+
+  const avatarElement = (!avatarFailed && resolvedAvatar) ? (
+    <img 
+      src={resolvedAvatar} 
+      alt={resolvedPersonName} 
+      className="w-4 h-4 rounded-full object-cover shrink-0"
+      onError={() => setAvatarFailed(true)}
+    />
+  ) : (
+    <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">
+      {resolvedPersonName.charAt(0).toUpperCase()}
+    </div>
+  );
+
+  if (!isSelected) {
+    // Collapsed State: Title + Subtitle + Source & Person Chips
+    return (
+      <div
+        onClick={onClick}
+        className="p-3 rounded-xl bg-[#1C1D20] border border-neutral-800/80 hover:bg-[#222428] hover:border-neutral-700 cursor-pointer transition-all duration-200 select-none flex flex-col gap-1.5 min-w-0"
+      >
+        <h4 className="text-[15px] font-medium font-['Google_Sans_Text','Inter',sans-serif] text-neutral-200 truncate leading-snug">
+          {titleText}
+        </h4>
+        <p className="text-[13px] font-normal font-['Google_Sans_Text','Inter',sans-serif] text-neutral-400 truncate leading-snug">
+          {descText}
+        </p>
+
+        {/* Source & Person Chips in Collapsed State */}
+        <div className="flex items-center gap-2 flex-wrap pt-0.5">
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenSource(resolvedSourceName);
+            }}
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#161719] hover:bg-[#2C2E33] border border-neutral-800 text-[11px] font-medium text-neutral-300 transition-colors"
+          >
+            {getFileIcon(resolvedSourceName, item.sourceMimeType || item.type)}
+            <span className="truncate max-w-[120px]">{resolvedSourceName}</span>
+          </div>
+
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenSource(resolvedPersonName);
+            }}
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#161719] hover:bg-[#2C2E33] border border-neutral-800 text-[11px] font-medium text-neutral-300 transition-colors"
+          >
+            {avatarElement}
+            <span className="truncate max-w-[100px]">{resolvedPersonName}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Expanded State: Full title, description, links, and source & person chips
+  return (
+    <div
+      onClick={onClick}
+      className="p-4 rounded-xl bg-[#24262B] border border-blue-500/80 ring-1 ring-blue-500/30 shadow-lg cursor-pointer transition-all duration-200 select-none flex flex-col gap-2.5 min-w-0 animate-in fade-in-50 duration-150"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <h4 className="text-[16px] leading-[24px] font-medium font-['Google_Sans_Text','Inter',sans-serif] text-white">
+          {titleText}
+        </h4>
+        {item.status === 'done' && (
+          <div className="w-5 h-5 rounded-full bg-emerald-950/60 border border-emerald-600/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+            <Check size={12} className="stroke-[2.5]" />
+          </div>
+        )}
+      </div>
+
+      <p className="text-[14px] leading-[20px] font-normal font-['Google_Sans_Text','Inter',sans-serif] text-neutral-300">
+        {descText}
+      </p>
+
+      {/* Render links for FYI tasks */}
+      {item.links && item.links.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mt-0.5" onClick={(e) => e.stopPropagation()}>
+          {item.links.map((link: any, idx: number) => (
+            <a
+              key={idx}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2.5 py-1 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-xs font-semibold transition-colors"
+            >
+              {link.label || 'Open Link'}
+            </a>
+          ))}
+        </div>
+      )}
+
+      {/* Context & Source Chips */}
+      <div className="flex items-center gap-2 flex-wrap pt-1">
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenSource(resolvedSourceName);
+          }}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/60 text-[11px] font-medium text-neutral-300 transition-colors"
+        >
+          {getFileIcon(resolvedSourceName, item.sourceMimeType || item.type)}
+          <span className="truncate max-w-[140px]">{resolvedSourceName}</span>
+        </div>
+
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenSource(resolvedPersonName);
+          }}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/60 text-[11px] font-medium text-neutral-300 transition-colors"
+        >
+          {avatarElement}
+          <span className="truncate max-w-[120px]">{resolvedPersonName}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface TheatreViewProps {
   todoItems: any[];
@@ -26,6 +165,7 @@ interface TheatreViewProps {
   userProfile?: any;
   accessToken?: string | null;
   theme?: 'light' | 'dark';
+  driveFiles?: any[];
 }
 
 export function TheatreView({
@@ -37,7 +177,8 @@ export function TheatreView({
   onUpdateTaskStatus,
   userProfile,
   accessToken,
-  theme = 'dark'
+  theme = 'dark',
+  driveFiles = []
 }: TheatreViewProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
@@ -157,6 +298,35 @@ export function TheatreView({
       };
     }
 
+    // Try matching drive file from driveFiles
+    let matchingDriveFile = null;
+    if (driveFiles && driveFiles.length > 0) {
+      const taskDriveId = task.driveId || task.fileId;
+      const taskNameLower = (task.sourceName || task.title || '').toLowerCase().trim();
+      matchingDriveFile = driveFiles.find((f: any) => {
+        if (taskDriveId && (f.id === taskDriveId || f.driveId === taskDriveId)) return true;
+        if (taskNameLower && f.name && (f.name.toLowerCase().includes(taskNameLower) || taskNameLower.includes(f.name.toLowerCase()))) return true;
+        return false;
+      });
+    }
+
+    if (matchingDriveFile) {
+      return {
+        ...matchingDriveFile,
+        id: matchingDriveFile.id || task.id,
+        name: matchingDriveFile.name || task.sourceName || task.title || 'Document',
+        title: task.title,
+        description: task.description,
+        content: matchingDriveFile.content || task.updatedMarkdown || task.description || '',
+        originalMarkdown: task.originalMarkdown,
+        updatedMarkdown: task.updatedMarkdown,
+        summaryOfChanges: task.summaryOfChanges,
+        commentText: task.commentText,
+        personName: task.personName,
+        personAvatar: task.personAvatar
+      };
+    }
+
     // Resolve file type based on mimeType / source text
     const textForMime = `${task.sourceName || ''} ${task.sourceMimeType || ''} ${task.type || ''} ${task.description || ''}`.toLowerCase();
     let resolvedMime = 'application/vnd.google-apps.document';
@@ -177,7 +347,7 @@ export function TheatreView({
       type: resolvedType,
       title: task.title,
       description: task.description,
-      content: task.updatedMarkdown || task.description || '',
+      content: task.updatedMarkdown || task.description || task.action || task.title || '',
       originalMarkdown: task.originalMarkdown,
       updatedMarkdown: task.updatedMarkdown,
       summaryOfChanges: task.summaryOfChanges,
@@ -209,9 +379,10 @@ export function TheatreView({
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleOpenSourceChip(activeTask?.sourceName || activeTask?.title)}
-            className="h-9 px-4 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white text-xs font-medium border border-neutral-700/60 flex items-center justify-center transition-all cursor-pointer shadow-xs"
+            className="h-9 px-4 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white text-xs font-medium border border-neutral-700/60 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
           >
-            {getNativeToolLabel()}
+            {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}
+            <span>{getNativeToolLabel()}</span>
           </button>
           <button
             onClick={onClose}
@@ -224,9 +395,9 @@ export function TheatreView({
       </div>
 
       {/* Main Split Container */}
-      <div className="flex-1 w-full min-h-0 flex gap-6 overflow-hidden pb-4">
+      <div className="flex-1 w-full min-h-0 flex gap-6 overflow-hidden">
         {/* Left Panel: Home Tasks Directory */}
-        <div className="w-80 md:w-96 shrink-0 flex flex-col gap-5 overflow-y-auto pr-2 select-text">
+        <div className="w-80 md:w-96 shrink-0 flex flex-col gap-5 overflow-y-auto pr-2 pb-4 select-text">
           {/* Active Tasks ("What I started...") */}
           {startedTasks.length > 0 && (
             <div className="flex flex-col gap-2">
@@ -236,56 +407,13 @@ export function TheatreView({
                   const itemIndex = todoItems.findIndex(t => t.id === item.id);
                   const isSelected = itemIndex === activeIndex;
                   return (
-                    <div
+                    <TheatreTaskCell
                       key={item.id}
+                      item={item}
+                      isSelected={isSelected}
                       onClick={() => setActiveIndex(itemIndex)}
-                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-2 ${
-                        isSelected 
-                          ? 'bg-[#24262B] border-blue-500/80 ring-1 ring-blue-500/30 shadow-lg' 
-                          : 'bg-[#1C1D20] border-neutral-800 hover:bg-[#222428] hover:border-neutral-700'
-                      }`}
-                    >
-                      <div className="text-xs font-semibold text-neutral-100 line-clamp-2 leading-snug">
-                        {item.title || item.titleDone || item.description}
-                      </div>
-
-                      <div className="text-[11px] text-neutral-400 line-clamp-2 leading-relaxed">
-                        {item.description || item.action || 'Task review and outline draft'}
-                      </div>
-
-                      {/* Metadata Chips */}
-                      <div className="flex items-center gap-2 flex-wrap pt-0.5">
-                        {item.personName && (
-                          <div 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenSourceChip(item.personName);
-                            }}
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/60 text-[10px] text-neutral-300 font-medium transition-colors"
-                          >
-                            {item.personAvatar ? (
-                              <img src={item.personAvatar} alt={item.personName} className="w-3.5 h-3.5 rounded-full object-cover" />
-                            ) : (
-                              <Mail size={11} className="text-blue-400" />
-                            )}
-                            <span className="line-clamp-1">{item.personName}</span>
-                          </div>
-                        )}
-
-                        {item.sourceName && (
-                          <div 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenSourceChip(item.sourceName);
-                            }}
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/60 text-[10px] text-neutral-300 font-medium transition-colors"
-                          >
-                            <Presentation size={11} className="text-amber-400" />
-                            <span className="line-clamp-1">{item.sourceName}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                      onOpenSource={handleOpenSourceChip}
+                    />
                   );
                 })}
               </div>
@@ -301,27 +429,13 @@ export function TheatreView({
                   const itemIndex = todoItems.findIndex(t => t.id === item.id);
                   const isSelected = itemIndex === activeIndex;
                   return (
-                    <div
+                    <TheatreTaskCell
                       key={item.id}
+                      item={item}
+                      isSelected={isSelected}
                       onClick={() => setActiveIndex(itemIndex)}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                        isSelected 
-                          ? 'bg-[#24262B] border-blue-500/80 shadow-md' 
-                          : 'bg-[#1C1D20] border-neutral-800/80 hover:bg-[#222428] hover:border-neutral-700'
-                      }`}
-                    >
-                      <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                        <div className="text-xs font-medium text-neutral-200 line-clamp-1">
-                          {item.titleDone || item.title || item.description}
-                        </div>
-                        <div className="text-[11px] text-neutral-400 line-clamp-1">
-                          {item.descriptionDone || item.description || 'Task completed'}
-                        </div>
-                      </div>
-                      <div className="w-5 h-5 rounded-full bg-emerald-950/60 border border-emerald-600/60 flex items-center justify-center text-emerald-400 shrink-0">
-                        <Check size={12} className="stroke-[2.5]" />
-                      </div>
-                    </div>
+                      onOpenSource={handleOpenSourceChip}
+                    />
                   );
                 })}
               </div>
@@ -337,22 +451,13 @@ export function TheatreView({
                   const itemIndex = todoItems.findIndex(t => t.id === item.id);
                   const isSelected = itemIndex === activeIndex;
                   return (
-                    <div
+                    <TheatreTaskCell
                       key={item.id}
+                      item={item}
+                      isSelected={isSelected}
                       onClick={() => setActiveIndex(itemIndex)}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-1 ${
-                        isSelected 
-                          ? 'bg-[#24262B] border-blue-500/80 shadow-md' 
-                          : 'bg-[#1C1D20] border-neutral-800/80 hover:bg-[#222428] hover:border-neutral-700'
-                      }`}
-                    >
-                      <div className="text-xs font-medium text-neutral-200 line-clamp-1">
-                        {item.title || item.description}
-                      </div>
-                      <div className="text-[11px] text-neutral-400 line-clamp-1">
-                        {item.description || item.action}
-                      </div>
-                    </div>
+                      onOpenSource={handleOpenSourceChip}
+                    />
                   );
                 })}
               </div>
@@ -360,85 +465,88 @@ export function TheatreView({
           )}
         </div>
 
-        {/* Right Center Canvas: Selected Task Target Artifact View */}
-        <div className="flex-1 h-full rounded-2xl overflow-hidden bg-[#18191B] border border-neutral-800 relative shadow-2xl flex flex-col">
-          {activeFileObject ? (
-            <div 
-              key={activeTask?.id || activeIndex}
-              className="w-full h-full animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col overflow-hidden"
+        {/* Right Area: Artifact View + Centered Controls Dock directly under it */}
+        <div className="flex-1 h-full min-w-0 flex flex-col gap-3 overflow-hidden pb-1">
+          {/* Selected Task Target Artifact View */}
+          <div className="flex-1 min-h-0 rounded-2xl overflow-hidden bg-[#18191B] border border-neutral-800 relative shadow-2xl flex flex-col">
+            {activeFileObject ? (
+              <div 
+                key={activeTask?.id || activeIndex}
+                className="w-full h-full animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col overflow-hidden"
+              >
+                {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
+                  <InferredTaskDiffView 
+                    file={activeFileObject}
+                    theme="dark"
+                  />
+                ) : (
+                  <NativeViewer
+                    file={activeFileObject}
+                    hideHeader={true}
+                    mode="preview"
+                    theme="dark"
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-neutral-500 text-sm font-medium">
+                No artifact preview available for this task.
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Controls Dock: Reusing Shared Bottom Composer, Centered Under Artifact */}
+          <div className="w-full shrink-0 flex items-center justify-center gap-3 pt-1 relative z-10">
+            {/* Previous Task Arrow Button */}
+            <button
+              onClick={handlePrev}
+              disabled={activeIndex === 0}
+              className="w-12 h-12 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
+              title="Previous task"
             >
-              {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
-                <InferredTaskDiffView 
-                  file={activeFileObject}
-                  theme="dark"
-                />
-              ) : (
-                <NativeViewer
-                  file={activeFileObject}
-                  hideHeader={true}
-                  mode="preview"
-                  theme="dark"
-                />
-              )}
+              <ArrowLeft size={20} />
+            </button>
+
+            {/* Reject / Decline Button matching InferredTaskCard style */}
+            <button
+              onClick={handleReject}
+              className="w-12 h-12 rounded-full bg-[#FCE8E6] dark:bg-red-950/40 hover:bg-[#FAD2CF] dark:hover:bg-red-900/60 text-[#C5221F] dark:text-red-400 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-md"
+              title="Decline"
+            >
+              <X size={24} className="stroke-[2.5]" />
+            </button>
+
+            {/* Center Steer Input using bottom layout Composer */}
+            <div className="w-96 md:w-[600px] max-w-full flex items-center">
+              <Composer
+                onSend={handleSteerSubmit}
+                disabled={false}
+                placeholder={activeTask?.type === 'slide' ? "Suggest an update to the slides..." : "Give agent a steer..."}
+                theme="dark"
+                layout="bottom"
+              />
             </div>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-neutral-500 text-sm font-medium">
-              No artifact preview available for this task.
-            </div>
-          )}
+
+            {/* Approve / Accept Button matching InferredTaskCard style */}
+            <button
+              onClick={handleApprove}
+              className="w-12 h-12 rounded-full bg-[#E6F4EA] dark:bg-green-950/40 hover:bg-[#CEEAD6] dark:hover:bg-green-900/60 text-[#137333] dark:text-green-400 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-md"
+              title="Accept"
+            >
+              <Check size={24} className="stroke-[2.5]" />
+            </button>
+
+            {/* Next Task Arrow Button */}
+            <button
+              onClick={handleNext}
+              disabled={activeIndex === todoItems.length - 1}
+              className="w-12 h-12 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
+              title="Next task"
+            >
+              <ArrowRight size={20} />
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Bottom Controls Dock: Reusing Shared Bottom Composer */}
-      <div className="w-full shrink-0 flex items-center justify-center gap-3 pt-2 pb-1 relative z-10">
-        {/* Previous Task Arrow Button */}
-        <button
-          onClick={handlePrev}
-          disabled={activeIndex === 0}
-          className="w-12 h-12 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
-          title="Previous task"
-        >
-          <ArrowLeft size={20} />
-        </button>
-
-        {/* Reject / Decline Button matching InferredTaskCard style */}
-        <button
-          onClick={handleReject}
-          className="w-12 h-12 rounded-full bg-[#FCE8E6] dark:bg-red-950/40 hover:bg-[#FAD2CF] dark:hover:bg-red-900/60 text-[#C5221F] dark:text-red-400 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-md"
-          title="Decline"
-        >
-          <X size={24} className="stroke-[2.5]" />
-        </button>
-
-        {/* Center Steer Input using bottom layout Composer */}
-        <div className="w-96 md:w-[600px] flex items-center">
-          <Composer
-            onSend={handleSteerSubmit}
-            disabled={false}
-            placeholder={activeTask?.type === 'slide' ? "Suggest an update to the slides..." : "Give agent a steer..."}
-            theme="dark"
-            layout="bottom"
-          />
-        </div>
-
-        {/* Approve / Accept Button matching InferredTaskCard style */}
-        <button
-          onClick={handleApprove}
-          className="w-12 h-12 rounded-full bg-[#E6F4EA] dark:bg-green-950/40 hover:bg-[#CEEAD6] dark:hover:bg-green-900/60 text-[#137333] dark:text-green-400 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-md"
-          title="Accept"
-        >
-          <Check size={24} className="stroke-[2.5]" />
-        </button>
-
-        {/* Next Task Arrow Button */}
-        <button
-          onClick={handleNext}
-          disabled={activeIndex === todoItems.length - 1}
-          className="w-12 h-12 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
-          title="Next task"
-        >
-          <ArrowRight size={20} />
-        </button>
       </div>
     </div>
   );

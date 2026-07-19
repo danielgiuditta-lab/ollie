@@ -952,7 +952,7 @@ export function NativeViewer({
           ? `https://docs.google.com/presentation/d/${slideDriveId}/preview?rm=minimal` 
           : (file.embedUrl || file.previewUrl || file.url);
 
-        if (nativeSlideUrl) {
+        if (isIframeViewer && nativeSlideUrl) {
           return (
             <div className="w-full h-full bg-white dark:bg-[#1E1F22] flex flex-col overflow-hidden relative select-none">
               {!hideHeader && (
@@ -1130,7 +1130,7 @@ export function NativeViewer({
           ? `https://docs.google.com/document/d/${docDriveId}/preview` 
           : (file.embedUrl || file.previewUrl || file.url);
 
-        if (nativeDocUrl) {
+        if (isIframeViewer && nativeDocUrl) {
           return (
             <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
               <iframe 
@@ -1151,7 +1151,7 @@ export function NativeViewer({
           ? `https://docs.google.com/spreadsheets/d/${sheetDriveId}/preview` 
           : (file.embedUrl || file.previewUrl || file.url);
 
-        if (nativeSheetUrl) {
+        if (isIframeViewer && nativeSheetUrl) {
           return (
             <div className="w-full h-full bg-white flex flex-col items-center justify-center overflow-hidden relative select-none">
               <iframe 
@@ -1314,11 +1314,12 @@ export function NativeViewer({
         );
       }
 
-      const lines = (file.content || '').split('\n');
-      let title = (file.name || 'Document').replace(/\.[a-zA-Z]+$/, '');
+      const rawContent = file.content || file.updatedMarkdown || file.description || file.action || file.title || '';
+      const lines = rawContent.split('\n');
+      let title = (file.name || file.title || 'Document').replace(/\.[a-zA-Z]+$/, '');
       title = title.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-      let author = '';
+      let author = file.personName || '';
       let contributors: string[] = [];
       let relatedFiles: string[] = [];
       const bodyParagraphs: string[] = [];
@@ -1354,9 +1355,14 @@ export function NativeViewer({
       });
 
       if (hideHeader) {
+        const isDark = theme === 'dark';
         return (
-          <div className="w-full h-full bg-white p-8 text-left leading-[1.65] text-[16px] text-2c3e50 font-sans overflow-y-auto select-text" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
-            <h1 className="text-3xl font-extrabold text-slate-850 tracking-tight mb-4 font-sans" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
+          <div className={`w-full h-full p-8 text-left leading-[1.65] text-[16px] font-sans overflow-y-auto select-text ${
+            isDark ? 'bg-[#18191B] text-slate-100' : 'bg-white text-[#2c3e50]'
+          }`} style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
+            <h1 className={`text-3xl font-extrabold tracking-tight mb-4 font-sans ${
+              isDark ? 'text-white' : 'text-slate-850'
+            }`} style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
               {title}
             </h1>
             {author && (
@@ -1364,7 +1370,9 @@ export function NativeViewer({
                 By {author}
               </div>
             )}
-            <div className="markdown-body prose max-w-none text-[16px] text-slate-700 space-y-4 font-sans" style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
+            <div className={`markdown-body prose max-w-none text-[16px] space-y-4 font-sans ${
+              isDark ? 'prose-invert text-slate-200' : 'text-slate-700'
+            }`} style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
               <ReactMarkdown>{bodyParagraphs.join('\n')}</ReactMarkdown>
             </div>
           </div>

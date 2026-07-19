@@ -7,6 +7,7 @@ import formsIcon from '../../assets/forms.png';
 import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
 import videoIcon from '../../assets/video.png';
+import commentsIcon from '../../assets/comments.svg';
 
 interface SourceChipProps {
   href: string;
@@ -19,7 +20,20 @@ export const getChipIcon = (fileName?: string, mimeType?: string) => {
   const nameLower = (fileName || '').toLowerCase();
   const mType = (mimeType || '').toLowerCase();
   
-  if (nameLower.endsWith('.html') || nameLower === 'index.html' || mType.includes('html')) {
+  if (
+    mType.includes('mail') || 
+    mType.includes('gmail') || 
+    mType.includes('email') || 
+    mType.includes('chat') ||
+    nameLower.includes('gmail') || 
+    nameLower.includes('email') || 
+    nameLower.includes('mail') || 
+    nameLower.includes('rsvp') ||
+    nameLower.includes('thread')
+  ) {
+    return commentsIcon;
+  }
+  if (nameLower.endsWith('.html') || nameLower === 'index.html' || mType.includes('html') || mType.includes('site')) {
     return htmlIcon;
   }
   if (nameLower.endsWith('.mp4') || nameLower.endsWith('.mov') || nameLower.endsWith('.webm') || mType.includes('video')) {
@@ -32,21 +46,28 @@ export const getChipIcon = (fileName?: string, mimeType?: string) => {
     nameLower.endsWith('.csv') || 
     nameLower.endsWith('.xls') || 
     nameLower.endsWith('.xlsx') || 
+    nameLower.endsWith('.gsheet') ||
     mType.includes('spreadsheet') ||
+    mType.includes('sheet') ||
     nameLower.includes('data') || 
     nameLower === 'suppliers' || 
     nameLower === 'fulfillment centers' ||
-    nameLower === 'supply chain analysis'
+    nameLower === 'supply chain analysis' ||
+    nameLower.includes('budget')
   ) {
     return sheetsIcon;
   }
   if (
     nameLower.endsWith('.ppt') || 
     nameLower.endsWith('.pptx') || 
+    nameLower.endsWith('.gslides') ||
     mType.includes('presentation') ||
+    mType.includes('slide') ||
     (nameLower.includes('proposal') && nameLower.includes('logistics')) ||
     nameLower.includes('slide') ||
-    nameLower.includes('pitch')
+    nameLower.includes('pitch') ||
+    nameLower.includes('keynote') ||
+    nameLower.includes('deck')
   ) {
     return slidesIcon;
   }

@@ -6,6 +6,7 @@ import formsIcon from '../../assets/forms.png';
 import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
 import videoIcon from '../../assets/video.png';
+import commentsIcon from '../../assets/comments.svg';
 
 interface FileIconProps {
   fileName?: string;
@@ -16,8 +17,9 @@ interface FileIconProps {
 
 export function getFileIcon(fileName: string = '', mimeType?: string, size: number = 18) {
   const nameLower = fileName.toLowerCase();
+  const mimeLower = (mimeType || '').toLowerCase();
   
-  if (mimeType && mimeType.includes('folder')) {
+  if (mimeLower.includes('folder')) {
     return (
       <span 
         className="material-symbols-rounded select-none text-[#444746] dark:text-[#C4C7C5] shrink-0 inline-flex items-center justify-center" 
@@ -28,77 +30,105 @@ export function getFileIcon(fileName: string = '', mimeType?: string, size: numb
     );
   }
 
+  // Gmail / Email / Chat / Calendar / Comments
   if (
-    nameLower.endsWith('.html') || nameLower === 'index.html' || nameLower.endsWith('/index.html') || nameLower.includes('custom tool') || nameLower.includes('kanban') || (mimeType && mimeType.includes('site'))
+    mimeLower.includes('mail') ||
+    mimeLower.includes('gmail') ||
+    mimeLower.includes('email') ||
+    mimeLower.includes('chat') ||
+    nameLower.includes('gmail') ||
+    nameLower.includes('email') ||
+    nameLower.includes('mail') ||
+    nameLower.includes('rsvp') ||
+    nameLower.includes('thread')
+  ) {
+    return <img src={commentsIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="mail icon" referrerPolicy="no-referrer" />;
+  }
+
+  // HTML / Sites / Kanban
+  if (
+    nameLower.endsWith('.html') || nameLower === 'index.html' || nameLower.endsWith('/index.html') || nameLower.includes('custom tool') || nameLower.includes('kanban') || mimeLower.includes('site') || mimeLower.includes('html')
   ) {
     return <img src={htmlIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="site icon" referrerPolicy="no-referrer" />;
   }
 
+  // Slides / Presentation
   if (
+    nameLower.endsWith('.ppt') || 
+    nameLower.endsWith('.pptx') || 
+    nameLower.endsWith('.gslides') ||
+    mimeLower.includes('presentation') ||
+    mimeLower.includes('slide') ||
+    (nameLower.includes('proposal') && nameLower.includes('logistics')) ||
+    nameLower.includes('slide') ||
+    nameLower.includes('pitch') ||
+    nameLower.includes('keynote') ||
+    nameLower.includes('deck')
+  ) {
+    return <img src={slidesIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="slides icon" referrerPolicy="no-referrer" />;
+  }
+
+  // Sheets / Spreadsheet
+  if (
+    nameLower.endsWith('.csv') || 
+    nameLower.endsWith('.xls') || 
+    nameLower.endsWith('.xlsx') || 
+    nameLower.endsWith('.gsheet') ||
+    mimeLower.includes('spreadsheet') ||
+    mimeLower.includes('sheet') ||
+    mimeLower.includes('excel') ||
+    nameLower.includes('data') || 
+    nameLower === 'suppliers' || 
+    nameLower === 'fulfillment centers' ||
+    nameLower === 'supply chain analysis' ||
+    nameLower.includes('budget')
+  ) {
+    return <img src={sheetsIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="sheets icon" referrerPolicy="no-referrer" />;
+  }
+
+  // Forms / Tasks / Roadmap
+  if (
+    nameLower.includes('form') ||
+    mimeLower.includes('form') ||
     nameLower.includes('inferred') ||
-    nameLower.includes('task') ||
     nameLower.includes('to do') ||
     nameLower.includes('roadmap') ||
-    (mimeType && mimeType.includes('inferred'))
+    mimeLower.includes('inferred')
   ) {
-    return <img src={formsIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="task icon" referrerPolicy="no-referrer" />;
+    return <img src={formsIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="forms icon" referrerPolicy="no-referrer" />;
   }
-  
+
+  // Docs / Text / PDF / Markdown / Essay
   if (
     nameLower.endsWith('.pdf') ||
     nameLower.endsWith('.md') || 
     nameLower.endsWith('.markdown') ||
-    (nameLower.includes('proposal') && !nameLower.includes('logistics') && !nameLower.includes('presentation')) || 
+    nameLower.endsWith('.gdoc') ||
     nameLower.endsWith('.doc') || 
     nameLower.endsWith('.docx') || 
     nameLower.endsWith('.txt') || 
-    (mimeType && (mimeType.includes('document') || mimeType.includes('pdf')))
+    mimeLower.includes('document') || 
+    mimeLower.includes('pdf') ||
+    nameLower.includes('essay') ||
+    nameLower.includes('proposal') ||
+    nameLower.includes('brief')
   ) {
     return <img src={docsIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="doc icon" referrerPolicy="no-referrer" />;
   }
 
+  // Video
   if (
     nameLower.endsWith('.mov') || 
     nameLower.endsWith('.mp4') || 
     nameLower.endsWith('.webm') || 
     nameLower.endsWith('.avi') || 
     nameLower.endsWith('.mkv') || 
-    (mimeType && mimeType.includes('video'))
+    mimeLower.includes('video')
   ) {
     return <img src={videoIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="video icon" referrerPolicy="no-referrer" />;
   }
-  
-  if (
-    nameLower.endsWith('.csv') || 
-    nameLower.endsWith('.xls') || 
-    nameLower.endsWith('.xlsx') || 
-    (mimeType && mimeType.includes('spreadsheet')) ||
-    nameLower.includes('data') || 
-    nameLower === 'suppliers' || 
-    nameLower === 'fulfillment centers' ||
-    nameLower === 'supply chain analysis'
-  ) {
-    return <img src={sheetsIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="sheets icon" referrerPolicy="no-referrer" />;
-  }
-  
-  if (
-    nameLower.endsWith('.ppt') || 
-    nameLower.endsWith('.pptx') || 
-    (mimeType && mimeType.includes('presentation')) ||
-    (nameLower.includes('proposal') && nameLower.includes('logistics')) ||
-    nameLower.includes('slide') ||
-    nameLower.includes('pitch')
-  ) {
-    return <img src={slidesIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="slides icon" referrerPolicy="no-referrer" />;
-  }
 
-  if (
-    nameLower.includes('form') ||
-    (mimeType && mimeType.includes('form'))
-  ) {
-    return <img src={formsIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="forms icon" referrerPolicy="no-referrer" />;
-  }
-
+  // Image
   if (
     nameLower.endsWith('.png') || 
     nameLower.endsWith('.jpg') || 
@@ -106,7 +136,7 @@ export function getFileIcon(fileName: string = '', mimeType?: string, size: numb
     nameLower.endsWith('.gif') || 
     nameLower.endsWith('.svg') || 
     nameLower.endsWith('.webp') || 
-    (mimeType && mimeType.includes('image'))
+    mimeLower.includes('image')
   ) {
     return <img src={imageIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="image icon" referrerPolicy="no-referrer" />;
   }

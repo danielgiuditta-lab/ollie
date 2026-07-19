@@ -23,8 +23,8 @@ Theatre Mode reuses the platform's core UI components (`<Composer layout="bottom
 │  │ [✓] Approved Task 2        │  │      │   (Matches canvas task click view)    │      │
 │  │ [i] Compliance Training    │  │      │                                       │      │
 │                                  │      └───────────────────────────────────────┘      │
-├──────────────────────────────────┴─────────────────────────────────────────────────────┤
-│      [◄]    [✕ (Decline)]   [<Composer layout="bottom" theme="dark" />] [✓ (Accept)] [►]│
+│                                  │  [◄] [✕ (Decline)] [<Composer />] [✓ (Accept)] [►]  │
+└──────────────────────────────────┴─────────────────────────────────────────────────────┘
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,11 +45,23 @@ Theatre Mode strictly leverages the application's standard design system compone
 
 ---
 
-## 3. Direct Task-to-Artifact Navigation Mechanics
+## 3. Direct Task-to-Artifact Navigation & Cell States
 
-1. **Left Directory (Home Tasks List)**:
+1. **Left Directory (Home Tasks Directory)**:
    - Displays all inferred proactive tasks available on the Home Dashboard.
-   - Clicking any task cell selects that task and highlights its item card.
+   - **Collapsed (Unselected) State**:
+     - Compact 2-line layout (`text-[15px]` title truncate, `text-[13px]` subtitle truncate).
+     - Uses exact typography matching the Home inferred task cards, in inverted color mode (`text-neutral-200` title, `text-neutral-400` subtitle on dark `bg-[#1C1D20]`).
+     - Hides context/source chips to maintain high density.
+   - **Expanded (Selected) State**:
+     - Expands in place to display **all context and sources**:
+       - Full title (`text-[16px] text-white font-medium`).
+       - Full description / summary (`text-[14px] text-neutral-300`).
+       - Source file capsule chips (e.g. `Brand Guidelines.gslides` with file icon).
+       - Requester / author avatar capsule chips.
+       - External links (for FYI tasks).
+       - Status badge (`Check` badge if completed).
+     - High-contrast selection outline (`bg-[#24262B] border-blue-500/80 ring-1 ring-blue-500/30 shadow-lg`).
 
 2. **Center Viewport (Resolved Task Artifact)**:
    - When a task cell is selected, the center canvas instantly resolves and displays **the exact artifact** associated with that task:

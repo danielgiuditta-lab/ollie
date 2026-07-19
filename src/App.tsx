@@ -6756,6 +6756,7 @@ export default function App() {
           userProfile={userProfile}
           accessToken={accessToken}
           theme={appTheme}
+          driveFiles={driveFiles}
         />
       )}
 
