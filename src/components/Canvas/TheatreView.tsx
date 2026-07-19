@@ -156,6 +156,25 @@ export function TheatreView({
   const [steerInput, setSteerInput] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isTaskListOpen, setIsTaskListOpen] = useState(false);
+  const [slideDirection, setSlideDirection] = useState(1);
+
+  const cardVariants = {
+    enter: (dir: number) => ({
+      y: dir > 0 ? '100%' : '-100%',
+      opacity: 0,
+      scale: 0.96,
+    }),
+    center: {
+      y: 0,
+      opacity: 1,
+      scale: 1,
+    },
+    exit: (dir: number) => ({
+      y: dir > 0 ? '-100%' : '100%',
+      opacity: 0,
+      scale: 0.96,
+    }),
+  };
 
   // Sync initial index if todoItems changes
   useEffect(() => {
@@ -203,6 +222,7 @@ export function TheatreView({
   // Handle task approval (Yes)
   const handleApprove = () => {
     if (!activeTask) return;
+    setSlideDirection(1);
     const nextCompleted = new Set(completedTaskIds);
     nextCompleted.add(activeTask.id);
     setCompletedTaskIds(nextCompleted);
@@ -221,6 +241,7 @@ export function TheatreView({
   // Handle task rejection (No)
   const handleReject = () => {
     if (!activeTask) return;
+    setSlideDirection(1);
     const nextCompleted = new Set(completedTaskIds);
     nextCompleted.add(activeTask.id);
     setCompletedTaskIds(nextCompleted);
@@ -237,19 +258,27 @@ export function TheatreView({
   };
 
   const handlePrev = () => {
+    setSlideDirection(-1);
     setActiveIndex(prev => Math.max(0, prev - 1));
     setSteerInput('');
   };
 
   const handleNext = () => {
+    setSlideDirection(1);
     setActiveIndex(prev => Math.min(todoItems.length - 1, prev + 1));
     setSteerInput('');
+  };
+
+  const handleSelectIndex = (newIndex: number) => {
+    setSlideDirection(newIndex > activeIndex ? 1 : -1);
+    setActiveIndex(newIndex);
   };
 
   // Handle steer submission
   const handleSteerSubmit = (val: string) => {
     if (!val.trim()) return;
 
+    setSlideDirection(1);
     if (activeTask) {
       const nextCompleted = new Set(completedTaskIds);
       nextCompleted.add(activeTask.id);
@@ -484,7 +513,7 @@ export function TheatreView({
                             item={item}
                             isSelected={isSelected}
                             isSignedOff={isSignedOff}
-                            onClick={() => setActiveIndex(itemIndex)}
+                            onClick={() => handleSelectIndex(itemIndex)}
                             onOpenSource={handleOpenSourceChip}
                             onToggleComplete={handleToggleComplete}
                           />
@@ -511,7 +540,7 @@ export function TheatreView({
                             item={item}
                             isSelected={isSelected}
                             isSignedOff={isSignedOff}
-                            onClick={() => setActiveIndex(itemIndex)}
+                            onClick={() => handleSelectIndex(itemIndex)}
                             onOpenSource={handleOpenSourceChip}
                             onToggleComplete={handleToggleComplete}
                           />
@@ -527,89 +556,103 @@ export function TheatreView({
 
         {/* Right Area: Artifact View + Centered Controls Dock directly under it */}
         <div className="flex-1 h-full min-w-0 flex flex-col gap-3 overflow-hidden pb-1">
-          {/* Selected Task Target Artifact View */}
-          <div className="flex-1 min-h-0 rounded-[24px] overflow-y-auto bg-[#131314]/90 backdrop-blur-md relative shadow-2xl flex flex-col p-8 select-text border border-white/5">
-            {/* Title, Metaline (capped at 2 lines), and Sources Unit (Max width 70%, 40px gap below) */}
-            {activeTask && (
-              <div className="w-full shrink-0 flex flex-col items-start max-w-[70%] mb-[40px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                {/* Title: 32px with tightened line spacing (leading-[38px]) */}
-                <h3 className="text-[32px] leading-[38px] font-normal text-white">
-                  {canvasTitleText}
-                </h3>
-
-                {/* Metaline: 20px with auto line height, capped at 2 lines */}
-                <p className="text-[20px] leading-normal font-normal text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
-                  {canvasMetaText}
-                </p>
-
-                {/* Sources below that */}
-                <div className="flex items-center gap-2 flex-wrap mt-4">
-                  {activePersonName && (
-                    <div 
-                      onClick={() => handleOpenSourceChip(activePersonName)}
-                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
-                    >
-                      {canvasAvatarElement}
-                      <span className="truncate max-w-[140px]">{activePersonName}</span>
-                    </div>
-                  )}
-
-                  {activeSourceName && (
-                    <div 
-                      onClick={() => handleOpenSourceChip(activeSourceName)}
-                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
-                    >
-                      {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                      <span className="truncate max-w-[160px]">{activeSourceName}</span>
-                    </div>
-                  )}
-
-                  {activeTask?.links && activeTask.links.map((link: any, idx: number) => (
-                    <a
-                      key={idx}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-[12px] font-normal transition-colors"
-                    >
-                      {link.label || 'Open Link'}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Artifacts in Diff View Filling Remaining Canvas Height */}
-            {activeFileObject ? (
-              <div 
+          {/* Selected Task Target Artifact View Container (overflow-hidden clips sliding cards) */}
+          <div className="flex-1 min-h-0 relative overflow-hidden">
+            <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
+              <motion.div
                 key={activeTask?.id || activeIndex}
-                className="w-full flex-1 min-h-0 animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col overflow-hidden"
+                custom={slideDirection}
+                variants={cardVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  y: { duration: 0.5, ease: [0.25, 1, 0.5, 1] },
+                  opacity: { duration: 0.45 },
+                  scale: { duration: 0.45 }
+                }}
+                className="w-full h-full rounded-[24px] overflow-y-auto bg-[#131314]/90 backdrop-blur-md shadow-2xl flex flex-col p-8 select-text border border-white/5 absolute inset-0"
               >
-                {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
-                  <InferredTaskDiffView 
-                    file={activeFileObject}
-                    theme="light"
-                    className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
-                    hideFooterText={true}
-                  />
-                ) : (
-                  <NativeViewer
-                    file={activeFileObject}
-                    hideHeader={true}
-                    mode="preview"
-                    theme="light"
-                  />
+                {/* Title, Metaline (capped at 2 lines), and Sources Unit (Max width 70%, 40px gap below) */}
+                {activeTask && (
+                  <div className="w-full shrink-0 flex flex-col items-start max-w-[70%] mb-[40px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                    {/* Title: 32px with tightened line spacing (leading-[38px]) */}
+                    <h3 className="text-[32px] leading-[38px] font-normal text-white">
+                      {canvasTitleText}
+                    </h3>
+
+                    {/* Metaline: 20px with auto line height, capped at 2 lines */}
+                    <p className="text-[20px] leading-normal font-normal text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
+                      {canvasMetaText}
+                    </p>
+
+                    {/* Sources below that */}
+                    <div className="flex items-center gap-2 flex-wrap mt-4">
+                      {activePersonName && (
+                        <div 
+                          onClick={() => handleOpenSourceChip(activePersonName)}
+                          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                        >
+                          {canvasAvatarElement}
+                          <span className="truncate max-w-[140px]">{activePersonName}</span>
+                        </div>
+                      )}
+
+                      {activeSourceName && (
+                        <div 
+                          onClick={() => handleOpenSourceChip(activeSourceName)}
+                          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                        >
+                          {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                          <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                        </div>
+                      )}
+
+                      {activeTask?.links && activeTask.links.map((link: any, idx: number) => (
+                        <a
+                          key={idx}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-[12px] font-normal transition-colors"
+                        >
+                          {link.label || 'Open Link'}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </div>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-neutral-500 text-sm font-medium">
-                No artifact preview available for this task.
-              </div>
-            )}
+
+                {/* Artifacts in Diff View Filling Remaining Canvas Height */}
+                {activeFileObject ? (
+                  <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+                    {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
+                      <InferredTaskDiffView 
+                        file={activeFileObject}
+                        theme="light"
+                        className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
+                        hideFooterText={true}
+                      />
+                    ) : (
+                      <NativeViewer
+                        file={activeFileObject}
+                        hideHeader={true}
+                        mode="preview"
+                        theme="light"
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-neutral-500 text-sm font-medium">
+                    No artifact preview available for this task.
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* Bottom Controls Dock with 8px gap */}
-          <div className="w-full shrink-0 flex items-center justify-center gap-2 pt-2 relative z-10">
+          {/* Bottom Controls Dock with 8px gap (z-20 to stay above sliding cards) */}
+          <div className="w-full shrink-0 flex items-center justify-center gap-2 pt-2 relative z-20">
             {/* Previous Task Arrow Button */}
             <button
               onClick={handlePrev}

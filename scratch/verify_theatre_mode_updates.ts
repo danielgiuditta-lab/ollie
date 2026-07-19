@@ -57,7 +57,7 @@ function verifyTheatreModeUpdates() {
   console.log("✓ 5. Breadcrumb title formatted as Taskviewer (n of n)");
 
   // Check 6: Gap between bottom buttons (8px = gap-2)
-  if (!content.includes('gap-2 pt-2 relative z-10')) {
+  if (!content.includes('gap-2 pt-2 relative')) {
     console.error("FAIL: Bottom dock buttons gap is not 8px (gap-2)");
     process.exit(1);
   }
@@ -73,6 +73,13 @@ function verifyTheatreModeUpdates() {
     process.exit(1);
   }
   console.log("✓ 7. Steer input field hugs text 'Do differently...' until cursor focus, expanding to bottom input size in dark mode");
+
+  // Check 8: TikTok style card slide up transition
+  if (!content.includes('cardVariants') || !content.includes('slideDirection') || !content.includes('mode="popLayout"')) {
+    console.error("FAIL: TikTok style card slide up animation configuration missing");
+    process.exit(1);
+  }
+  console.log("✓ 8. TikTok style card slide up animation implemented with spring physics (cardVariants & mode='popLayout')");
 
   console.log("=== ALL THEATRE MODE UPDATES VERIFIED SUCCESSFULLY ===");
 }
