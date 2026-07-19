@@ -12,12 +12,12 @@ function verifyTheatreModeUpdates() {
 
   const content = fs.readFileSync(theatreViewPath, 'utf8');
 
-  // Check 1: 90% bg alpha
-  if (!content.includes('bg-black/90')) {
-    console.error("FAIL: 90% background alpha (bg-black/90) not found");
+  // Check 1: 85% bg alpha
+  if (!content.includes('bg-black/85')) {
+    console.error("FAIL: 85% background alpha (bg-black/85) not found");
     process.exit(1);
   }
-  console.log("✓ 1. Background alpha is 90% (bg-black/90)");
+  console.log("✓ 1. Background alpha is 85% (bg-black/85)");
 
   // Check 2: Logo removed & left_panel_open / left_panel_close symbol button added
   if (content.includes('import logoImg') || content.includes('alt="Logo"')) {
@@ -88,20 +88,20 @@ function verifyTheatreModeUpdates() {
   }
   console.log("✓ 9. Title/meta unit is 50% width in full screen mode (max-w-[50%]) and canvas card slides are slower (0.85s)");
 
-  // Check 10: Action toast overlay (Approved, Declined, Skipped) with 40px regular weight font, control bar colors, and rounded-full pill shape
+  // Check 10: Action toast overlay (Approved, Declined, Skipped) with 32px regular weight font, control bar colors, and rounded-full pill shape
   if (
     !content.includes('actionToast') || 
-    !content.includes("text-[40px]") || 
+    !content.includes("text-[32px]") || 
     !content.includes("font-normal") ||
     !content.includes("rounded-full") ||
     !content.includes("triggerActionToast('Approved')") ||
     !content.includes("triggerActionToast('Declined')") ||
     !content.includes("triggerActionToast('Skipped')")
   ) {
-    console.error("FAIL: Action toast overlay configuration missing 40px regular font weight or rounded-full shape");
+    console.error("FAIL: Action toast overlay configuration missing 32px regular font weight or rounded-full shape");
     process.exit(1);
   }
-  console.log("✓ 10. Action toast overlay (Approved, Declined, Skipped) updated to 40px font size, regular weight, control bar icon colors, and fully rounded pill shape");
+  console.log("✓ 10. Action toast overlay (Approved, Declined, Skipped) updated to 32px font size (matching card title), regular weight, control bar icon colors, and fully rounded pill shape");
 
   console.log("=== ALL THEATRE MODE UPDATES VERIFIED SUCCESSFULLY ===");
 }
