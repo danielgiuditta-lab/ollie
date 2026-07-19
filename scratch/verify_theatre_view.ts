@@ -32,7 +32,7 @@ async function runVerification() {
   const requiredElements = [
     'export function TheatreView',
     'Home',
-    'Taskview',
+    'Taskviewer',
     'getNativeToolLabel',
     'handleApprove',
     'handleReject',

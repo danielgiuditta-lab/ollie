@@ -95,7 +95,7 @@ process.on('unhandledRejection', (reason) => {
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : (process.env.ANTIGRAVITY_SIDECAR_WEB_PORT ? parseInt(process.env.ANTIGRAVITY_SIDECAR_WEB_PORT, 10) : 3000);
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));

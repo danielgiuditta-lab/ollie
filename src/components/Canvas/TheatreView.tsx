@@ -11,6 +11,7 @@ import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { Composer } from '../Chat/Composer';
 import { getFileIcon } from '../Shared/FileIcon';
 import { getAvatarForPerson } from '../../utils/personAvatars';
+import logoImg from '../../assets/logo.png';
 
 interface TheatreTaskCellProps {
   item: any;
@@ -152,11 +153,14 @@ export function TheatreView({
 }: TheatreViewProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
+  const [steerInput, setSteerInput] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   // Sync initial index if todoItems changes
   useEffect(() => {
     if (initialIndex >= 0 && initialIndex < todoItems.length) {
       setActiveIndex(initialIndex);
+      setSteerInput('');
     }
   }, [initialIndex, todoItems.length]);
 
@@ -201,6 +205,7 @@ export function TheatreView({
     const nextCompleted = new Set(completedTaskIds);
     nextCompleted.add(activeTask.id);
     setCompletedTaskIds(nextCompleted);
+    setSteerInput('');
 
     if (onUpdateTaskStatus) {
       onUpdateTaskStatus(activeTask.id, 'done');
@@ -218,6 +223,7 @@ export function TheatreView({
     const nextCompleted = new Set(completedTaskIds);
     nextCompleted.add(activeTask.id);
     setCompletedTaskIds(nextCompleted);
+    setSteerInput('');
 
     if (onUpdateTaskStatus) {
       onUpdateTaskStatus(activeTask.id, 'rejected');
@@ -231,13 +237,15 @@ export function TheatreView({
 
   const handlePrev = () => {
     setActiveIndex(prev => Math.max(0, prev - 1));
+    setSteerInput('');
   };
 
   const handleNext = () => {
     setActiveIndex(prev => Math.min(todoItems.length - 1, prev + 1));
+    setSteerInput('');
   };
 
-  // Handle steer submission using shared Composer
+  // Handle steer submission
   const handleSteerSubmit = (val: string) => {
     if (!val.trim()) return;
 
@@ -259,6 +267,8 @@ export function TheatreView({
     if (setActiveSidebar) {
       setActiveSidebar('gemini');
     }
+
+    setSteerInput('');
 
     // Advance to next task if available
     if (activeTask && activeIndex < todoItems.length - 1) {
@@ -392,33 +402,38 @@ export function TheatreView({
   const hasAnyDone = todoItems.some(t => completedTaskIds.has(t.id));
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#141517] text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
       {/* Top Header Bar matching design specs */}
       <div className="w-full shrink-0 flex items-center justify-between pb-3 px-1">
-        {/* Left Breadcrumbs */}
-        <div className="flex items-center gap-2 text-[17px] font-normal text-neutral-400">
-          <span 
-            onClick={onClose}
-            className="cursor-pointer hover:text-white transition-colors font-normal text-neutral-300"
-          >
-            Home
-          </span>
-          <ChevronRight size={18} className="text-neutral-500 shrink-0" />
-          <span className="text-white font-medium">Taskview</span>
+        {/* Left Title with Logo & Breadcrumbs */}
+        <div className="flex items-center gap-3">
+          <img src={logoImg} alt="Logo" className="w-6 h-6 object-contain shrink-0" />
+          <div className="flex items-center gap-2 text-[17px] font-normal text-neutral-400">
+            <span 
+              onClick={onClose}
+              className="cursor-pointer hover:text-white transition-colors font-normal text-neutral-300"
+            >
+              Home
+            </span>
+            <ChevronRight size={18} className="text-neutral-500 shrink-0" />
+            <span className="text-white font-medium">
+              Taskviewer <span className="text-neutral-400 font-normal">({todoItems.length > 0 ? activeIndex + 1 : 0} of {todoItems.length})</span>
+            </span>
+          </div>
         </div>
 
-        {/* Right Action Buttons (Open in Native Tool + Close, no borders) */}
+        {/* Right Action Buttons (Open in Native Tool + Close, black background matching canvas/cells) */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleOpenSourceChip(activeTask?.sourceName || activeTask?.title)}
-            className="h-9 px-4 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="h-9 px-4 rounded-full bg-black hover:bg-[#1E1F22] text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer border border-white/10"
           >
             {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}
             <span>{getNativeToolLabel()}</span>
           </button>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center transition-all cursor-pointer"
+            className="w-9 h-9 rounded-full bg-black hover:bg-[#1E1F22] text-white flex items-center justify-center transition-all cursor-pointer border border-white/10"
             title="Close Taskview"
           >
             <X size={16} />
@@ -428,8 +443,8 @@ export function TheatreView({
 
       {/* Main Split Container */}
       <div className="flex-1 w-full min-h-0 flex gap-6 overflow-hidden">
-        {/* Left Panel: Home Tasks Directory Card matching 131314 with 24px border radii & 16px padding */}
-        <div className="w-80 md:w-[380px] shrink-0 bg-[#131314] rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
+        {/* Left Panel: Home Tasks Directory Card with 24px border radii & 16px padding */}
+        <div className="w-80 md:w-[380px] shrink-0 bg-[#131314]/90 backdrop-blur-md rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] shadow-2xl border border-white/5">
           {/* Active Tasks ("What I started..." or "What I did...") */}
           {startedTasks.length > 0 && (
             <div className="flex flex-col">
@@ -487,8 +502,8 @@ export function TheatreView({
 
         {/* Right Area: Artifact View + Centered Controls Dock directly under it */}
         <div className="flex-1 h-full min-w-0 flex flex-col gap-3 overflow-hidden pb-1">
-          {/* Selected Task Target Artifact View (No border stroke, 32px padding, matching cell container bg #131314) */}
-          <div className="flex-1 min-h-0 rounded-[24px] overflow-y-auto bg-[#131314] relative shadow-2xl flex flex-col p-8 select-text">
+          {/* Selected Task Target Artifact View */}
+          <div className="flex-1 min-h-0 rounded-[24px] overflow-y-auto bg-[#131314]/90 backdrop-blur-md relative shadow-2xl flex flex-col p-8 select-text border border-white/5">
             {/* Title, Metaline (capped at 2 lines), and Sources Unit (Max width 70%, 40px gap below) */}
             {activeTask && (
               <div className="w-full shrink-0 flex flex-col items-start max-w-[70%] mb-[40px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
@@ -568,55 +583,86 @@ export function TheatreView({
             )}
           </div>
 
-          {/* Bottom Controls Dock: Reusing Shared Bottom Composer, Centered Under Artifact */}
-          <div className="w-full shrink-0 flex items-center justify-center gap-3 pt-1 relative z-10">
+          {/* Bottom Controls Dock with 8px gap */}
+          <div className="w-full shrink-0 flex items-center justify-center gap-2 pt-2 relative z-10">
             {/* Previous Task Arrow Button */}
             <button
               onClick={handlePrev}
               disabled={activeIndex === 0}
-              className="w-12 h-12 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
+              className="w-12 h-12 rounded-full bg-[#121316] hover:bg-[#1C1D21] active:scale-95 text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-lg"
               title="Previous task"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft className="w-5 h-5 text-white stroke-[2]" />
             </button>
 
-            {/* Reject / Decline Button matching InferredTaskCard style */}
+            {/* Reject / Decline Button */}
             <button
               onClick={handleReject}
-              className="w-12 h-12 rounded-full bg-[#FCE8E6] dark:bg-red-950/40 hover:bg-[#FAD2CF] dark:hover:bg-red-900/60 text-[#C5221F] dark:text-red-400 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-md"
+              className="w-14 h-14 rounded-full bg-[#121316] hover:bg-[#1C1D21] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-lg"
               title="Decline"
             >
-              <X size={24} className="stroke-[2.5]" />
+              <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
             </button>
 
-            {/* Center Steer Input using bottom layout Composer */}
-            <div className="w-96 md:w-[600px] max-w-full flex items-center">
-              <Composer
-                onSend={handleSteerSubmit}
-                disabled={false}
-                placeholder={activeTask?.type === 'slide' ? "Suggest an update to the slides..." : "Give agent a steer..."}
-                theme="dark"
-                layout="bottom"
+            {/* Center Steer Input Pill (Hugs placeholder until focused, then expands to match bottom composer width in dark mode) */}
+            <div 
+              className={`h-14 rounded-full bg-[#121316] flex items-center shadow-lg border transition-all duration-300 ease-in-out ${
+                (isInputFocused || steerInput.trim().length > 0)
+                  ? 'w-80 md:w-[480px] px-6 border-white/20' 
+                  : 'w-[155px] px-4 border-transparent hover:border-white/10 cursor-pointer'
+              }`}
+              onClick={() => {
+                const el = document.getElementById('theatre-steer-input');
+                if (el) el.focus();
+              }}
+            >
+              <input
+                id="theatre-steer-input"
+                type="text"
+                value={steerInput}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+                onChange={(e) => setSteerInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (steerInput.trim()) {
+                      handleSteerSubmit(steerInput);
+                      setSteerInput('');
+                    } else {
+                      handleApprove();
+                    }
+                  }
+                }}
+                placeholder="Do differently..."
+                className="w-full bg-transparent text-white text-[15px] font-normal placeholder-[#8E8E93] focus:outline-none truncate"
               />
             </div>
 
-            {/* Approve / Accept Button matching InferredTaskCard style */}
+            {/* Approve / Accept Button */}
             <button
-              onClick={handleApprove}
-              className="w-12 h-12 rounded-full bg-[#E6F4EA] dark:bg-green-950/40 hover:bg-[#CEEAD6] dark:hover:bg-green-900/60 text-[#137333] dark:text-green-400 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-md"
-              title="Accept"
+              onClick={() => {
+                if (steerInput.trim()) {
+                  handleSteerSubmit(steerInput);
+                  setSteerInput('');
+                } else {
+                  handleApprove();
+                }
+              }}
+              className="w-14 h-14 rounded-full bg-[#121316] hover:bg-[#1C1D21] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-lg"
+              title={steerInput.trim() ? "Submit steer" : "Accept"}
             >
-              <Check size={24} className="stroke-[2.5]" />
+              <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
             </button>
 
             {/* Next Task Arrow Button */}
             <button
               onClick={handleNext}
               disabled={activeIndex === todoItems.length - 1}
-              className="w-12 h-12 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
+              className="w-12 h-12 rounded-full bg-[#121316] hover:bg-[#1C1D21] active:scale-95 text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-lg"
               title="Next task"
             >
-              <ArrowRight size={20} />
+              <ArrowRight className="w-5 h-5 text-white stroke-[2]" />
             </button>
           </div>
         </div>
