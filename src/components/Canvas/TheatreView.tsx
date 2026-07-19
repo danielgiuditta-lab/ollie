@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Check, 
   ArrowLeft, 
@@ -11,7 +12,6 @@ import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { Composer } from '../Chat/Composer';
 import { getFileIcon } from '../Shared/FileIcon';
 import { getAvatarForPerson } from '../../utils/personAvatars';
-import logoImg from '../../assets/logo.png';
 
 interface TheatreTaskCellProps {
   item: any;
@@ -155,6 +155,7 @@ export function TheatreView({
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
   const [steerInput, setSteerInput] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isTaskListOpen, setIsTaskListOpen] = useState(false);
 
   // Sync initial index if todoItems changes
   useEffect(() => {
@@ -405,9 +406,20 @@ export function TheatreView({
     <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
       {/* Top Header Bar matching design specs */}
       <div className="w-full shrink-0 flex items-center justify-between pb-3 px-1">
-        {/* Left Title with Logo & Breadcrumbs */}
+        {/* Left Title with Toggle Button & Breadcrumbs */}
         <div className="flex items-center gap-3">
-          <img src={logoImg} alt="Logo" className="w-6 h-6 object-contain shrink-0" />
+          <button
+            onClick={() => setIsTaskListOpen(!isTaskListOpen)}
+            className="p-1 text-neutral-300 hover:text-white transition-colors cursor-pointer flex items-center justify-center rounded-lg hover:bg-white/10 shrink-0"
+            title={isTaskListOpen ? "Close task list" : "Open task list"}
+          >
+            <span 
+              className="material-symbols-rounded select-none"
+              style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1, 'wght' 700" }}
+            >
+              {isTaskListOpen ? 'left_panel_close' : 'left_panel_open'}
+            </span>
+          </button>
           <div className="flex items-center gap-2 text-[17px] font-normal text-neutral-400">
             <span 
               onClick={onClose}
@@ -443,62 +455,75 @@ export function TheatreView({
 
       {/* Main Split Container */}
       <div className="flex-1 w-full min-h-0 flex gap-6 overflow-hidden">
-        {/* Left Panel: Home Tasks Directory Card with 24px border radii & 16px padding */}
-        <div className="w-80 md:w-[380px] shrink-0 bg-[#131314]/90 backdrop-blur-md rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] shadow-2xl border border-white/5">
-          {/* Active Tasks ("What I started..." or "What I did...") */}
-          {startedTasks.length > 0 && (
-            <div className="flex flex-col">
-              <h3 className="text-[20px] leading-[28px] font-normal text-[#E3E3E3] pt-2 mb-4 px-1">
-                {hasAnyDone ? 'What I did...' : 'What I started...'}
-              </h3>
-              <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
-                {startedTasks.map((item) => {
-                  const itemIndex = todoItems.findIndex(t => t.id === item.id);
-                  const isSelected = itemIndex === activeIndex;
-                  const isSignedOff = completedTaskIds.has(item.id);
-                  return (
-                    <TheatreTaskCell
-                      key={item.id}
-                      item={item}
-                      isSelected={isSelected}
-                      isSignedOff={isSignedOff}
-                      onClick={() => setActiveIndex(itemIndex)}
-                      onOpenSource={handleOpenSourceChip}
-                      onToggleComplete={handleToggleComplete}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          )}
+        {/* Left Panel: Home Tasks Directory Card with smooth opening/closing animation */}
+        <AnimatePresence initial={false}>
+          {isTaskListOpen && (
+            <motion.div 
+              key="theatre-task-list"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 380, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="shrink-0 h-full overflow-hidden"
+            >
+              <div className="w-80 md:w-[380px] h-full bg-[#131314]/90 backdrop-blur-md rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] shadow-2xl border border-white/5">
+                {/* Active Tasks ("What I started..." or "What I did...") */}
+                {startedTasks.length > 0 && (
+                  <div className="flex flex-col">
+                    <h3 className="text-[20px] leading-[28px] font-normal text-[#E3E3E3] pt-2 mb-4 px-1">
+                      {hasAnyDone ? 'What I did...' : 'What I started...'}
+                    </h3>
+                    <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
+                      {startedTasks.map((item) => {
+                        const itemIndex = todoItems.findIndex(t => t.id === item.id);
+                        const isSelected = itemIndex === activeIndex;
+                        const isSignedOff = completedTaskIds.has(item.id);
+                        return (
+                          <TheatreTaskCell
+                            key={item.id}
+                            item={item}
+                            isSelected={isSelected}
+                            isSignedOff={isSignedOff}
+                            onClick={() => setActiveIndex(itemIndex)}
+                            onOpenSource={handleOpenSourceChip}
+                            onToggleComplete={handleToggleComplete}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
-          {/* FYI Tasks ("FYI") */}
-          {fyiTasks.length > 0 && (
-            <div className="flex flex-col">
-              <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${startedTasks.length > 0 ? 'pt-6' : 'pt-2'}`}>
-                FYI
-              </h3>
-              <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
-                {fyiTasks.map((item) => {
-                  const itemIndex = todoItems.findIndex(t => t.id === item.id);
-                  const isSelected = itemIndex === activeIndex;
-                  const isSignedOff = completedTaskIds.has(item.id);
-                  return (
-                    <TheatreTaskCell
-                      key={item.id}
-                      item={item}
-                      isSelected={isSelected}
-                      isSignedOff={isSignedOff}
-                      onClick={() => setActiveIndex(itemIndex)}
-                      onOpenSource={handleOpenSourceChip}
-                      onToggleComplete={handleToggleComplete}
-                    />
-                  );
-                })}
+                {/* FYI Tasks ("FYI") */}
+                {fyiTasks.length > 0 && (
+                  <div className="flex flex-col">
+                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${startedTasks.length > 0 ? 'pt-6' : 'pt-2'}`}>
+                      FYI
+                    </h3>
+                    <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
+                      {fyiTasks.map((item) => {
+                        const itemIndex = todoItems.findIndex(t => t.id === item.id);
+                        const isSelected = itemIndex === activeIndex;
+                        const isSignedOff = completedTaskIds.has(item.id);
+                        return (
+                          <TheatreTaskCell
+                            key={item.id}
+                            item={item}
+                            isSelected={isSelected}
+                            isSignedOff={isSignedOff}
+                            onClick={() => setActiveIndex(itemIndex)}
+                            onOpenSource={handleOpenSourceChip}
+                            onToggleComplete={handleToggleComplete}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
 
         {/* Right Area: Artifact View + Centered Controls Dock directly under it */}
         <div className="flex-1 h-full min-w-0 flex flex-col gap-3 overflow-hidden pb-1">
