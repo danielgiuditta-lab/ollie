@@ -675,15 +675,15 @@ export function TheatreView({
                   transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
                   className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
                 >
-                  <div className="bg-black/95 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[48px] leading-none font-medium p-4 px-8 rounded-[24px] shadow-2xl border border-white/10 flex items-center gap-4 backdrop-blur-md">
+                  <div className="bg-black/95 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[40px] leading-none font-normal p-4 px-8 rounded-full shadow-2xl border border-white/10 flex items-center gap-4 backdrop-blur-md">
                     {actionToast.text === 'Approved' && (
-                      <Check className="w-12 h-12 text-[#34A853] stroke-[3] shrink-0" />
+                      <Check className="w-10 h-10 text-[#34A853] stroke-[2.5] shrink-0" />
                     )}
                     {actionToast.text === 'Declined' && (
-                      <X className="w-12 h-12 text-[#EA4335] stroke-[3] shrink-0" />
+                      <X className="w-10 h-10 text-[#EA4335] stroke-[2.5] shrink-0" />
                     )}
                     {actionToast.text === 'Skipped' && (
-                      <ArrowRight className="w-12 h-12 text-[#4285F4] stroke-[3] shrink-0" />
+                      <ArrowRight className="w-10 h-10 text-white stroke-[2] shrink-0" />
                     )}
                     <span>{actionToast.text}</span>
                   </div>

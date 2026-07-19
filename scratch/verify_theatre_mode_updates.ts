@@ -88,6 +88,21 @@ function verifyTheatreModeUpdates() {
   }
   console.log("✓ 9. Title/meta unit is 50% width in full screen mode (max-w-[50%]) and canvas card slides are slower (0.85s)");
 
+  // Check 10: Action toast overlay (Approved, Declined, Skipped) with 40px regular weight font, control bar colors, and rounded-full pill shape
+  if (
+    !content.includes('actionToast') || 
+    !content.includes("text-[40px]") || 
+    !content.includes("font-normal") ||
+    !content.includes("rounded-full") ||
+    !content.includes("triggerActionToast('Approved')") ||
+    !content.includes("triggerActionToast('Declined')") ||
+    !content.includes("triggerActionToast('Skipped')")
+  ) {
+    console.error("FAIL: Action toast overlay configuration missing 40px regular font weight or rounded-full shape");
+    process.exit(1);
+  }
+  console.log("✓ 10. Action toast overlay (Approved, Declined, Skipped) updated to 40px font size, regular weight, control bar icon colors, and fully rounded pill shape");
+
   console.log("=== ALL THEATRE MODE UPDATES VERIFIED SUCCESSFULLY ===");
 }
 
