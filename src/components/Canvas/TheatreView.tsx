@@ -699,7 +699,7 @@ export function TheatreView({
                     {/* Right Column: Chat UI (Half of Canvas) */}
                     <div className="w-1/2 h-full flex flex-col justify-center gap-6 pl-4 md:pl-6 min-w-0 select-text">
                       {/* Sender Message Row */}
-                      <div className="flex items-start gap-3 justify-start max-w-[95%]">
+                      <div className="flex items-start gap-3 justify-start max-w-[85%]">
                         {/* Sender Avatar */}
                         <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md border border-white/10">
                           {activeAvatar ? (
@@ -719,17 +719,17 @@ export function TheatreView({
                         </div>
 
                         {/* Sender Bubble */}
-                        <div className="bg-[#2D2E30] text-white/90 text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-lg max-w-[85%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                        <div className="bg-[#2D2E30] text-white/90 text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-lg max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
                           {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
                         </div>
                       </div>
 
                       {/* Proposed Reply Row */}
-                      <div className="flex items-end gap-3 justify-end max-w-[95%] ml-auto mt-2">
+                      <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
                         {/* Proposed Reply Bubble */}
-                        <div className="bg-[#45474A] text-white text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-lg max-w-[85%] font-['Google_Sans','Google_Sans_Text',sans-serif] relative group">
+                        <div className="bg-[#45474A] text-white text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-lg max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-5 relative group">
                           {isEditingProposal ? (
-                            <div className="flex flex-col gap-2 min-w-[240px]">
+                            <div className="flex flex-col gap-2 min-w-[220px] w-full">
                               <textarea
                                 value={editableProposalText}
                                 onChange={(e) => setEditableProposalText(e.target.value)}
@@ -758,21 +758,21 @@ export function TheatreView({
                               </div>
                             </div>
                           ) : (
-                            <div className="whitespace-pre-wrap leading-[25px] md:leading-[26px]">
-                              {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
-                              <span className="inline-block align-middle ml-2">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsEditingProposal(true);
-                                  }}
-                                  className="inline-flex items-center justify-center p-1 rounded-full text-white/90 hover:text-white hover:bg-white/20 transition-all cursor-pointer shrink-0 align-middle"
-                                  title="Edit proposed reply"
-                                >
-                                  <Pencil size={18} className="text-white stroke-[2.2]" />
-                                </button>
-                              </span>
-                            </div>
+                            <>
+                              <div className="whitespace-pre-wrap flex-1 min-w-0">
+                                {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsEditingProposal(true);
+                                }}
+                                className="inline-flex items-center justify-center p-1 rounded-full text-white/90 hover:text-white hover:bg-white/20 transition-all cursor-pointer shrink-0 self-center"
+                                title="Edit proposed reply"
+                              >
+                                <Pencil size={20} className="text-white stroke-[2.2]" />
+                              </button>
+                            </>
                           )}
                         </div>
 
