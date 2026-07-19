@@ -157,6 +157,15 @@ export function TheatreView({
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isTaskListOpen, setIsTaskListOpen] = useState(false);
   const [slideDirection, setSlideDirection] = useState(1);
+  const [actionToast, setActionToast] = useState<{ text: 'Approved' | 'Declined' | 'Skipped'; key: number } | null>(null);
+
+  const triggerActionToast = (text: 'Approved' | 'Declined' | 'Skipped') => {
+    const key = Date.now();
+    setActionToast({ text, key });
+    setTimeout(() => {
+      setActionToast(prev => (prev?.key === key ? null : prev));
+    }, 750);
+  };
 
   const cardVariants = {
     enter: (dir: number) => ({
@@ -223,6 +232,7 @@ export function TheatreView({
   const handleApprove = () => {
     if (!activeTask) return;
     setSlideDirection(1);
+    triggerActionToast('Approved');
     const nextCompleted = new Set(completedTaskIds);
     nextCompleted.add(activeTask.id);
     setCompletedTaskIds(nextCompleted);
@@ -242,6 +252,7 @@ export function TheatreView({
   const handleReject = () => {
     if (!activeTask) return;
     setSlideDirection(1);
+    triggerActionToast('Declined');
     const nextCompleted = new Set(completedTaskIds);
     nextCompleted.add(activeTask.id);
     setCompletedTaskIds(nextCompleted);
@@ -259,12 +270,14 @@ export function TheatreView({
 
   const handlePrev = () => {
     setSlideDirection(-1);
+    triggerActionToast('Skipped');
     setActiveIndex(prev => Math.max(0, prev - 1));
     setSteerInput('');
   };
 
   const handleNext = () => {
     setSlideDirection(1);
+    triggerActionToast('Skipped');
     setActiveIndex(prev => Math.min(todoItems.length - 1, prev + 1));
     setSteerInput('');
   };
@@ -279,6 +292,7 @@ export function TheatreView({
     if (!val.trim()) return;
 
     setSlideDirection(1);
+    triggerActionToast('Approved');
     if (activeTask) {
       const nextCompleted = new Set(completedTaskIds);
       nextCompleted.add(activeTask.id);
@@ -567,15 +581,15 @@ export function TheatreView({
                 animate="center"
                 exit="exit"
                 transition={{
-                  y: { duration: 0.5, ease: [0.25, 1, 0.5, 1] },
-                  opacity: { duration: 0.45 },
-                  scale: { duration: 0.45 }
+                  y: { duration: 0.85, ease: [0.25, 1, 0.5, 1] },
+                  opacity: { duration: 0.75 },
+                  scale: { duration: 0.75 }
                 }}
                 className="w-full h-full rounded-[24px] overflow-y-auto bg-[#131314]/90 backdrop-blur-md shadow-2xl flex flex-col p-8 select-text border border-white/5 absolute inset-0"
               >
-                {/* Title, Metaline (capped at 2 lines), and Sources Unit (Max width 70%, 40px gap below) */}
+                {/* Title, Metaline (capped at 2 lines), and Sources Unit (50% max width when full screen/collapsed, 70% when open) */}
                 {activeTask && (
-                  <div className="w-full shrink-0 flex flex-col items-start max-w-[70%] mb-[40px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                  <div className={`w-full shrink-0 flex flex-col items-start ${isTaskListOpen ? 'max-w-[70%]' : 'max-w-[50%]'} mb-[40px] font-['Google_Sans','Google_Sans_Text',sans-serif] transition-all duration-300`}>
                     {/* Title: 32px with tightened line spacing (leading-[38px]) */}
                     <h3 className="text-[32px] leading-[38px] font-normal text-white">
                       {canvasTitleText}
@@ -648,6 +662,33 @@ export function TheatreView({
                   </div>
                 )}
               </motion.div>
+            </AnimatePresence>
+
+            {/* Animated Action Toast Overlay (Approved / Declined / Skipped) */}
+            <AnimatePresence>
+              {actionToast && (
+                <motion.div
+                  key={actionToast.key}
+                  initial={{ opacity: 0, scale: 0.85, y: 12 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.85, y: -12 }}
+                  transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+                  className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
+                >
+                  <div className="bg-black/95 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[48px] leading-none font-medium p-4 px-8 rounded-[24px] shadow-2xl border border-white/10 flex items-center gap-4 backdrop-blur-md">
+                    {actionToast.text === 'Approved' && (
+                      <Check className="w-12 h-12 text-[#34A853] stroke-[3] shrink-0" />
+                    )}
+                    {actionToast.text === 'Declined' && (
+                      <X className="w-12 h-12 text-[#EA4335] stroke-[3] shrink-0" />
+                    )}
+                    {actionToast.text === 'Skipped' && (
+                      <ArrowRight className="w-12 h-12 text-[#4285F4] stroke-[3] shrink-0" />
+                    )}
+                    <span>{actionToast.text}</span>
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
 

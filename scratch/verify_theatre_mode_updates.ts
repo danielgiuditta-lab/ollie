@@ -81,6 +81,13 @@ function verifyTheatreModeUpdates() {
   }
   console.log("✓ 8. TikTok style card slide up animation implemented with spring physics (cardVariants & mode='popLayout')");
 
+  // Check 9: 50% title width in full screen mode & slower canvas slide duration
+  if (!content.includes("max-w-[50%]") || !content.includes("duration: 0.85")) {
+    console.error("FAIL: Title/meta 50% width or slower slide duration (0.85s) missing");
+    process.exit(1);
+  }
+  console.log("✓ 9. Title/meta unit is 50% width in full screen mode (max-w-[50%]) and canvas card slides are slower (0.85s)");
+
   console.log("=== ALL THEATRE MODE UPDATES VERIFIED SUCCESSFULLY ===");
 }
 
