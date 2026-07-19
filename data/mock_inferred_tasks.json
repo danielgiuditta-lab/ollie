@@ -109,7 +109,7 @@
     "personName": "Chloe Bennett",
     "personAvatar": "/people/juyun.jpg",
     "action": "Proposed alternative time slot.",
-    "status": "done",
+    "status": "working",
     "involvesMe": true
   },
   {
@@ -125,7 +125,7 @@
     "personName": "Liam Chen",
     "personAvatar": "/people/dr_marcus_thorne.jpg",
     "action": "Liam requested brand guidelines files. Approve to send them.",
-    "status": "done",
+    "status": "working",
     "involvesMe": true
   },
   {
@@ -141,7 +141,7 @@
     "personName": "Ollie",
     "personAvatar": "/people/default_user.jpg",
     "action": "Please complete the mandatory modules.",
-    "status": "done",
+    "status": "working",
     "involvesMe": true,
     "links": [
       {
@@ -163,7 +163,7 @@
     "personName": "Alan Vance",
     "personAvatar": "/people/david.jpg",
     "action": "Lunch sync at noon.",
-    "status": "done",
+    "status": "working",
     "involvesMe": true
   }
 ]

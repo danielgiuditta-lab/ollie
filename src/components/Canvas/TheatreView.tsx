@@ -15,20 +15,22 @@ import { getAvatarForPerson } from '../../utils/personAvatars';
 interface TheatreTaskCellProps {
   item: any;
   isSelected: boolean;
+  isSignedOff: boolean;
   onClick: () => void;
   onOpenSource: (urlOrName?: string) => void;
+  onToggleComplete?: (taskId: string) => void;
 }
 
-function TheatreTaskCell({ item, isSelected, onClick, onOpenSource }: TheatreTaskCellProps) {
+function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource, onToggleComplete }: TheatreTaskCellProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
 
-  const titleText = isSelected 
+  const titleText = isSignedOff 
     ? (item.titleDone || item.title || item.description)
     : (item.title || item.titleDone || item.description);
 
-  const descText = isSelected
-    ? (item.descriptionDone || item.description || item.action || 'Task review and draft outline')
-    : (item.description || item.action || 'Task review');
+  const descText = isSignedOff
+    ? (item.descriptionDone || item.description || item.action || 'Your tasks will be added to "My tasks" when notes are ready')
+    : (item.description || item.descriptionDone || item.action || 'Gemini will write a professional follow-up email for you...');
 
   const resolvedSourceName = item.sourceName || item.workspace || 'Google Drive';
   const resolvedPersonName = item.personName || 'Maya Lin';
@@ -47,110 +49,69 @@ function TheatreTaskCell({ item, isSelected, onClick, onOpenSource }: TheatreTas
     </div>
   );
 
-  if (!isSelected) {
-    // Collapsed State: Title + Subtitle + Source & Person Chips
-    return (
-      <div
-        onClick={onClick}
-        className="p-3 rounded-xl bg-[#1C1D20] border border-neutral-800/80 hover:bg-[#222428] hover:border-neutral-700 cursor-pointer transition-all duration-200 select-none flex flex-col gap-1.5 min-w-0"
-      >
-        <h4 className="text-[15px] font-medium font-['Google_Sans_Text','Inter',sans-serif] text-neutral-200 truncate leading-snug">
-          {titleText}
-        </h4>
-        <p className="text-[13px] font-normal font-['Google_Sans_Text','Inter',sans-serif] text-neutral-400 truncate leading-snug">
-          {descText}
-        </p>
-
-        {/* Source & Person Chips in Collapsed State */}
-        <div className="flex items-center gap-2 flex-wrap pt-0.5">
-          <div 
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenSource(resolvedSourceName);
-            }}
-            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#161719] hover:bg-[#2C2E33] border border-neutral-800 text-[11px] font-medium text-neutral-300 transition-colors"
-          >
-            {getFileIcon(resolvedSourceName, item.sourceMimeType || item.type)}
-            <span className="truncate max-w-[120px]">{resolvedSourceName}</span>
-          </div>
-
-          <div 
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenSource(resolvedPersonName);
-            }}
-            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#161719] hover:bg-[#2C2E33] border border-neutral-800 text-[11px] font-medium text-neutral-300 transition-colors"
-          >
-            {avatarElement}
-            <span className="truncate max-w-[100px]">{resolvedPersonName}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Expanded State: Full title, description, links, and source & person chips
   return (
     <div
       onClick={onClick}
-      className="p-4 rounded-xl bg-[#24262B] border border-blue-500/80 ring-1 ring-blue-500/30 shadow-lg cursor-pointer transition-all duration-200 select-none flex flex-col gap-2.5 min-w-0 animate-in fade-in-50 duration-150"
+      className={`p-3.5 rounded-[2px] first:rounded-t-[16px] last:rounded-b-[16px] bg-[#1E1F22] hover:bg-[#232529] cursor-pointer transition-all duration-150 select-none flex items-start justify-between gap-3 min-w-0 ${
+        isSelected ? 'bg-[#222428]' : ''
+      }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <h4 className="text-[16px] leading-[24px] font-medium font-['Google_Sans_Text','Inter',sans-serif] text-white">
+      <div className={`flex-1 min-w-0 flex flex-col gap-1 ${isSignedOff && !isSelected ? 'opacity-30' : 'opacity-100'}`}>
+        {/* Cell Title: Google Sans Regular 14/20 in #E3E3E3 */}
+        <h4 
+          className="text-[14px] leading-[20px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3]"
+          style={isSelected ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
           {titleText}
         </h4>
-        {item.status === 'done' && (
-          <div className="w-5 h-5 rounded-full bg-emerald-950/60 border border-emerald-600/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-            <Check size={12} className="stroke-[2.5]" />
+
+        {/* Cell Subtitle: Google Sans Regular 12/16 in #E3E3E3 0.7 opacity */}
+        <p 
+          className="text-[12px] leading-[16px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3]/70"
+          style={isSelected ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {descText}
+        </p>
+
+        {/* Sources Chips: ONLY SHOWN WHEN EXPANDED (isSelected === true) */}
+        {isSelected && (
+          <div className="flex items-center gap-2 flex-wrap pt-2" onClick={(e) => e.stopPropagation()}>
+            {resolvedPersonName && (
+              <div 
+                onClick={() => onOpenSource(resolvedPersonName)}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3] transition-colors cursor-pointer"
+              >
+                {avatarElement}
+                <span className="truncate max-w-[120px]">{resolvedPersonName}</span>
+              </div>
+            )}
+
+            {resolvedSourceName && (
+              <div 
+                onClick={() => onOpenSource(resolvedSourceName)}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3] transition-colors cursor-pointer"
+              >
+                {getFileIcon(resolvedSourceName, item.sourceMimeType || item.type)}
+                <span className="truncate max-w-[140px]">{resolvedSourceName}</span>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      <p className="text-[14px] leading-[20px] font-normal font-['Google_Sans_Text','Inter',sans-serif] text-neutral-300">
-        {descText}
-      </p>
-
-      {/* Render links for FYI tasks */}
-      {item.links && item.links.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mt-0.5" onClick={(e) => e.stopPropagation()}>
-          {item.links.map((link: any, idx: number) => (
-            <a
-              key={idx}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-2.5 py-1 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-xs font-semibold transition-colors"
-            >
-              {link.label || 'Open Link'}
-            </a>
-          ))}
+      {/* Signed Off Checkmark Button (no border stroke, click unmarks as completed) */}
+      {isSignedOff && (
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onToggleComplete) onToggleComplete(item.id);
+          }}
+          className="w-8 h-8 rounded-full bg-[#080809] hover:bg-[#18191C] text-white flex items-center justify-center shrink-0 self-center transition-colors cursor-pointer"
+          title="Unmark as completed"
+        >
+          <Check size={16} className="text-white stroke-[2.5]" />
         </div>
       )}
-
-      {/* Context & Source Chips */}
-      <div className="flex items-center gap-2 flex-wrap pt-1">
-        <div 
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenSource(resolvedSourceName);
-          }}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/60 text-[11px] font-medium text-neutral-300 transition-colors"
-        >
-          {getFileIcon(resolvedSourceName, item.sourceMimeType || item.type)}
-          <span className="truncate max-w-[140px]">{resolvedSourceName}</span>
-        </div>
-
-        <div 
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenSource(resolvedPersonName);
-          }}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161719] hover:bg-[#2C2E33] border border-neutral-700/60 text-[11px] font-medium text-neutral-300 transition-colors"
-        >
-          {avatarElement}
-          <span className="truncate max-w-[120px]">{resolvedPersonName}</span>
-        </div>
-      </div>
     </div>
   );
 }
@@ -248,6 +209,19 @@ export function TheatreView({
     }
   };
 
+  // Handle unmarking task as complete (return to default in-queue state)
+  const handleToggleComplete = (taskId: string) => {
+    const nextCompleted = new Set(completedTaskIds);
+    if (nextCompleted.has(taskId)) {
+      nextCompleted.delete(taskId);
+    }
+    setCompletedTaskIds(nextCompleted);
+
+    if (onUpdateTaskStatus) {
+      onUpdateTaskStatus(taskId, 'working');
+    }
+  };
+
   // Helper to open source link in a new tab
   const handleOpenSourceChip = (urlOrName?: string) => {
     if (!urlOrName) return;
@@ -258,10 +232,9 @@ export function TheatreView({
     }
   };
 
-  // Group tasks for Left List
-  const doneTasks = todoItems.filter(t => t.status === 'done' || completedTaskIds.has(t.id));
-  const startedTasks = todoItems.filter(t => t.status !== 'done' && t.type !== 'fyi' && t.category !== 'fyi' && !completedTaskIds.has(t.id));
-  const fyiTasks = todoItems.filter(t => (t.type === 'fyi' || t.category === 'fyi') && !completedTaskIds.has(t.id));
+  // Group tasks for Left List maintaining fixed section structure matching inferred task list
+  const startedTasks = todoItems.filter(t => t.type !== 'fyi' && t.category !== 'fyi');
+  const fyiTasks = todoItems.filter(t => t.type === 'fyi' || t.category === 'fyi');
 
   // Determine native tool button label
   const getNativeToolLabel = () => {
@@ -359,6 +332,8 @@ export function TheatreView({
 
   const activeFileObject = getTaskFileObject(activeTask);
 
+  const hasAnyDone = todoItems.some(t => t.status === 'done' || completedTaskIds.has(t.id));
+
   return (
     <div className="dark fixed inset-0 z-50 bg-[#141517] text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
       {/* Top Header Bar matching design specs */}
@@ -375,18 +350,18 @@ export function TheatreView({
           <span className="text-white font-medium">Taskview</span>
         </div>
 
-        {/* Right Action Buttons (Open in Native Tool + Close) */}
+        {/* Right Action Buttons (Open in Native Tool + Close, no borders) */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleOpenSourceChip(activeTask?.sourceName || activeTask?.title)}
-            className="h-9 px-4 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white text-xs font-medium border border-neutral-700/60 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+            className="h-9 px-4 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}
             <span>{getNativeToolLabel()}</span>
           </button>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white border border-neutral-700/60 flex items-center justify-center transition-all cursor-pointer"
+            className="w-9 h-9 rounded-full bg-[#282A2D] hover:bg-[#35373A] text-white flex items-center justify-center transition-all cursor-pointer"
             title="Close Taskview"
           >
             <X size={16} />
@@ -396,23 +371,28 @@ export function TheatreView({
 
       {/* Main Split Container */}
       <div className="flex-1 w-full min-h-0 flex gap-6 overflow-hidden">
-        {/* Left Panel: Home Tasks Directory */}
-        <div className="w-80 md:w-96 shrink-0 flex flex-col gap-5 overflow-y-auto pr-2 pb-4 select-text">
-          {/* Active Tasks ("What I started...") */}
+        {/* Left Panel: Home Tasks Directory Card matching 131314 with 24px border radii & 16px padding */}
+        <div className="w-80 md:w-[380px] shrink-0 bg-[#131314] rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
+          {/* Active Tasks ("What I started..." or "What I did...") */}
           {startedTasks.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider px-1">What I started</h3>
-              <div className="flex flex-col gap-2">
+            <div className="flex flex-col">
+              <h3 className="text-[20px] leading-[28px] font-normal text-[#E3E3E3] pt-2 mb-4 px-1">
+                {hasAnyDone ? 'What I did...' : 'What I started...'}
+              </h3>
+              <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
                 {startedTasks.map((item) => {
                   const itemIndex = todoItems.findIndex(t => t.id === item.id);
                   const isSelected = itemIndex === activeIndex;
+                  const isSignedOff = item.status === 'done' || completedTaskIds.has(item.id);
                   return (
                     <TheatreTaskCell
                       key={item.id}
                       item={item}
                       isSelected={isSelected}
+                      isSignedOff={isSignedOff}
                       onClick={() => setActiveIndex(itemIndex)}
                       onOpenSource={handleOpenSourceChip}
+                      onToggleComplete={handleToggleComplete}
                     />
                   );
                 })}
@@ -420,43 +400,26 @@ export function TheatreView({
             </div>
           )}
 
-          {/* Completed Tasks ("What I did...") */}
-          {doneTasks.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider px-1">What I did</h3>
-              <div className="flex flex-col gap-2">
-                {doneTasks.map((item) => {
-                  const itemIndex = todoItems.findIndex(t => t.id === item.id);
-                  const isSelected = itemIndex === activeIndex;
-                  return (
-                    <TheatreTaskCell
-                      key={item.id}
-                      item={item}
-                      isSelected={isSelected}
-                      onClick={() => setActiveIndex(itemIndex)}
-                      onOpenSource={handleOpenSourceChip}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* FYI Tasks */}
+          {/* FYI Tasks ("FYI") */}
           {fyiTasks.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider px-1">FYI</h3>
-              <div className="flex flex-col gap-2">
+            <div className="flex flex-col">
+              <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${startedTasks.length > 0 ? 'pt-6' : 'pt-2'}`}>
+                FYI
+              </h3>
+              <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
                 {fyiTasks.map((item) => {
                   const itemIndex = todoItems.findIndex(t => t.id === item.id);
                   const isSelected = itemIndex === activeIndex;
+                  const isSignedOff = item.status === 'done' || completedTaskIds.has(item.id);
                   return (
                     <TheatreTaskCell
                       key={item.id}
                       item={item}
                       isSelected={isSelected}
+                      isSignedOff={isSignedOff}
                       onClick={() => setActiveIndex(itemIndex)}
                       onOpenSource={handleOpenSourceChip}
+                      onToggleComplete={handleToggleComplete}
                     />
                   );
                 })}
@@ -467,8 +430,8 @@ export function TheatreView({
 
         {/* Right Area: Artifact View + Centered Controls Dock directly under it */}
         <div className="flex-1 h-full min-w-0 flex flex-col gap-3 overflow-hidden pb-1">
-          {/* Selected Task Target Artifact View */}
-          <div className="flex-1 min-h-0 rounded-2xl overflow-hidden bg-[#18191B] border border-neutral-800 relative shadow-2xl flex flex-col">
+          {/* Selected Task Target Artifact View (No border stroke) */}
+          <div className="flex-1 min-h-0 rounded-2xl overflow-hidden bg-[#18191B] relative shadow-2xl flex flex-col">
             {activeFileObject ? (
               <div 
                 key={activeTask?.id || activeIndex}
