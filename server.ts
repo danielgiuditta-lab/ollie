@@ -2895,7 +2895,9 @@ OUTPUT ONLY VALID JSON:
   const server = app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
-  server.setTimeout(0);
+  server.keepAliveTimeout = 5000;
+  server.headersTimeout = 6000;
+  server.requestTimeout = 15000;
 
   // WebSocket Real-time Multi-user Presence Tracking
   const wss = new WebSocketServer({ server });
