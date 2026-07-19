@@ -392,7 +392,7 @@ export function TheatreView({
   const hasAnyDone = todoItems.some(t => completedTaskIds.has(t.id));
 
   return (
-    <div className="dark fixed inset-0 z-50 bg-[#141517] text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-[#141517] text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
       {/* Top Header Bar matching design specs */}
       <div className="w-full shrink-0 flex items-center justify-between pb-3 px-1">
         {/* Left Breadcrumbs */}
@@ -489,16 +489,16 @@ export function TheatreView({
         <div className="flex-1 h-full min-w-0 flex flex-col gap-3 overflow-hidden pb-1">
           {/* Selected Task Target Artifact View (No border stroke, 32px padding, matching cell container bg #131314) */}
           <div className="flex-1 min-h-0 rounded-[24px] overflow-y-auto bg-[#131314] relative shadow-2xl flex flex-col p-8 select-text">
-            {/* Centered Title, Metaline, and Sources Unit (Max width 70%, Vertically Centered) */}
+            {/* Title, Metaline (capped at 2 lines), and Sources Unit (Max width 70%, 40px gap below) */}
             {activeTask && (
-              <div className="flex-1 min-h-0 flex flex-col justify-center items-start max-w-[70%] py-4 font-['Google_Sans','Google_Sans_Text',sans-serif]">
+              <div className="w-full shrink-0 flex flex-col items-start max-w-[70%] mb-[40px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
                 {/* Title: 32px with tightened line spacing (leading-[38px]) */}
                 <h3 className="text-[32px] leading-[38px] font-normal text-white">
                   {canvasTitleText}
                 </h3>
 
-                {/* Metaline: 20px with auto line height */}
-                <p className="text-[20px] leading-normal font-normal text-neutral-300 mt-2">
+                {/* Metaline: 20px with auto line height, capped at 2 lines */}
+                <p className="text-[20px] leading-normal font-normal text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
                   {canvasMetaText}
                 </p>
 
@@ -539,17 +539,17 @@ export function TheatreView({
               </div>
             )}
 
-            {/* Artifacts in Diff View Docked to Bottom */}
+            {/* Artifacts in Diff View Filling Remaining Canvas Height */}
             {activeFileObject ? (
               <div 
                 key={activeTask?.id || activeIndex}
-                className="w-full shrink-0 mt-auto animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col"
+                className="w-full flex-1 min-h-0 animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col overflow-hidden"
               >
                 {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
                   <InferredTaskDiffView 
                     file={activeFileObject}
-                    theme="dark"
-                    className="w-full flex flex-col items-stretch justify-start bg-transparent text-white p-0"
+                    theme="light"
+                    className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
                     hideFooterText={true}
                   />
                 ) : (
@@ -557,7 +557,7 @@ export function TheatreView({
                     file={activeFileObject}
                     hideHeader={true}
                     mode="preview"
-                    theme="dark"
+                    theme="light"
                   />
                 )}
               </div>

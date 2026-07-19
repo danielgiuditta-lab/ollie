@@ -12,7 +12,10 @@ export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDa
   const lines = text.split('\n');
 
   return (
-    <div className="space-y-3 font-sans leading-relaxed text-[13px] sm:text-[14px]">
+    <div 
+      style={{ color: isDark ? '#FFFFFF' : '#111827' }}
+      className="space-y-3 font-sans leading-relaxed text-[13px] sm:text-[14px]"
+    >
       {lines.map((line, i) => {
         const trimmed = line.trim();
         if (!trimmed) return <div key={i} className="h-1.5" />;
@@ -20,7 +23,11 @@ export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDa
         // Document Section H1 (# Title)
         if (trimmed.startsWith('# ')) {
           return (
-            <h2 key={i} className={`text-[18px] sm:text-[20px] font-extrabold tracking-tight border-b pb-2 mb-3 ${isDark ? 'text-white border-neutral-700' : 'text-slate-900 border-slate-200'}`}>
+            <h2 
+              key={i} 
+              style={{ color: isDark ? '#FFFFFF' : '#111827' }}
+              className={`text-[18px] sm:text-[20px] font-extrabold tracking-tight border-b pb-2 mb-3 ${isDark ? 'border-neutral-700' : 'border-slate-200'}`}
+            >
               {trimmed.replace(/^#\s+/, '')}
             </h2>
           );
@@ -29,7 +36,11 @@ export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDa
         // Subheading H2 (## Section Title)
         if (trimmed.startsWith('## ')) {
           return (
-            <h3 key={i} className={`text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mb-2 mt-4 ${isDark ? 'text-slate-200 border-neutral-700' : 'text-slate-800 border-slate-200'}`}>
+            <h3 
+              key={i} 
+              style={{ color: isDark ? '#E5E7EB' : '#1F2937' }}
+              className={`text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mb-2 mt-4 ${isDark ? 'border-neutral-700' : 'border-slate-200'}`}
+            >
               {trimmed.replace(/^##\s+/, '')}
             </h3>
           );
@@ -38,7 +49,11 @@ export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDa
         // Subheading H3
         if (trimmed.startsWith('### ')) {
           return (
-            <h4 key={i} className={`text-[14px] sm:text-[15px] font-semibold tracking-tight mb-1.5 ${isDark ? 'text-neutral-200' : 'text-slate-800'}`}>
+            <h4 
+              key={i} 
+              style={{ color: isDark ? '#E5E7EB' : '#1F2937' }}
+              className="text-[14px] sm:text-[15px] font-semibold tracking-tight mb-1.5"
+            >
               {trimmed.replace(/^###\s+/, '')}
             </h4>
           );
@@ -50,14 +65,14 @@ export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDa
           const parts = content.split(/(\*\*.*?\*\*|`.*?`)/g);
           return (
             <div key={i} className="flex items-start gap-2.5 pl-1 my-1.5">
-              <span className={`font-bold shrink-0 mt-1 text-[8px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>●</span>
-              <span className={`leading-snug ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
+              <span style={{ color: isDark ? '#9CA3AF' : '#4B5563' }} className="font-bold shrink-0 mt-1 text-[8px]">●</span>
+              <span style={{ color: isDark ? '#E5E7EB' : '#1F2937' }} className="leading-snug">
                 {parts.map((part, pIdx) => {
                   if (part.startsWith('**') && part.endsWith('**')) {
-                    return <strong key={pIdx} className={`font-semibold ${isDark ? 'text-white' : 'text-slate-950'}`}>{part.slice(2, -2)}</strong>;
+                    return <strong key={pIdx} style={{ color: isDark ? '#FFFFFF' : '#111827' }} className="font-semibold">{part.slice(2, -2)}</strong>;
                   }
                   if (part.startsWith('`') && part.endsWith('`')) {
-                    return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-medium ${isDark ? 'bg-neutral-800 text-amber-300 border border-neutral-700' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
+                    return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-medium ${isDark ? 'bg-neutral-800 text-amber-300 border border-neutral-700' : 'bg-slate-100 text-[#111827] border border-slate-200'}`}>{part.slice(1, -1)}</code>;
                   }
                   return part;
                 })}
@@ -69,13 +84,13 @@ export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDa
         // Regular Paragraph
         const parts = trimmed.split(/(\*\*.*?\*\*|`.*?`)/g);
         return (
-          <p key={i} className={`my-1.5 ${isDark ? 'text-neutral-300' : 'text-slate-700'}`}>
+          <p key={i} style={{ color: isDark ? '#D1D5DB' : '#374151' }} className="my-1.5">
             {parts.map((part, pIdx) => {
               if (part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={pIdx} className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
+                return <strong key={pIdx} style={{ color: isDark ? '#FFFFFF' : '#111827' }} className="font-semibold">{part.slice(2, -2)}</strong>;
               }
               if (part.startsWith('`') && part.endsWith('`')) {
-                return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200'}`}>{part.slice(1, -1)}</code>;
+                return <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-[#111827] border border-slate-200'}`}>{part.slice(1, -1)}</code>;
               }
               return part;
             })}
@@ -94,10 +109,10 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
     return (
       <div className="w-full h-full min-h-[220px] flex items-center justify-between px-6 sm:px-10 py-4 select-text">
         <div className="flex flex-col justify-center gap-1.5">
-          <span className="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300 tracking-wide font-sans">
+          <span style={{ color: isDark ? '#CBD5E1' : '#4B5563' }} className="text-sm sm:text-base font-medium tracking-wide font-sans">
             Drive
           </span>
-          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-[#1F304E] dark:text-white leading-[1.05] font-sans">
+          <h1 style={{ color: isDark ? '#FFFFFF' : '#1F304E' }} className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05] font-sans">
             New<br />Drive
           </h1>
         </div>
@@ -223,28 +238,28 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
           {sections.map((secStr, sIdx) => (
             <div key={sIdx} className={`p-3.5 rounded-xl border flex flex-col justify-between min-w-0 shadow-2xs ${
-              isDark ? 'bg-neutral-800/60 border-neutral-700' : 'bg-white border-slate-200'
+              isDark ? 'bg-neutral-800/60 border-neutral-700 text-white' : 'bg-white border-slate-200 text-slate-900'
             }`}>
               <div className="space-y-1.5">
                 {secStr.split('\n').map((line, lIdx) => {
                   const trimmed = line.trim();
                   if (!trimmed) return null;
-                  if (trimmed.startsWith('## ')) {
+                  if (trimmed.startsWith('# ') || trimmed.startsWith('## ')) {
                     return (
-                      <h3 key={lIdx} className={`text-[13px] font-bold pb-1 border-b ${isDark ? 'text-amber-300 border-neutral-700' : 'text-slate-900 border-slate-150'}`}>
-                        {trimmed.replace(/^##\s+/, '')}
+                      <h3 key={lIdx} className={`text-[13px] font-bold pb-1 border-b ${isDark ? 'text-amber-300 border-neutral-700' : 'text-slate-900 border-slate-200'}`}>
+                        {trimmed.replace(/^#+\s+/, '')}
                       </h3>
                     );
                   }
                   if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
                     return (
-                      <p key={lIdx} className={`text-[12px] leading-snug my-1 ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
+                      <p key={lIdx} className={`text-[12px] leading-snug my-1 ${isDark ? 'text-neutral-200' : 'text-slate-800'}`}>
                         {trimmed.replace(/^[\-•]\s*/, '').replace(/\*\*/g, '')}
                       </p>
                     );
                   }
                   return (
-                    <p key={lIdx} className={`text-[12px] leading-snug my-1 ${isDark ? 'text-neutral-300' : 'text-slate-600'}`}>
+                    <p key={lIdx} className={`text-[12px] leading-snug my-1 ${isDark ? 'text-neutral-300' : 'text-slate-700'}`}>
                       {trimmed.replace(/\*\*/g, '')}
                     </p>
                   );
@@ -272,15 +287,15 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start w-full">
           {sections.map((secStr, sIdx) => (
             <div key={sIdx} className={`p-4 rounded-xl border min-w-0 shadow-2xs ${
-              isDark ? 'bg-neutral-800/70 border-neutral-700' : 'bg-slate-50 border-slate-200/90'
+              isDark ? 'bg-neutral-800/70 border-neutral-700 text-white' : 'bg-slate-50 border-slate-200/90 text-slate-900'
             }`}>
               {secStr.split('\n').map((line, lIdx) => {
                 const trimmed = line.trim();
                 if (!trimmed) return null;
-                if (trimmed.startsWith('## ')) {
+                if (trimmed.startsWith('# ') || trimmed.startsWith('## ')) {
                   return (
                     <h3 key={lIdx} className={`text-[14px] font-bold pb-1.5 mb-2 border-b ${isDark ? 'text-slate-100 border-neutral-700' : 'text-slate-900 border-slate-200'}`}>
-                      {trimmed.replace(/^##\s+/, '')}
+                      {trimmed.replace(/^#+\s+/, '')}
                     </h3>
                   );
                 }
@@ -289,7 +304,7 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
                   return (
                     <div key={lIdx} className="flex items-start gap-2 my-1.5">
                       <span className={`font-bold text-[7px] mt-1 shrink-0 ${isDark ? 'text-amber-400' : 'text-slate-500'}`}>▪</span>
-                      <span className={`text-[13px] leading-relaxed ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
+                      <span className={`text-[13px] leading-relaxed ${isDark ? 'text-neutral-200' : 'text-slate-800'}`}>
                         {content.replace(/\*\*/g, '')}
                       </span>
                     </div>
@@ -325,10 +340,10 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
             {secStr.split('\n').map((line, i) => {
               const trimmed = line.trim();
               if (!trimmed) return null;
-              if (trimmed.startsWith('## ')) {
+              if (trimmed.startsWith('# ') || trimmed.startsWith('## ')) {
                 return (
-                  <h3 key={i} className={`text-[14px] font-bold pb-1 border-b ${isDark ? 'text-slate-200 border-neutral-700' : 'text-slate-800 border-slate-200'}`}>
-                    {trimmed.replace(/^##\s+/, '')}
+                  <h3 key={i} className={`text-[14px] font-bold pb-1 border-b ${isDark ? 'text-slate-200 border-neutral-700' : 'text-slate-900 border-slate-200'}`}>
+                    {trimmed.replace(/^#+\s+/, '')}
                   </h3>
                 );
               }
@@ -336,7 +351,7 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
                 return (
                   <div key={i} className="flex items-start gap-2 pl-0.5 my-1">
                     <span className={`font-bold shrink-0 mt-1 text-[7px] ${isDark ? 'text-amber-400' : 'text-slate-600'}`}>▪</span>
-                    <span className={`text-[13px] leading-relaxed ${isDark ? 'text-neutral-200' : 'text-slate-700'}`}>
+                    <span className={`text-[13px] leading-relaxed ${isDark ? 'text-neutral-200' : 'text-slate-800'}`}>
                       {trimmed.replace(/^[\-•]\s*/, '').replace(/\*\*/g, '')}
                     </span>
                   </div>
@@ -363,8 +378,8 @@ const SlideCard = ({
   isDark?: boolean;
 }) => {
   return (
-    <div className={`w-full aspect-[16/9] max-h-[50vh] rounded-[20px] border shadow-xs p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
-      isDark ? 'border-[#3E4042] bg-[#1E2024] text-white' : 'border-slate-200/90 bg-[#FAFAFC] text-slate-800'
+    <div className={`w-full h-full flex-1 min-h-0 rounded-[20px] border shadow-xs p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
+      isDark ? 'border-[#3E4042] bg-[#1E2024] text-white' : 'border-slate-200/90 bg-white text-slate-900'
     }`}>
       <RenderSlideMarkdown text={markdown} isDark={isDark} />
     </div>
@@ -379,8 +394,8 @@ const DocCard = ({
   isDark?: boolean;
 }) => {
   return (
-    <div className={`w-full aspect-[8.5/11] max-h-[50vh] rounded-[18px] border shadow-sm p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
-      isDark ? 'border-[#3E4042] bg-[#222427] text-white' : 'border-slate-200/90 bg-white text-slate-800'
+    <div className={`w-full h-full flex-1 min-h-0 rounded-[18px] border shadow-sm p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
+      isDark ? 'border-[#3E4042] bg-[#222427] text-white' : 'border-slate-200/90 bg-white text-slate-900'
     }`}>
       <RenderDocMarkdown text={markdown} isDark={isDark} />
     </div>
@@ -433,24 +448,25 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
     isDark ? 'bg-[#18191B] text-white' : 'bg-white text-slate-800'
   }`;
 
+  const CardComponent = isSlide ? SlideCard : DocCard;
+  const headerTextColor = (isDark || hideFooterText || className?.includes('text-white')) ? 'text-white' : 'text-[#1B1C1D]';
+
   return (
     <div className={className || defaultClasses}>
-      {/* Full-width container with 16px gap filling available canvas */}
-      <div className={`w-full grid grid-cols-2 gap-4 sm:gap-6 items-start ${hideFooterText ? 'pt-0 pb-0' : 'py-4'}`}>
+      {/* Full-width container filling available canvas height */}
+      <div className={`w-full grid grid-cols-2 gap-4 sm:gap-6 ${hideFooterText ? 'items-stretch h-full flex-1 min-h-0 pt-0 pb-0' : 'items-start py-4'}`}>
         
         {/* Column 1: Original */}
-        <div className="flex flex-col min-w-0">
+        <div className={`flex flex-col min-w-0 ${hideFooterText ? 'flex-1 h-full min-h-0 overflow-hidden' : ''}`}>
           {/* Header Title: Google Sans Light 22/28 */}
           <h2 
-            className={`font-['Google_Sans_Light','Google_Sans','Inter',sans-serif] text-[22px] leading-[28px] font-light mb-4 truncate ${
-              isDark ? 'text-white' : 'text-[#1B1C1D]'
-            }`}
+            className={`font-['Google_Sans_Light','Google_Sans','Inter',sans-serif] text-[22px] leading-[28px] font-light mb-4 truncate shrink-0 ${headerTextColor}`}
           >
             Original
           </h2>
 
-          <div className={hideFooterText ? "mb-0" : "mb-4"}>
-            <SlideCard markdown={col1Markdown} isDark={isDark} />
+          <div className={hideFooterText ? "mb-0 flex-1 min-h-0 flex flex-col overflow-hidden" : "mb-4"}>
+            <CardComponent markdown={col1Markdown} isDark={isDark} />
           </div>
 
           {!hideFooterText && (
@@ -465,18 +481,16 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
         </div>
 
         {/* Column 2: Suggested Update */}
-        <div className="flex flex-col min-w-0">
+        <div className={`flex flex-col min-w-0 ${hideFooterText ? 'flex-1 h-full min-h-0 overflow-hidden' : ''}`}>
           {/* Header Title: Google Sans Light 22/28 */}
           <h2 
-            className={`font-['Google_Sans_Light','Google_Sans','Inter',sans-serif] text-[22px] leading-[28px] font-light mb-4 truncate ${
-              isDark ? 'text-white' : 'text-[#1B1C1D]'
-            }`}
+            className={`font-['Google_Sans_Light','Google_Sans','Inter',sans-serif] text-[22px] leading-[28px] font-light mb-4 truncate shrink-0 ${headerTextColor}`}
           >
             Suggested Update
           </h2>
 
-          <div className={hideFooterText ? "mb-0" : "mb-4"}>
-            <SlideCard markdown={col2Markdown} isDark={isDark} />
+          <div className={hideFooterText ? "mb-0 flex-1 min-h-0 flex flex-col overflow-hidden" : "mb-4"}>
+            <CardComponent markdown={col2Markdown} isDark={isDark} />
           </div>
 
           {!hideFooterText && (

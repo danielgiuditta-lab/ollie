@@ -1069,7 +1069,7 @@ export function NativeViewer({
                 <div className={`w-full aspect-[16/9] max-h-[62vh] max-w-[110vh] rounded-[24px] sm:rounded-[28px] p-8 sm:p-12 flex flex-col justify-between border relative overflow-hidden transition-all duration-300 ${
                   isDark ? 'border-neutral-800 bg-[#1E1F22] text-white shadow-none' : 'border-slate-200/90 bg-white text-slate-900 shadow-sm'
                 }`}>
-                  <div className="w-full text-slate-800 dark:text-slate-100 text-[16px] sm:text-[18px] leading-relaxed flex-1 flex flex-col justify-center overflow-y-auto">
+                  <div className={`w-full text-[16px] sm:text-[18px] leading-relaxed flex-1 flex flex-col justify-center overflow-y-auto ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
                     <RenderSlideMarkdown text={currentSlideContent} isDark={isDark} />
                   </div>
                   <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-neutral-800 text-xs text-slate-400 font-medium shrink-0">
@@ -1085,7 +1085,7 @@ export function NativeViewer({
                   const isActive = idx === safeIndex;
                   return (
                     <div key={idx} className="flex flex-col items-start gap-1 shrink-0">
-                      <span className={`text-[11px] font-medium pl-0.5 font-sans ${isActive ? 'text-slate-800 dark:text-white font-bold' : 'text-slate-400 dark:text-neutral-500'}`}>
+                      <span className={`text-[11px] font-medium pl-0.5 font-sans ${isActive ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : 'text-slate-400 dark:text-neutral-500'}`}>
                         {idx + 1}
                       </span>
                       <button
@@ -1109,7 +1109,7 @@ export function NativeViewer({
                             left: '8px',
                             pointerEvents: 'none'
                           }}
-                          className="font-sans text-slate-800 dark:text-slate-100 select-none overflow-hidden"
+                          className={`font-sans select-none overflow-hidden ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
                         >
                           <RenderSlideMarkdown text={slideText} isDark={isDark} />
                         </div>
