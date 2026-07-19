@@ -52,51 +52,20 @@ function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource,
   return (
     <div
       onClick={onClick}
-      className={`p-3.5 rounded-[2px] first:rounded-t-[16px] last:rounded-b-[16px] bg-[#1E1F22] hover:bg-[#232529] cursor-pointer transition-all duration-150 select-none flex items-start justify-between gap-3 min-w-0 ${
+      className={`p-4 rounded-[2px] first:rounded-t-[16px] last:rounded-b-[16px] bg-[#1E1F22] hover:bg-[#232529] cursor-pointer transition-all duration-150 select-none flex items-start justify-between gap-3 min-w-0 ${
         isSelected ? 'bg-[#222428]' : ''
       }`}
     >
       <div className={`flex-1 min-w-0 flex flex-col gap-1 ${isSignedOff && !isSelected ? 'opacity-30' : 'opacity-100'}`}>
         {/* Cell Title: Google Sans Regular 14/20 in #E3E3E3 */}
-        <h4 
-          className="text-[14px] leading-[20px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3]"
-          style={isSelected ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        >
+        <h4 className="text-[14px] leading-[20px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3] truncate">
           {titleText}
         </h4>
 
         {/* Cell Subtitle: Google Sans Regular 12/16 in #E3E3E3 0.7 opacity */}
-        <p 
-          className="text-[12px] leading-[16px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3]/70"
-          style={isSelected ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        >
+        <p className="text-[12px] leading-[16px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3]/70 truncate">
           {descText}
         </p>
-
-        {/* Sources Chips: ONLY SHOWN WHEN EXPANDED (isSelected === true) */}
-        {isSelected && (
-          <div className="flex items-center gap-2 flex-wrap pt-2" onClick={(e) => e.stopPropagation()}>
-            {resolvedPersonName && (
-              <div 
-                onClick={() => onOpenSource(resolvedPersonName)}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3] transition-colors cursor-pointer"
-              >
-                {avatarElement}
-                <span className="truncate max-w-[120px]">{resolvedPersonName}</span>
-              </div>
-            )}
-
-            {resolvedSourceName && (
-              <div 
-                onClick={() => onOpenSource(resolvedSourceName)}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3] transition-colors cursor-pointer"
-              >
-                {getFileIcon(resolvedSourceName, item.sourceMimeType || item.type)}
-                <span className="truncate max-w-[140px]">{resolvedSourceName}</span>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Signed Off Checkmark Button (no border stroke, click unmarks as completed) */}
@@ -152,6 +121,39 @@ export function TheatreView({
   }, [initialIndex, todoItems.length]);
 
   const activeTask = todoItems[activeIndex] || todoItems[0] || null;
+
+  const [canvasAvatarFailed, setCanvasAvatarFailed] = useState(false);
+
+  const activeSourceName = activeTask?.sourceName || activeTask?.workspace || 'Google Drive';
+  const activePersonName = activeTask?.personName || 'Maya Lin';
+  const activeAvatar = activeTask?.personAvatar || getAvatarForPerson(activePersonName, Boolean(activeTask?.isReal || activeTask?.driveId || activeTask?.isOAuth));
+
+  const canvasAvatarElement = (!canvasAvatarFailed && activeAvatar) ? (
+    <img 
+      src={activeAvatar} 
+      alt={activePersonName} 
+      className="w-4 h-4 rounded-full object-cover shrink-0"
+      onError={() => setCanvasAvatarFailed(true)}
+    />
+  ) : (
+    <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">
+      {activePersonName.charAt(0).toUpperCase()}
+    </div>
+  );
+
+  const isCurrentSignedOff = activeTask ? (activeTask.status === 'done' || completedTaskIds.has(activeTask.id)) : false;
+
+  const canvasTitleText = activeTask ? (
+    isCurrentSignedOff 
+      ? (activeTask.titleDone || activeTask.title || activeTask.description)
+      : (activeTask.title || activeTask.titleDone || activeTask.description)
+  ) : '';
+
+  const canvasMetaText = activeTask ? (
+    isCurrentSignedOff
+      ? (activeTask.descriptionDone || activeTask.description || activeTask.action || 'Your tasks will be added to "My tasks" when notes are ready')
+      : (activeTask.description || activeTask.descriptionDone || activeTask.action || 'Gemini will write a professional follow-up email for you...')
+  ) : '';
 
   // Handle task approval (Yes)
   const handleApprove = () => {
@@ -431,16 +433,67 @@ export function TheatreView({
         {/* Right Area: Artifact View + Centered Controls Dock directly under it */}
         <div className="flex-1 h-full min-w-0 flex flex-col gap-3 overflow-hidden pb-1">
           {/* Selected Task Target Artifact View (No border stroke) */}
-          <div className="flex-1 min-h-0 rounded-2xl overflow-hidden bg-[#18191B] relative shadow-2xl flex flex-col">
+          <div className="flex-1 min-h-0 rounded-2xl overflow-y-auto bg-[#18191B] relative shadow-2xl flex flex-col p-6 md:p-8 select-text">
+            {/* Cell Info Block in Canvas */}
+            {activeTask && (
+              <div className="w-full flex flex-col mb-[40px] shrink-0 font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                {/* Title: goog reg 24/32 */}
+                <h3 className="text-[24px] leading-[32px] font-normal text-white">
+                  {canvasTitleText}
+                </h3>
+
+                {/* Metaline: diff view text size (16px leading 24px) */}
+                <p className="text-[16px] leading-[24px] font-normal text-neutral-300 mt-1">
+                  {canvasMetaText}
+                </p>
+
+                {/* Sources below that */}
+                <div className="flex items-center gap-2 flex-wrap mt-3">
+                  {activePersonName && (
+                    <div 
+                      onClick={() => handleOpenSourceChip(activePersonName)}
+                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                    >
+                      {canvasAvatarElement}
+                      <span className="truncate max-w-[140px]">{activePersonName}</span>
+                    </div>
+                  )}
+
+                  {activeSourceName && (
+                    <div 
+                      onClick={() => handleOpenSourceChip(activeSourceName)}
+                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                    >
+                      {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                      <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                    </div>
+                  )}
+
+                  {activeTask?.links && activeTask.links.map((link: any, idx: number) => (
+                    <a
+                      key={idx}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-[12px] font-normal transition-colors"
+                    >
+                      {link.label || 'Open Link'}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {activeFileObject ? (
               <div 
                 key={activeTask?.id || activeIndex}
-                className="w-full h-full animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col overflow-hidden"
+                className="w-full flex-1 animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col"
               >
                 {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
                   <InferredTaskDiffView 
                     file={activeFileObject}
                     theme="dark"
+                    className="w-full flex flex-col items-stretch justify-start bg-transparent text-white p-0"
                   />
                 ) : (
                   <NativeViewer

@@ -3,6 +3,7 @@ import React from 'react';
 interface InferredTaskDiffViewProps {
   file: any;
   theme?: 'light' | 'dark';
+  className?: string;
 }
 
 export const RenderDocMarkdown = ({ text, isDark = false }: { text: string; isDark?: boolean }) => {
@@ -385,7 +386,7 @@ const DocCard = ({
   );
 };
 
-export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file, theme = 'light' }) => {
+export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file, theme = 'light', className }) => {
   const isDark = theme === 'dark';
 
   const task = file?.task || file || {};
@@ -427,10 +428,12 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
     (typeof file?.content === 'string' && file.content.trim().length > 0 ? file.content : null) ||
     `# ${cleanTitle}\n\n- ${col2Description}`;
 
+  const defaultClasses = `w-full h-full flex flex-col items-stretch justify-start p-4 sm:p-6 overflow-y-auto transition-colors duration-300 ${
+    isDark ? 'bg-[#18191B] text-white' : 'bg-white text-slate-800'
+  }`;
+
   return (
-    <div className={`w-full h-full flex flex-col items-stretch justify-start p-4 sm:p-6 overflow-y-auto transition-colors duration-300 ${
-      isDark ? 'bg-[#18191B] text-white' : 'bg-white text-slate-800'
-    }`}>
+    <div className={className || defaultClasses}>
       {/* Full-width container with 16px gap and padding filling available canvas */}
       <div className="w-full grid grid-cols-2 gap-4 sm:gap-6 items-start py-4">
         
