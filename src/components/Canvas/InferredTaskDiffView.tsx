@@ -435,8 +435,8 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
 
   return (
     <div className={className || defaultClasses}>
-      {/* Full-width container with 16px gap and padding filling available canvas */}
-      <div className="w-full grid grid-cols-2 gap-4 sm:gap-6 items-start py-4">
+      {/* Full-width container with 16px gap filling available canvas */}
+      <div className={`w-full grid grid-cols-2 gap-4 sm:gap-6 items-start ${hideFooterText ? 'pt-0 pb-0' : 'py-4'}`}>
         
         {/* Column 1: Original */}
         <div className="flex flex-col min-w-0">

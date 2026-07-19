@@ -21,12 +21,52 @@ interface TheatreTaskCellProps {
   onToggleComplete?: (taskId: string) => void;
 }
 
+function getAbbreviatedCellTitle(item: any, isSignedOff: boolean): string {
+  if (!item) return '';
+
+  if (item.shortTitle) return item.shortTitle;
+
+  // If sourceName is clean and descriptive, use sourceName without file extension
+  if (item.sourceName && typeof item.sourceName === 'string') {
+    const cleanSource = item.sourceName.replace(/\.[^/.]+$/, "").replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, "").trim();
+    if (
+      cleanSource && 
+      cleanSource.length > 2 && 
+      cleanSource.length < 45 && 
+      !cleanSource.toLowerCase().includes('google drive') && 
+      !cleanSource.toLowerCase().includes('calendar') && 
+      !cleanSource.toLowerCase().includes('chat')
+    ) {
+      return cleanSource;
+    }
+  }
+
+  const raw = isSignedOff 
+    ? (item.titleDone || item.title || item.description || '')
+    : (item.title || item.titleDone || item.description || '');
+
+  if (!raw) return 'Task';
+
+  let cleaned = raw;
+  cleaned = cleaned.replace(/^I\s+(?:started\s+(?:an?\s+)?(?:outline\s+for\s+the\s+)?|updated\s+|prepared\s+(?:files\s+to\s+share\s+in\s+)?|proposed\s+(?:a\s+)?|drafted\s+|reviewed\s+|created\s+)/i, '');
+  cleaned = cleaned.replace(/\s+(?:per|for|requested by)\s+[A-Z][a-z]+(?:'s)?\s*(?:comment|request|feedback)?.*$/i, '');
+  cleaned = cleaned.trim();
+
+  if (cleaned.length > 40) {
+    cleaned = cleaned.substring(0, 38).trim() + '…';
+  }
+
+  if (cleaned.length > 0) {
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+
+  return cleaned || raw;
+}
+
 function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource, onToggleComplete }: TheatreTaskCellProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
 
-  const titleText = isSignedOff 
-    ? (item.titleDone || item.title || item.description)
-    : (item.title || item.titleDone || item.description);
+  const titleText = getAbbreviatedCellTitle(item, isSignedOff);
 
   const descText = isSignedOff
     ? (item.descriptionDone || item.description || item.action || 'Your tasks will be added to "My tasks" when notes are ready')
@@ -447,23 +487,23 @@ export function TheatreView({
 
         {/* Right Area: Artifact View + Centered Controls Dock directly under it */}
         <div className="flex-1 h-full min-w-0 flex flex-col gap-3 overflow-hidden pb-1">
-          {/* Selected Task Target Artifact View (No border stroke) */}
-          <div className="flex-1 min-h-0 rounded-2xl overflow-y-auto bg-[#18191B] relative shadow-2xl flex flex-col p-6 md:p-8 select-text">
-            {/* Cell Info Block in Canvas */}
+          {/* Selected Task Target Artifact View (No border stroke, 32px padding, matching cell container bg #131314) */}
+          <div className="flex-1 min-h-0 rounded-[24px] overflow-y-auto bg-[#131314] relative shadow-2xl flex flex-col p-8 select-text">
+            {/* Centered Title, Metaline, and Sources Unit (Max width 70%, Vertically Centered) */}
             {activeTask && (
-              <div className="w-full flex flex-col mb-[40px] shrink-0 font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                {/* Title: goog reg 24/32 */}
-                <h3 className="text-[24px] leading-[32px] font-normal text-white">
+              <div className="flex-1 min-h-0 flex flex-col justify-center items-start max-w-[70%] py-4 font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                {/* Title: 32px with tightened line spacing (leading-[38px]) */}
+                <h3 className="text-[32px] leading-[38px] font-normal text-white">
                   {canvasTitleText}
                 </h3>
 
-                {/* Metaline: diff view text size (16px leading 24px) */}
-                <p className="text-[16px] leading-[24px] font-normal text-neutral-300 mt-1">
+                {/* Metaline: 20px with auto line height */}
+                <p className="text-[20px] leading-normal font-normal text-neutral-300 mt-2">
                   {canvasMetaText}
                 </p>
 
                 {/* Sources below that */}
-                <div className="flex items-center gap-2 flex-wrap mt-3">
+                <div className="flex items-center gap-2 flex-wrap mt-4">
                   {activePersonName && (
                     <div 
                       onClick={() => handleOpenSourceChip(activePersonName)}
@@ -499,16 +539,18 @@ export function TheatreView({
               </div>
             )}
 
+            {/* Artifacts in Diff View Docked to Bottom */}
             {activeFileObject ? (
               <div 
                 key={activeTask?.id || activeIndex}
-                className="w-full flex-1 animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col"
+                className="w-full shrink-0 mt-auto animate-in slide-in-from-bottom-4 duration-200 ease-out flex flex-col"
               >
                 {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
                   <InferredTaskDiffView 
                     file={activeFileObject}
                     theme="dark"
                     className="w-full flex flex-col items-stretch justify-start bg-transparent text-white p-0"
+                    hideFooterText={true}
                   />
                 ) : (
                   <NativeViewer
