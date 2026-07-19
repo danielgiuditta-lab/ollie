@@ -647,21 +647,21 @@ export function TheatreView({
                 className="w-full h-full rounded-[24px] overflow-y-auto bg-[#131314]/90 backdrop-blur-md shadow-2xl flex flex-col p-8 select-text border border-white/5 absolute inset-0"
               >
                 {isChatReplyTask ? (
-                  <div className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 p-4 md:p-8 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                    {/* Left Column: Title, Meta, and Context Unit */}
-                    <div className="w-full md:w-1/2 flex flex-col items-start justify-center pr-0 md:pr-4">
+                  <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-6 md:p-10 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                    {/* Left Column: Title, Meta, and Context Unit (Half of Canvas) */}
+                    <div className="w-1/2 h-full flex flex-col items-start justify-center pr-4 md:pr-6 min-w-0">
                       {/* Title */}
-                      <h3 className="text-[32px] md:text-[36px] leading-[42px] font-normal text-white tracking-normal font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                      <h3 className="text-[32px] md:text-[36px] leading-[40px] font-normal text-white tracking-normal font-['Google_Sans','Google_Sans_Text',sans-serif]">
                         {canvasTitleText}
                       </h3>
 
                       {/* Meta */}
-                      <p className="text-[20px] md:text-[22px] leading-[30px] font-normal text-[#9AA0A6] mt-6 md:mt-8 font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                      <p className="text-[20px] md:text-[22px] leading-[28px] font-normal text-[#9AA0A6] mt-3 md:mt-4 font-['Google_Sans','Google_Sans_Text',sans-serif]">
                         {canvasMetaText}
                       </p>
 
                       {/* Context Unit (Chips) */}
-                      <div className="flex items-center gap-2 flex-wrap mt-6 md:mt-8">
+                      <div className="flex items-center gap-2 flex-wrap mt-3.5 md:mt-4.5">
                         {activePersonName && (
                           <div 
                             onClick={() => handleOpenSourceChip(activePersonName)}
@@ -696,8 +696,8 @@ export function TheatreView({
                       </div>
                     </div>
 
-                    {/* Right Column: Chat UI */}
-                    <div className="w-full md:w-1/2 flex flex-col justify-center gap-6 pl-0 md:pl-6 py-4 select-text">
+                    {/* Right Column: Chat UI (Half of Canvas) */}
+                    <div className="w-1/2 h-full flex flex-col justify-center gap-6 pl-4 md:pl-6 min-w-0 select-text">
                       {/* Sender Message Row */}
                       <div className="flex items-start gap-3 justify-start max-w-[95%]">
                         {/* Sender Avatar */}
@@ -758,20 +758,20 @@ export function TheatreView({
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-end flex-wrap gap-x-2 gap-y-1">
-                              <span className="whitespace-pre-wrap">
-                                {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
+                            <div className="whitespace-pre-wrap leading-[25px] md:leading-[26px]">
+                              {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
+                              <span className="inline-block align-middle ml-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsEditingProposal(true);
+                                  }}
+                                  className="inline-flex items-center justify-center p-1 rounded-full text-white/90 hover:text-white hover:bg-white/20 transition-all cursor-pointer shrink-0 align-middle"
+                                  title="Edit proposed reply"
+                                >
+                                  <Pencil size={18} className="text-white stroke-[2.2]" />
+                                </button>
                               </span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setIsEditingProposal(true);
-                                }}
-                                className="inline-flex items-center justify-center p-1 rounded-full text-white/90 hover:text-white hover:bg-white/20 transition-all cursor-pointer shrink-0 align-bottom mb-0.5"
-                                title="Edit proposed reply"
-                              >
-                                <Pencil size={18} className="text-white stroke-[2.2]" />
-                              </button>
                             </div>
                           )}
                         </div>
