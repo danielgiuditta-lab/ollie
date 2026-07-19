@@ -654,37 +654,96 @@ export function SpaceDashboard({
                         theme={theme}
                       />
                     ) : (
-                      <div className="w-full h-full overflow-y-auto p-4 flex flex-col gap-[4px]">
-                        {todoItems && todoItems.map((item) => (
-                          <InferredTaskCard 
-                            key={item.id}
-                            item={item}
-                            getFileIcon={getFileIcon || (() => '')}
-                            isNarrow={isNarrowDashboardCard}
-                            onClick={() => {
-                              if (onProactiveTaskClick) {
-                                onProactiveTaskClick(item);
-                              } else {
-                                if (item.filesToLoad && setSandboxFiles && setSelectedFile) {
-                                  setSandboxFiles(item.filesToLoad);
-                                  setSelectedFile(item.filesToLoad[0]);
-                                } else if (setSandboxFiles && setSelectedFile) {
-                                  setSandboxFiles([]);
-                                  setSelectedFile(null);
-                                }
-                                if (setProjectName) {
-                                  setProjectName(item.workspace.split(' · ')[0]);
-                                }
-                                if (setViewState) {
-                                  setViewState('files');
-                                }
-                                if (setActiveSidebar) {
-                                  setActiveSidebar('gemini');
-                                }
+                      <div className="w-full h-full overflow-y-auto p-4 flex flex-col gap-4">
+                        {(() => {
+                          const continueWorking = (todoItems || []).filter(t => t.category === 'needs_input' || t.category === 'continue_working' || (t.type !== 'chat' && t.type !== 'fyi' && t.category !== 'needs_approval' && t.category !== 'fyi'));
+                          const needsApproval = (todoItems || []).filter(t => t.category === 'needs_approval' || t.type === 'chat');
+                          const fyiItems = (todoItems || []).filter(t => t.type === 'fyi' || t.category === 'fyi');
+
+                          const handleItemClick = (item: any) => {
+                            if (onProactiveTaskClick) {
+                              onProactiveTaskClick(item);
+                            } else {
+                              if (item.filesToLoad && setSandboxFiles && setSelectedFile) {
+                                setSandboxFiles(item.filesToLoad);
+                                setSelectedFile(item.filesToLoad[0]);
+                              } else if (setSandboxFiles && setSelectedFile) {
+                                setSandboxFiles([]);
+                                setSelectedFile(null);
                               }
-                            }}
-                          />
-                        ))}
+                              if (setProjectName) {
+                                setProjectName(item.workspace.split(' · ')[0]);
+                              }
+                              if (setViewState) {
+                                setViewState('files');
+                              }
+                              if (setActiveSidebar) {
+                                setActiveSidebar('gemini');
+                              }
+                            }
+                          };
+
+                          return (
+                            <>
+                              {continueWorking.length > 0 && (
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
+                                    Continue working on...
+                                  </span>
+                                  <div className="flex flex-col gap-[2px]">
+                                    {continueWorking.map((item) => (
+                                      <InferredTaskCard
+                                        key={item.id}
+                                        item={item}
+                                        getFileIcon={getFileIcon || (() => '')}
+                                        isNarrow={isNarrowDashboardCard}
+                                        onClick={() => handleItemClick(item)}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {needsApproval.length > 0 && (
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
+                                    Needs your approval
+                                  </span>
+                                  <div className="flex flex-col gap-[2px]">
+                                    {needsApproval.map((item) => (
+                                      <InferredTaskCard
+                                        key={item.id}
+                                        item={item}
+                                        getFileIcon={getFileIcon || (() => '')}
+                                        isNarrow={isNarrowDashboardCard}
+                                        onClick={() => handleItemClick(item)}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {fyiItems.length > 0 && (
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
+                                    FYI
+                                  </span>
+                                  <div className="flex flex-col gap-[2px]">
+                                    {fyiItems.map((item) => (
+                                      <InferredTaskCard
+                                        key={item.id}
+                                        item={item}
+                                        getFileIcon={getFileIcon || (() => '')}
+                                        isNarrow={isNarrowDashboardCard}
+                                        onClick={() => handleItemClick(item)}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     )
                   ) : isHtml ? (

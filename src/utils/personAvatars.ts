@@ -9,6 +9,8 @@ export function slugifyPersonName(name: string): string {
 
 // 1-to-1 Mapping Matrix between person names and local high-res avatar assets
 export const PERSON_AVATAR_MAP: Record<string, string> = {
+  'alan vance': '/people/david.jpg',
+  'alan': '/people/david.jpg',
   'elena vance': '/people/elena_vance.jpg',
   'dr. marcus thorne': '/people/dr_marcus_thorne.jpg',
   'sarah lin': '/people/sarah_lin.jpg',

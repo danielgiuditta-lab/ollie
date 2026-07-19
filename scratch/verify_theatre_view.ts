@@ -39,8 +39,8 @@ async function runVerification() {
     'handleSteerSubmit',
     'handlePrev',
     'handleNext',
-    'What I did...',
-    'What I started...',
+    'Continue working on...',
+    'Needs your approval',
     'FYI',
     'InferredTaskDiffView',
     'NativeViewer'

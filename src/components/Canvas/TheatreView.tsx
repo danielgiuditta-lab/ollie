@@ -5,7 +5,8 @@ import {
   ArrowLeft, 
   ArrowRight, 
   X,
-  ChevronRight
+  ChevronRight,
+  Pencil
 } from 'lucide-react';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
@@ -195,6 +196,28 @@ export function TheatreView({
 
   const activeTask = todoItems[activeIndex] || todoItems[0] || null;
 
+  const isChatReplyTask = Boolean(
+    activeTask && (
+      activeTask.type === 'chat' ||
+      activeTask.type === 'message' ||
+      activeTask.senderMessage ||
+      activeTask.proposedReply ||
+      (typeof activeTask.sourceName === 'string' && activeTask.sourceName.toLowerCase().includes('chat'))
+    )
+  );
+
+  const [isEditingProposal, setIsEditingProposal] = useState(false);
+  const [editableProposalText, setEditableProposalText] = useState('');
+
+  useEffect(() => {
+    if (activeTask) {
+      setEditableProposalText(
+        activeTask.proposedReply || activeTask.action || "hey alan!\nconversion is steady at 21%"
+      );
+      setIsEditingProposal(false);
+    }
+  }, [activeTask?.id]);
+
   const [canvasAvatarFailed, setCanvasAvatarFailed] = useState(false);
 
   const activeSourceName = activeTask?.sourceName || activeTask?.workspace || 'Google Drive';
@@ -294,6 +317,10 @@ export function TheatreView({
     setSlideDirection(1);
     triggerActionToast('Approved');
     if (activeTask) {
+      if (isChatReplyTask) {
+        activeTask.proposedReply = val;
+        setEditableProposalText(val);
+      }
       const nextCompleted = new Set(completedTaskIds);
       nextCompleted.add(activeTask.id);
       setCompletedTaskIds(nextCompleted);
@@ -344,7 +371,8 @@ export function TheatreView({
   };
 
   // Group tasks for Left List maintaining fixed section structure matching inferred task list
-  const startedTasks = todoItems.filter(t => t.type !== 'fyi' && t.category !== 'fyi');
+  const continueWorkingTasks = todoItems.filter(t => t.category === 'needs_input' || t.category === 'continue_working' || (t.type !== 'chat' && t.type !== 'fyi' && t.category !== 'needs_approval' && t.category !== 'fyi'));
+  const approvalTasks = todoItems.filter(t => t.category === 'needs_approval' || t.type === 'chat');
   const fyiTasks = todoItems.filter(t => t.type === 'fyi' || t.category === 'fyi');
 
   // Determine native tool button label
@@ -510,14 +538,41 @@ export function TheatreView({
               className="shrink-0 h-full overflow-hidden"
             >
               <div className="w-80 md:w-[380px] h-full bg-[#131314]/90 backdrop-blur-md rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] shadow-2xl border border-white/5">
-                {/* Active Tasks ("What I started..." or "What I did...") */}
-                {startedTasks.length > 0 && (
+                {/* Continue working on... */}
+                {continueWorkingTasks.length > 0 && (
                   <div className="flex flex-col">
                     <h3 className="text-[20px] leading-[28px] font-normal text-[#E3E3E3] pt-2 mb-4 px-1">
-                      {hasAnyDone ? 'What I did...' : 'What I started...'}
+                      Continue working on...
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
-                      {startedTasks.map((item) => {
+                      {continueWorkingTasks.map((item) => {
+                        const itemIndex = todoItems.findIndex(t => t.id === item.id);
+                        const isSelected = itemIndex === activeIndex;
+                        const isSignedOff = completedTaskIds.has(item.id);
+                        return (
+                          <TheatreTaskCell
+                            key={item.id}
+                            item={item}
+                            isSelected={isSelected}
+                            isSignedOff={isSignedOff}
+                            onClick={() => handleSelectIndex(itemIndex)}
+                            onOpenSource={handleOpenSourceChip}
+                            onToggleComplete={handleToggleComplete}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Needs your approval */}
+                {approvalTasks.length > 0 && (
+                  <div className="flex flex-col">
+                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${continueWorkingTasks.length > 0 ? 'pt-6' : 'pt-2'}`}>
+                      Needs your approval
+                    </h3>
+                    <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
+                      {approvalTasks.map((item) => {
                         const itemIndex = todoItems.findIndex(t => t.id === item.id);
                         const isSelected = itemIndex === activeIndex;
                         const isSignedOff = completedTaskIds.has(item.id);
@@ -540,7 +595,7 @@ export function TheatreView({
                 {/* FYI Tasks ("FYI") */}
                 {fyiTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${startedTasks.length > 0 ? 'pt-6' : 'pt-2'}`}>
+                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${(continueWorkingTasks.length > 0 || approvalTasks.length > 0) ? 'pt-6' : 'pt-2'}`}>
                       FYI
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
@@ -587,79 +642,227 @@ export function TheatreView({
                 }}
                 className="w-full h-full rounded-[24px] overflow-y-auto bg-[#131314]/90 backdrop-blur-md shadow-2xl flex flex-col p-8 select-text border border-white/5 absolute inset-0"
               >
-                {/* Title, Metaline (capped at 2 lines), and Sources Unit (50% max width when full screen/collapsed, 70% when open) */}
-                {activeTask && (
-                  <div className={`w-full shrink-0 flex flex-col items-start ${isTaskListOpen ? 'max-w-[70%]' : 'max-w-[50%]'} mb-[40px] font-['Google_Sans','Google_Sans_Text',sans-serif] transition-all duration-300`}>
-                    {/* Title: 32px with tightened line spacing (leading-[38px]) */}
-                    <h3 className="text-[32px] leading-[38px] font-normal text-white">
-                      {canvasTitleText}
-                    </h3>
+                {isChatReplyTask ? (
+                  <div className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 p-4 md:p-8 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                    {/* Left Column: Title, Meta, and Context Unit */}
+                    <div className="w-full md:w-1/2 flex flex-col items-start justify-center pr-0 md:pr-4">
+                      {/* Title */}
+                      <h3 className="text-[32px] md:text-[36px] leading-[42px] font-normal text-white tracking-normal font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                        {canvasTitleText}
+                      </h3>
 
-                    {/* Metaline: 20px with auto line height, capped at 2 lines */}
-                    <p className="text-[20px] leading-normal font-normal text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
-                      {canvasMetaText}
-                    </p>
+                      {/* Meta */}
+                      <p className="text-[20px] md:text-[22px] leading-[30px] font-normal text-[#9AA0A6] mt-6 md:mt-8 font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                        {canvasMetaText}
+                      </p>
 
-                    {/* Sources below that */}
-                    <div className="flex items-center gap-2 flex-wrap mt-4">
-                      {activePersonName && (
-                        <div 
-                          onClick={() => handleOpenSourceChip(activePersonName)}
-                          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
-                        >
-                          {canvasAvatarElement}
-                          <span className="truncate max-w-[140px]">{activePersonName}</span>
+                      {/* Context Unit (Chips) */}
+                      <div className="flex items-center gap-2 flex-wrap mt-6 md:mt-8">
+                        {activePersonName && (
+                          <div 
+                            onClick={() => handleOpenSourceChip(activePersonName)}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[13px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                          >
+                            {canvasAvatarElement}
+                            <span className="truncate max-w-[140px]">{activePersonName}</span>
+                          </div>
+                        )}
+
+                        {activeSourceName && (
+                          <div 
+                            onClick={() => handleOpenSourceChip(activeSourceName)}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[13px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                          >
+                            {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                            <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                          </div>
+                        )}
+
+                        {activeTask?.links && activeTask.links.map((link: any, idx: number) => (
+                          <a
+                            key={idx}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-[13px] font-normal transition-colors"
+                          >
+                            {link.label || 'Open Link'}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Chat UI */}
+                    <div className="w-full md:w-1/2 flex flex-col justify-center gap-6 pl-0 md:pl-6 py-4 select-text">
+                      {/* Sender Message Row */}
+                      <div className="flex items-start gap-3 justify-start max-w-[95%]">
+                        {/* Sender Avatar */}
+                        <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md border border-white/10">
+                          {activeAvatar ? (
+                            <img 
+                              src={activeAvatar} 
+                              alt={activePersonName} 
+                              className="w-full h-full object-cover" 
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">
+                              {activePersonName.charAt(0)}
+                            </div>
+                          )}
                         </div>
-                      )}
 
-                      {activeSourceName && (
-                        <div 
-                          onClick={() => handleOpenSourceChip(activeSourceName)}
-                          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
-                        >
-                          {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                          <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                        {/* Sender Bubble */}
+                        <div className="bg-[#2D2E30] text-white/90 text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-lg max-w-[85%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                          {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
                         </div>
-                      )}
+                      </div>
 
-                      {activeTask?.links && activeTask.links.map((link: any, idx: number) => (
-                        <a
-                          key={idx}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-[12px] font-normal transition-colors"
-                        >
-                          {link.label || 'Open Link'}
-                        </a>
-                      ))}
+                      {/* Proposed Reply Row */}
+                      <div className="flex items-end gap-3 justify-end max-w-[95%] ml-auto mt-2">
+                        {/* Proposed Reply Bubble */}
+                        <div className="bg-[#45474A] text-white text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-lg max-w-[85%] font-['Google_Sans','Google_Sans_Text',sans-serif] relative group">
+                          {isEditingProposal ? (
+                            <div className="flex flex-col gap-2 min-w-[240px]">
+                              <textarea
+                                value={editableProposalText}
+                                onChange={(e) => setEditableProposalText(e.target.value)}
+                                className="w-full bg-black/40 text-white text-[16px] leading-[24px] font-normal p-3 rounded-xl border border-white/30 focus:outline-none focus:border-white resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
+                                rows={3}
+                                autoFocus
+                              />
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => setIsEditingProposal(false)}
+                                  className="px-3 py-1 rounded-full text-xs font-medium text-neutral-300 hover:text-white hover:bg-white/10 cursor-pointer"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (activeTask) {
+                                      activeTask.proposedReply = editableProposalText;
+                                    }
+                                    setIsEditingProposal(false);
+                                  }}
+                                  className="px-3 py-1 rounded-full text-xs font-medium bg-white text-black hover:bg-neutral-200 cursor-pointer"
+                                >
+                                  Save
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-end flex-wrap gap-x-2 gap-y-1">
+                              <span className="whitespace-pre-wrap">
+                                {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsEditingProposal(true);
+                                }}
+                                className="inline-flex items-center justify-center p-1 rounded-full text-white/90 hover:text-white hover:bg-white/20 transition-all cursor-pointer shrink-0 align-bottom mb-0.5"
+                                title="Edit proposed reply"
+                              >
+                                <Pencil size={18} className="text-white stroke-[2.2]" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* User Avatar */}
+                        <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md border border-white/10">
+                          <img 
+                            src={userProfile?.picture || '/people/sarah_lin.jpg'} 
+                            alt="User" 
+                            className="w-full h-full object-cover" 
+                            onError={(e) => {
+                              (e.target as HTMLElement).setAttribute('src', '/people/sarah_lin.jpg');
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                )}
-
-                {/* Artifacts in Diff View Filling Remaining Canvas Height */}
-                {activeFileObject ? (
-                  <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
-                    {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
-                      <InferredTaskDiffView 
-                        file={activeFileObject}
-                        theme="light"
-                        className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
-                        hideFooterText={true}
-                      />
-                    ) : (
-                      <NativeViewer
-                        file={activeFileObject}
-                        hideHeader={true}
-                        mode="preview"
-                        theme="light"
-                      />
-                    )}
-                  </div>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-neutral-500 text-sm font-medium">
-                    No artifact preview available for this task.
-                  </div>
+                  <>
+                    {/* Title, Metaline (capped at 2 lines), and Sources Unit (50% max width when full screen/collapsed, 70% when open) */}
+                    {activeTask && (
+                      <div className={`w-full shrink-0 flex flex-col items-start ${isTaskListOpen ? 'max-w-[70%]' : 'max-w-[50%]'} mb-[40px] font-['Google_Sans','Google_Sans_Text',sans-serif] transition-all duration-300`}>
+                        {/* Title: 32px with tightened line spacing (leading-[38px]) */}
+                        <h3 className="text-[32px] leading-[38px] font-normal text-white">
+                          {canvasTitleText}
+                        </h3>
+
+                        {/* Metaline: 20px with auto line height, capped at 2 lines */}
+                        <p className="text-[20px] leading-normal font-normal text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
+                          {canvasMetaText}
+                        </p>
+
+                        {/* Sources below that */}
+                        <div className="flex items-center gap-2 flex-wrap mt-4">
+                          {activePersonName && (
+                            <div 
+                              onClick={() => handleOpenSourceChip(activePersonName)}
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                            >
+                              {canvasAvatarElement}
+                              <span className="truncate max-w-[140px]">{activePersonName}</span>
+                            </div>
+                          )}
+
+                          {activeSourceName && (
+                            <div 
+                              onClick={() => handleOpenSourceChip(activeSourceName)}
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                            >
+                              {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                              <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                            </div>
+                          )}
+
+                          {activeTask?.links && activeTask.links.map((link: any, idx: number) => (
+                            <a
+                              key={idx}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-[12px] font-normal transition-colors"
+                            >
+                              {link.label || 'Open Link'}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Artifacts in Diff View Filling Remaining Canvas Height */}
+                    {activeFileObject ? (
+                      <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+                        {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
+                          <InferredTaskDiffView 
+                            file={activeFileObject}
+                            theme="light"
+                            className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
+                            hideFooterText={true}
+                          />
+                        ) : (
+                          <NativeViewer
+                            file={activeFileObject}
+                            hideHeader={true}
+                            mode="preview"
+                            theme="light"
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-neutral-500 text-sm font-medium">
+                        No artifact preview available for this task.
+                      </div>
+                    )}
+                  </>
                 )}
               </motion.div>
             </AnimatePresence>
