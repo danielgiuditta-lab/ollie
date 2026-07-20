@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { 
   Check, 
   ArrowLeft, 
@@ -388,29 +388,39 @@ export function OptionCView({
 
   return (
     <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
-      {/* Simple CSS List of cells where focused cell gets bigger on scroll/focus */}
+      {/* Continuous layout list where the SAME cell morphs smoothly from collapsed row to expanded cell as it slides up */}
       <div className="flex-1 w-full min-h-[460px] flex flex-col gap-3 overflow-hidden relative">
-        <AnimatePresence initial={false}>
+        <LayoutGroup id="option-c-cells">
           {orderedTodoItems.map((item, idx) => {
             const isFocused = idx === activeIndex;
             const isPrev = idx === activeIndex - 1;
             const isNext = idx === activeIndex + 1;
 
-            // Only render prev, focused, and next cells in the reel list
             if (!isFocused && !isPrev && !isNext) return null;
 
-            if (isFocused) {
-              return (
-                <motion.div
-                  key={item.id || idx}
-                  layout="position"
-                  initial={{ opacity: 0, scale: 0.94, y: 30 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.94, y: -30 }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex-1 min-h-[380px] relative flex flex-col overflow-hidden rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] border border-slate-200/60 dark:border-[#2B2D31] shadow-md p-6 md:p-8 select-text origin-center"
-                >
-                  <div className="w-full h-full flex flex-col min-h-0 overflow-y-auto relative">
+            return (
+              <motion.div
+                key={item.id || `cell-${idx}`}
+                layout
+                onClick={() => {
+                  if (!isFocused) {
+                    setActiveIndex(idx);
+                  }
+                }}
+                className={`w-full transition-all duration-300 ease-in-out select-none overflow-hidden origin-center ${
+                  isFocused
+                    ? 'flex-1 min-h-[380px] rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] border border-slate-200/60 dark:border-[#2B2D31] shadow-md p-6 md:p-8 select-text cursor-default'
+                    : 'h-[56px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-4 cursor-pointer flex items-center justify-between gap-4 border border-slate-200/50 dark:border-neutral-800 shadow-2xs'
+                }`}
+                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {isFocused ? (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.35, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full h-full flex flex-col min-h-0 overflow-y-auto relative"
+                  >
                     {isChatReplyTask ? (
                       <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-2 md:p-6 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
                         {/* Left Column: Title, Meta, and Context Unit */}
@@ -418,7 +428,7 @@ export function OptionCView({
                           <motion.h3 
                             initial={{ opacity: 0, y: 14 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.38, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.38, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                             className="text-[28px] md:text-[34px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal"
                           >
                             {canvasTitleText}
@@ -427,7 +437,7 @@ export function OptionCView({
                           <motion.p 
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.38, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.38, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
                             className="text-[18px] md:text-[20px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 md:mt-4"
                           >
                             {canvasMetaText}
@@ -436,7 +446,7 @@ export function OptionCView({
                           <motion.div 
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.38, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.38, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                             className="flex items-center gap-2 flex-wrap mt-3.5 md:mt-4.5"
                           >
                             {activePersonName && (
@@ -556,7 +566,7 @@ export function OptionCView({
                             <motion.h3 
                               initial={{ opacity: 0, y: 14 }}
                               animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.38, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                              transition={{ duration: 0.38, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                               className="text-[28px] md:text-[32px] leading-[36px] font-normal text-slate-900 dark:text-white"
                             >
                               {canvasTitleText}
@@ -565,7 +575,7 @@ export function OptionCView({
                             <motion.p 
                               initial={{ opacity: 0, y: 12 }}
                               animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.38, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+                              transition={{ duration: 0.38, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
                               className="text-[18px] md:text-[20px] leading-normal font-normal text-slate-600 dark:text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis"
                             >
                               {canvasMetaText}
@@ -574,7 +584,7 @@ export function OptionCView({
                             <motion.div 
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.38, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                              transition={{ duration: 0.38, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                               className="flex items-center gap-2 flex-wrap mt-3"
                             >
                               {activePersonName && (
@@ -617,7 +627,7 @@ export function OptionCView({
                           <motion.div 
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.42, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.42, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
                             className="w-full flex-1 min-h-0 flex flex-col overflow-hidden"
                           >
                             {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
@@ -643,38 +653,21 @@ export function OptionCView({
                         )}
                       </>
                     )}
+                  </motion.div>
+                ) : (
+                  <div className="flex-1 min-w-0 flex flex-col text-left">
+                    <h4 className="text-[14px] leading-[18px] font-medium font-sans text-slate-900 dark:text-white truncate">
+                      {getAbbreviatedCellTitle(item, completedTaskIds.has(item.id))}
+                    </h4>
+                    <p className="text-[12px] leading-[15px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
+                      {item.description || item.descriptionDone || item.action || ''}
+                    </p>
                   </div>
-                </motion.div>
-              );
-            }
-
-            // Collapsed row item in the continuous list
-            return (
-              <motion.div
-                key={item.id || idx}
-                layout="position"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 56, opacity: 0.85, scale: 0.97 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                onClick={() => setActiveIndex(idx)}
-                className="w-full h-[56px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-4 cursor-pointer transition-colors duration-200 select-none flex items-center justify-between gap-4 border border-slate-200/50 dark:border-neutral-800 shadow-2xs overflow-hidden"
-              >
-                <div className="flex-1 min-w-0 flex flex-col text-left">
-                  <h4 className="text-[14px] leading-[18px] font-medium font-sans text-slate-900 dark:text-white truncate">
-                    {getAbbreviatedCellTitle(item, completedTaskIds.has(item.id))}
-                  </h4>
-                  <p className="text-[12px] leading-[15px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
-                    {item.description || item.descriptionDone || item.action || ''}
-                  </p>
-                </div>
-                <div className="shrink-0 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full">
-                  {isPrev ? 'Previous task (click to skip back)' : 'Next task (click to skip forward)'}
-                </div>
+                )}
               </motion.div>
             );
           })}
-        </AnimatePresence>
+        </LayoutGroup>
       </div>
 
       {/* Action Toast Overlay */}
