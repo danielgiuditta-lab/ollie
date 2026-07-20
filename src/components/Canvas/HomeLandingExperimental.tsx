@@ -92,7 +92,13 @@ interface HomeLandingProps {
   onReorderPins?: (newOrderedIds: string[]) => void;
   onSelectArtifact?: (file: any) => void;
   envId?: string | null;
-  onOpenTheatre?: () => void;
+  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C') => void;
+  playOptionMode?: 'A' | 'B' | 'C';
+  isOptionCOpen?: boolean;
+  onCloseOptionC?: () => void;
+  onSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
+  onUpdateTaskStatus?: (taskId: string, status: 'done' | 'working' | 'rejected') => void;
+  recentFiles?: any[];
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications
@@ -475,7 +481,13 @@ export function HomeLandingExperimental({
   onReorderPins,
   onSelectArtifact,
   envId,
-  onOpenTheatre
+  onOpenTheatre,
+  playOptionMode = 'C',
+  isOptionCOpen,
+  onCloseOptionC,
+  onSendMessage,
+  onUpdateTaskStatus,
+  recentFiles = []
 }: HomeLandingProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localBypassAuth, setLocalBypassAuth] = useState(false);
@@ -1463,6 +1475,12 @@ export function HomeLandingExperimental({
           setActiveSidebar={setActiveSidebar}
           handleSendMessage={handleSendMessage}
           onOpenTheatre={onOpenTheatre}
+          playOptionMode={playOptionMode}
+          isOptionCOpen={isOptionCOpen}
+          onCloseOptionC={onCloseOptionC}
+          onSendMessage={onSendMessage}
+          onUpdateTaskStatus={onUpdateTaskStatus}
+          driveFiles={recentFiles}
         />
       </div>
     </div>

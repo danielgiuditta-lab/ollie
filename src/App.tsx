@@ -6430,6 +6430,14 @@ export default function App() {
                         onReorderPins={handleReorderPins}
                         onSelectArtifact={handleArtifactSelect}
                         onOpenTheatre={handleOpenTheatre}
+                        playOptionMode={playOptionMode}
+                        isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+                        onCloseOptionC={() => setIsTheatreOpen(false)}
+                        onSendMessage={handleSendMessage}
+                        onUpdateTaskStatus={(taskId, status) => {
+                          setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+                        }}
+                        recentFiles={driveFiles}
                       />
                     ) : (
                       <HomeLanding 
