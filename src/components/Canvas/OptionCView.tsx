@@ -108,8 +108,6 @@ export function OptionCView({
   }, [initialIndex, orderedTodoItems.length]);
 
   const activeTask = orderedTodoItems[activeIndex] || orderedTodoItems[0] || null;
-  const prevTask = activeIndex > 0 ? orderedTodoItems[activeIndex - 1] : null;
-  const nextTask = activeIndex < orderedTodoItems.length - 1 ? orderedTodoItems[activeIndex + 1] : null;
 
   const isChatReplyTask = Boolean(
     activeTask && (
@@ -390,319 +388,336 @@ export function OptionCView({
 
   return (
     <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
-      {/* 3 Cells Reel Feed inside current Home UI */}
+      {/* Simple CSS List of cells where focused cell gets bigger on scroll/focus */}
       <div className="flex-1 w-full min-h-[460px] flex flex-col gap-3 overflow-hidden relative">
-        {/* 1. Proceeding (Previous) Cell - Collapsed and scaling up into view */}
-        <AnimatePresence mode="popLayout">
-          {prevTask && (
-            <motion.div
-              key={prevTask.id || 'prev-' + (activeIndex - 1)}
-              layout
-              initial={{ height: 0, opacity: 0, scale: 0.92, y: -20 }}
-              animate={{ height: 56, opacity: 1, scale: 0.98, y: 0 }}
-              exit={{ height: 0, opacity: 0, scale: 0.92, y: -20 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 32 }}
-              onClick={handlePrev}
-              className="w-full h-[56px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-4 cursor-pointer transition-all duration-200 select-none flex items-center justify-between gap-4 border border-slate-200/50 dark:border-neutral-800 shadow-2xs overflow-hidden"
-            >
-              <div className="flex-1 min-w-0 flex flex-col text-left">
-                <h4 className="text-[14px] leading-[18px] font-medium font-sans text-slate-900 dark:text-white truncate">
-                  {getAbbreviatedCellTitle(prevTask, completedTaskIds.has(prevTask.id))}
-                </h4>
-                <p className="text-[12px] leading-[15px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
-                  {prevTask.description || prevTask.descriptionDone || prevTask.action || ''}
-                </p>
-              </div>
-              <div className="shrink-0 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full">
-                Previous task (click to skip back)
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <AnimatePresence initial={false}>
+          {orderedTodoItems.map((item, idx) => {
+            const isFocused = idx === activeIndex;
+            const isPrev = idx === activeIndex - 1;
+            const isNext = idx === activeIndex + 1;
 
-        {/* 2. Focused Cell - Expands and scales up as it comes into focus */}
-        <div className="flex-1 min-h-[380px] relative flex flex-col overflow-hidden rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] border border-slate-200/60 dark:border-[#2B2D31] shadow-md p-6 md:p-8 select-text">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTask?.id || activeIndex}
-              layout
-              initial={{ scale: 0.94, opacity: 0, y: 30 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.94, opacity: 0, y: -30 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-              className="w-full h-full flex flex-col min-h-0 overflow-y-auto relative"
-            >
-              {isChatReplyTask ? (
-                <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-2 md:p-6 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                  {/* Left Column: Title, Meta, and Context Unit */}
-                  <div className="w-1/2 h-full flex flex-col items-start justify-center pr-4 md:pr-6 min-w-0">
-                    <h3 className="text-[28px] md:text-[34px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal">
-                      {canvasTitleText}
-                    </h3>
+            // Only render prev, focused, and next cells in the reel list
+            if (!isFocused && !isPrev && !isNext) return null;
 
-                    <p className="text-[18px] md:text-[20px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 md:mt-4">
-                      {canvasMetaText}
-                    </p>
+            if (isFocused) {
+              return (
+                <motion.div
+                  key={item.id || idx}
+                  layout="position"
+                  initial={{ opacity: 0, scale: 0.94, y: 30 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.94, y: -30 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex-1 min-h-[380px] relative flex flex-col overflow-hidden rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] border border-slate-200/60 dark:border-[#2B2D31] shadow-md p-6 md:p-8 select-text origin-center"
+                >
+                  <div className="w-full h-full flex flex-col min-h-0 overflow-y-auto relative">
+                    {isChatReplyTask ? (
+                      <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-2 md:p-6 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                        {/* Left Column: Title, Meta, and Context Unit */}
+                        <div className="w-1/2 h-full flex flex-col items-start justify-center pr-4 md:pr-6 min-w-0">
+                          <motion.h3 
+                            initial={{ opacity: 0, y: 14 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.38, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                            className="text-[28px] md:text-[34px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal"
+                          >
+                            {canvasTitleText}
+                          </motion.h3>
 
-                    <div className="flex items-center gap-2 flex-wrap mt-3.5 md:mt-4.5">
-                      {activePersonName && (
-                        <div 
-                          onClick={() => handleOpenSourceChip(activePersonName)}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                        >
-                          {canvasAvatarElement}
-                          <span className="truncate max-w-[140px]">{activePersonName}</span>
-                        </div>
-                      )}
+                          <motion.p 
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.38, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+                            className="text-[18px] md:text-[20px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 md:mt-4"
+                          >
+                            {canvasMetaText}
+                          </motion.p>
 
-                      {activeSourceName && (
-                        <div 
-                          onClick={() => handleOpenSourceChip(activeSourceName)}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                        >
-                          {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                          <span className="truncate max-w-[160px]">{activeSourceName}</span>
-                        </div>
-                      )}
-
-                      {activeTask?.links && activeTask.links.map((link: any, idx: number) => (
-                        <a
-                          key={idx}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
-                        >
-                          {link.label || 'Open Link'}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Right Column: Chat UI */}
-                  <div className="w-1/2 h-full flex flex-col justify-center gap-6 pl-4 md:pl-6 min-w-0 select-text">
-                    <div className="flex items-start gap-3 justify-start max-w-[85%]">
-                      <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
-                        <img 
-                          src={activeAvatar} 
-                          alt={activePersonName} 
-                          className="w-full h-full object-cover" 
-                          onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
-                        />
-                      </div>
-
-                      <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] shadow-sm max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                        {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
-                      </div>
-                    </div>
-
-                    <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
-                      <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] shadow-sm max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-4 relative group">
-                        {isEditingProposal ? (
-                          <div className="flex flex-col gap-2 min-w-[220px] w-full">
-                            <textarea
-                              value={editableProposalText}
-                              onChange={(e) => setEditableProposalText(e.target.value)}
-                              className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[15px] leading-[22px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
-                              rows={3}
-                              autoFocus
-                            />
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => setIsEditingProposal(false)}
-                                className="px-3 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.38, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                            className="flex items-center gap-2 flex-wrap mt-3.5 md:mt-4.5"
+                          >
+                            {activePersonName && (
+                              <div 
+                                onClick={() => handleOpenSourceChip(activePersonName)}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
                               >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={() => {
-                                  if (activeTask) activeTask.proposedReply = editableProposalText;
-                                  setIsEditingProposal(false);
-                                }}
-                                className="px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white cursor-pointer"
+                                {canvasAvatarElement}
+                                <span className="truncate max-w-[140px]">{activePersonName}</span>
+                              </div>
+                            )}
+
+                            {activeSourceName && (
+                              <div 
+                                onClick={() => handleOpenSourceChip(activeSourceName)}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
                               >
-                                Save
-                              </button>
+                                {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                                <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                              </div>
+                            )}
+
+                            {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
+                              <a
+                                key={linkIdx}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
+                              >
+                                {link.label || 'Open Link'}
+                              </a>
+                            ))}
+                          </motion.div>
+                        </div>
+
+                        {/* Right Column: Chat UI */}
+                        <div className="w-1/2 h-full flex flex-col justify-center gap-6 pl-4 md:pl-6 min-w-0 select-text">
+                          <div className="flex items-start gap-3 justify-start max-w-[85%]">
+                            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
+                              <img 
+                                src={activeAvatar} 
+                                alt={activePersonName} 
+                                className="w-full h-full object-cover" 
+                                onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                              />
+                            </div>
+
+                            <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] shadow-sm max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                              {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
                             </div>
                           </div>
-                        ) : (
-                          <>
-                            <div className="whitespace-pre-wrap flex-1 min-w-0">
-                              {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
+
+                          <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
+                            <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] shadow-sm max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-4 relative group">
+                              {isEditingProposal ? (
+                                <div className="flex flex-col gap-2 min-w-[220px] w-full">
+                                  <textarea
+                                    value={editableProposalText}
+                                    onChange={(e) => setEditableProposalText(e.target.value)}
+                                    className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[15px] leading-[22px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
+                                    rows={3}
+                                    autoFocus
+                                  />
+                                  <div className="flex items-center justify-end gap-2">
+                                    <button
+                                      onClick={() => setIsEditingProposal(false)}
+                                      className="px-3 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (activeTask) activeTask.proposedReply = editableProposalText;
+                                        setIsEditingProposal(false);
+                                      }}
+                                      className="px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white cursor-pointer"
+                                    >
+                                      Save
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="whitespace-pre-wrap flex-1 min-w-0">
+                                    {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setIsEditingProposal(true);
+                                    }}
+                                    className="inline-flex items-center justify-center p-1 rounded-full text-slate-600 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
+                                    title="Edit proposed reply"
+                                  >
+                                    <Pencil size={18} className="stroke-[2.2]" />
+                                  </button>
+                                </>
+                              )}
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsEditingProposal(true);
-                              }}
-                              className="inline-flex items-center justify-center p-1 rounded-full text-slate-600 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
-                              title="Edit proposed reply"
+
+                            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
+                              <img 
+                                src={userProfile?.picture || '/people/sarah_lin.jpg'} 
+                                alt="User" 
+                                className="w-full h-full object-cover" 
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Title, Metaline, and Sources Unit */}
+                        {activeTask && (
+                          <div className="w-full shrink-0 flex flex-col items-start max-w-[65%] mb-[20px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                            <motion.h3 
+                              initial={{ opacity: 0, y: 14 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.38, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                              className="text-[28px] md:text-[32px] leading-[36px] font-normal text-slate-900 dark:text-white"
                             >
-                              <Pencil size={18} className="stroke-[2.2]" />
-                            </button>
-                          </>
-                        )}
-                      </div>
+                              {canvasTitleText}
+                            </motion.h3>
 
-                      <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
-                        <img 
-                          src={userProfile?.picture || '/people/sarah_lin.jpg'} 
-                          alt="User" 
-                          className="w-full h-full object-cover" 
-                        />
-                      </div>
-                    </div>
+                            <motion.p 
+                              initial={{ opacity: 0, y: 12 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.38, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+                              className="text-[18px] md:text-[20px] leading-normal font-normal text-slate-600 dark:text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis"
+                            >
+                              {canvasMetaText}
+                            </motion.p>
+
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.38, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                              className="flex items-center gap-2 flex-wrap mt-3"
+                            >
+                              {activePersonName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activePersonName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[12px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                >
+                                  {canvasAvatarElement}
+                                  <span className="truncate max-w-[140px]">{activePersonName}</span>
+                                </div>
+                              )}
+
+                              {activeSourceName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activeSourceName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[12px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                >
+                                  {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                                  <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                                </div>
+                              )}
+
+                              {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
+                                <a
+                                  key={linkIdx}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[12px] font-normal transition-colors"
+                                >
+                                  {link.label || 'Open Link'}
+                                </a>
+                              ))}
+                            </motion.div>
+                          </div>
+                        )}
+
+                        {/* Artifacts in Diff View / NativeViewer */}
+                        {activeFileObject ? (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.42, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+                            className="w-full flex-1 min-h-0 flex flex-col overflow-hidden"
+                          >
+                            {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
+                              <InferredTaskDiffView 
+                                file={activeFileObject}
+                                theme="light"
+                                className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
+                                hideFooterText={true}
+                              />
+                            ) : (
+                              <NativeViewer
+                                file={activeFileObject}
+                                hideHeader={true}
+                                mode="preview"
+                                theme="light"
+                              />
+                            )}
+                          </motion.div>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium text-sm">
+                            No artifact preview available for this task.
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
-                </div>
-              ) : (
-                <>
-                  {/* Title, Metaline, and Sources Unit */}
-                  {activeTask && (
-                    <div className="w-full shrink-0 flex flex-col items-start max-w-[65%] mb-[20px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                      <h3 className="text-[28px] md:text-[32px] leading-[36px] font-normal text-slate-900 dark:text-white">
-                        {canvasTitleText}
-                      </h3>
+                </motion.div>
+              );
+            }
 
-                      <p className="text-[18px] md:text-[20px] leading-normal font-normal text-slate-600 dark:text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
-                        {canvasMetaText}
-                      </p>
-
-                      <div className="flex items-center gap-2 flex-wrap mt-3">
-                        {activePersonName && (
-                          <div 
-                            onClick={() => handleOpenSourceChip(activePersonName)}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[12px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                          >
-                            {canvasAvatarElement}
-                            <span className="truncate max-w-[140px]">{activePersonName}</span>
-                          </div>
-                        )}
-
-                        {activeSourceName && (
-                          <div 
-                            onClick={() => handleOpenSourceChip(activeSourceName)}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[12px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                          >
-                            {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                            <span className="truncate max-w-[160px]">{activeSourceName}</span>
-                          </div>
-                        )}
-
-                        {activeTask?.links && activeTask.links.map((link: any, idx: number) => (
-                          <a
-                            key={idx}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[12px] font-normal transition-colors"
-                          >
-                            {link.label || 'Open Link'}
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Artifacts in Diff View / NativeViewer */}
-                  {activeFileObject ? (
-                    <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
-                      {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
-                        <InferredTaskDiffView 
-                          file={activeFileObject}
-                          theme="light"
-                          className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
-                          hideFooterText={true}
-                        />
-                      ) : (
-                        <NativeViewer
-                          file={activeFileObject}
-                          hideHeader={true}
-                          mode="preview"
-                          theme="light"
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium text-sm">
-                      No artifact preview available for this task.
-                    </div>
-                  )}
-                </>
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Action Toast Overlay */}
-          <AnimatePresence>
-            {actionToast && (
+            // Collapsed row item in the continuous list
+            return (
               <motion.div
-                key={actionToast.key}
-                initial={{ opacity: 0, scale: 0.85, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.85, y: -12 }}
-                transition={{ duration: 0.2 }}
-                className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
+                key={item.id || idx}
+                layout="position"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 56, opacity: 0.85, scale: 0.97 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                onClick={() => setActiveIndex(idx)}
+                className="w-full h-[56px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-4 cursor-pointer transition-colors duration-200 select-none flex items-center justify-between gap-4 border border-slate-200/50 dark:border-neutral-800 shadow-2xs overflow-hidden"
               >
-                <div className="bg-slate-900/90 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[26px] font-normal p-3 px-6 rounded-full shadow-2xl flex items-center gap-3 backdrop-blur-md">
-                  {actionToast.text === 'Approved' && <Check className="w-7 h-7 text-[#34A853] stroke-[2.5]" />}
-                  {actionToast.text === 'Declined' && <X className="w-7 h-7 text-[#EA4335] stroke-[2.5]" />}
-                  {actionToast.text === 'Skipped' && <ArrowRight className="w-7 h-7 text-white stroke-[2]" />}
-                  <span>{actionToast.text}</span>
+                <div className="flex-1 min-w-0 flex flex-col text-left">
+                  <h4 className="text-[14px] leading-[18px] font-medium font-sans text-slate-900 dark:text-white truncate">
+                    {getAbbreviatedCellTitle(item, completedTaskIds.has(item.id))}
+                  </h4>
+                  <p className="text-[12px] leading-[15px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
+                    {item.description || item.descriptionDone || item.action || ''}
+                  </p>
+                </div>
+                <div className="shrink-0 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full">
+                  {isPrev ? 'Previous task (click to skip back)' : 'Next task (click to skip forward)'}
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* 3. Next Cell - Collapsed and scaling into view */}
-        <AnimatePresence mode="popLayout">
-          {nextTask && (
-            <motion.div
-              key={nextTask.id || 'next-' + (activeIndex + 1)}
-              layout
-              initial={{ height: 0, opacity: 0, scale: 0.92, y: 20 }}
-              animate={{ height: 56, opacity: 1, scale: 0.98, y: 0 }}
-              exit={{ height: 0, opacity: 0, scale: 0.92, y: 20 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 32 }}
-              onClick={handleNext}
-              className="w-full h-[56px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-4 cursor-pointer transition-all duration-200 select-none flex items-center justify-between gap-4 border border-slate-200/50 dark:border-neutral-800 shadow-2xs overflow-hidden"
-            >
-              <div className="flex-1 min-w-0 flex flex-col text-left">
-                <h4 className="text-[14px] leading-[18px] font-medium font-sans text-slate-900 dark:text-white truncate">
-                  {getAbbreviatedCellTitle(nextTask, completedTaskIds.has(nextTask.id))}
-                </h4>
-                <p className="text-[12px] leading-[15px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
-                  {nextTask.description || nextTask.descriptionDone || nextTask.action || ''}
-                </p>
-              </div>
-              <div className="shrink-0 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full">
-                Next task (click to skip forward)
-              </div>
-            </motion.div>
-          )}
+            );
+          })}
         </AnimatePresence>
       </div>
 
-      {/* Control Bar styled identical to Composer input, with buttons animating out smoothly */}
+      {/* Action Toast Overlay */}
+      <AnimatePresence>
+        {actionToast && (
+          <motion.div
+            key={actionToast.key}
+            initial={{ opacity: 0, scale: 0.85, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, y: -12 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
+          >
+            <div className="bg-slate-900/90 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[26px] font-normal p-3 px-6 rounded-full shadow-2xl flex items-center gap-3 backdrop-blur-md">
+              {actionToast.text === 'Approved' && <Check className="w-7 h-7 text-[#34A853] stroke-[2.5]" />}
+              {actionToast.text === 'Declined' && <X className="w-7 h-7 text-[#EA4335] stroke-[2.5]" />}
+              {actionToast.text === 'Skipped' && <ArrowRight className="w-7 h-7 text-white stroke-[2]" />}
+              <span>{actionToast.text}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Control Bar: Input shrinks from initial width down to collapsed state while action buttons animate out */}
       <div className="w-full h-[80px] shrink-0 flex items-center justify-center gap-3 relative z-20 pt-2">
-        {/* Animated Previous Button - Animates out left from input pill */}
+        {/* Animated Previous Button */}
         <motion.button
-          initial={{ opacity: 0, x: 80, scale: 0.2 }}
+          initial={{ opacity: 0, x: 140, scale: 0.1 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
           onClick={handlePrev}
           disabled={activeIndex === 0}
-          className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-md"
+          className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
           title="Previous task"
         >
           <ArrowLeft className="w-5 h-5 stroke-[2]" />
         </motion.button>
 
-        {/* Animated Decline X Button - Animates out left from input pill */}
+        {/* Animated Decline X Button */}
         <motion.button
-          initial={{ opacity: 0, x: 40, scale: 0.2 }}
+          initial={{ opacity: 0, x: 70, scale: 0.1 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
           onClick={handleReject}
           className="w-14 h-14 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
           title="Decline"
@@ -710,12 +725,16 @@ export function OptionCView({
           <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
         </motion.button>
 
-        {/* Center Steer Input Pill - Styled identical to Composer input pill */}
-        <div 
+        {/* Center Steer Input Pill - Initial wide state (560px) shrinks smoothly down to collapsed state (180px) */}
+        <motion.div 
+          layout
+          initial={{ width: 560 }}
+          animate={{ width: (isInputFocused || steerInput.trim().length > 0) ? 620 : 180 }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
           className={`rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 transition-all duration-300 ease-in-out shadow-lg ${
             (isInputFocused || steerInput.trim().length > 0)
-              ? 'h-[72px] w-[340px] md:w-[620px] px-4' 
-              : 'h-14 w-[180px] px-4 cursor-pointer'
+              ? 'h-[72px] px-4' 
+              : 'h-14 px-4 cursor-pointer'
           }`}
           onClick={() => {
             const el = document.getElementById('optionc-steer-input');
@@ -792,13 +811,13 @@ export function OptionCView({
               </button>
             </div>
           )}
-        </div>
+        </motion.div>
 
-        {/* Animated Approve Check Button - Animates out right from input pill */}
+        {/* Animated Approve Check Button */}
         <motion.button
-          initial={{ opacity: 0, x: -40, scale: 0.2 }}
+          initial={{ opacity: 0, x: -70, scale: 0.1 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
           onClick={() => {
             if (steerInput.trim()) {
               handleSteerSubmit(steerInput);
@@ -813,14 +832,14 @@ export function OptionCView({
           <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
         </motion.button>
 
-        {/* Animated Next Button - Animates out right from input pill */}
+        {/* Animated Next Button */}
         <motion.button
-          initial={{ opacity: 0, x: -80, scale: 0.2 }}
+          initial={{ opacity: 0, x: -140, scale: 0.1 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
           onClick={handleNext}
           disabled={activeIndex === orderedTodoItems.length - 1}
-          className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-md"
+          className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
           title="Next task"
         >
           <ArrowRight className="w-5 h-5 stroke-[2]" />
