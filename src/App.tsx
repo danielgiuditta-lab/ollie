@@ -6166,6 +6166,9 @@ export default function App() {
         userProfile={userProfile}
         onLogout={logout}
         chatModel={chatModel}
+        onOpenTheatre={handleOpenTheatre}
+        playOptionMode={playOptionMode}
+        onSelectPlayOptionMode={setPlayOptionMode}
         onChangeChatModel={(model) => {
           setChatModel(model);
           setChatDockPosition(model === 'B' ? 'bottom' : 'side');

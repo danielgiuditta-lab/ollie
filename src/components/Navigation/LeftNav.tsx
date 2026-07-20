@@ -29,6 +29,9 @@ interface LeftNavProps {
   onSelectChat?: (space: any, chat: any) => void;
   onLogout?: () => void;
   isGroupChat?: boolean;
+  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C') => void;
+  playOptionMode?: 'A' | 'B' | 'C';
+  onSelectPlayOptionMode?: (mode: 'A' | 'B' | 'C') => void;
 }
 
 // Deterministic emoji helper based on space name hash & domain keywords
@@ -74,7 +77,10 @@ export function LeftNav({
   activeChatId = null,
   onSelectChat: onSelectChatProp,
   onLogout,
-  isGroupChat = false
+  isGroupChat = false,
+  onOpenTheatre,
+  playOptionMode = 'C',
+  onSelectPlayOptionMode
 }: LeftNavProps) {
   const [localExpanded, setLocalExpanded] = useState(false);
   const [expandedSpaces, setExpandedSpaces] = useState<Record<string, boolean>>({});
@@ -487,10 +493,11 @@ export function LeftNav({
             <button
               onClick={() => {
                 if (onChangeChatModel) onChangeChatModel('A');
+                if (onSelectPlayOptionMode) onSelectPlayOptionMode('A');
                 setShowSettingsPopover(false);
               }}
               className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-colors flex flex-col gap-0.5 ${
-                chatModel === 'A'
+                chatModel === 'A' && playOptionMode === 'A'
                   ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
                   : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
               }`}
@@ -503,17 +510,41 @@ export function LeftNav({
             <button
               onClick={() => {
                 if (onChangeChatModel) onChangeChatModel('B');
+                if (onSelectPlayOptionMode) onSelectPlayOptionMode('B');
                 setShowSettingsPopover(false);
               }}
               className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-colors flex flex-col gap-0.5 ${
-                chatModel === 'B'
+                chatModel === 'B' && playOptionMode === 'B'
                   ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
                   : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
               }`}
             >
-              <span>Model B: Experimental UI</span>
+              <span className="flex items-center justify-between">
+                <span>Model B: Theatre Mode</span>
+                <span className="text-[9px] bg-neutral-200 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 px-1 py-0.5 rounded font-bold">Dark</span>
+              </span>
               <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
-                New layouts, task cells & canvas flow.
+                Full-screen Theatre Mode overlay with dark backdrop.
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                if (onChangeChatModel) onChangeChatModel('B');
+                if (onSelectPlayOptionMode) onSelectPlayOptionMode('C');
+                setShowSettingsPopover(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-colors flex flex-col gap-0.5 ${
+                playOptionMode === 'C'
+                  ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
+                  : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
+              }`}
+            >
+              <span className="flex items-center justify-between">
+                <span>Option C: Expanded Cell UI</span>
+                <span className="text-[9px] bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-1 py-0.5 rounded font-bold">Light</span>
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
+                Inline expanding cells in Light Mode with full canvas visuals.
               </span>
             </button>
           </div>

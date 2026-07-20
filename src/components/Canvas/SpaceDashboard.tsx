@@ -68,7 +68,6 @@ export function SpaceDashboard({
   const [dragOverPosition, setDragOverPosition] = useState<'left' | 'right' | 'top' | 'bottom' | null>(null);
   const [dashboardLayoutMode, setDashboardLayoutMode] = useState<'auto' | 'rows' | 'cols'>('auto');
   const [isWidgetModalOpen, setIsWidgetModalOpen] = useState(false);
-  const [isOptionPopoverOpen, setIsOptionPopoverOpen] = useState(false);
   
   // Resizing state
   const resizingRef = useRef<{
@@ -468,86 +467,19 @@ export function SpaceDashboard({
         <div className="px-6 pt-6 pb-2 flex items-center justify-between">
           <h1 className="text-[36px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
             <span>Welcome back, {name}.</span>
-            <div className="relative inline-flex items-center">
-              <div className="inline-flex items-center rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 shadow-xs">
-                <button
-                  id="play-theatre-btn"
-                  onClick={() => {
-                    console.log('[THEATRE DEBUG] Play button clicked (Option C default)');
-                    if (onOpenTheatre) {
-                      onOpenTheatre('C');
-                    }
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-l-full transition-all cursor-pointer group"
-                  title="Play Option C Feed View"
-                >
-                  <Play className="w-4 h-4 fill-current text-slate-800 dark:text-white group-hover:scale-105 transition-transform" />
-                  <span className="text-xs font-semibold pr-0.5">Play</span>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsOptionPopoverOpen(prev => !prev);
-                  }}
-                  className="p-2 border-l border-slate-200 dark:border-neutral-700 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-r-full text-slate-600 dark:text-slate-300 cursor-pointer"
-                  title="Select Option Mode"
-                >
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {isOptionPopoverOpen && (
-                <div 
-                  className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-[#1E1F22] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 p-2 z-50 animate-in fade-in zoom-in-95 duration-150 select-none"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="text-[10px] font-bold text-slate-400 dark:text-neutral-400 px-3 py-1 uppercase tracking-wider">
-                    Execution Options
-                  </div>
-                  
-                  <button
-                    onClick={() => {
-                      setIsOptionPopoverOpen(false);
-                      if (onOpenTheatre) onOpenTheatre('C');
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-900 dark:text-white flex flex-col gap-0.5 cursor-pointer border border-transparent hover:border-blue-200 dark:hover:border-blue-800 transition-colors"
-                  >
-                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 flex items-center justify-between">
-                      Option C (Expanded Cell Feed)
-                      <span className="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded font-bold">Light</span>
-                    </span>
-                    <span className="text-[11px] text-slate-500 dark:text-neutral-400">Inline expanding cells in Light Mode with full canvas visuals</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setIsOptionPopoverOpen(false);
-                      if (onOpenTheatre) onOpenTheatre('B');
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-800 dark:text-white flex flex-col gap-0.5 cursor-pointer mt-1 transition-colors"
-                  >
-                    <span className="text-xs font-semibold text-slate-900 dark:text-white flex items-center justify-between">
-                      Option B (Theatre Mode)
-                      <span className="text-[10px] bg-slate-200 dark:bg-neutral-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-bold">Dark</span>
-                    </span>
-                    <span className="text-[11px] text-slate-500 dark:text-neutral-400">Full screen Theatre overlay with dark backdrop</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setIsOptionPopoverOpen(false);
-                      if (onOpenTheatre) onOpenTheatre('A');
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-800 dark:text-white flex flex-col gap-0.5 cursor-pointer mt-1 transition-colors"
-                  >
-                    <span className="text-xs font-semibold text-slate-900 dark:text-white">
-                      Option A (Standard Flow)
-                    </span>
-                    <span className="text-[11px] text-slate-500 dark:text-neutral-400">Standard task navigation and canvas switching</span>
-                  </button>
-                </div>
-              )}
-            </div>
+            <button
+              id="play-theatre-btn"
+              onClick={() => {
+                console.log('[THEATRE DEBUG] Play button clicked in SpaceDashboard!');
+                if (onOpenTheatre) {
+                  onOpenTheatre();
+                }
+              }}
+              className="inline-flex items-center justify-center p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-800 dark:text-white transition-all cursor-pointer border border-slate-200 dark:border-neutral-700 shadow-xs group"
+              title="Play"
+            >
+              <Play className="w-5 h-5 fill-current text-slate-800 dark:text-white group-hover:scale-105 transition-transform" />
+            </button>
           </h1>
         </div>
       )}
