@@ -6,7 +6,9 @@ import {
   ArrowRight, 
   X,
   ChevronRight,
-  Pencil
+  Pencil,
+  Plus,
+  ArrowUp
 } from 'lucide-react';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
@@ -359,6 +361,38 @@ export function TheatreView({
     if (onUpdateTaskStatus) {
       onUpdateTaskStatus(taskId, 'working');
     }
+  };
+
+  // Handle docking to side chat from Theatre Mode
+  const handleDockToSide = () => {
+    if (steerInput.trim()) {
+      const fullMsg = activeTask 
+        ? `Regarding task "${activeTask.title || activeTask.description}": ${steerInput.trim()}`
+        : steerInput.trim();
+      onSendMessage(fullMsg);
+      setSteerInput('');
+    }
+    onClose();
+    if (setActiveSidebar) {
+      setActiveSidebar('gemini');
+    }
+  };
+
+  // Get contextual ghost text / placeholder for steering in theatre mode
+  const getSteerPlaceholder = () => {
+    if (!activeTask) return "Search, add files or tell Ollie how to steer...";
+
+    if (activeTask.sourceName && typeof activeTask.sourceName === 'string' && !activeTask.sourceName.toLowerCase().includes('google chat')) {
+      const cleanName = activeTask.sourceName.replace(/\.[^/.]+$/, '').trim();
+      if (cleanName.length > 0) {
+        return `Steer "${cleanName.length > 28 ? cleanName.slice(0, 25) + '...' : cleanName}" or ask Ollie...`;
+      }
+    }
+    if (activeTask.title) {
+      const titleShort = activeTask.title.length > 30 ? `${activeTask.title.slice(0, 27)}...` : activeTask.title;
+      return `Steer "${titleShort}" or ask Ollie...`;
+    }
+    return "Steer this task or ask Ollie to make edits...";
   };
 
   // Helper to open source link in a new tab
@@ -987,18 +1021,33 @@ export function TheatreView({
               <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
             </button>
 
-            {/* Center Steer Input Pill (Hugs placeholder until focused, then expands to match bottom composer width in dark mode) */}
+            {/* Center Steer Input Pill (Dark Mode version of normal bottom snapped LLM input bar) */}
             <div 
-              className={`h-14 rounded-full bg-[#121316] flex items-center shadow-lg border transition-all duration-300 ease-in-out ${
+              className={`h-14 rounded-full flex items-center gap-2 transition-all duration-300 ease-in-out backdrop-blur-md ${
                 (isInputFocused || steerInput.trim().length > 0)
-                  ? 'w-80 md:w-[480px] px-6 border-white/20' 
-                  : 'w-[155px] px-4 border-transparent hover:border-white/10 cursor-pointer'
+                  ? 'w-[340px] md:w-[540px] px-3.5 bg-[#1E1F22]/95 border border-white/20 shadow-2xl' 
+                  : 'w-[160px] px-4 bg-[#121316] border border-transparent hover:border-white/10 cursor-pointer shadow-lg'
               }`}
               onClick={() => {
                 const el = document.getElementById('theatre-steer-input');
                 if (el) el.focus();
               }}
             >
+              {/* Left Plus Attachment Button (visible when focused/typing) */}
+              {(isInputFocused || steerInput.trim().length > 0) && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  className="w-9 h-9 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none"
+                  title="Add attachment or context"
+                >
+                  <Plus size={18} className="stroke-[2.5]" />
+                </button>
+              )}
+
+              {/* Text Input */}
               <input
                 id="theatre-steer-input"
                 type="text"
@@ -1017,9 +1066,50 @@ export function TheatreView({
                     }
                   }
                 }}
-                placeholder="Do differently..."
-                className="w-full bg-transparent text-white text-[15px] font-normal placeholder-[#8E8E93] focus:outline-none truncate"
+                placeholder={(isInputFocused || steerInput.trim().length > 0) ? getSteerPlaceholder() : "Do differently..."}
+                className="w-full bg-transparent text-white text-[14px] font-normal placeholder-neutral-400 focus:outline-none truncate px-1 border-none ring-0"
               />
+
+              {/* Right Action Buttons: Snap to side chat & Send button */}
+              {(isInputFocused || steerInput.trim().length > 0) && (
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {/* Snap to Side Chat Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDockToSide();
+                    }}
+                    className="w-9 h-9 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition cursor-pointer border-none outline-none"
+                    title="Snap to side chat"
+                  >
+                    <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+                  </button>
+
+                  {/* Send Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (steerInput.trim()) {
+                        handleSteerSubmit(steerInput);
+                        setSteerInput('');
+                      } else {
+                        handleApprove();
+                      }
+                    }}
+                    disabled={!steerInput.trim()}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
+                      steerInput.trim()
+                        ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer shadow-md'
+                        : 'bg-white/10 text-neutral-500 cursor-not-allowed'
+                    }`}
+                    title={steerInput.trim() ? "Submit steer" : "Send"}
+                  >
+                    <ArrowUp size={16} className="stroke-[2.5]" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Approve / Accept Button */}
