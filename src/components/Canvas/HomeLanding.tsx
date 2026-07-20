@@ -18,6 +18,8 @@ import slidesIcon from '../../assets/slides.png';
 import formsIcon from '../../assets/forms.png';
 import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
+import chatIcon from '../../assets/chat.png';
+import gmailIcon from '../../assets/gmail.png';
 
 export function cleanWorkspaceName(raw: string): string {
   if (!raw) return 'Workspace';
@@ -542,7 +544,7 @@ export function HomeLanding({
         }
       }
 
-      const personAvatar = item.personAvatar || item.authorPhotoUrl || (accessToken ? (userProfile?.picture || getAvatarForPerson(personName, true)) : getAvatarForPerson(personName));
+      const personAvatar = item.personAvatar || item.authorPhotoUrl || (accessToken ? (userProfile?.picture || getAvatarForPerson(personName)) : getAvatarForPerson(personName));
       const isProactive = idx === 0;
 
       let fileName = cleanSpace;
@@ -1282,9 +1284,12 @@ export function HomeLanding({
   };
 
   // Convert mimeType into corresponding file icon used elsewhere in NullState List views
-  const getFileIcon = (mimeType?: string) => {
-    if (!mimeType) return docsIcon;
-    const lower = mimeType.toLowerCase();
+  const getFileIcon = (mimeType?: string, fileName?: string) => {
+    if (!mimeType && !fileName) return docsIcon;
+    const lower = (mimeType || '').toLowerCase();
+    const lowerName = (fileName || '').toLowerCase();
+    if (lower.includes('chat') || lowerName.includes('chat') || lowerName.includes('message')) return chatIcon;
+    if (lower.includes('mail') || lower.includes('gmail') || lower.includes('email') || lowerName.includes('gmail') || lowerName.includes('gemail') || lowerName.includes('email') || lowerName.includes('mail')) return gmailIcon;
     if (lower.includes('document')) return docsIcon;
     if (lower.includes('sheet') || lower.includes('spreadsheet') || lower.includes('csv')) return sheetsIcon;
     if (lower.includes('presentation') || lower.includes('slide')) return slidesIcon;

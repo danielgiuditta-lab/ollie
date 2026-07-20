@@ -39,6 +39,7 @@ import {
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
 import { NullTitle } from '../Shared/NullTitle';
 import { RenderSlideMarkdown, RenderDocMarkdown } from './InferredTaskDiffView';
+import { getAvatarForPerson } from '../../utils/personAvatars';
 
 interface NativeViewerProps {
   file: any;
@@ -279,6 +280,8 @@ export function NativeViewer({
   if (isTodoArtifact) {
     const getTaskIcon = (mimeType?: string) => {
       const m = (mimeType || '').toLowerCase();
+      if (m.includes('chat') || m.includes('message')) return '/assets/chat.png';
+      if (m.includes('mail') || m.includes('gmail') || m.includes('email')) return '/assets/gmail.png';
       if (m.includes('presentation') || m.includes('slide')) return 'https://ssl.gstatic.com/docs/doclist/images/icon_11_slides_list.png';
       if (m.includes('spreadsheet') || m.includes('sheet') || m.includes('csv')) return 'https://ssl.gstatic.com/docs/doclist/images/icon_11_sheets_list.png';
       if (m.includes('comment')) return 'https://ssl.gstatic.com/docs/doclist/images/icon_10_generic_list.png';
@@ -1433,9 +1436,11 @@ export function NativeViewer({
                     <div className="flex items-center gap-6">
                       <span className="w-24 text-slate-400 text-xs uppercase font-bold tracking-wider shrink-0">Author</span>
                       <span className="px-2.5 py-1 rounded bg-slate-50 text-slate-700 text-xs font-semibold inline-flex items-center gap-1.5 border border-slate-100">
-                        <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-[10px] text-white font-bold uppercase select-none shrink-0">
-                          {author.charAt(0)}
-                        </div>
+                        <img 
+                          src={getAvatarForPerson(author)} 
+                          alt={author} 
+                          className="w-4 h-4 rounded-full object-cover shrink-0" 
+                        />
                         {author}
                       </span>
                     </div>
@@ -1446,8 +1451,12 @@ export function NativeViewer({
                       <span className="w-24 text-slate-400 text-xs uppercase font-bold tracking-wider shrink-0">Contributors</span>
                       <div className="flex flex-wrap gap-1.5">
                         {contributors.map((contrib, i) => (
-                          <span key={i} className="px-2.5 py-0.5 rounded bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-100 inline-flex items-center gap-1">
-                            <User size={10} className="text-gray-400" />
+                          <span key={i} className="px-2.5 py-0.5 rounded bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-100 inline-flex items-center gap-1.5">
+                            <img 
+                              src={getAvatarForPerson(contrib)} 
+                              alt={contrib} 
+                              className="w-3.5 h-3.5 rounded-full object-cover shrink-0" 
+                            />
                             {contrib}
                           </span>
                         ))}

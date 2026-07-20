@@ -110,13 +110,13 @@ export function TypeAhead({
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left hover:bg-slate-50 dark:hover:bg-white/5 transition cursor-pointer bg-transparent border-none"
               >
                 <div className="w-5 h-5 outline outline-1 outline-gray-200 dark:outline-gray-800 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                  {profilePic ? (
-                    <img src={profilePic} alt={person.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  ) : (
-                    <span className="text-[10px] font-bold text-slate-600 dark:text-gray-300 leading-none">
-                      {person.name.charAt(0)}
-                    </span>
-                  )}
+                  <img 
+                    src={profilePic || getAvatarForPerson(person.name)} 
+                    alt={person.name} 
+                    className="w-full h-full object-cover" 
+                    referrerPolicy="no-referrer" 
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/people/sarah_lin.jpg'; }}
+                  />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span 

@@ -76,19 +76,15 @@ function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource,
 
   const resolvedSourceName = item.sourceName || item.workspace || 'Google Drive';
   const resolvedPersonName = item.personName || 'Maya Lin';
-  const resolvedAvatar = item.personAvatar || getAvatarForPerson(resolvedPersonName, Boolean(item.isReal || item.driveId || item.isOAuth));
+  const resolvedAvatar = item.personAvatar || getAvatarForPerson(resolvedPersonName);
 
-  const avatarElement = (!avatarFailed && resolvedAvatar) ? (
+  const avatarElement = (
     <img 
       src={resolvedAvatar} 
       alt={resolvedPersonName} 
       className="w-4 h-4 rounded-full object-cover shrink-0"
-      onError={() => setAvatarFailed(true)}
+      onError={(e) => { (e.target as HTMLImageElement).src = '/people/sarah_lin.jpg'; }}
     />
-  ) : (
-    <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">
-      {resolvedPersonName.charAt(0).toUpperCase()}
-    </div>
   );
 
   return (
@@ -231,19 +227,15 @@ export function TheatreView({
 
   const activeSourceName = activeTask?.sourceName || activeTask?.workspace || 'Google Drive';
   const activePersonName = activeTask?.personName || 'Maya Lin';
-  const activeAvatar = activeTask?.personAvatar || getAvatarForPerson(activePersonName, Boolean(activeTask?.isReal || activeTask?.driveId || activeTask?.isOAuth));
+  const activeAvatar = activeTask?.personAvatar || getAvatarForPerson(activePersonName);
 
-  const canvasAvatarElement = (!canvasAvatarFailed && activeAvatar) ? (
+  const canvasAvatarElement = (
     <img 
       src={activeAvatar} 
       alt={activePersonName} 
       className="w-4 h-4 rounded-full object-cover shrink-0"
-      onError={() => setCanvasAvatarFailed(true)}
+      onError={(e) => { (e.target as HTMLImageElement).src = '/people/sarah_lin.jpg'; }}
     />
-  ) : (
-    <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">
-      {activePersonName.charAt(0).toUpperCase()}
-    </div>
   );
 
   const isCurrentSignedOff = activeTask ? completedTaskIds.has(activeTask.id) : false;
@@ -374,6 +366,16 @@ export function TheatreView({
     if (!urlOrName) return;
     if (urlOrName.startsWith('http')) {
       window.open(urlOrName, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    const lower = urlOrName.toLowerCase();
+    if (lower.includes('chat')) {
+      window.open('https://chat.google.com', '_blank', 'noopener,noreferrer');
+    } else if (lower.includes('calendar')) {
+      window.open('https://calendar.google.com', '_blank', 'noopener,noreferrer');
+    } else if (lower.includes('gmail') || lower.includes('mail')) {
+      window.open('https://mail.google.com', '_blank', 'noopener,noreferrer');
     } else {
       window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(urlOrName)}`, '_blank', 'noopener,noreferrer');
     }
@@ -382,13 +384,47 @@ export function TheatreView({
   // Determine native tool button label
   const getNativeToolLabel = () => {
     if (!activeTask) return 'Open in Drive';
-    const type = (activeTask.type || activeTask.sourceMimeType || '').toLowerCase();
-    if (type.includes('slide') || type.includes('presentation')) return 'Open in Slides';
-    if (type.includes('doc') || type.includes('word')) return 'Open in Docs';
-    if (type.includes('sheet') || type.includes('csv') || type.includes('excel')) return 'Open in Sheets';
-    if (type.includes('mail') || type.includes('gmail')) return 'Open in Gmail';
-    if (type.includes('calendar')) return 'Open in Calendar';
-    return 'Open in native tool';
+
+    const targetUrl = activeTask.links?.[0]?.url || '';
+    const textToMatch = [
+      activeTask.type,
+      activeTask.sourceMimeType,
+      activeTask.sourceName,
+      activeTask.workspace,
+      activeTask.title,
+      activeTask.description,
+      targetUrl,
+      activeTask.filesToLoad?.[0]?.type,
+      activeTask.filesToLoad?.[0]?.mimeType,
+      activeTask.filesToLoad?.[0]?.name
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    if (textToMatch.includes('slide') || textToMatch.includes('presentation') || textToMatch.includes('gslides') || textToMatch.includes('ppt')) {
+      return 'Open in Slides';
+    }
+    if (textToMatch.includes('doc') || textToMatch.includes('word') || textToMatch.includes('gdoc') || textToMatch.includes('pdf') || textToMatch.includes('essay') || textToMatch.includes('brief')) {
+      return 'Open in Docs';
+    }
+    if (textToMatch.includes('sheet') || textToMatch.includes('csv') || textToMatch.includes('excel') || textToMatch.includes('gsheet') || textToMatch.includes('spreadsheet')) {
+      return 'Open in Sheets';
+    }
+    if (textToMatch.includes('mail') || textToMatch.includes('gmail') || textToMatch.includes('email') || textToMatch.includes('gemail') || textToMatch.includes('inbox')) {
+      return 'Open in Gmail';
+    }
+    if (textToMatch.includes('chat') || textToMatch.includes('message')) {
+      return 'Open in Chat';
+    }
+    if (textToMatch.includes('calendar') || textToMatch.includes('event') || textToMatch.includes('schedule')) {
+      return 'Open in Calendar';
+    }
+    if (textToMatch.includes('form')) {
+      return 'Open in Forms';
+    }
+    if (textToMatch.includes('meet')) {
+      return 'Open in Meet';
+    }
+
+    return 'Open in Drive';
   };
 
   // Construct target document file object for NativeViewer/DiffView
@@ -512,7 +548,7 @@ export function TheatreView({
         {/* Right Action Buttons (Open in Native Tool + Close, black background matching canvas/cells) */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => handleOpenSourceChip(activeTask?.sourceName || activeTask?.title)}
+            onClick={() => handleOpenSourceChip(activeTask?.links?.[0]?.url || activeTask?.sourceName || activeTask?.title)}
             className="h-9 px-4 rounded-full bg-black hover:bg-[#1E1F22] text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer border border-white/10"
           >
             {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}

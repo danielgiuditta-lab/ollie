@@ -8,6 +8,9 @@ import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
 import videoIcon from '../../assets/video.png';
 import commentsIcon from '../../assets/comments.svg';
+import chatIcon from '../../assets/chat.png';
+import gmailIcon from '../../assets/gmail.png';
+import { getAvatarForPerson } from '../../utils/personAvatars';
 
 interface SourceChipProps {
   href: string;
@@ -21,17 +24,26 @@ export const getChipIcon = (fileName?: string, mimeType?: string) => {
   const mType = (mimeType || '').toLowerCase();
   
   if (
+    mType.includes('chat') ||
+    mType.includes('message') ||
+    nameLower.includes('chat') ||
+    nameLower.includes('message') ||
+    nameLower.includes('space chat')
+  ) {
+    return chatIcon;
+  }
+  if (
     mType.includes('mail') || 
     mType.includes('gmail') || 
     mType.includes('email') || 
-    mType.includes('chat') ||
     nameLower.includes('gmail') || 
+    nameLower.includes('gemail') || 
     nameLower.includes('email') || 
     nameLower.includes('mail') || 
     nameLower.includes('rsvp') ||
     nameLower.includes('thread')
   ) {
-    return commentsIcon;
+    return gmailIcon;
   }
   if (nameLower.endsWith('.html') || nameLower === 'index.html' || mType.includes('html') || mType.includes('site')) {
     return htmlIcon;
@@ -90,7 +102,8 @@ export function SourceChip({ href, children, onClick, sources = [] }: SourceChip
   textStr = textStr.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}📄\s]+/gu, '').trim();
   if (!textStr && matched) textStr = matched.name;
 
-  const iconSrc = getChipIcon(matched?.name || textStr, matched?.mimeType);
+  const personName = matched?.personName || matched?.author || (matched?.type === 'person' ? matched?.name : null);
+  const iconSrc = personName ? getAvatarForPerson(personName) : getChipIcon(matched?.name || textStr, matched?.mimeType);
 
   return (
     <a
@@ -98,7 +111,7 @@ export function SourceChip({ href, children, onClick, sources = [] }: SourceChip
       onClick={onClick}
       className="inline-flex items-center gap-1.5 bg-[#F0F4F9] hover:bg-[#D3E3FD] dark:bg-[#2B2D31] dark:hover:bg-[#3E4042] text-slate-700 dark:text-[#E3E3E3] text-xs px-2.5 py-1 rounded-full font-medium transition cursor-pointer border border-[#E9EEF6] dark:border-neutral-700 mx-1 select-none decoration-transparent shrink-0"
     >
-      <img src={iconSrc} alt="" className="w-3.5 h-3.5 object-contain shrink-0" />
+      <img src={iconSrc} alt="" className={`w-3.5 h-3.5 ${personName ? 'rounded-full object-cover' : 'object-contain'} shrink-0`} />
       <span>{textStr || children}</span>
     </a>
   );
@@ -117,9 +130,11 @@ export function ContextChip({ name, mimeType, type = 'file', onRemove }: Context
   return (
     <div className="inline-flex items-center gap-1.5 bg-[#F0F4F9] hover:bg-[#D3E3FD] dark:bg-[#2B2D31] dark:hover:bg-[#3E4042] text-slate-700 dark:text-[#E3E3E3] text-xs px-2.5 py-1 rounded-full font-medium transition cursor-pointer border border-[#E9EEF6] dark:border-neutral-700 mr-2 my-1 select-none shrink-0">
       {type === 'person' ? (
-        <div className="w-3.5 h-3.5 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300 flex items-center justify-center text-[9px] font-bold shrink-0">
-          {name.charAt(0)}
-        </div>
+        <img 
+          src={getAvatarForPerson(name)} 
+          alt={name} 
+          className="w-3.5 h-3.5 rounded-full object-cover shrink-0" 
+        />
       ) : (
         <img src={iconSrc} alt="" className="w-3.5 h-3.5 object-contain shrink-0" />
       )}

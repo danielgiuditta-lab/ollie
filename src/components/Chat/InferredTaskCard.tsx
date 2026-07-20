@@ -280,18 +280,12 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
             <span className="truncate block">{item.sourceName}</span>
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-[#1E1F22] text-[11px] font-semibold text-slate-650 dark:text-neutral-300 min-w-0 shrink max-w-[100px]">
-            {!avatarFailed ? (
-              <img 
-                src={item.personAvatar || getAvatarForPerson(item.personName, Boolean(item.isReal || item.driveId || item.isOAuth))} 
-                alt="avatar icon" 
-                className="w-3.5 h-3.5 rounded-full object-cover shrink-0" 
-                onError={() => setAvatarFailed(true)}
-              />
-            ) : (
-              <div className="w-3.5 h-3.5 rounded-full bg-blue-500 text-white flex flex-center items-center justify-center text-[7px] font-bold shrink-0">
-                {(item.personName || 'U').substring(0, 1).toUpperCase()}
-              </div>
-            )}
+            <img 
+              src={item.personAvatar || getAvatarForPerson(item.personName)} 
+              alt="avatar icon" 
+              className="w-3.5 h-3.5 rounded-full object-cover shrink-0" 
+              onError={(e) => { (e.target as HTMLImageElement).src = '/people/sarah_lin.jpg'; }}
+            />
             <span className="truncate block">{item.personName}</span>
           </div>
         </div>

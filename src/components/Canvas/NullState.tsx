@@ -11,6 +11,8 @@ import formsIcon from '../../assets/forms.png';
 import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
 import videoIcon from '../../assets/video.png';
+import chatIcon from '../../assets/chat.png';
+import gmailIcon from '../../assets/gmail.png';
 
 interface SuggestedFile {
   name: string;
@@ -65,6 +67,12 @@ export function NullState({
     if (!mimeType) return docsIcon;
     const lower = mimeType.toLowerCase();
     
+    if (lower.includes('chat') || lower.includes('message')) {
+      return chatIcon;
+    }
+    if (lower.includes('mail') || lower.includes('gmail') || lower.includes('email')) {
+      return gmailIcon;
+    }
     if (lower === 'application/vnd.google-apps.document' || lower.includes('document') || lower.includes('word') || lower.includes('pdf')) {
       return docsIcon;
     }

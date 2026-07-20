@@ -13,6 +13,8 @@ import sheetsIcon from '../../assets/sheets.png';
 import slidesIcon from '../../assets/slides.png';
 import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
+import chatIcon from '../../assets/chat.png';
+import gmailIcon from '../../assets/gmail.png';
 
 interface AISummaryViewProps {
   sources: any[];
@@ -132,6 +134,12 @@ export function AISummaryView({
   const getFileIcon = (mimeType?: string, fileName?: string) => {
     const mType = (mimeType || '').toLowerCase();
     const name = (fileName || '').toLowerCase();
+    if (mType.includes('chat') || name.includes('chat') || name.includes('message')) {
+      return chatIcon;
+    }
+    if (mType.includes('mail') || mType.includes('gmail') || mType.includes('email') || name.includes('gmail') || name.includes('gemail') || name.includes('email') || name.includes('mail')) {
+      return gmailIcon;
+    }
     if (mType.includes('document') || name.endsWith('.doc') || name.endsWith('.docx') || name.endsWith('.md') || name.endsWith('.txt')) {
       return docsIcon;
     }

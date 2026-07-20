@@ -28,14 +28,10 @@ export const PERSON_AVATAR_MAP: Record<string, string> = {
   'kaushal': '/people/kaushal.jpg'
 };
 
-export function getAvatarForPerson(name: string, isOAuth: boolean = false): string {
-  if (!name) return isOAuth ? 'https://ui-avatars.com/api/?name=Google+User&background=1a73e8&color=ffffff&bold=true' : '/people/default_user.jpg';
+export function getAvatarForPerson(name: string = ''): string {
+  if (!name) return '/people/sarah_lin.jpg';
   const clean = name.trim().toLowerCase();
   
-  if (isOAuth) {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1a73e8&color=ffffff&bold=true`;
-  }
-
   if (PERSON_AVATAR_MAP[clean]) {
     return PERSON_AVATAR_MAP[clean];
   }
@@ -48,13 +44,13 @@ export function getAvatarForPerson(name: string, isOAuth: boolean = false): stri
     }
   }
 
-  // Deterministic fallback hash based on name characters so a name ALWAYS gets the exact same avatar
-  const keys = Object.keys(PERSON_AVATAR_MAP);
+  // Deterministic fallback hash based on name characters so a name ALWAYS gets a real person photo asset
+  const values = Array.from(new Set(Object.values(PERSON_AVATAR_MAP)));
   let hash = 0;
   for (let i = 0; i < clean.length; i++) {
     hash = (hash << 5) - hash + clean.charCodeAt(i);
     hash |= 0;
   }
-  const index = Math.abs(hash) % keys.length;
-  return PERSON_AVATAR_MAP[keys[index]];
+  const index = Math.abs(hash) % values.length;
+  return values[index];
 }

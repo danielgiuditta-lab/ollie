@@ -7,6 +7,8 @@ import htmlIcon from '../../assets/html.png';
 import imageIcon from '../../assets/image.png';
 import videoIcon from '../../assets/video.png';
 import commentsIcon from '../../assets/comments.svg';
+import chatIcon from '../../assets/chat.png';
+import gmailIcon from '../../assets/gmail.png';
 
 interface FileIconProps {
   fileName?: string;
@@ -30,19 +32,30 @@ export function getFileIcon(fileName: string = '', mimeType?: string, size: numb
     );
   }
 
-  // Gmail / Email / Chat / Calendar / Comments
+  // Chat
+  if (
+    mimeLower.includes('chat') ||
+    mimeLower.includes('message') ||
+    nameLower.includes('chat') ||
+    nameLower.includes('message') ||
+    nameLower.includes('space chat')
+  ) {
+    return <img src={chatIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="chat icon" referrerPolicy="no-referrer" />;
+  }
+
+  // Gmail / Email / Mail / Gemail
   if (
     mimeLower.includes('mail') ||
     mimeLower.includes('gmail') ||
     mimeLower.includes('email') ||
-    mimeLower.includes('chat') ||
     nameLower.includes('gmail') ||
+    nameLower.includes('gemail') ||
     nameLower.includes('email') ||
     nameLower.includes('mail') ||
     nameLower.includes('rsvp') ||
     nameLower.includes('thread')
   ) {
-    return <img src={commentsIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="mail icon" referrerPolicy="no-referrer" />;
+    return <img src={gmailIcon} className="w-4.5 h-4.5 object-contain select-none shrink-0" alt="mail icon" referrerPolicy="no-referrer" />;
   }
 
   // HTML / Sites / Kanban
