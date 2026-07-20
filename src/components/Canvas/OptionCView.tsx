@@ -388,9 +388,9 @@ export function OptionCView({
 
   return (
     <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
-      {/* Continuous layout list where the SAME cell morphs smoothly from collapsed row to expanded cell as it slides up */}
+      {/* Reel layout list: Each cell is a persistent motion element that layout-animates from collapsed Home card to expanded Canvas view */}
       <div className="flex-1 w-full min-h-[460px] flex flex-col gap-3 overflow-hidden relative">
-        <LayoutGroup id="option-c-cells">
+        <LayoutGroup id="option-c-cells-reel">
           {orderedTodoItems.map((item, idx) => {
             const isFocused = idx === activeIndex;
             const isPrev = idx === activeIndex - 1;
@@ -402,23 +402,27 @@ export function OptionCView({
               <motion.div
                 key={item.id || `cell-${idx}`}
                 layout
+                layoutId={`cell-card-${item.id || idx}`}
                 onClick={() => {
                   if (!isFocused) {
                     setActiveIndex(idx);
                   }
                 }}
-                className={`w-full transition-all duration-300 ease-in-out select-none overflow-hidden origin-center ${
+                className={`w-full flex flex-col select-none overflow-hidden origin-center ${
                   isFocused
                     ? 'flex-1 min-h-[380px] rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] border border-slate-200/60 dark:border-[#2B2D31] shadow-md p-6 md:p-8 select-text cursor-default'
-                    : 'h-[56px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-4 cursor-pointer flex items-center justify-between gap-4 border border-slate-200/50 dark:border-neutral-800 shadow-2xs'
+                    : 'h-[64px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] p-4 cursor-pointer flex justify-center border border-slate-200/50 dark:border-neutral-800 shadow-2xs'
                 }`}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                transition={{
+                  layout: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+                }}
               >
                 {isFocused ? (
                   <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.35, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                     className="w-full h-full flex flex-col min-h-0 overflow-y-auto relative"
                   >
                     {isChatReplyTask ? (
@@ -426,27 +430,23 @@ export function OptionCView({
                         {/* Left Column: Title, Meta, and Context Unit */}
                         <div className="w-1/2 h-full flex flex-col items-start justify-center pr-4 md:pr-6 min-w-0">
                           <motion.h3 
-                            initial={{ opacity: 0, y: 14 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.38, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                            layoutId={`cell-title-${item.id || idx}`}
                             className="text-[28px] md:text-[34px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal"
                           >
                             {canvasTitleText}
                           </motion.h3>
 
                           <motion.p 
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.38, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                            layoutId={`cell-sub-${item.id || idx}`}
                             className="text-[18px] md:text-[20px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 md:mt-4"
                           >
                             {canvasMetaText}
                           </motion.p>
 
                           <motion.div 
-                            initial={{ opacity: 0, y: 10 }}
+                            initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.38, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                             className="flex items-center gap-2 flex-wrap mt-3.5 md:mt-4.5"
                           >
                             {activePersonName && (
@@ -564,27 +564,23 @@ export function OptionCView({
                         {activeTask && (
                           <div className="w-full shrink-0 flex flex-col items-start max-w-[65%] mb-[20px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
                             <motion.h3 
-                              initial={{ opacity: 0, y: 14 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.38, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                              layoutId={`cell-title-${item.id || idx}`}
                               className="text-[28px] md:text-[32px] leading-[36px] font-normal text-slate-900 dark:text-white"
                             >
                               {canvasTitleText}
                             </motion.h3>
 
                             <motion.p 
-                              initial={{ opacity: 0, y: 12 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.38, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                              layoutId={`cell-sub-${item.id || idx}`}
                               className="text-[18px] md:text-[20px] leading-normal font-normal text-slate-600 dark:text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis"
                             >
                               {canvasMetaText}
                             </motion.p>
 
                             <motion.div 
-                              initial={{ opacity: 0, y: 10 }}
+                              initial={{ opacity: 0, y: 6 }}
                               animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.38, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                               className="flex items-center gap-2 flex-wrap mt-3"
                             >
                               {activePersonName && (
@@ -613,7 +609,7 @@ export function OptionCView({
                                   href={link.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[12px] font-normal transition-colors"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
                                 >
                                   {link.label || 'Open Link'}
                                 </a>
@@ -625,9 +621,9 @@ export function OptionCView({
                         {/* Artifacts in Diff View / NativeViewer */}
                         {activeFileObject ? (
                           <motion.div 
-                            initial={{ opacity: 0, y: 15 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.42, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                             className="w-full flex-1 min-h-0 flex flex-col overflow-hidden"
                           >
                             {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
@@ -655,14 +651,35 @@ export function OptionCView({
                     )}
                   </motion.div>
                 ) : (
-                  <div className="flex-1 min-w-0 flex flex-col text-left">
-                    <h4 className="text-[14px] leading-[18px] font-medium font-sans text-slate-900 dark:text-white truncate">
-                      {getAbbreviatedCellTitle(item, completedTaskIds.has(item.id))}
-                    </h4>
-                    <p className="text-[12px] leading-[15px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
-                      {item.description || item.descriptionDone || item.action || ''}
-                    </p>
-                  </div>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="w-full flex items-center justify-between gap-4 min-w-0"
+                  >
+                    {/* Exact Home Mode Collapsed Row Styling */}
+                    <div className="flex-1 min-w-0 flex flex-col text-left">
+                      <motion.h4 
+                        layoutId={`cell-title-${item.id || idx}`}
+                        className="text-[16px] leading-[24px] font-medium font-sans text-slate-900 dark:text-white truncate"
+                      >
+                        {getAbbreviatedCellTitle(item, completedTaskIds.has(item.id))}
+                      </motion.h4>
+                      <motion.p 
+                        layoutId={`cell-sub-${item.id || idx}`}
+                        className="text-[14px] leading-[20px] font-normal font-sans text-slate-500 dark:text-neutral-400 mt-0.5 truncate"
+                      >
+                        {item.description || item.descriptionDone || item.action || ''}
+                      </motion.p>
+                    </div>
+                    <motion.div 
+                      layoutId={`cell-badge-${item.id || idx}`}
+                      className="shrink-0 text-[12px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-3 py-1 rounded-full"
+                    >
+                      {isPrev ? 'Previous' : 'Next task'}
+                    </motion.div>
+                  </motion.div>
                 )}
               </motion.div>
             );
