@@ -92,7 +92,7 @@ interface HomeLandingProps {
   onReorderPins?: (newOrderedIds: string[]) => void;
   onSelectArtifact?: (file: any) => void;
   envId?: string | null;
-  onOpenTheatre?: () => void;
+  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C') => void;
 }
 
 // Full set of suggested items shown in the screenshots with appropriate preview classifications

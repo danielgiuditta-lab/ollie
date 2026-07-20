@@ -20,6 +20,7 @@ import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
 import { InferredTaskDiffView } from './components/Canvas/InferredTaskDiffView';
 import { TheatreView } from './components/Canvas/TheatreView';
+import { OptionCView } from './components/Canvas/OptionCView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
@@ -163,6 +164,19 @@ export default function App() {
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
   const [isTheatreOpen, setIsTheatreOpen] = useState(false);
+  const [playOptionMode, setPlayOptionMode] = useState<'A' | 'B' | 'C'>('C');
+
+  const handleOpenTheatre = (mode?: 'A' | 'B' | 'C') => {
+    const targetMode = mode || playOptionMode;
+    setPlayOptionMode(targetMode);
+    if (targetMode === 'A') {
+      if (todoItems.length > 0) {
+        handleProactiveTaskClick(todoItems[0]);
+      }
+    } else {
+      setIsTheatreOpen(true);
+    }
+  };
   const [activeProactiveTask, setActiveProactiveTask] = useState<any | null>(null);
   const [homePins, setHomePins] = useState<string[]>(['todo-card']);
 
@@ -6412,7 +6426,7 @@ export default function App() {
                         onPinArtifact={handlePinArtifact}
                         onReorderPins={handleReorderPins}
                         onSelectArtifact={handleArtifactSelect}
-                        onOpenTheatre={() => setIsTheatreOpen(true)}
+                        onOpenTheatre={handleOpenTheatre}
                       />
                     ) : (
                       <HomeLanding 
@@ -6455,7 +6469,7 @@ export default function App() {
                         onPinArtifact={handlePinArtifact}
                         onReorderPins={handleReorderPins}
                         onSelectArtifact={handleArtifactSelect}
-                        onOpenTheatre={() => setIsTheatreOpen(true)}
+                        onOpenTheatre={handleOpenTheatre}
                       />
                     )}
                   </div>
@@ -6743,21 +6757,36 @@ export default function App() {
         />
       ))}
 
-      {/* Top-Level Theatre View Overlay */}
+      {/* Top-Level Option C View or Theatre View Overlay */}
       {isTheatreOpen && (
-        <TheatreView
-          todoItems={todoItems}
-          onClose={() => setIsTheatreOpen(false)}
-          onSendMessage={handleSendMessage}
-          setActiveSidebar={setActiveSidebar}
-          onUpdateTaskStatus={(taskId, status) => {
-            setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
-          }}
-          userProfile={userProfile}
-          accessToken={accessToken}
-          theme={appTheme}
-          driveFiles={driveFiles}
-        />
+        playOptionMode === 'C' ? (
+          <OptionCView
+            todoItems={todoItems}
+            onClose={() => setIsTheatreOpen(false)}
+            onSendMessage={handleSendMessage}
+            setActiveSidebar={setActiveSidebar}
+            onUpdateTaskStatus={(taskId, status) => {
+              setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+            }}
+            userProfile={userProfile}
+            accessToken={accessToken}
+            driveFiles={driveFiles}
+          />
+        ) : (
+          <TheatreView
+            todoItems={todoItems}
+            onClose={() => setIsTheatreOpen(false)}
+            onSendMessage={handleSendMessage}
+            setActiveSidebar={setActiveSidebar}
+            onUpdateTaskStatus={(taskId, status) => {
+              setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+            }}
+            userProfile={userProfile}
+            accessToken={accessToken}
+            theme={appTheme}
+            driveFiles={driveFiles}
+          />
+        )
       )}
 
     </div>
