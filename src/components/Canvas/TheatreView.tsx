@@ -385,12 +385,43 @@ export function TheatreView({
   const getNativeToolLabel = () => {
     if (!activeTask) return 'Open in Drive';
 
-    const targetUrl = activeTask.links?.[0]?.url || '';
-    const textToMatch = [
+    const sourceAndType = [
       activeTask.type,
       activeTask.sourceMimeType,
       activeTask.sourceName,
       activeTask.workspace,
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    // Check workspace, type, and sourceName first
+    if (sourceAndType.includes('chat') || sourceAndType.includes('message')) {
+      return 'Open in Chat';
+    }
+    if (sourceAndType.includes('mail') || sourceAndType.includes('gmail') || sourceAndType.includes('email') || sourceAndType.includes('gemail') || sourceAndType.includes('inbox')) {
+      return 'Open in Gmail';
+    }
+    if (sourceAndType.includes('calendar') || sourceAndType.includes('event') || sourceAndType.includes('schedule')) {
+      return 'Open in Calendar';
+    }
+    if (sourceAndType.includes('meet')) {
+      return 'Open in Meet';
+    }
+    if (sourceAndType.includes('slide') || sourceAndType.includes('presentation') || sourceAndType.includes('gslides') || sourceAndType.includes('ppt')) {
+      return 'Open in Slides';
+    }
+    if (sourceAndType.includes('sheet') || sourceAndType.includes('csv') || sourceAndType.includes('excel') || sourceAndType.includes('gsheet') || sourceAndType.includes('spreadsheet')) {
+      return 'Open in Sheets';
+    }
+    if (sourceAndType.includes('form')) {
+      return 'Open in Forms';
+    }
+    if (sourceAndType.includes('doc') || sourceAndType.includes('word') || sourceAndType.includes('gdoc') || sourceAndType.includes('pdf') || sourceAndType.includes('essay') || sourceAndType.includes('brief')) {
+      return 'Open in Docs';
+    }
+
+    // Fallback to checking title, description, links, and filesToLoad
+    const targetUrl = activeTask.links?.[0]?.url || '';
+    const fullTextToMatch = [
+      sourceAndType,
       activeTask.title,
       activeTask.description,
       targetUrl,
@@ -399,29 +430,29 @@ export function TheatreView({
       activeTask.filesToLoad?.[0]?.name
     ].filter(Boolean).join(' ').toLowerCase();
 
-    if (textToMatch.includes('slide') || textToMatch.includes('presentation') || textToMatch.includes('gslides') || textToMatch.includes('ppt')) {
-      return 'Open in Slides';
-    }
-    if (textToMatch.includes('doc') || textToMatch.includes('word') || textToMatch.includes('gdoc') || textToMatch.includes('pdf') || textToMatch.includes('essay') || textToMatch.includes('brief')) {
-      return 'Open in Docs';
-    }
-    if (textToMatch.includes('sheet') || textToMatch.includes('csv') || textToMatch.includes('excel') || textToMatch.includes('gsheet') || textToMatch.includes('spreadsheet')) {
-      return 'Open in Sheets';
-    }
-    if (textToMatch.includes('mail') || textToMatch.includes('gmail') || textToMatch.includes('email') || textToMatch.includes('gemail') || textToMatch.includes('inbox')) {
-      return 'Open in Gmail';
-    }
-    if (textToMatch.includes('chat') || textToMatch.includes('message')) {
+    if (fullTextToMatch.includes('chat') || fullTextToMatch.includes('message')) {
       return 'Open in Chat';
     }
-    if (textToMatch.includes('calendar') || textToMatch.includes('event') || textToMatch.includes('schedule')) {
+    if (fullTextToMatch.includes('mail') || fullTextToMatch.includes('gmail') || fullTextToMatch.includes('email') || fullTextToMatch.includes('gemail') || fullTextToMatch.includes('inbox')) {
+      return 'Open in Gmail';
+    }
+    if (fullTextToMatch.includes('calendar') || fullTextToMatch.includes('event') || fullTextToMatch.includes('schedule')) {
       return 'Open in Calendar';
     }
-    if (textToMatch.includes('form')) {
+    if (fullTextToMatch.includes('meet')) {
+      return 'Open in Meet';
+    }
+    if (fullTextToMatch.includes('slide') || fullTextToMatch.includes('presentation') || fullTextToMatch.includes('gslides') || fullTextToMatch.includes('ppt')) {
+      return 'Open in Slides';
+    }
+    if (fullTextToMatch.includes('sheet') || fullTextToMatch.includes('csv') || fullTextToMatch.includes('excel') || fullTextToMatch.includes('gsheet') || fullTextToMatch.includes('spreadsheet')) {
+      return 'Open in Sheets';
+    }
+    if (fullTextToMatch.includes('form')) {
       return 'Open in Forms';
     }
-    if (textToMatch.includes('meet')) {
-      return 'Open in Meet';
+    if (fullTextToMatch.includes('doc') || fullTextToMatch.includes('word') || fullTextToMatch.includes('gdoc') || fullTextToMatch.includes('pdf') || fullTextToMatch.includes('essay') || fullTextToMatch.includes('brief')) {
+      return 'Open in Docs';
     }
 
     return 'Open in Drive';
