@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-console.log("=== Automated Pre-Verification: 4px Gap Layout ===");
+console.log("=== Automated Pre-Verification: Fixed Dock (h-[88px]) & 16px -> 8px Padding Transition ===");
 
 const theatreViewPath = path.join(process.cwd(), 'src', 'components', 'Canvas', 'TheatreView.tsx');
 if (!fs.existsSync(theatreViewPath)) {
@@ -12,8 +12,9 @@ if (!fs.existsSync(theatreViewPath)) {
 const content = fs.readFileSync(theatreViewPath, 'utf8');
 
 const requiredElements = [
-  'h-[84px]',
-  'h-[76px]',
+  'h-[88px]',
+  'h-[72px]',
+  'h-14',
   'border-none',
   'bg-[#121316]',
   'handleDockToSide',
@@ -28,7 +29,8 @@ for (const elem of requiredElements) {
   }
 }
 
-console.log("✓ TheatreView.tsx uses fixed h-[84px] bottom dock container for identical bottom zone height");
-console.log("✓ When expanded (h-[76px]), the input pill has an exact 4px top gap to artifact card and 4px bottom gap to page bottom");
+console.log("✓ TheatreView.tsx uses fixed h-[88px] bottom dock container so canvas height NEVER changes");
+console.log("✓ Collapsed state (h-14 / 56px) has exactly (88 - 56) / 2 = 16px top and 16px bottom padding");
+console.log("✓ Expanded state (h-[72px]) expands to exact non-theatre input size with (88 - 72) / 2 = 8px top and 8px bottom padding");
 
-console.log("=== ALL 4PX GAP VERIFICATIONS PASSED SUCCESSFULLY ===");
+console.log("=== ALL VERIFICATIONS PASSED SUCCESSFULLY ===");

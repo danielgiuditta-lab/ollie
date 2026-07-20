@@ -598,7 +598,7 @@ export function TheatreView({
   const hasAnyDone = orderedTodoItems.some(t => completedTaskIds.has(t.id));
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 pb-1 md:pb-1 overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 pb-0 md:pb-0 overflow-hidden">
       {/* Top Header Bar matching design specs */}
       <div className="w-full shrink-0 flex items-center justify-between pb-3 px-1">
         {/* Left Title with Toggle Button & Breadcrumbs */}
@@ -748,7 +748,7 @@ export function TheatreView({
         </AnimatePresence>
 
         {/* Right Area: Artifact View + Centered Controls Dock directly under it */}
-        <div className="flex-1 h-full min-w-0 flex flex-col gap-3 overflow-hidden pb-1">
+        <div className="flex-1 h-full min-w-0 flex flex-col gap-0 overflow-hidden">
           {/* Selected Task Target Artifact View Container (overflow-hidden clips sliding cards) */}
           <div className="flex-1 min-h-0 relative overflow-hidden">
             <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
@@ -1019,8 +1019,8 @@ export function TheatreView({
             </AnimatePresence>
           </div>
 
-          {/* Bottom Controls Dock (Fixed h-[84px] height so expanded input pill has exact 4px gap to artifact card above and 4px gap to page bottom below) */}
-          <div className="w-full h-[84px] shrink-0 flex items-center justify-center gap-2 relative z-20">
+          {/* Bottom Controls Dock (Fixed h-[88px] height so canvas size NEVER changes; padding goes from 16px when collapsed to 8px when expanded) */}
+          <div className="w-full h-[88px] shrink-0 flex items-center justify-center gap-2 relative z-20">
             {/* Previous Task Arrow Button */}
             <button
               onClick={handlePrev}
@@ -1040,11 +1040,11 @@ export function TheatreView({
               <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
             </button>
 
-            {/* Center Steer Input Pill (Expanded height h-[76px] with exact 8px top/bottom spacing) */}
+            {/* Center Steer Input Pill (Expands to h-[72px] matching non-theatre mode input) */}
             <div 
               className={`rounded-full bg-[#121316] border-none flex items-center gap-3 transition-all duration-300 ease-in-out backdrop-blur-md shadow-lg ${
                 (isInputFocused || steerInput.trim().length > 0)
-                  ? 'h-[76px] w-[340px] md:w-[620px] px-4' 
+                  ? 'h-[72px] w-[340px] md:w-[620px] px-4' 
                   : 'h-14 w-[160px] px-4 cursor-pointer'
               }`}
               onClick={() => {
