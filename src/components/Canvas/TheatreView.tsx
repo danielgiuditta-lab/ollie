@@ -380,19 +380,38 @@ export function TheatreView({
 
   // Get contextual ghost text / placeholder for steering in theatre mode
   const getSteerPlaceholder = () => {
-    if (!activeTask) return "Search, add files or tell Ollie how to steer...";
+    if (!activeTask) return "Tell Ollie how to respond differently...";
 
+    // For chat or messaging task
+    if (
+      activeTask.type === 'chat' || 
+      activeTask.workspace === 'Google Chat' || 
+      activeTask.sourceName?.toLowerCase().includes('chat') ||
+      activeTask.senderMessage ||
+      activeTask.proposedReply
+    ) {
+      if (activeTask.personName) {
+        const firstName = activeTask.personName.split(' ')[0];
+        return `Tell Ollie how to respond to ${firstName} differently...`;
+      }
+      return "Tell Ollie how to respond differently...";
+    }
+
+    // For file / document / slide / sheet tasks
     if (activeTask.sourceName && typeof activeTask.sourceName === 'string' && !activeTask.sourceName.toLowerCase().includes('google chat')) {
       const cleanName = activeTask.sourceName.replace(/\.[^/.]+$/, '').trim();
       if (cleanName.length > 0) {
-        return `Steer "${cleanName.length > 28 ? cleanName.slice(0, 25) + '...' : cleanName}" or ask Ollie...`;
+        const shortName = cleanName.length > 25 ? cleanName.slice(0, 22) + '...' : cleanName;
+        return `Tell Ollie how to edit "${shortName}" differently...`;
       }
     }
+
     if (activeTask.title) {
-      const titleShort = activeTask.title.length > 30 ? `${activeTask.title.slice(0, 27)}...` : activeTask.title;
-      return `Steer "${titleShort}" or ask Ollie...`;
+      const titleShort = activeTask.title.length > 28 ? `${activeTask.title.slice(0, 25)}...` : activeTask.title;
+      return `Tell Ollie how to work on "${titleShort}" differently...`;
     }
-    return "Steer this task or ask Ollie to make edits...";
+
+    return "Tell Ollie how to respond differently...";
   };
 
   // Helper to open source link in a new tab
@@ -579,7 +598,7 @@ export function TheatreView({
   const hasAnyDone = orderedTodoItems.some(t => completedTaskIds.has(t.id));
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 pb-1 md:pb-1 overflow-hidden">
       {/* Top Header Bar matching design specs */}
       <div className="w-full shrink-0 flex items-center justify-between pb-3 px-1">
         {/* Left Title with Toggle Button & Breadcrumbs */}
@@ -1000,8 +1019,8 @@ export function TheatreView({
             </AnimatePresence>
           </div>
 
-          {/* Bottom Controls Dock with 8px gap (z-20 to stay above sliding cards) */}
-          <div className="w-full shrink-0 flex items-center justify-center gap-2 pt-2 relative z-20">
+          {/* Bottom Controls Dock (Fixed h-[84px] height so expanded input pill has exact 4px gap to artifact card above and 4px gap to page bottom below) */}
+          <div className="w-full h-[84px] shrink-0 flex items-center justify-center gap-2 relative z-20">
             {/* Previous Task Arrow Button */}
             <button
               onClick={handlePrev}
@@ -1021,12 +1040,12 @@ export function TheatreView({
               <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
             </button>
 
-            {/* Center Steer Input Pill (Dark Mode version of normal bottom snapped LLM input bar) */}
+            {/* Center Steer Input Pill (Expanded height h-[76px] with exact 8px top/bottom spacing) */}
             <div 
-              className={`h-14 rounded-full flex items-center gap-2 transition-all duration-300 ease-in-out backdrop-blur-md ${
+              className={`rounded-full bg-[#121316] border-none flex items-center gap-3 transition-all duration-300 ease-in-out backdrop-blur-md shadow-lg ${
                 (isInputFocused || steerInput.trim().length > 0)
-                  ? 'w-[340px] md:w-[540px] px-3.5 bg-[#1E1F22]/95 border border-white/20 shadow-2xl' 
-                  : 'w-[160px] px-4 bg-[#121316] border border-transparent hover:border-white/10 cursor-pointer shadow-lg'
+                  ? 'h-[76px] w-[340px] md:w-[620px] px-4' 
+                  : 'h-14 w-[160px] px-4 cursor-pointer'
               }`}
               onClick={() => {
                 const el = document.getElementById('theatre-steer-input');
@@ -1040,10 +1059,10 @@ export function TheatreView({
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
-                  className="w-9 h-9 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none"
+                  className="w-11 h-11 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none"
                   title="Add attachment or context"
                 >
-                  <Plus size={18} className="stroke-[2.5]" />
+                  <Plus size={20} className="stroke-[2.5]" />
                 </button>
               )}
 
@@ -1067,12 +1086,12 @@ export function TheatreView({
                   }
                 }}
                 placeholder={(isInputFocused || steerInput.trim().length > 0) ? getSteerPlaceholder() : "Do differently..."}
-                className="w-full bg-transparent text-white text-[14px] font-normal placeholder-neutral-400 focus:outline-none truncate px-1 border-none ring-0"
+                className="w-full bg-transparent text-white text-[15px] font-normal placeholder-neutral-400 focus:outline-none truncate px-1 border-none ring-0"
               />
 
               {/* Right Action Buttons: Snap to side chat & Send button */}
               {(isInputFocused || steerInput.trim().length > 0) && (
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   {/* Snap to Side Chat Button */}
                   <button
                     type="button"
@@ -1080,10 +1099,10 @@ export function TheatreView({
                       e.stopPropagation();
                       handleDockToSide();
                     }}
-                    className="w-9 h-9 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition cursor-pointer border-none outline-none"
+                    className="w-11 h-11 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition cursor-pointer border-none outline-none"
                     title="Snap to side chat"
                   >
-                    <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+                    <span className="material-symbols-rounded text-[22px] select-none">dock_to_right</span>
                   </button>
 
                   {/* Send Button */}
@@ -1099,14 +1118,14 @@ export function TheatreView({
                       }
                     }}
                     disabled={!steerInput.trim()}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
+                    className={`w-11 h-11 rounded-full flex items-center justify-center transition border-none outline-none ${
                       steerInput.trim()
                         ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer shadow-md'
                         : 'bg-white/10 text-neutral-500 cursor-not-allowed'
                     }`}
                     title={steerInput.trim() ? "Submit steer" : "Send"}
                   >
-                    <ArrowUp size={16} className="stroke-[2.5]" />
+                    <ArrowUp size={18} className="stroke-[2.5]" />
                   </button>
                 </div>
               )}
