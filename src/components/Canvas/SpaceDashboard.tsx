@@ -476,7 +476,7 @@ export function SpaceDashboard({
 
   return (
     <div className="w-full h-full flex flex-col min-h-0 relative select-none">
-      {isHomeDashboard && (
+      {isHomeDashboard && !isOptionCOpen && (
         <div className="px-6 pt-6 pb-2 flex items-center justify-between shrink-0">
           <h1 className="text-[36px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
             <span>Welcome back, {name}.</span>
@@ -498,7 +498,7 @@ export function SpaceDashboard({
       )}
 
       {isOptionCOpen ? (
-        <div className="w-full flex-1 min-h-0 relative overflow-hidden">
+        <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden p-2 md:p-4">
           <OptionCView
             todoItems={todoItems || []}
             onClose={onCloseOptionC || (() => {})}

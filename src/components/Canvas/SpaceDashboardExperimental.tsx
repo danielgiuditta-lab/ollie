@@ -672,51 +672,53 @@ export function SpaceDashboardExperimental({
     const name = userProfile?.given_name || userProfile?.name || 'User';
 
     return (
-      <div className="w-full h-full overflow-y-auto bg-white dark:bg-[#111214] select-text">
-        <div className="max-w-4xl mx-auto px-12 py-12 flex flex-col gap-8">
-          {/* Welcome Greeting */}
-          <div className="flex flex-col text-left gap-1 mt-2">
-            <h1 className="text-[45px] leading-[52px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
-              <span>Welcome back, {name}.</span>
-              <button
-                id="play-theatre-btn"
-                onClick={() => {
-                  console.log('[THEATRE DEBUG] Play button clicked in SpaceDashboardExperimental!');
-                  if (onOpenTheatre) {
-                    onOpenTheatre();
-                  }
-                  setIsTheatreOpen(true);
-                }}
-                className="inline-flex items-center justify-center p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-800 dark:text-white transition-all cursor-pointer border border-slate-200 dark:border-neutral-700 shadow-xs group"
-                title="Play"
-              >
-                <Play className="w-5 h-5 fill-current text-slate-800 dark:text-white group-hover:scale-105 transition-transform" />
-              </button>
-            </h1>
-            <p className="text-[15px] text-slate-650 dark:text-neutral-300 font-sans">
-              {meeting.hasMeeting ? (
-                <>
-                  Your next meeting, <span className="font-semibold">"{meeting.title}"</span>, {meeting.relativeTimeText}.{' '}
-                  {meeting.joinLink && (
-                    <a
-                      href={meeting.joinLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
-                    >
-                      Join Call.
-                    </a>
-                  )}
-                </>
-              ) : (
-                meeting.relativeTimeText
-              )}
-            </p>
+      <div className="w-full h-full flex flex-col min-h-0 bg-white dark:bg-[#111214] select-text">
+        {!isOptionCOpen && (
+          <div className="max-w-4xl mx-auto px-12 py-12 flex flex-col gap-8">
+            {/* Welcome Greeting */}
+            <div className="flex flex-col text-left gap-1 mt-2">
+              <h1 className="text-[45px] leading-[52px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
+                <span>Welcome back, {name}.</span>
+                <button
+                  id="play-theatre-btn"
+                  onClick={() => {
+                    console.log('[THEATRE DEBUG] Play button clicked in SpaceDashboardExperimental!');
+                    if (onOpenTheatre) {
+                      onOpenTheatre();
+                    }
+                    setIsTheatreOpen(true);
+                  }}
+                  className="inline-flex items-center justify-center p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-800 dark:text-white transition-all cursor-pointer border border-slate-200 dark:border-neutral-700 shadow-xs group"
+                  title="Play"
+                >
+                  <Play className="w-5 h-5 fill-current text-slate-800 dark:text-white group-hover:scale-105 transition-transform" />
+                </button>
+              </h1>
+              <p className="text-[15px] text-slate-650 dark:text-neutral-300 font-sans">
+                {meeting.hasMeeting ? (
+                  <>
+                    Your next meeting, <span className="font-semibold">"{meeting.title}"</span>, {meeting.relativeTimeText}.{' '}
+                    {meeting.joinLink && (
+                      <a
+                        href={meeting.joinLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                      >
+                        Join Call.
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  meeting.relativeTimeText
+                )}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {isOptionCOpen ? (
-          <div className="w-full flex-1 min-h-0 relative overflow-hidden px-8 pb-6">
+          <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden p-2 md:p-4">
             <OptionCView
               todoItems={todoItems || []}
               onClose={onCloseOptionC || (() => setIsTheatreOpen(false))}

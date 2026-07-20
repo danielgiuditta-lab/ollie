@@ -195,12 +195,14 @@ export function OptionCView({
   };
 
   const handlePrev = () => {
+    if (activeIndex === 0) return;
     triggerActionToast('Skipped');
     setActiveIndex(prev => Math.max(0, prev - 1));
     setSteerInput('');
   };
 
   const handleNext = () => {
+    if (activeIndex === orderedTodoItems.length - 1) return;
     triggerActionToast('Skipped');
     setActiveIndex(prev => Math.min(orderedTodoItems.length - 1, prev + 1));
     setSteerInput('');
@@ -271,28 +273,6 @@ export function OptionCView({
     } else {
       window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(urlOrName)}`, '_blank', 'noopener,noreferrer');
     }
-  };
-
-  const getNativeToolLabel = () => {
-    if (!activeTask) return 'Open in Drive';
-
-    const sourceAndType = [
-      activeTask.type,
-      activeTask.sourceMimeType,
-      activeTask.sourceName,
-      activeTask.workspace,
-      activeTask.title,
-      activeTask.description
-    ].filter(Boolean).join(' ').toLowerCase();
-
-    if (sourceAndType.includes('chat') || sourceAndType.includes('message')) return 'Open in Chat';
-    if (sourceAndType.includes('mail') || sourceAndType.includes('gmail')) return 'Open in Gmail';
-    if (sourceAndType.includes('calendar') || sourceAndType.includes('schedule')) return 'Open in Calendar';
-    if (sourceAndType.includes('slide') || sourceAndType.includes('presentation')) return 'Open in Slides';
-    if (sourceAndType.includes('sheet') || sourceAndType.includes('csv')) return 'Open in Sheets';
-    if (sourceAndType.includes('doc') || sourceAndType.includes('gdoc')) return 'Open in Docs';
-
-    return 'Open in Drive';
   };
 
   const getTaskFileObject = (task: any) => {
@@ -409,73 +389,58 @@ export function OptionCView({
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-4 md:px-6 pt-1 pb-4 overflow-hidden relative">
-      {/* 3 Cells Stack View inside current Home UI */}
-      <div className="flex-1 w-full min-h-0 flex flex-col gap-3 overflow-hidden relative">
-        {/* 1. Proceeding (Previous) Cell - Collapsed matching existing cell styling */}
+    <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
+      {/* 3 Cells Reel Feed inside current Home UI */}
+      <div className="flex-1 w-full min-h-[460px] flex flex-col gap-3 overflow-hidden relative">
+        {/* 1. Proceeding (Previous) Cell - Collapsed and scaling up into view */}
         <AnimatePresence mode="popLayout">
-          {prevTask ? (
+          {prevTask && (
             <motion.div
               key={prevTask.id || 'prev-' + (activeIndex - 1)}
               layout
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 60, opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+              initial={{ height: 0, opacity: 0, scale: 0.92, y: -20 }}
+              animate={{ height: 56, opacity: 1, scale: 0.98, y: 0 }}
+              exit={{ height: 0, opacity: 0, scale: 0.92, y: -20 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 32 }}
               onClick={handlePrev}
-              className="w-full h-[60px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] p-4 cursor-pointer transition-all duration-200 select-none flex items-center justify-between gap-4 border-none shadow-2xs overflow-hidden"
+              className="w-full h-[56px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-4 cursor-pointer transition-all duration-200 select-none flex items-center justify-between gap-4 border border-slate-200/50 dark:border-neutral-800 shadow-2xs overflow-hidden"
             >
               <div className="flex-1 min-w-0 flex flex-col text-left">
-                <h4 className="text-[15px] leading-[20px] font-medium font-sans text-slate-900 dark:text-white truncate">
+                <h4 className="text-[14px] leading-[18px] font-medium font-sans text-slate-900 dark:text-white truncate">
                   {getAbbreviatedCellTitle(prevTask, completedTaskIds.has(prevTask.id))}
                 </h4>
-                <p className="text-[13px] leading-[16px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
+                <p className="text-[12px] leading-[15px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
                   {prevTask.description || prevTask.descriptionDone || prevTask.action || ''}
                 </p>
               </div>
-              <div className="shrink-0 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full">
+              <div className="shrink-0 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full">
                 Previous task (click to skip back)
               </div>
             </motion.div>
-          ) : (
-            <div className="w-full h-[60px] shrink-0 bg-[#F8FAFD]/40 dark:bg-[#282A2D]/40 rounded-[16px] p-4 flex items-center justify-center text-slate-400 dark:text-neutral-500 text-xs font-medium border-none select-none">
-              First task in queue
-            </div>
           )}
         </AnimatePresence>
 
-        {/* 2. Focused Cell - Expanded taking center of screen with exact Theatre Mode canvas visuals */}
-        <div className="flex-1 min-h-0 relative overflow-hidden">
+        {/* 2. Focused Cell - Expands and scales up as it comes into focus */}
+        <div className="flex-1 min-h-[380px] relative flex flex-col overflow-hidden rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] border border-slate-200/60 dark:border-[#2B2D31] shadow-md p-6 md:p-8 select-text">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTask?.id || activeIndex}
               layout
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              initial={{ scale: 0.94, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
-              className="w-full h-full rounded-[24px] overflow-y-auto bg-[#F8FAFD] dark:bg-[#1E1F22] flex flex-col p-8 select-text border-none shadow-lg absolute inset-0"
+              exit={{ scale: 0.94, opacity: 0, y: -30 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+              className="w-full h-full flex flex-col min-h-0 overflow-y-auto relative"
             >
-              {/* Native Open Chip in top-right */}
-              <div className="absolute top-6 right-6 z-20">
-                <button
-                  onClick={() => handleOpenSourceChip(activeTask?.links?.[0]?.url || activeTask?.sourceName || activeTask?.title)}
-                  className="h-9 px-4 rounded-full bg-slate-200/80 hover:bg-slate-300 dark:bg-[#282A2D] dark:hover:bg-[#35373A] text-slate-800 dark:text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer border-none shadow-xs"
-                >
-                  {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}
-                  <span>{getNativeToolLabel()}</span>
-                </button>
-              </div>
-
               {isChatReplyTask ? (
-                <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-6 md:p-10 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-2 md:p-6 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
                   {/* Left Column: Title, Meta, and Context Unit */}
                   <div className="w-1/2 h-full flex flex-col items-start justify-center pr-4 md:pr-6 min-w-0">
-                    <h3 className="text-[32px] md:text-[36px] leading-[40px] font-normal text-slate-900 dark:text-white tracking-normal">
+                    <h3 className="text-[28px] md:text-[34px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal">
                       {canvasTitleText}
                     </h3>
 
-                    <p className="text-[20px] md:text-[22px] leading-[28px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 md:mt-4">
+                    <p className="text-[18px] md:text-[20px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 md:mt-4">
                       {canvasMetaText}
                     </p>
 
@@ -517,7 +482,7 @@ export function OptionCView({
                   {/* Right Column: Chat UI */}
                   <div className="w-1/2 h-full flex flex-col justify-center gap-6 pl-4 md:pl-6 min-w-0 select-text">
                     <div className="flex items-start gap-3 justify-start max-w-[85%]">
-                      <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md">
+                      <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
                         <img 
                           src={activeAvatar} 
                           alt={activePersonName} 
@@ -526,19 +491,19 @@ export function OptionCView({
                         />
                       </div>
 
-                      <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-sm max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                      <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] shadow-sm max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
                         {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
                       </div>
                     </div>
 
                     <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
-                      <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-sm max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-5 relative group">
+                      <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] shadow-sm max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-4 relative group">
                         {isEditingProposal ? (
                           <div className="flex flex-col gap-2 min-w-[220px] w-full">
                             <textarea
                               value={editableProposalText}
                               onChange={(e) => setEditableProposalText(e.target.value)}
-                              className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[16px] leading-[24px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
+                              className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[15px] leading-[22px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
                               rows={3}
                               autoFocus
                             />
@@ -573,13 +538,13 @@ export function OptionCView({
                               className="inline-flex items-center justify-center p-1 rounded-full text-slate-600 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
                               title="Edit proposed reply"
                             >
-                              <Pencil size={20} className="stroke-[2.2]" />
+                              <Pencil size={18} className="stroke-[2.2]" />
                             </button>
                           </>
                         )}
                       </div>
 
-                      <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md">
+                      <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
                         <img 
                           src={userProfile?.picture || '/people/sarah_lin.jpg'} 
                           alt="User" 
@@ -593,16 +558,16 @@ export function OptionCView({
                 <>
                   {/* Title, Metaline, and Sources Unit */}
                   {activeTask && (
-                    <div className="w-full shrink-0 flex flex-col items-start max-w-[65%] mb-[24px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                      <h3 className="text-[32px] leading-[38px] font-normal text-slate-900 dark:text-white">
+                    <div className="w-full shrink-0 flex flex-col items-start max-w-[65%] mb-[20px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                      <h3 className="text-[28px] md:text-[32px] leading-[36px] font-normal text-slate-900 dark:text-white">
                         {canvasTitleText}
                       </h3>
 
-                      <p className="text-[20px] leading-normal font-normal text-slate-600 dark:text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
+                      <p className="text-[18px] md:text-[20px] leading-normal font-normal text-slate-600 dark:text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
                         {canvasMetaText}
                       </p>
 
-                      <div className="flex items-center gap-2 flex-wrap mt-4">
+                      <div className="flex items-center gap-2 flex-wrap mt-3">
                         {activePersonName && (
                           <div 
                             onClick={() => handleOpenSourceChip(activePersonName)}
@@ -678,7 +643,7 @@ export function OptionCView({
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
               >
-                <div className="bg-slate-900/90 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[28px] font-normal p-3 px-6 rounded-full shadow-2xl flex items-center gap-3 backdrop-blur-md">
+                <div className="bg-slate-900/90 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[26px] font-normal p-3 px-6 rounded-full shadow-2xl flex items-center gap-3 backdrop-blur-md">
                   {actionToast.text === 'Approved' && <Check className="w-7 h-7 text-[#34A853] stroke-[2.5]" />}
                   {actionToast.text === 'Declined' && <X className="w-7 h-7 text-[#EA4335] stroke-[2.5]" />}
                   {actionToast.text === 'Skipped' && <ArrowRight className="w-7 h-7 text-white stroke-[2]" />}
@@ -689,49 +654,45 @@ export function OptionCView({
           </AnimatePresence>
         </div>
 
-        {/* 3. Next Cell - Collapsed matching existing cell styling */}
+        {/* 3. Next Cell - Collapsed and scaling into view */}
         <AnimatePresence mode="popLayout">
-          {nextTask ? (
+          {nextTask && (
             <motion.div
               key={nextTask.id || 'next-' + (activeIndex + 1)}
               layout
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 60, opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+              initial={{ height: 0, opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ height: 56, opacity: 1, scale: 0.98, y: 0 }}
+              exit={{ height: 0, opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 32 }}
               onClick={handleNext}
-              className="w-full h-[60px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] p-4 cursor-pointer transition-all duration-200 select-none flex items-center justify-between gap-4 border-none shadow-2xs overflow-hidden"
+              className="w-full h-[56px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-4 cursor-pointer transition-all duration-200 select-none flex items-center justify-between gap-4 border border-slate-200/50 dark:border-neutral-800 shadow-2xs overflow-hidden"
             >
               <div className="flex-1 min-w-0 flex flex-col text-left">
-                <h4 className="text-[15px] leading-[20px] font-medium font-sans text-slate-900 dark:text-white truncate">
+                <h4 className="text-[14px] leading-[18px] font-medium font-sans text-slate-900 dark:text-white truncate">
                   {getAbbreviatedCellTitle(nextTask, completedTaskIds.has(nextTask.id))}
                 </h4>
-                <p className="text-[13px] leading-[16px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
+                <p className="text-[12px] leading-[15px] font-normal font-sans text-slate-500 dark:text-neutral-400 truncate">
                   {nextTask.description || nextTask.descriptionDone || nextTask.action || ''}
                 </p>
               </div>
-              <div className="shrink-0 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full">
+              <div className="shrink-0 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full">
                 Next task (click to skip forward)
               </div>
             </motion.div>
-          ) : (
-            <div className="w-full h-[60px] shrink-0 bg-[#F8FAFD]/40 dark:bg-[#282A2D]/40 rounded-[16px] p-4 flex items-center justify-center text-slate-400 dark:text-neutral-500 text-xs font-medium border-none select-none">
-              End of queue
-            </div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Control Bar with Buttons Animating Out from Input Pill */}
-      <div className="w-full h-[88px] shrink-0 flex items-center justify-center gap-2 relative z-20 pt-2">
+      {/* Control Bar styled identical to Composer input, with buttons animating out smoothly */}
+      <div className="w-full h-[80px] shrink-0 flex items-center justify-center gap-3 relative z-20 pt-2">
         {/* Animated Previous Button - Animates out left from input pill */}
         <motion.button
-          initial={{ opacity: 0, x: 70, scale: 0.4 }}
+          initial={{ opacity: 0, x: 80, scale: 0.2 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
           onClick={handlePrev}
           disabled={activeIndex === 0}
-          className="w-12 h-12 rounded-full bg-slate-200/90 hover:bg-slate-300 dark:bg-[#282A2D] dark:hover:bg-[#35373A] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-md border-none"
+          className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-md"
           title="Previous task"
         >
           <ArrowLeft className="w-5 h-5 stroke-[2]" />
@@ -739,22 +700,22 @@ export function OptionCView({
 
         {/* Animated Decline X Button - Animates out left from input pill */}
         <motion.button
-          initial={{ opacity: 0, x: 35, scale: 0.4 }}
+          initial={{ opacity: 0, x: 40, scale: 0.2 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
           onClick={handleReject}
-          className="w-14 h-14 rounded-full bg-slate-200/90 hover:bg-slate-300 dark:bg-[#282A2D] dark:hover:bg-[#35373A] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md border-none"
+          className="w-14 h-14 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
           title="Decline"
         >
           <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
         </motion.button>
 
-        {/* Center Steer Input Pill */}
+        {/* Center Steer Input Pill - Styled identical to Composer input pill */}
         <div 
-          className={`rounded-full bg-slate-200/90 dark:bg-[#282A2D] border-none flex items-center gap-3 transition-all duration-300 ease-in-out backdrop-blur-md shadow-md ${
+          className={`rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 transition-all duration-300 ease-in-out shadow-lg ${
             (isInputFocused || steerInput.trim().length > 0)
               ? 'h-[72px] w-[340px] md:w-[620px] px-4' 
-              : 'h-14 w-[160px] px-4 cursor-pointer'
+              : 'h-14 w-[180px] px-4 cursor-pointer'
           }`}
           onClick={() => {
             const el = document.getElementById('optionc-steer-input');
@@ -835,9 +796,9 @@ export function OptionCView({
 
         {/* Animated Approve Check Button - Animates out right from input pill */}
         <motion.button
-          initial={{ opacity: 0, x: -35, scale: 0.4 }}
+          initial={{ opacity: 0, x: -40, scale: 0.2 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
           onClick={() => {
             if (steerInput.trim()) {
               handleSteerSubmit(steerInput);
@@ -846,7 +807,7 @@ export function OptionCView({
               handleApprove();
             }
           }}
-          className="w-14 h-14 rounded-full bg-slate-200/90 hover:bg-slate-300 dark:bg-[#282A2D] dark:hover:bg-[#35373A] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md border-none"
+          className="w-14 h-14 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
           title={steerInput.trim() ? "Submit steer" : "Accept"}
         >
           <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
@@ -854,12 +815,12 @@ export function OptionCView({
 
         {/* Animated Next Button - Animates out right from input pill */}
         <motion.button
-          initial={{ opacity: 0, x: -70, scale: 0.4 }}
+          initial={{ opacity: 0, x: -80, scale: 0.2 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
           onClick={handleNext}
           disabled={activeIndex === orderedTodoItems.length - 1}
-          className="w-12 h-12 rounded-full bg-slate-200/90 hover:bg-slate-300 dark:bg-[#282A2D] dark:hover:bg-[#35373A] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-md border-none"
+          className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-md"
           title="Next task"
         >
           <ArrowRight className="w-5 h-5 stroke-[2]" />

@@ -53,6 +53,8 @@ interface CanvasHeaderProps {
   projects?: any[];
   recentTasks?: any[];
   chatModel?: 'A' | 'B';
+  isOptionCOpen?: boolean;
+  onCloseOptionC?: () => void;
 }
 
 export function CanvasHeader({
@@ -77,7 +79,9 @@ export function CanvasHeader({
   isPinned = false,
   projects = [],
   recentTasks = [],
-  chatModel = 'A'
+  chatModel = 'A',
+  isOptionCOpen = false,
+  onCloseOptionC
 }: CanvasHeaderProps) {
   const [isPinMenuOpen, setIsPinMenuOpen] = useState(false);
   const isHome = viewState === 'home';
@@ -378,20 +382,33 @@ export function CanvasHeader({
           </button>
         )}
 
-        {/* Library side panel toggle button */}
-        {onToggleSourcesPanel && (
+        {/* Library side panel toggle button OR Option C Close button */}
+        {isOptionCOpen ? (
           <button
-            onClick={onToggleSourcesPanel}
+            onClick={() => {
+              if (onCloseOptionC) onCloseOptionC();
+            }}
             className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
-            title="Toggle space library panel"
+            title="Close Play mode"
           >
-            {isSourcesPanelOpen ? (
-              <span className="material-symbols-rounded text-[20px] select-none text-slate-500 dark:text-slate-400">chevron_right</span>
-            ) : (
-              <span className="material-symbols-rounded text-[20px] select-none text-slate-500 dark:text-slate-400">chevron_left</span>
-            )}
-            <span>Library</span>
+            <X className="w-4 h-4 text-slate-700 dark:text-white" />
+            <span>Close</span>
           </button>
+        ) : (
+          onToggleSourcesPanel && (
+            <button
+              onClick={onToggleSourcesPanel}
+              className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
+              title="Toggle space library panel"
+            >
+              {isSourcesPanelOpen ? (
+                <span className="material-symbols-rounded text-[20px] select-none text-slate-500 dark:text-slate-400">chevron_right</span>
+              ) : (
+                <span className="material-symbols-rounded text-[20px] select-none text-slate-500 dark:text-slate-400">chevron_left</span>
+              )}
+              <span>Library</span>
+            </button>
+          )
         )}
       </div>
     </div>

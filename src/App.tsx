@@ -6370,6 +6370,8 @@ export default function App() {
               getSpacePins(activeSpaceId)?.includes((selectedFile || activeProactiveTask)?.id || (selectedFile || activeProactiveTask)?.driveId)
             )
           }
+          isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+          onCloseOptionC={() => setIsTheatreOpen(false)}
         />
         <div className={`flex-1 flex overflow-hidden relative ${isSourcesPanelOpen ? 'gap-0' : 'gap-4'}`}>
           
@@ -6616,7 +6618,7 @@ export default function App() {
               )}
             </div>
 
-            {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
+            {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && !(isTheatreOpen && playOptionMode === 'C') && (
               <div 
                 className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text"
                 id="floating-bottom-chat"
