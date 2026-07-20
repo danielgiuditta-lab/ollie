@@ -6473,6 +6473,14 @@ export default function App() {
                         onReorderPins={handleReorderPins}
                         onSelectArtifact={handleArtifactSelect}
                         onOpenTheatre={handleOpenTheatre}
+                        playOptionMode={playOptionMode}
+                        isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+                        onCloseOptionC={() => setIsTheatreOpen(false)}
+                        onSendMessage={handleSendMessage}
+                        onUpdateTaskStatus={(taskId, status) => {
+                          setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+                        }}
+                        recentFiles={driveFiles}
                       />
                     )}
                   </div>
@@ -6558,6 +6566,15 @@ export default function App() {
                         theme={appTheme}
                         userProfile={userProfile}
                         accessToken={accessToken}
+                        onOpenTheatre={handleOpenTheatre}
+                        playOptionMode={playOptionMode}
+                        isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+                        onCloseOptionC={() => setIsTheatreOpen(false)}
+                        onSendMessage={handleSendMessage}
+                        onUpdateTaskStatus={(taskId, status) => {
+                          setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+                        }}
+                        driveFiles={driveFiles}
                       />
                     ) : (
                       <SpaceDashboard 
@@ -6575,6 +6592,15 @@ export default function App() {
                         theme={appTheme}
                         userProfile={userProfile}
                         accessToken={accessToken}
+                        onOpenTheatre={handleOpenTheatre}
+                        playOptionMode={playOptionMode}
+                        isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+                        onCloseOptionC={() => setIsTheatreOpen(false)}
+                        onSendMessage={handleSendMessage}
+                        onUpdateTaskStatus={(taskId, status) => {
+                          setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+                        }}
+                        driveFiles={driveFiles}
                       />
                     )
                   )}
@@ -6760,23 +6786,9 @@ export default function App() {
         />
       ))}
 
-      {/* Top-Level Option C View or Theatre View Overlay */}
-      {isTheatreOpen && (
-        playOptionMode === 'C' ? (
-          <OptionCView
-            todoItems={todoItems}
-            onClose={() => setIsTheatreOpen(false)}
-            onSendMessage={handleSendMessage}
-            setActiveSidebar={setActiveSidebar}
-            onUpdateTaskStatus={(taskId, status) => {
-              setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
-            }}
-            userProfile={userProfile}
-            accessToken={accessToken}
-            driveFiles={driveFiles}
-          />
-        ) : (
-          <TheatreView
+      {/* Top-Level Theatre View Overlay (Only for Model B / playOptionMode === 'B') */}
+      {isTheatreOpen && playOptionMode === 'B' && (
+        <TheatreView
             todoItems={todoItems}
             onClose={() => setIsTheatreOpen(false)}
             onSendMessage={handleSendMessage}
@@ -6789,7 +6801,6 @@ export default function App() {
             theme={appTheme}
             driveFiles={driveFiles}
           />
-        )
       )}
 
     </div>

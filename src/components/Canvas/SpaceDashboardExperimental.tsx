@@ -8,6 +8,7 @@ import { CardHeader } from '../Shared/CardHeader';
 import { NullTitle } from '../Shared/NullTitle';
 import { AddWidgetModal } from './AddWidgetModal';
 import { TheatreView } from './TheatreView';
+import { OptionCView } from './OptionCView';
 import { useCalendarMeeting } from '../../hooks/useCalendarMeeting';
 
 interface SpaceDashboardProps {
@@ -35,6 +36,12 @@ interface SpaceDashboardProps {
   onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C') => void;
   userProfile?: any;
   accessToken?: string | null;
+  playOptionMode?: 'A' | 'B' | 'C';
+  isOptionCOpen?: boolean;
+  onCloseOptionC?: () => void;
+  onSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
+  onUpdateTaskStatus?: (taskId: string, status: 'done' | 'working' | 'rejected') => void;
+  driveFiles?: any[];
 }
 
 export function SpaceDashboardExperimental({
@@ -61,7 +68,13 @@ export function SpaceDashboardExperimental({
   handleSendMessage,
   onOpenTheatre,
   userProfile,
-  accessToken
+  accessToken,
+  playOptionMode = 'C',
+  isOptionCOpen,
+  onCloseOptionC,
+  onSendMessage,
+  onUpdateTaskStatus,
+  driveFiles = []
 }: SpaceDashboardProps) {
   const [isTheatreOpen, setIsTheatreOpen] = useState(false);
   const [isOptionPopoverOpen, setIsOptionPopoverOpen] = useState(false);
@@ -700,6 +713,23 @@ export function SpaceDashboardExperimental({
               )}
             </p>
           </div>
+        </div>
+
+        {isOptionCOpen ? (
+          <div className="w-full flex-1 min-h-0 relative overflow-hidden px-8 pb-6">
+            <OptionCView
+              todoItems={todoItems || []}
+              onClose={onCloseOptionC || (() => setIsTheatreOpen(false))}
+              onSendMessage={onSendMessage || handleSendMessage || (() => {})}
+              setActiveSidebar={setActiveSidebar}
+              onUpdateTaskStatus={onUpdateTaskStatus}
+              userProfile={userProfile}
+              accessToken={accessToken}
+              driveFiles={driveFiles}
+            />
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto px-12 pb-12 flex flex-col gap-8 flex-1 overflow-y-auto">
 
           {/* Section 1: Needs your approval */}
           {needsApprovalTasks.length > 0 && (
@@ -782,6 +812,7 @@ export function SpaceDashboardExperimental({
             </div>
           )}
         </div>
+      )}
       </div>
     );
   }

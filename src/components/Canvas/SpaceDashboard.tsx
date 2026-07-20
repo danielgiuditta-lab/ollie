@@ -7,6 +7,7 @@ import { Card } from '../Shared/Card';
 import { CardHeader } from '../Shared/CardHeader';
 import { NullTitle } from '../Shared/NullTitle';
 import { AddWidgetModal } from './AddWidgetModal';
+import { OptionCView } from './OptionCView';
 import { useCalendarMeeting } from '../../hooks/useCalendarMeeting';
 
 interface SpaceDashboardProps {
@@ -33,6 +34,12 @@ interface SpaceDashboardProps {
   userProfile?: any;
   accessToken?: string | null;
   onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C') => void;
+  playOptionMode?: 'A' | 'B' | 'C';
+  isOptionCOpen?: boolean;
+  onCloseOptionC?: () => void;
+  onSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
+  onUpdateTaskStatus?: (taskId: string, status: 'done' | 'working' | 'rejected') => void;
+  driveFiles?: any[];
 }
 
 export function SpaceDashboard({
@@ -58,7 +65,13 @@ export function SpaceDashboard({
   setActiveSidebar,
   userProfile,
   accessToken,
-  onOpenTheatre
+  onOpenTheatre,
+  playOptionMode = 'C',
+  isOptionCOpen,
+  onCloseOptionC,
+  onSendMessage,
+  onUpdateTaskStatus,
+  driveFiles = []
 }: SpaceDashboardProps) {
   const [cardWidths, setCardWidths] = useState<Record<string, number>>({});
   const meeting = useCalendarMeeting(accessToken, userProfile);
@@ -464,7 +477,7 @@ export function SpaceDashboard({
   return (
     <div className="w-full h-full flex flex-col min-h-0 relative select-none">
       {isHomeDashboard && (
-        <div className="px-6 pt-6 pb-2 flex items-center justify-between">
+        <div className="px-6 pt-6 pb-2 flex items-center justify-between shrink-0">
           <h1 className="text-[36px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
             <span>Welcome back, {name}.</span>
             <button
@@ -484,9 +497,22 @@ export function SpaceDashboard({
         </div>
       )}
 
-
-      <div 
-        ref={containerRef}
+      {isOptionCOpen ? (
+        <div className="w-full flex-1 min-h-0 relative overflow-hidden">
+          <OptionCView
+            todoItems={todoItems || []}
+            onClose={onCloseOptionC || (() => {})}
+            onSendMessage={onSendMessage || (() => {})}
+            setActiveSidebar={setActiveSidebar}
+            onUpdateTaskStatus={onUpdateTaskStatus}
+            userProfile={userProfile}
+            accessToken={accessToken}
+            driveFiles={driveFiles}
+          />
+        </div>
+      ) : (
+        <div 
+          ref={containerRef}
         onDragOver={handleContainerDragOver}
         onDragLeave={(e) => {
           if (!containerRef.current?.contains(e.relatedTarget as Node)) {
@@ -786,6 +812,7 @@ export function SpaceDashboard({
         />
       )}
       </div>
+      )}
     </div>
   );
 }
