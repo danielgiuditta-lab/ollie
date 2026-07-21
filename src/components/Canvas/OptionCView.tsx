@@ -401,10 +401,10 @@ export function OptionCView({
                       setActiveIndex(idx);
                     }
                   }}
-                  className={`w-full flex flex-col select-none overflow-hidden origin-center transition-[background-color,border-radius,padding] duration-[3500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  className={`w-full flex flex-col justify-start items-start select-none overflow-hidden origin-top transition-[background-color,border-radius,padding] duration-[3500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
                     isFocused
                       ? 'min-h-[380px] rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default'
-                      : 'shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] p-4 cursor-pointer flex justify-center'
+                      : 'shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-5 py-3 cursor-pointer'
                   }`}
                   transition={{
                     height: { duration: 3.5, ease: [0.16, 1, 0.3, 1] },
@@ -413,7 +413,7 @@ export function OptionCView({
                     y: { duration: 3.5, ease: [0.16, 1, 0.3, 1] }
                   }}
                 >
-                  {/* Single Unified Header Block: Title & Meta stay mounted continuously */}
+                  {/* Single Unified Header Block: Title & Meta stay mounted continuously at the top of the card */}
                   <div className="w-full flex flex-col text-left shrink-0 min-w-0 select-text">
                     <motion.h3 
                       layout="position"
@@ -421,7 +421,7 @@ export function OptionCView({
                       className={`font-sans text-slate-900 dark:text-white tracking-normal transition-[font-size,line-height,font-weight] duration-[3500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
                         isFocused 
                           ? 'text-[30px] leading-[36px] font-normal' 
-                          : 'text-[16px] leading-[24px] font-medium truncate'
+                          : 'text-[16px] leading-[22px] font-medium truncate'
                       }`}
                     >
                       {cellTitle}
@@ -433,26 +433,18 @@ export function OptionCView({
                       className={`font-sans text-slate-600 dark:text-[#9AA0A6] transition-[font-size,line-height,margin] duration-[3500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
                         isFocused 
                           ? 'text-[18px] leading-[26px] font-normal mt-2 line-clamp-3' 
-                          : 'text-[14px] leading-[20px] font-normal mt-0.5 truncate'
+                          : 'text-[13px] leading-[18px] font-normal mt-0.5 truncate'
                       }`}
                     >
                       {cellMeta}
                     </motion.p>
                   </div>
 
-                  {/* Expanded Content Section: Fades in/out smoothly within the same card without unmounting the header */}
-                  <motion.div
-                    initial={false}
-                    animate={{
-                      opacity: isFocused ? 1 : 0,
-                      height: isFocused ? 'auto' : 0,
-                      marginTop: isFocused ? 16 : 0
-                    }}
-                    transition={{
-                      duration: isFocused ? 2.5 : 1.2,
-                      ease: [0.16, 1, 0.3, 1]
-                    }}
-                    className="w-full flex-1 min-h-0 overflow-hidden flex flex-col"
+                  {/* Expanded Content Section: Revealed from the bottom as the physical card container expands downward */}
+                  <div
+                    className={`w-full flex-1 min-h-[340px] overflow-hidden flex flex-col mt-4 select-text ${
+                      isFocused ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
                   >
                     {isChatReplyTask ? (
                       <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-2 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
@@ -633,7 +625,7 @@ export function OptionCView({
                         </div>
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 </motion.div>
               );
             })}
