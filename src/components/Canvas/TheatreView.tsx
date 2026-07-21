@@ -27,44 +27,14 @@ interface TheatreTaskCellProps {
 
 function getAbbreviatedCellTitle(item: any, isSignedOff: boolean): string {
   if (!item) return '';
-
   if (item.shortTitle) return item.shortTitle;
-
-  // If sourceName is clean and descriptive, use sourceName without file extension
-  if (item.sourceName && typeof item.sourceName === 'string') {
-    const cleanSource = item.sourceName.replace(/\.[^/.]+$/, "").replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-)+/, "").trim();
-    if (
-      cleanSource && 
-      cleanSource.length > 2 && 
-      cleanSource.length < 45 && 
-      !cleanSource.toLowerCase().includes('google drive') && 
-      !cleanSource.toLowerCase().includes('calendar') && 
-      !cleanSource.toLowerCase().includes('chat')
-    ) {
-      return cleanSource;
-    }
-  }
 
   const raw = isSignedOff 
     ? (item.titleDone || item.title || item.description || '')
     : (item.title || item.titleDone || item.description || '');
 
-  if (!raw) return 'Task';
-
-  let cleaned = raw;
-  cleaned = cleaned.replace(/^I\s+(?:started\s+(?:an?\s+)?(?:outline\s+for\s+the\s+)?|updated\s+|prepared\s+(?:files\s+to\s+share\s+in\s+)?|proposed\s+(?:a\s+)?|drafted\s+|reviewed\s+|created\s+)/i, '');
-  cleaned = cleaned.replace(/\s+(?:per|for|requested by)\s+[A-Z][a-z]+(?:'s)?\s*(?:comment|request|feedback)?.*$/i, '');
-  cleaned = cleaned.trim();
-
-  if (cleaned.length > 40) {
-    cleaned = cleaned.substring(0, 38).trim() + '…';
-  }
-
-  if (cleaned.length > 0) {
-    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-  }
-
-  return cleaned || raw;
+  if (!raw) return item.sourceName || 'Task';
+  return raw.trim();
 }
 
 function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource, onToggleComplete }: TheatreTaskCellProps) {

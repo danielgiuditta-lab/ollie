@@ -249,10 +249,10 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
       {/* Center Column: Text & Sources */}
       <div className="flex-1 min-w-0 flex flex-col text-left">
         <div className="flex flex-col min-w-0">
-          <h4 className="text-[16px] leading-[24px] font-medium font-['Google_Sans_Text','Inter',sans-serif] text-[#1B1C1D] dark:text-white truncate">
-            {item.title}
+          <h4 className="text-[16px] leading-[22px] font-medium font-['Google_Sans_Text','Inter',sans-serif] text-[#1B1C1D] dark:text-white line-clamp-2">
+            {item.title || item.description || 'Task'}
           </h4>
-          <p className="text-[14px] leading-[20px] font-normal font-['Google_Sans_Text','Inter',sans-serif] text-[#575B5F] dark:text-neutral-400 truncate">
+          <p className="text-[14px] leading-[20px] font-normal font-['Google_Sans_Text','Inter',sans-serif] text-[#575B5F] dark:text-neutral-400 line-clamp-2 mt-0.5">
             {item.description}
           </p>
           
