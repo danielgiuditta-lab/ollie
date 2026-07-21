@@ -390,283 +390,296 @@ export function OptionCView({
                   key={itemId}
                   layout="position"
                   initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0,
+                    height: isFocused ? 'calc(100% - 140px)' : 64 
+                  }}
                   exit={{ opacity: 0, y: -40 }}
                   onClick={() => {
                     if (!isFocused) {
                       setActiveIndex(idx);
                     }
                   }}
-                  className={`w-full flex flex-col select-none overflow-hidden origin-center transition-[height,background-color,border-radius,padding] duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  className={`w-full flex flex-col select-none overflow-hidden origin-center transition-[background-color,border-radius,padding] duration-[3500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
                     isFocused
-                      ? 'flex-1 min-h-[380px] rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default'
-                      : 'h-[64px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] p-4 cursor-pointer flex justify-center'
+                      ? 'min-h-[380px] rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default'
+                      : 'shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] p-4 cursor-pointer flex justify-center'
                   }`}
                   transition={{
-                    layout: { duration: 1.4, ease: [0.16, 1, 0.3, 1] },
-                    opacity: { duration: 0.8 },
-                    y: { duration: 1.4, ease: [0.16, 1, 0.3, 1] }
+                    height: { duration: 3.5, ease: [0.16, 1, 0.3, 1] },
+                    layout: { duration: 3.5, ease: [0.16, 1, 0.3, 1] },
+                    opacity: { duration: 1.5 },
+                    y: { duration: 3.5, ease: [0.16, 1, 0.3, 1] }
                   }}
                 >
-                {isFocused ? (
-                  isChatReplyTask ? (
-                    <motion.div 
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {isFocused ? (
+                    <motion.div
+                      key={`expanded-${itemId}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-                      className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-2 md:p-6 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]"
+                      exit={{ opacity: 0, transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] } }}
+                      transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+                      className="w-full h-full flex flex-col min-h-0"
                     >
-                      {/* Left Column: Title, Meta, and Context Chips (50% width) */}
-                      <div className="w-1/2 h-full flex flex-col items-start justify-center pr-4 md:pr-6 min-w-0">
-                        <motion.h3 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                          className="font-sans text-[30px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal"
-                        >
-                          {cellTitle}
-                        </motion.h3>
-
-                        <motion.p 
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 1.1, delay: 0.36, ease: [0.16, 1, 0.3, 1] }}
-                          className="font-sans text-[18px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 line-clamp-3"
-                        >
-                          {cellMeta}
-                        </motion.p>
-
-                        {/* Chips / Context Unit */}
-                        <motion.div 
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 1.1, delay: 0.48, ease: [0.16, 1, 0.3, 1] }}
-                          className="flex items-center gap-2 flex-wrap mt-4"
-                        >
-                          {activePersonName && (
-                            <div 
-                              onClick={() => handleOpenSourceChip(activePersonName)}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                      {isChatReplyTask ? (
+                        <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-2 md:p-6 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                          {/* Left Column: Title, Meta, and Context Chips (50% width) */}
+                          <div className="w-1/2 h-full flex flex-col items-start justify-center pr-4 md:pr-6 min-w-0">
+                            <motion.h3 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 2.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                              className="font-sans text-[30px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal"
                             >
-                              {canvasAvatarElement}
-                              <span className="truncate max-w-[140px]">{activePersonName}</span>
-                            </div>
-                          )}
+                              {cellTitle}
+                            </motion.h3>
 
-                          {activeSourceName && (
-                            <div 
-                              onClick={() => handleOpenSourceChip(activeSourceName)}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                            <motion.p 
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 2.5, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                              className="font-sans text-[18px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 line-clamp-3"
                             >
-                              {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                              <span className="truncate max-w-[160px]">{activeSourceName}</span>
-                            </div>
-                          )}
+                              {cellMeta}
+                            </motion.p>
 
-                          {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
-                            <a
-                              key={linkIdx}
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
+                            {/* Chips / Context Unit */}
+                            <motion.div 
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 2.5, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                              className="flex items-center gap-2 flex-wrap mt-4"
                             >
-                              {link.label || 'Open Link'}
-                            </a>
-                          ))}
-                        </motion.div>
-                      </div>
-
-                      {/* Right Column: Chat UI (50% width) - Fades in smoothly as artifact element */}
-                      <motion.div 
-                        initial={{ opacity: 0, y: 14, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ duration: 1.3, delay: 0.44, ease: [0.16, 1, 0.3, 1] }}
-                        className="w-1/2 h-full flex flex-col justify-center gap-6 pl-4 md:pl-6 min-w-0 select-text"
-                      >
-                        {/* Sender Message Row */}
-                        <div className="flex items-start gap-3 justify-start max-w-[85%]">
-                          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
-                            <img 
-                              src={activeAvatar} 
-                              alt={activePersonName} 
-                              className="w-full h-full object-cover" 
-                              onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
-                            />
-                          </div>
-
-                          <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                            {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
-                          </div>
-                        </div>
-
-                        {/* Proposed Reply Row */}
-                        <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
-                          <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-4 relative group">
-                            {isEditingProposal ? (
-                              <div className="flex flex-col gap-2 min-w-[220px] w-full">
-                                <textarea
-                                  value={editableProposalText}
-                                  onChange={(e) => setEditableProposalText(e.target.value)}
-                                  className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[15px] leading-[22px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
-                                  rows={3}
-                                  autoFocus
-                                />
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    onClick={() => setIsEditingProposal(false)}
-                                    className="px-3 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
-                                  >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      if (activeTask) activeTask.proposedReply = editableProposalText;
-                                      setIsEditingProposal(false);
-                                    }}
-                                    className="px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white cursor-pointer"
-                                  >
-                                    Save
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                <div className="whitespace-pre-wrap flex-1 min-w-0">
-                                  {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
-                                </div>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsEditingProposal(true);
-                                  }}
-                                  className="inline-flex items-center justify-center p-1 rounded-full text-slate-600 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
-                                  title="Edit proposed reply"
+                              {activePersonName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activePersonName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
                                 >
-                                  <Pencil size={18} className="stroke-[2.2]" />
-                                </button>
-                              </>
-                            )}
+                                  {canvasAvatarElement}
+                                  <span className="truncate max-w-[140px]">{activePersonName}</span>
+                                </div>
+                              )}
+
+                              {activeSourceName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activeSourceName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                >
+                                  {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                                  <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                                </div>
+                              )}
+
+                              {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
+                                <a
+                                  key={linkIdx}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
+                                >
+                                  {link.label || 'Open Link'}
+                                </a>
+                              ))}
+                            </motion.div>
                           </div>
 
-                          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
-                            <img 
-                              src={userProfile?.picture || '/people/sarah_lin.jpg'} 
-                              alt="User" 
-                              className="w-full h-full object-cover" 
-                            />
-                          </div>
+                          {/* Right Column: Chat UI (50% width) - Fades in smoothly as artifact element */}
+                          <motion.div 
+                            initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ duration: 3.0, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            className="w-1/2 h-full flex flex-col justify-center gap-6 pl-4 md:pl-6 min-w-0 select-text"
+                          >
+                            {/* Sender Message Row */}
+                            <div className="flex items-start gap-3 justify-start max-w-[85%]">
+                              <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
+                                <img 
+                                  src={activeAvatar} 
+                                  alt={activePersonName} 
+                                  className="w-full h-full object-cover" 
+                                  onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                                />
+                              </div>
+
+                              <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                                {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
+                              </div>
+                            </div>
+
+                            {/* Proposed Reply Row */}
+                            <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
+                              <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-4 relative group">
+                                {isEditingProposal ? (
+                                  <div className="flex flex-col gap-2 min-w-[220px] w-full">
+                                    <textarea
+                                      value={editableProposalText}
+                                      onChange={(e) => setEditableProposalText(e.target.value)}
+                                      className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[15px] leading-[22px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
+                                      rows={3}
+                                      autoFocus
+                                    />
+                                    <div className="flex items-center justify-end gap-2">
+                                      <button
+                                        onClick={() => setIsEditingProposal(false)}
+                                        className="px-3 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          if (activeTask) activeTask.proposedReply = editableProposalText;
+                                          setIsEditingProposal(false);
+                                        }}
+                                        className="px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white cursor-pointer"
+                                      >
+                                        Save
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="whitespace-pre-wrap flex-1 min-w-0">
+                                      {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsEditingProposal(true);
+                                      }}
+                                      className="inline-flex items-center justify-center p-1 rounded-full text-slate-600 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
+                                      title="Edit proposed reply"
+                                    >
+                                      <Pencil size={18} className="stroke-[2.2]" />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+
+                              <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
+                                <img 
+                                  src={userProfile?.picture || '/people/sarah_lin.jpg'} 
+                                  alt="User" 
+                                  className="w-full h-full object-cover" 
+                                />
+                              </div>
+                            </div>
+                          </motion.div>
                         </div>
-                      </motion.div>
+                      ) : (
+                        <>
+                          {/* Top Header Unit for Document / Sheet / Slide / Diff tasks - Gentle fade in */}
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 2.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                            className="w-full flex items-start justify-between gap-4 min-w-0 shrink-0 select-text"
+                          >
+                            <div className="flex-1 min-w-0 flex flex-col text-left">
+                              <h3 className="font-sans text-[30px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal truncate">
+                                {cellTitle}
+                              </h3>
+
+                              <p className="font-sans text-[18px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-1 line-clamp-2">
+                                {cellMeta}
+                              </p>
+                            </div>
+                          </motion.div>
+
+                          {/* Expanded Artifact View - Fades in gently with subtle upward scale */}
+                          <motion.div 
+                            initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ duration: 3.0, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            className="w-full flex-1 min-h-0 flex flex-col overflow-y-auto relative mt-4"
+                          >
+                            {/* Chips / Metadata Row */}
+                            <div className="flex items-center gap-2 flex-wrap mb-4">
+                              {activePersonName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activePersonName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                >
+                                  {canvasAvatarElement}
+                                  <span className="truncate max-w-[140px]">{activePersonName}</span>
+                                </div>
+                              )}
+
+                              {activeSourceName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activeSourceName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                >
+                                  {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                                  <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                                </div>
+                              )}
+
+                              {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
+                                <a
+                                  key={linkIdx}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
+                                >
+                                  {link.label || 'Open Link'}
+                                </a>
+                              ))}
+                            </div>
+
+                            {/* Viewer Container */}
+                            <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+                              {activeFileObject ? (
+                                activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
+                                  <InferredTaskDiffView 
+                                    file={activeFileObject}
+                                    theme="light"
+                                    className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
+                                    hideFooterText={true}
+                                  />
+                                ) : (
+                                  <NativeViewer
+                                    file={activeFileObject}
+                                    hideHeader={true}
+                                    mode="preview"
+                                    theme="light"
+                                  />
+                                )
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium text-sm">
+                                  No artifact preview available for this task.
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        </>
+                      )}
                     </motion.div>
                   ) : (
-                    <>
-                      {/* Top Header Unit for Document / Sheet / Slide / Diff tasks - Gentle fade in */}
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                        className="w-full flex items-start justify-between gap-4 min-w-0 shrink-0 select-text"
-                      >
-                        <div className="flex-1 min-w-0 flex flex-col text-left">
-                          <h3 className="font-sans text-[30px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal truncate">
-                            {cellTitle}
-                          </h3>
+                    /* Collapsed 1-Line Row: Gentle opacity fade on entrance and exit */
+                    <motion.div 
+                      key={`collapsed-${itemId}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }}
+                      transition={{ duration: 2.0, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                      className="w-full flex items-start justify-between gap-4 min-w-0 shrink-0 select-text"
+                    >
+                      <div className="flex-1 min-w-0 flex flex-col text-left">
+                        <h3 className="font-sans text-[16px] leading-[24px] font-medium text-slate-900 dark:text-white tracking-normal truncate">
+                          {cellTitle}
+                        </h3>
 
-                          <p className="font-sans text-[18px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-1 line-clamp-2">
-                            {cellMeta}
-                          </p>
-                        </div>
-                      </motion.div>
-
-                      {/* Expanded Artifact View - Fades in gently with subtle upward scale */}
-                      <motion.div 
-                        initial={{ opacity: 0, y: 14, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ duration: 1.3, delay: 0.44, ease: [0.16, 1, 0.3, 1] }}
-                        className="w-full flex-1 min-h-0 flex flex-col overflow-y-auto relative mt-4"
-                      >
-                        {/* Chips / Metadata Row */}
-                        <div className="flex items-center gap-2 flex-wrap mb-4">
-                          {activePersonName && (
-                            <div 
-                              onClick={() => handleOpenSourceChip(activePersonName)}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                            >
-                              {canvasAvatarElement}
-                              <span className="truncate max-w-[140px]">{activePersonName}</span>
-                            </div>
-                          )}
-
-                          {activeSourceName && (
-                            <div 
-                              onClick={() => handleOpenSourceChip(activeSourceName)}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                            >
-                              {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                              <span className="truncate max-w-[160px]">{activeSourceName}</span>
-                            </div>
-                          )}
-
-                          {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
-                            <a
-                              key={linkIdx}
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
-                            >
-                              {link.label || 'Open Link'}
-                            </a>
-                          ))}
-                        </div>
-
-                        {/* Viewer Container */}
-                        <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
-                          {activeFileObject ? (
-                            activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
-                              <InferredTaskDiffView 
-                                file={activeFileObject}
-                                theme="light"
-                                className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
-                                hideFooterText={true}
-                              />
-                            ) : (
-                              <NativeViewer
-                                file={activeFileObject}
-                                hideHeader={true}
-                                mode="preview"
-                                theme="light"
-                              />
-                            )
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium text-sm">
-                              No artifact preview available for this task.
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    </>
-                  )
-                ) : (
-                  /* Collapsed 1-Line Row: Gentle opacity fade */
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="w-full flex items-start justify-between gap-4 min-w-0 shrink-0 select-text"
-                  >
-                    <div className="flex-1 min-w-0 flex flex-col text-left">
-                      <h3 className="font-sans text-[16px] leading-[24px] font-medium text-slate-900 dark:text-white tracking-normal truncate">
-                        {cellTitle}
-                      </h3>
-
-                      <p className="font-sans text-[14px] leading-[20px] font-normal text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
-                        {cellMeta}
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
+                        <p className="font-sans text-[14px] leading-[20px] font-normal text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                          {cellMeta}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 </motion.div>
               );
             })}
