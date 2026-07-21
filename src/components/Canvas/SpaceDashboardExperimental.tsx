@@ -727,40 +727,66 @@ export function SpaceDashboardExperimental({
           )}
         </AnimatePresence>
 
-        <div className="max-w-4xl mx-auto px-6 md:px-12 pb-12 flex flex-col gap-6 flex-1 min-h-0 w-full">
-          <OptionCView
-            todoItems={todoItems || []}
-            isOpen={isOptionCOpen}
-            initialIndex={0}
-            onToggleOpen={(open) => {
-              if (open) {
-                if (onOpenTheatre) onOpenTheatre();
-                setIsTheatreOpen(true);
-              } else {
-                setIsTheatreOpen(false);
-                if (onCloseOptionC) onCloseOptionC();
-              }
-            }}
-            onClose={onCloseOptionC || (() => setIsTheatreOpen(false))}
-            onSendMessage={onSendMessage || handleSendMessage || (() => {})}
-            setActiveSidebar={setActiveSidebar}
-            onUpdateTaskStatus={onUpdateTaskStatus}
-            userProfile={userProfile}
-            accessToken={accessToken}
-            driveFiles={driveFiles}
-          />
+        {isOptionCOpen ? (
+          <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden p-0">
+            <OptionCView
+              todoItems={todoItems || []}
+              isOpen={isOptionCOpen}
+              initialIndex={0}
+              onToggleOpen={(open) => {
+                if (open) {
+                  if (onOpenTheatre) onOpenTheatre();
+                  setIsTheatreOpen(true);
+                } else {
+                  setIsTheatreOpen(false);
+                  if (onCloseOptionC) onCloseOptionC();
+                }
+              }}
+              onClose={onCloseOptionC || (() => setIsTheatreOpen(false))}
+              onSendMessage={onSendMessage || handleSendMessage || (() => {})}
+              setActiveSidebar={setActiveSidebar}
+              onUpdateTaskStatus={onUpdateTaskStatus}
+              userProfile={userProfile}
+              accessToken={accessToken}
+              driveFiles={driveFiles}
+            />
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto px-6 md:px-12 pb-12 flex flex-col gap-6 flex-1 min-h-0 w-full">
+            <OptionCView
+              todoItems={todoItems || []}
+              isOpen={isOptionCOpen}
+              initialIndex={0}
+              onToggleOpen={(open) => {
+                if (open) {
+                  if (onOpenTheatre) onOpenTheatre();
+                  setIsTheatreOpen(true);
+                } else {
+                  setIsTheatreOpen(false);
+                  if (onCloseOptionC) onCloseOptionC();
+                }
+              }}
+              onClose={onCloseOptionC || (() => setIsTheatreOpen(false))}
+              onSendMessage={onSendMessage || handleSendMessage || (() => {})}
+              setActiveSidebar={setActiveSidebar}
+              onUpdateTaskStatus={onUpdateTaskStatus}
+              userProfile={userProfile}
+              accessToken={accessToken}
+              driveFiles={driveFiles}
+            />
 
-          {!isOptionCOpen && pinnedFiles.length > 0 && (
-            <div className="flex flex-col gap-4 mt-4">
-              <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left font-sans">
-                Pinned
-              </h2>
-              <div className={`grid ${gridLayoutClass} gap-4 items-stretch justify-stretch relative`}>
-                {pinnedFiles.map((file, idx) => renderCard(file, idx))}
+            {pinnedFiles.length > 0 && (
+              <div className="flex flex-col gap-4 mt-4">
+                <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left font-sans">
+                  Pinned
+                </h2>
+                <div className={`grid ${gridLayoutClass} gap-4 items-stretch justify-stretch relative`}>
+                  {pinnedFiles.map((file, idx) => renderCard(file, idx))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </LayoutGroup>
   );

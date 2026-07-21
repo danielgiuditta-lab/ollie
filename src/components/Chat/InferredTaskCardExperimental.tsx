@@ -28,7 +28,7 @@ export const InferredTaskCardExperimental: React.FC<InferredTaskCardProps> = ({
       layoutId={`cell-${item.id}`}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       onClick={onClick}
-      className="w-full flex items-center justify-between gap-4 p-4 rounded-[16px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] cursor-pointer transition-colors duration-200 select-none min-w-0"
+      className="w-full flex items-center justify-between gap-4 p-4 rounded-[4px] first:rounded-t-[16px] first:rounded-b-[4px] last:rounded-b-[16px] last:rounded-t-[4px] only:rounded-[16px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] cursor-pointer transition-all duration-200 select-none min-w-0"
     >
       {/* Title & Subtitle */}
       <div className="flex-1 min-w-0 flex flex-col text-left">

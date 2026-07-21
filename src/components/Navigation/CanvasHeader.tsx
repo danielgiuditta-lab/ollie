@@ -83,6 +83,7 @@ export function CanvasHeader({
   isOptionCOpen = false,
   onCloseOptionC
 }: CanvasHeaderProps) {
+  if (isOptionCOpen) return null;
   const [isPinMenuOpen, setIsPinMenuOpen] = useState(false);
   const isHome = viewState === 'home';
   const isDark = theme === 'dark';

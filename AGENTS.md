@@ -19,6 +19,7 @@ This file contains persistent rules and project-specific conventions for the AI 
 - **Modern Aesthetic:** Stick to a clean, high-contrast visual design prioritizing generous negative space, intentional typography pairings, and subtle interactive animations.
 - **Responsive Layout:** Ensure the split-pane layout (sidebar + canvas) degrades gracefully on smaller screens using mobile-first Tailwind breakpoints.
 - **NO UNSOLICITED FEATURE ADDITIONS or PREMIUM UI:** You are strictly forbidden from implementing unrequested interactive elements, bottom docks, floating utility buttons, style scanners, device simulation sandboxes, or complex layout switchers unless explicitly and literally requested by the user. True quality is achieved by implementing exactly what is requested with immaculate spacing, typography, and clean layouts—never by adding unsolicited feature volume or premium decorations.
+- **STRICT NO UNSOLICITED DESIGN CHANGES OR BUTTON ALTERATIONS:** Under NO circumstances should you modify existing buttons (such as the standard Close button), add custom border strokes/outlines to cards/slides, change button styling, or introduce unsolicited design decorations unless explicitly requested by the human user. Keep standard UI components intact.
 
 ## 3. Development Workflow
 - **Iterative Builds:** Build and verify incrementally. Do not introduce sweeping, unrequested changes. 

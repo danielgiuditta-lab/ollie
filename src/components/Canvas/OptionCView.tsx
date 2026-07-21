@@ -14,6 +14,7 @@ import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { getFileIcon } from '../Shared/FileIcon';
 import { getAvatarForPerson } from '../../utils/personAvatars';
+import { InferredTaskCardExperimental } from '../Chat/InferredTaskCardExperimental';
 
 interface OptionCViewProps {
   todoItems: any[];
@@ -87,6 +88,18 @@ export function OptionCView({
     const combined = [...approval, ...working, ...fyi];
     return combined.length > 0 ? combined : todoItems;
   }, [todoItems]);
+
+  const needsApprovalItems = useMemo(() => {
+    return orderedTodoItems.filter(t => t.category === 'needs_approval' || t.type === 'chat');
+  }, [orderedTodoItems]);
+
+  const continueWorkingItems = useMemo(() => {
+    return orderedTodoItems.filter(t => t.category === 'needs_input' || t.category === 'continue_working' || (t.type !== 'chat' && t.type !== 'fyi' && t.category !== 'needs_approval' && t.category !== 'fyi'));
+  }, [orderedTodoItems]);
+
+  const fyiItemsList = useMemo(() => {
+    return orderedTodoItems.filter(t => t.type === 'fyi' || t.category === 'fyi');
+  }, [orderedTodoItems]);
 
   useEffect(() => {
     if (initialIndex >= 0 && initialIndex < orderedTodoItems.length) {
@@ -375,69 +388,162 @@ export function OptionCView({
   };
 
   return (
-    <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
-      {/* Reel layout list: Each cell is a persistent motion element that layout-animates from collapsed Home card to expanded Canvas view */}
-      <div className="w-full flex-1 min-h-0 flex flex-col gap-2 relative overflow-hidden pb-[76px]">
-        <LayoutGroup id="option-c-cells-reel">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {orderedTodoItems.map((item, idx) => {
-              const isFocused = isPlayMode && idx === activeIndex;
-              const isTopPeek = isPlayMode && idx === activeIndex - 1;
-              const isBottomPeek = isPlayMode && idx === activeIndex + 1;
-              const isVisibleInPlay = isFocused || isTopPeek || isBottomPeek;
+    <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-1 overflow-hidden relative">
 
-              const itemId = item.id || `cell-${idx}`;
-              const isCurrentSignedOff = completedTaskIds.has(item.id);
-              const cellTitle = isFocused 
-                ? (isCurrentSignedOff 
-                    ? (item.titleDone || item.title || item.description)
-                    : (item.title || item.titleDone || item.description))
-                : getAbbreviatedCellTitle(item, isCurrentSignedOff);
+      <LayoutGroup id="option-c-cells-reel">
+        {!isPlayMode ? (
+          /* Landing Page View: Section headers and task cards with exact commit 96a1ee0 styling */
+          <div className="w-full flex-1 flex flex-col gap-6 max-w-4xl mx-auto overflow-y-auto custom-scrollbar py-2 text-left">
+            {needsApprovalItems.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left">
+                  Needs your approval...
+                </h2>
+                <div className="w-full flex flex-col gap-[4px] py-1 bg-transparent">
+                  {needsApprovalItems.map((item) => {
+                    const origIdx = orderedTodoItems.findIndex(t => t.id === item.id);
+                    return (
+                      <InferredTaskCardExperimental
+                        key={item.id}
+                        item={{
+                          id: item.id,
+                          title: item.title || item.description || 'Task',
+                          description: item.description || '',
+                          links: item.links
+                        }}
+                        sectionType="decision"
+                        onClick={() => {
+                          if (onToggleOpen) onToggleOpen(true, origIdx >= 0 ? origIdx : 0);
+                          setActiveIndex(origIdx >= 0 ? origIdx : 0);
+                        }}
+                        onApprove={() => {
+                          triggerActionToast('Approved');
+                          if (onUpdateTaskStatus) onUpdateTaskStatus(item.id, 'done');
+                        }}
+                        onReject={() => {
+                          triggerActionToast('Declined');
+                          if (onUpdateTaskStatus) onUpdateTaskStatus(item.id, 'rejected');
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-              const cellMeta = isFocused
-                ? (isCurrentSignedOff
-                    ? (item.descriptionDone || item.description || item.action || 'Your tasks will be added to "My tasks" when notes are ready')
-                    : (item.description || item.descriptionDone || item.action || 'Gemini will write a professional follow-up email for you...'))
-                : (item.description || item.descriptionDone || item.action || '');
+            {continueWorkingItems.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left">
+                  Continue working on...
+                </h2>
+                <div className="w-full flex flex-col gap-[4px] py-1 bg-transparent">
+                  {continueWorkingItems.map((item) => {
+                    const origIdx = orderedTodoItems.findIndex(t => t.id === item.id);
+                    return (
+                      <InferredTaskCardExperimental
+                        key={item.id}
+                        item={{
+                          id: item.id,
+                          title: item.title || item.description || 'Task',
+                          description: item.description || '',
+                          links: item.links
+                        }}
+                        sectionType="generative"
+                        onClick={() => {
+                          if (onToggleOpen) onToggleOpen(true, origIdx >= 0 ? origIdx : 0);
+                          setActiveIndex(origIdx >= 0 ? origIdx : 0);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-              return (
-                <motion.div
-                  key={itemId}
-                  layoutId={`cell-${item.id}`}
-                  ref={(el) => { itemRefs.current[idx] = el; }}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ 
-                    opacity: isPlayMode ? (isVisibleInPlay ? 1 : 0) : 1, 
-                    y: 0,
-                    height: isPlayMode
-                      ? (isFocused ? '100%' : isVisibleInPlay ? 48 : 0)
-                      : 64 
-                  }}
-                  exit={{ opacity: 0, y: -30 }}
-                  onClick={() => {
-                    if (!isPlayMode) {
-                      if (onToggleOpen) onToggleOpen(true, idx);
-                      setActiveIndex(idx);
-                    } else if (!isFocused) {
-                      setActiveIndex(idx);
-                    }
-                  }}
-                  className={`w-full flex flex-col justify-start items-start select-none overflow-hidden origin-top transition-[background-color,border-radius,padding] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                    !isPlayMode
-                      ? 'shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-5 py-3 cursor-pointer'
-                      : isFocused
-                        ? 'flex-1 h-full min-h-0 rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default shrink-0 shadow-sm'
+            {fyiItemsList.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left">
+                  For your information...
+                </h2>
+                <div className="w-full flex flex-col gap-[4px] py-1 bg-transparent">
+                  {fyiItemsList.map((item) => {
+                    const origIdx = orderedTodoItems.findIndex(t => t.id === item.id);
+                    return (
+                      <InferredTaskCardExperimental
+                        key={item.id}
+                        item={{
+                          id: item.id,
+                          title: item.title || item.description || 'Task',
+                          description: item.description || '',
+                          links: item.links
+                        }}
+                        sectionType="fyi"
+                        onClick={() => {
+                          if (onToggleOpen) onToggleOpen(true, origIdx >= 0 ? origIdx : 0);
+                          setActiveIndex(origIdx >= 0 ? origIdx : 0);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Play Mode View: Cell reel positioned within 16px of top without drop shadows or x-axis bounce */
+          <div className="w-full flex-1 min-h-0 flex flex-col gap-2 relative overflow-hidden pt-1 pb-1">
+            <AnimatePresence mode="popLayout" initial={false}>
+              {orderedTodoItems.map((item, idx) => {
+                const isFocused = idx === activeIndex;
+                const isTopPeek = idx === activeIndex - 1;
+                const isBottomPeek = idx === activeIndex + 1;
+                const isVisibleInPlay = isFocused || isTopPeek || isBottomPeek;
+
+                const itemId = item.id || `cell-${idx}`;
+                const isCurrentSignedOff = completedTaskIds.has(item.id);
+                const cellTitle = isFocused 
+                  ? (isCurrentSignedOff 
+                      ? (item.titleDone || item.title || item.description)
+                      : (item.title || item.titleDone || item.description))
+                  : getAbbreviatedCellTitle(item, isCurrentSignedOff);
+
+                const cellMeta = isFocused
+                  ? (isCurrentSignedOff
+                      ? (item.descriptionDone || item.description || item.action || 'Your tasks will be added to "My tasks" when notes are ready')
+                      : (item.description || item.descriptionDone || item.action || 'Gemini will write a professional follow-up email for you...'))
+                  : (item.description || item.descriptionDone || item.action || '');
+
+                return (
+                  <motion.div
+                    key={itemId}
+                    layoutId={`cell-${item.id}`}
+                    ref={(el) => { itemRefs.current[idx] = el; }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ 
+                      opacity: isVisibleInPlay ? 1 : 0, 
+                      y: 0,
+                      height: isFocused ? '100%' : isVisibleInPlay ? 48 : 0
+                    }}
+                    exit={{ opacity: 0, y: -20, transition: { duration: 0.2, ease: 'easeInOut' } }}
+                    onClick={() => {
+                      if (!isFocused) {
+                        setActiveIndex(idx);
+                      }
+                    }}
+                    className={`flex flex-col justify-start items-start select-none overflow-hidden origin-top transition-[background-color,border-radius,padding,max-width] duration-300 ease-in-out ${
+                      isFocused
+                        ? 'flex-1 h-full min-h-0 w-full max-w-[1140px] self-center rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default shrink-0'
                         : isVisibleInPlay
-                          ? 'shrink-0 h-[48px] rounded-[14px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] px-5 py-2.5 cursor-pointer flex items-center justify-between'
+                          ? 'shrink-0 h-[48px] w-full max-w-[720px] self-center rounded-[14px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] px-5 py-2.5 cursor-pointer flex items-center justify-between'
                           : 'h-0 p-0 m-0 opacity-0 pointer-events-none'
-                  }`}
-                  transition={{
-                    height: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
-                    layout: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
-                    opacity: { duration: 0.25 },
-                    y: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
-                  }}
-                >
+                    }`}
+                    transition={{
+                      height: { duration: 0.3, ease: 'easeInOut' },
+                      layout: { duration: 0.3, ease: 'easeInOut' },
+                      opacity: { duration: 0.2 },
+                      y: { duration: 0.3, ease: 'easeInOut' }
+                    }}
+                  >
                   {/* Cell Header and Content Layout */}
                   {!isFocused ? (
                     <div className="w-full flex flex-col text-left shrink-0 min-w-0 select-text">
@@ -465,7 +571,7 @@ export function OptionCView({
                           <div className="w-full md:w-1/2 h-full flex flex-col items-start justify-center pr-0 md:pr-6 min-w-0 select-text">
                             <motion.h3 
                               layout="position"
-                              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                              transition={{ duration: 0.3, ease: 'easeInOut' }}
                               className="font-sans text-slate-900 dark:text-white tracking-normal text-[26px] md:text-[30px] leading-[32px] md:leading-[36px] font-normal"
                             >
                               {cellTitle}
@@ -473,7 +579,7 @@ export function OptionCView({
 
                             <motion.p 
                               layout="position"
-                              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                              transition={{ duration: 0.3, ease: 'easeInOut' }}
                               className="font-sans text-slate-600 dark:text-[#9AA0A6] text-[16px] md:text-[18px] leading-[24px] md:leading-[26px] font-normal mt-2 line-clamp-3"
                             >
                               {cellMeta}
@@ -680,21 +786,22 @@ export function OptionCView({
               );
             })}
           </AnimatePresence>
-        </LayoutGroup>
         </div>
+      )}
+      </LayoutGroup>
 
       {/* Action Toast Overlay */}
       <AnimatePresence>
         {actionToast && (
           <motion.div
             key={actionToast.key}
-            initial={{ opacity: 0, scale: 0.85, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.85, y: -12 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
           >
-            <div className="bg-slate-900/90 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[26px] font-normal p-3 px-6 rounded-full shadow-2xl flex items-center gap-3 backdrop-blur-md">
+            <div className="bg-slate-900/90 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[26px] font-normal p-3 px-6 rounded-full flex items-center gap-3 backdrop-blur-md border border-slate-700/50">
               {actionToast.text === 'Approved' && <Check className="w-7 h-7 text-[#34A853] stroke-[2.5]" />}
               {actionToast.text === 'Declined' && <X className="w-7 h-7 text-[#EA4335] stroke-[2.5]" />}
               {actionToast.text === 'Skipped' && <ArrowRight className="w-7 h-7 text-white stroke-[2]" />}
@@ -704,25 +811,25 @@ export function OptionCView({
         )}
       </AnimatePresence>
 
-      {/* Control Bar: Main chat input pill with action buttons springs in when in play mode */}
+      {/* Control Bar: Main chat input pill with action buttons in play mode */}
       <AnimatePresence>
         {isPlayMode && (
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 30 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-[80px] shrink-0 flex items-center justify-center gap-3 relative z-30 pt-2 pb-2"
+            exit={{ opacity: 0, y: 15 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="w-full shrink-0 flex items-center justify-center gap-3 relative z-30 mt-auto pb-4 pt-1"
           >
             {/* Animated Previous Button */}
             <motion.button
-              initial={{ opacity: 0, x: 80, scale: 0.5 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 80, scale: 0.5 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
               onClick={handlePrev}
               disabled={activeIndex === 0}
-              className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
+              className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
               title="Previous task"
             >
               <ArrowLeft className="w-5 h-5 stroke-[2]" />
@@ -730,12 +837,12 @@ export function OptionCView({
 
             {/* Animated Decline X Button */}
             <motion.button
-              initial={{ opacity: 0, x: 40, scale: 0.5 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 40, scale: 0.5 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
               onClick={handleReject}
-              className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
+              className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0"
               title="Decline"
             >
               <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
@@ -744,8 +851,8 @@ export function OptionCView({
             {/* Central Chat Input Pill matching LandingInput layout */}
             <motion.div 
               layoutId="landing-input-main"
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-[560px] h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 shadow-lg relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all cursor-text"
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="w-full max-w-[560px] h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all cursor-text"
               onClick={() => {
                 const el = document.getElementById('optionc-steer-input');
                 if (el) el.focus();
@@ -809,7 +916,7 @@ export function OptionCView({
                   disabled={!steerInput.trim()}
                   className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
                     steerInput.trim()
-                      ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer shadow-md'
+                      ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer'
                       : 'bg-black/10 dark:bg-white/10 text-slate-400 dark:text-neutral-500 cursor-not-allowed'
                   }`}
                   title={steerInput.trim() ? "Submit steer" : "Send"}
@@ -821,10 +928,10 @@ export function OptionCView({
 
             {/* Animated Approve Check Button */}
             <motion.button
-              initial={{ opacity: 0, x: -40, scale: 0.5 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -40, scale: 0.5 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
               onClick={() => {
                 if (steerInput.trim()) {
                   handleSteerSubmit(steerInput);
@@ -833,7 +940,7 @@ export function OptionCView({
                   handleApprove();
                 }
               }}
-              className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
+              className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0"
               title={steerInput.trim() ? "Submit steer" : "Accept"}
             >
               <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
@@ -841,13 +948,13 @@ export function OptionCView({
 
             {/* Animated Next Button */}
             <motion.button
-              initial={{ opacity: 0, x: -80, scale: 0.5 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -80, scale: 0.5 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
               onClick={handleNext}
               disabled={activeIndex === orderedTodoItems.length - 1}
-              className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
+              className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
               title="Next task"
             >
               <ArrowRight className="w-5 h-5 stroke-[2]" />
