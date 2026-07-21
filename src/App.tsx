@@ -6830,7 +6830,7 @@ export default function App() {
             }}
             userProfile={userProfile}
             accessToken={accessToken}
-            theme={appTheme}
+            theme="dark"
             driveFiles={driveFiles}
           />
       )}
