@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { MoreHorizontal, Edit2, Trash2, Pin, Plus, Columns3, LayoutGrid, List, Play, ChevronDown } from 'lucide-react';
 import { AppView } from './AppView';
 import { NativeViewer } from './NativeViewer';
@@ -476,26 +477,34 @@ export function SpaceDashboard({
 
   return (
     <div className="w-full h-full flex flex-col min-h-0 relative select-none">
-      {isHomeDashboard && !isOptionCOpen && (
-        <div className="px-6 pt-6 pb-2 flex items-center justify-between shrink-0">
-          <h1 className="text-[36px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
-            <span>Welcome back, {name}.</span>
-            <button
-              id="play-theatre-btn"
-              onClick={() => {
-                console.log('[THEATRE DEBUG] Play button clicked in SpaceDashboard!');
-                if (onOpenTheatre) {
-                  onOpenTheatre();
-                }
-              }}
-              className="inline-flex items-center justify-center p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-800 dark:text-white transition-all cursor-pointer border border-slate-200 dark:border-neutral-700 shadow-xs group"
-              title="Play"
-            >
-              <Play className="w-5 h-5 fill-current text-slate-800 dark:text-white group-hover:scale-105 transition-transform" />
-            </button>
-          </h1>
-        </div>
-      )}
+      <AnimatePresence mode="popLayout">
+        {isHomeDashboard && !isOptionCOpen && (
+          <motion.div 
+            key="welcome-header"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -60, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } }}
+            className="px-6 pt-6 pb-2 flex items-center justify-between shrink-0"
+          >
+            <h1 className="text-[36px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
+              <span>Welcome back, {name}.</span>
+              <button
+                id="play-theatre-btn"
+                onClick={() => {
+                  console.log('[THEATRE DEBUG] Play button clicked in SpaceDashboard!');
+                  if (onOpenTheatre) {
+                    onOpenTheatre();
+                  }
+                }}
+                className="inline-flex items-center justify-center p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-800 dark:text-white transition-all cursor-pointer border border-slate-200 dark:border-neutral-700 shadow-xs group"
+                title="Play"
+              >
+                <Play className="w-5 h-5 fill-current text-slate-800 dark:text-white group-hover:scale-105 transition-transform" />
+              </button>
+            </h1>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isOptionCOpen ? (
         <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden p-2 md:p-4">

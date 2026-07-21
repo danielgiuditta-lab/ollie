@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { 
   Check, 
@@ -55,6 +55,17 @@ export function OptionCView({
   const [steerInput, setSteerInput] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [actionToast, setActionToast] = useState<{ text: 'Approved' | 'Declined' | 'Skipped'; key: number } | null>(null);
+
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (itemRefs.current[activeIndex]) {
+      itemRefs.current[activeIndex]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  }, [activeIndex]);
 
   const triggerActionToast = (text: 'Approved' | 'Declined' | 'Skipped') => {
     const key = Date.now();
@@ -361,16 +372,12 @@ export function OptionCView({
   return (
     <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
       {/* Reel layout list: Each cell is a persistent motion element that layout-animates from collapsed Home card to expanded Canvas view */}
-      <div className="flex-1 w-full min-h-[460px] flex flex-col gap-3 overflow-hidden relative">
+      {/* Reel layout list: All cells rendered in a scrollable list overflowing under the control bar */}
+      <div className="flex-1 w-full min-h-0 overflow-y-auto custom-scrollbar flex flex-col gap-3 pb-24 relative">
         <LayoutGroup id="option-c-cells-reel">
           <AnimatePresence mode="popLayout" initial={false}>
             {orderedTodoItems.map((item, idx) => {
               const isFocused = idx === activeIndex;
-              const isPrev = idx === activeIndex - 1;
-              const isNext = idx === activeIndex + 1;
-
-              if (!isFocused && !isPrev && !isNext) return null;
-
               const itemId = item.id || `cell-${idx}`;
               const isCurrentSignedOff = completedTaskIds.has(item.id);
               const cellTitle = isFocused 
@@ -388,244 +395,270 @@ export function OptionCView({
               return (
                 <motion.div
                   key={itemId}
-                  layout="position"
-                  initial={{ opacity: 0, y: 40 }}
+                  layoutId={`cell-${item.id}`}
+                  ref={(el) => { itemRefs.current[idx] = el; }}
+                  initial={{ opacity: 0, y: 30 }}
                   animate={{ 
                     opacity: 1, 
                     y: 0,
-                    height: isFocused ? 'calc(100% - 140px)' : 64 
+                    height: isFocused ? 'calc(100% - 120px)' : 64 
                   }}
-                  exit={{ opacity: 0, y: -40 }}
+                  exit={{ opacity: 0, y: -30 }}
                   onClick={() => {
                     if (!isFocused) {
                       setActiveIndex(idx);
                     }
                   }}
-                  className={`w-full flex flex-col justify-start items-start select-none overflow-hidden origin-top transition-[background-color,border-radius,padding] duration-[3500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  className={`w-full flex flex-col justify-start items-start select-none overflow-hidden origin-top transition-[background-color,border-radius,padding] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                     isFocused
-                      ? 'min-h-[380px] rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default'
+                      ? 'min-h-[380px] rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default shrink-0 shadow-sm'
                       : 'shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-5 py-3 cursor-pointer'
                   }`}
                   transition={{
-                    height: { duration: 3.5, ease: [0.16, 1, 0.3, 1] },
-                    layout: { duration: 3.5, ease: [0.16, 1, 0.3, 1] },
-                    opacity: { duration: 1.5 },
-                    y: { duration: 3.5, ease: [0.16, 1, 0.3, 1] }
+                    height: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                    layout: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                    opacity: { duration: 0.25 },
+                    y: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
                   }}
                 >
-                  {/* Single Unified Header Block: Title & Meta stay mounted continuously at the top of the card */}
-                  <div className="w-full flex flex-col text-left shrink-0 min-w-0 select-text">
-                    <motion.h3 
-                      layout="position"
-                      transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
-                      className={`font-sans text-slate-900 dark:text-white tracking-normal transition-[font-size,line-height,font-weight] duration-[3500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                        isFocused 
-                          ? 'text-[30px] leading-[36px] font-normal' 
-                          : 'text-[16px] leading-[22px] font-medium truncate'
-                      }`}
-                    >
-                      {cellTitle}
-                    </motion.h3>
+                  {/* Cell Header and Content Layout */}
+                  {!isFocused ? (
+                    <div className="w-full flex flex-col text-left shrink-0 min-w-0 select-text">
+                      <motion.h3 
+                        layout="position"
+                        transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                        className="font-sans text-slate-900 dark:text-white tracking-normal text-[16px] leading-[22px] font-medium truncate"
+                      >
+                        {cellTitle}
+                      </motion.h3>
 
-                    <motion.p 
-                      layout="position"
-                      transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
-                      className={`font-sans text-slate-600 dark:text-[#9AA0A6] transition-[font-size,line-height,margin] duration-[3500ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                        isFocused 
-                          ? 'text-[18px] leading-[26px] font-normal mt-2 line-clamp-3' 
-                          : 'text-[13px] leading-[18px] font-normal mt-0.5 truncate'
-                      }`}
-                    >
-                      {cellMeta}
-                    </motion.p>
-                  </div>
+                      <motion.p 
+                        layout="position"
+                        transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                        className="font-sans text-slate-600 dark:text-[#9AA0A6] text-[13px] leading-[18px] font-normal mt-0.5 truncate"
+                      >
+                        {cellMeta}
+                      </motion.p>
+                    </div>
+                  ) : (
+                    <div className="w-full flex-1 min-h-[340px] overflow-hidden flex flex-col select-text">
+                      {isChatReplyTask ? (
+                        <div className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                          {/* Left Column: Title, Subtitle, and Sources centered vertically */}
+                          <div className="w-full md:w-1/2 h-full flex flex-col items-start justify-center pr-0 md:pr-6 min-w-0 select-text">
+                            <motion.h3 
+                              layout="position"
+                              transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                              className="font-sans text-slate-900 dark:text-white tracking-normal text-[26px] md:text-[30px] leading-[32px] md:leading-[36px] font-normal"
+                            >
+                              {cellTitle}
+                            </motion.h3>
 
-                  {/* Expanded Content Section: Revealed from the bottom as the physical card container expands downward */}
-                  <div
-                    className={`w-full flex-1 min-h-[340px] overflow-hidden flex flex-col mt-4 select-text ${
-                      isFocused ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                    }`}
-                  >
-                    {isChatReplyTask ? (
-                      <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-2 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                        {/* Chips / Context Unit inside Left Column */}
-                        <div className="w-1/2 h-full flex flex-col items-start justify-center pr-4 md:pr-6 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mt-2">
-                            {activePersonName && (
-                              <div 
-                                onClick={() => handleOpenSourceChip(activePersonName)}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                              >
-                                {canvasAvatarElement}
-                                <span className="truncate max-w-[140px]">{activePersonName}</span>
-                              </div>
-                            )}
+                            <motion.p 
+                              layout="position"
+                              transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                              className="font-sans text-slate-600 dark:text-[#9AA0A6] text-[16px] md:text-[18px] leading-[24px] md:leading-[26px] font-normal mt-2 line-clamp-3"
+                            >
+                              {cellMeta}
+                            </motion.p>
 
-                            {activeSourceName && (
-                              <div 
-                                onClick={() => handleOpenSourceChip(activeSourceName)}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                              >
-                                {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                                <span className="truncate max-w-[160px]">{activeSourceName}</span>
-                              </div>
-                            )}
-
-                            {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
-                              <a
-                                key={linkIdx}
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
-                              >
-                                {link.label || 'Open Link'}
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Right Column: Chat UI */}
-                        <div className="w-1/2 h-full flex flex-col justify-center gap-6 pl-4 md:pl-6 min-w-0 select-text">
-                          {/* Sender Message Row */}
-                          <div className="flex items-start gap-3 justify-start max-w-[85%]">
-                            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
-                              <img 
-                                src={activeAvatar} 
-                                alt={activePersonName} 
-                                className="w-full h-full object-cover" 
-                                onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
-                              />
-                            </div>
-
-                            <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                              {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
-                            </div>
-                          </div>
-
-                          {/* Proposed Reply Row */}
-                          <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
-                            <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-4 relative group">
-                              {isEditingProposal ? (
-                                <div className="flex flex-col gap-2 min-w-[220px] w-full">
-                                  <textarea
-                                    value={editableProposalText}
-                                    onChange={(e) => setEditableProposalText(e.target.value)}
-                                    className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[15px] leading-[22px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
-                                    rows={3}
-                                    autoFocus
-                                  />
-                                  <div className="flex items-center justify-end gap-2">
-                                    <button
-                                      onClick={() => setIsEditingProposal(false)}
-                                      className="px-3 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
-                                    >
-                                      Cancel
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (activeTask) activeTask.proposedReply = editableProposalText;
-                                        setIsEditingProposal(false);
-                                      }}
-                                      className="px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white cursor-pointer"
-                                    >
-                                      Save
-                                    </button>
-                                  </div>
+                            {/* Chips / Context Unit inside Left Column */}
+                            <div className="flex items-center gap-2 flex-wrap mt-4 md:mt-6">
+                              {activePersonName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activePersonName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                >
+                                  {canvasAvatarElement}
+                                  <span className="truncate max-w-[140px]">{activePersonName}</span>
                                 </div>
-                              ) : (
-                                <>
-                                  <div className="whitespace-pre-wrap flex-1 min-w-0">
-                                    {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
-                                  </div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setIsEditingProposal(true);
-                                    }}
-                                    className="inline-flex items-center justify-center p-1 rounded-full text-slate-600 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
-                                    title="Edit proposed reply"
-                                  >
-                                    <Pencil size={18} className="stroke-[2.2]" />
-                                  </button>
-                                </>
                               )}
+
+                              {activeSourceName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activeSourceName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                >
+                                  {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                                  <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                                </div>
+                              )}
+
+                              {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
+                                <a
+                                  key={linkIdx}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
+                                >
+                                  {link.label || 'Open Link'}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Right Column: Chat UI */}
+                          <div className="w-full md:w-1/2 h-full flex flex-col justify-center gap-6 pl-0 md:pl-6 min-w-0 select-text">
+                            {/* Sender Message Row */}
+                            <div className="flex items-start gap-3 justify-start max-w-[85%]">
+                              <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
+                                <img 
+                                  src={activeAvatar} 
+                                  alt={activePersonName} 
+                                  className="w-full h-full object-cover" 
+                                  onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                                />
+                              </div>
+
+                              <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                                {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
+                              </div>
                             </div>
 
-                            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
-                              <img 
-                                src={userProfile?.picture || '/people/sarah_lin.jpg'} 
-                                alt="User" 
-                                className="w-full h-full object-cover" 
-                              />
+                            {/* Proposed Reply Row */}
+                            <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
+                              <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-4 relative group">
+                                {isEditingProposal ? (
+                                  <div className="flex flex-col gap-2 min-w-[220px] w-full">
+                                    <textarea
+                                      value={editableProposalText}
+                                      onChange={(e) => setEditableProposalText(e.target.value)}
+                                      className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[15px] leading-[22px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
+                                      rows={3}
+                                      autoFocus
+                                    />
+                                    <div className="flex items-center justify-end gap-2">
+                                      <button
+                                        onClick={() => setIsEditingProposal(false)}
+                                        className="px-3 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          if (activeTask) activeTask.proposedReply = editableProposalText;
+                                          setIsEditingProposal(false);
+                                        }}
+                                        className="px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white cursor-pointer"
+                                      >
+                                        Save
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="whitespace-pre-wrap flex-1 min-w-0">
+                                      {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsEditingProposal(true);
+                                      }}
+                                      className="inline-flex items-center justify-center p-1 rounded-full text-slate-600 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
+                                      title="Edit proposed reply"
+                                    >
+                                      <Pencil size={18} className="stroke-[2.2]" />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+
+                              <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
+                                <img 
+                                  src={userProfile?.picture || '/people/sarah_lin.jpg'} 
+                                  alt="User" 
+                                  className="w-full h-full object-cover" 
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-full flex flex-col min-h-0">
-                        {/* Chips / Metadata Row */}
-                        <div className="flex items-center gap-2 flex-wrap mb-4">
-                          {activePersonName && (
-                            <div 
-                              onClick={() => handleOpenSourceChip(activePersonName)}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                      ) : (
+                        <div className="w-full h-full flex flex-col min-h-0">
+                          {/* Header Block: Title, Subtitle, Badges restricted to Column 1 (w-full md:w-1/2 md:max-w-[50%]) on wide screen */}
+                          <div className="w-full md:w-1/2 md:max-w-[50%] md:pr-4 flex flex-col items-start shrink-0 min-w-0 mb-4 select-text">
+                            <motion.h3 
+                              layout="position"
+                              transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                              className="font-sans text-slate-900 dark:text-white tracking-normal text-[22px] md:text-[26px] leading-[28px] md:leading-[32px] font-normal"
                             >
-                              {canvasAvatarElement}
-                              <span className="truncate max-w-[140px]">{activePersonName}</span>
+                              {cellTitle}
+                            </motion.h3>
+
+                            <motion.p 
+                              layout="position"
+                              transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                              className="font-sans text-slate-600 dark:text-[#9AA0A6] text-[14px] md:text-[16px] leading-[20px] md:leading-[22px] font-normal mt-1.5 line-clamp-2"
+                            >
+                              {cellMeta}
+                            </motion.p>
+
+                            {/* Chips / Metadata Row */}
+                            <div className="flex items-center gap-2 flex-wrap mt-3">
+                              {activePersonName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activePersonName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                >
+                                  {canvasAvatarElement}
+                                  <span className="truncate max-w-[140px]">{activePersonName}</span>
+                                </div>
+                              )}
+
+                              {activeSourceName && (
+                                <div 
+                                  onClick={() => handleOpenSourceChip(activeSourceName)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                >
+                                  {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                                  <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                                </div>
+                              )}
+
+                              {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
+                                <a
+                                  key={linkIdx}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
+                                >
+                                  {link.label || 'Open Link'}
+                                </a>
+                              ))}
                             </div>
-                          )}
+                          </div>
 
-                          {activeSourceName && (
-                            <div 
-                              onClick={() => handleOpenSourceChip(activeSourceName)}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                            >
-                              {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                              <span className="truncate max-w-[160px]">{activeSourceName}</span>
-                            </div>
-                          )}
-
-                          {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
-                            <a
-                              key={linkIdx}
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
-                            >
-                              {link.label || 'Open Link'}
-                            </a>
-                          ))}
-                        </div>
-
-                        {/* Viewer Container */}
-                        <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
-                          {activeFileObject ? (
-                            activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
-                              <InferredTaskDiffView 
-                                file={activeFileObject}
-                                theme="light"
-                                className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
-                                hideFooterText={true}
-                              />
+                          {/* Viewer Container */}
+                          <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+                            {activeFileObject ? (
+                              activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
+                                <InferredTaskDiffView 
+                                  file={activeFileObject}
+                                  theme="light"
+                                  className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
+                                  hideFooterText={true}
+                                />
+                              ) : (
+                                <NativeViewer
+                                  file={activeFileObject}
+                                  hideHeader={true}
+                                  mode="preview"
+                                  theme="light"
+                                />
+                              )
                             ) : (
-                              <NativeViewer
-                                file={activeFileObject}
-                                hideHeader={true}
-                                mode="preview"
-                                theme="light"
-                              />
-                            )
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium text-sm">
-                              No artifact preview available for this task.
-                            </div>
-                          )}
+                              <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium text-sm">
+                                No artifact preview available for this task.
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               );
             })}
@@ -654,13 +687,13 @@ export function OptionCView({
         )}
       </AnimatePresence>
 
-      {/* Control Bar: Input shrinks from initial width down to collapsed state while action buttons animate out */}
-      <div className="w-full h-[80px] shrink-0 flex items-center justify-center gap-3 relative z-20 pt-2">
+      {/* Control Bar: Our main chat input pill with the 4 action buttons animated out from its sides */}
+      <div className="w-full h-[80px] shrink-0 flex items-center justify-center gap-3 relative z-30 pt-2 pb-2">
         {/* Animated Previous Button */}
         <motion.button
-          initial={{ opacity: 0, x: 140, scale: 0.1 }}
+          initial={{ opacity: 0, x: 120, scale: 0.2 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           onClick={handlePrev}
           disabled={activeIndex === 0}
           className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
@@ -671,42 +704,34 @@ export function OptionCView({
 
         {/* Animated Decline X Button */}
         <motion.button
-          initial={{ opacity: 0, x: 70, scale: 0.1 }}
+          initial={{ opacity: 0, x: 60, scale: 0.2 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           onClick={handleReject}
-          className="w-14 h-14 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
+          className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
           title="Decline"
         >
           <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
         </motion.button>
 
-        {/* Center Steer Input Pill - Initial wide state (560px) shrinks smoothly down to collapsed state (180px) */}
+        {/* Central Chat Input Pill matching LandingInput layout */}
         <motion.div 
-          layout="position"
-          initial={{ width: 560 }}
-          animate={{ width: (isInputFocused || steerInput.trim().length > 0) ? 620 : 180 }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          className={`rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 transition-all duration-300 ease-in-out shadow-lg ${
-            (isInputFocused || steerInput.trim().length > 0)
-              ? 'h-[72px] px-4' 
-              : 'h-14 px-4 cursor-pointer'
-          }`}
+          layoutId="landing-input-main"
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-[560px] h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 shadow-lg relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all cursor-text"
           onClick={() => {
             const el = document.getElementById('optionc-steer-input');
             if (el) el.focus();
           }}
         >
-          {(isInputFocused || steerInput.trim().length > 0) && (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); }}
-              className="w-11 h-11 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-400 flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none"
-              title="Add attachment or context"
-            >
-              <Plus size={20} className="stroke-[2.5]" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); }}
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0 transition cursor-pointer flex items-center justify-center p-1 rounded-full border-none outline-none"
+            title="Add attachment or context"
+          >
+            <Plus size={20} className="stroke-[2.5]" />
+          </button>
 
           <input
             id="optionc-steer-input"
@@ -726,54 +751,52 @@ export function OptionCView({
                 }
               }
             }}
-            placeholder={(isInputFocused || steerInput.trim().length > 0) ? getSteerPlaceholder() : "Do differently..."}
-            className="w-full bg-transparent text-slate-900 dark:text-white text-[15px] font-normal placeholder-slate-500 dark:placeholder-neutral-400 focus:outline-none truncate px-1 border-none ring-0"
+            placeholder={getSteerPlaceholder()}
+            className="flex-1 bg-transparent text-slate-900 dark:text-white text-[15px] font-normal placeholder-slate-400 focus:outline-none truncate border-none ring-0 h-full"
           />
 
-          {(isInputFocused || steerInput.trim().length > 0) && (
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDockToSide();
-                }}
-                className="w-11 h-11 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-400 flex items-center justify-center transition cursor-pointer border-none outline-none"
-                title="Snap to side chat"
-              >
-                <span className="material-symbols-rounded text-[22px] select-none">dock_to_right</span>
-              </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDockToSide();
+              }}
+              className="w-9 h-9 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-500 dark:text-neutral-400 flex items-center justify-center transition cursor-pointer border-none outline-none"
+              title="Snap to side chat"
+            >
+              <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+            </button>
 
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (steerInput.trim()) {
-                    handleSteerSubmit(steerInput);
-                    setSteerInput('');
-                  } else {
-                    handleApprove();
-                  }
-                }}
-                disabled={!steerInput.trim()}
-                className={`w-11 h-11 rounded-full flex items-center justify-center transition border-none outline-none ${
-                  steerInput.trim()
-                    ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer shadow-md'
-                    : 'bg-black/10 dark:bg-white/10 text-slate-400 dark:text-neutral-500 cursor-not-allowed'
-                }`}
-                title={steerInput.trim() ? "Submit steer" : "Send"}
-              >
-                <ArrowUp size={18} className="stroke-[2.5]" />
-              </button>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (steerInput.trim()) {
+                  handleSteerSubmit(steerInput);
+                  setSteerInput('');
+                } else {
+                  handleApprove();
+                }
+              }}
+              disabled={!steerInput.trim()}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
+                steerInput.trim()
+                  ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer shadow-md'
+                  : 'bg-black/10 dark:bg-white/10 text-slate-400 dark:text-neutral-500 cursor-not-allowed'
+              }`}
+              title={steerInput.trim() ? "Submit steer" : "Send"}
+            >
+              <ArrowUp size={16} className="stroke-[2.5]" />
+            </button>
+          </div>
         </motion.div>
 
         {/* Animated Approve Check Button */}
         <motion.button
-          initial={{ opacity: 0, x: -70, scale: 0.1 }}
+          initial={{ opacity: 0, x: -60, scale: 0.2 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           onClick={() => {
             if (steerInput.trim()) {
               handleSteerSubmit(steerInput);
@@ -782,7 +805,7 @@ export function OptionCView({
               handleApprove();
             }
           }}
-          className="w-14 h-14 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
+          className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
           title={steerInput.trim() ? "Submit steer" : "Accept"}
         >
           <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
@@ -790,9 +813,9 @@ export function OptionCView({
 
         {/* Animated Next Button */}
         <motion.button
-          initial={{ opacity: 0, x: -140, scale: 0.1 }}
+          initial={{ opacity: 0, x: -120, scale: 0.2 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           onClick={handleNext}
           disabled={activeIndex === orderedTodoItems.length - 1}
           className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
