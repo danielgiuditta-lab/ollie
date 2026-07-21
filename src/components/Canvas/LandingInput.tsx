@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { motion } from 'motion/react';
 import { Plus, ArrowUp, X, Sparkles, FileText, User } from 'lucide-react';
 import { AIModeButton } from '../Shared/AIModeButton';
 import { RainbowRimOverlay } from '../Shared/RainbowRimOverlay';
@@ -198,7 +199,9 @@ export function LandingInput({
         {/* Animated Rainbow Border when AI Mode is active */}
         <RainbowRimOverlay active={aiMode} borderRadiusClass="rounded-full" />
 
-        <div 
+        <motion.div 
+          layoutId="landing-input-main"
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
           className={`w-full min-h-[64px] py-2 ${theme === 'dark' ? 'bg-[#1E1F22] text-white border-[#2B2D31]' : 'bg-white dark:bg-[#1E1F22] border-gray-200 dark:border-[#2B2D31]'} border ${
             aiMode 
               ? 'border-transparent' 
@@ -280,7 +283,7 @@ export function LandingInput({
           >
             <ArrowUp size={18} className="stroke-[2.5]" />
           </button>
-        </div>
+        </motion.div>
       </div>
 
       {/* 1. TypeAhead Component for Search mode */}

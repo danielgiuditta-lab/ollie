@@ -377,12 +377,15 @@ export function OptionCView({
   return (
     <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
       {/* Reel layout list: Each cell is a persistent motion element that layout-animates from collapsed Home card to expanded Canvas view */}
-      {/* Reel layout list: All cells rendered in a scrollable list overflowing under the control bar */}
-      <div className={`w-full flex-1 min-h-0 flex flex-col gap-3 relative ${isPlayMode ? 'overflow-y-auto custom-scrollbar pb-24' : ''}`}>
+      <div className="w-full flex-1 min-h-0 flex flex-col gap-2 relative overflow-hidden pb-[76px]">
         <LayoutGroup id="option-c-cells-reel">
           <AnimatePresence mode="popLayout" initial={false}>
             {orderedTodoItems.map((item, idx) => {
               const isFocused = isPlayMode && idx === activeIndex;
+              const isTopPeek = isPlayMode && idx === activeIndex - 1;
+              const isBottomPeek = isPlayMode && idx === activeIndex + 1;
+              const isVisibleInPlay = isFocused || isTopPeek || isBottomPeek;
+
               const itemId = item.id || `cell-${idx}`;
               const isCurrentSignedOff = completedTaskIds.has(item.id);
               const cellTitle = isFocused 
@@ -404,9 +407,11 @@ export function OptionCView({
                   ref={(el) => { itemRefs.current[idx] = el; }}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ 
-                    opacity: 1, 
+                    opacity: isPlayMode ? (isVisibleInPlay ? 1 : 0) : 1, 
                     y: 0,
-                    height: isFocused ? 'calc(100% - 120px)' : 64 
+                    height: isPlayMode
+                      ? (isFocused ? '100%' : isVisibleInPlay ? 48 : 0)
+                      : 64 
                   }}
                   exit={{ opacity: 0, y: -30 }}
                   onClick={() => {
@@ -418,9 +423,13 @@ export function OptionCView({
                     }
                   }}
                   className={`w-full flex flex-col justify-start items-start select-none overflow-hidden origin-top transition-[background-color,border-radius,padding] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                    isFocused
-                      ? 'min-h-[380px] rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default shrink-0 shadow-sm'
-                      : 'shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-5 py-3 cursor-pointer'
+                    !isPlayMode
+                      ? 'shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] px-5 py-3 cursor-pointer'
+                      : isFocused
+                        ? 'flex-1 h-full min-h-0 rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default shrink-0 shadow-sm'
+                        : isVisibleInPlay
+                          ? 'shrink-0 h-[48px] rounded-[14px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] px-5 py-2.5 cursor-pointer flex items-center justify-between'
+                          : 'h-0 p-0 m-0 opacity-0 pointer-events-none'
                   }`}
                   transition={{
                     height: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
@@ -699,16 +708,17 @@ export function OptionCView({
       <AnimatePresence>
         {isPlayMode && (
           <motion.div 
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
+            exit={{ opacity: 0, y: 30 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="w-full h-[80px] shrink-0 flex items-center justify-center gap-3 relative z-30 pt-2 pb-2"
           >
             {/* Animated Previous Button */}
             <motion.button
-              initial={{ opacity: 0, x: 120, scale: 0.2 }}
+              initial={{ opacity: 0, x: 80, scale: 0.5 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 80, scale: 0.5 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               onClick={handlePrev}
               disabled={activeIndex === 0}
@@ -720,8 +730,9 @@ export function OptionCView({
 
             {/* Animated Decline X Button */}
             <motion.button
-              initial={{ opacity: 0, x: 60, scale: 0.2 }}
+              initial={{ opacity: 0, x: 40, scale: 0.5 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 40, scale: 0.5 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               onClick={handleReject}
               className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
@@ -810,8 +821,9 @@ export function OptionCView({
 
             {/* Animated Approve Check Button */}
             <motion.button
-              initial={{ opacity: 0, x: -60, scale: 0.2 }}
+              initial={{ opacity: 0, x: -40, scale: 0.5 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -40, scale: 0.5 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => {
                 if (steerInput.trim()) {
@@ -829,8 +841,9 @@ export function OptionCView({
 
             {/* Animated Next Button */}
             <motion.button
-              initial={{ opacity: 0, x: -120, scale: 0.2 }}
+              initial={{ opacity: 0, x: -80, scale: 0.5 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -80, scale: 0.5 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               onClick={handleNext}
               disabled={activeIndex === orderedTodoItems.length - 1}
