@@ -15,6 +15,7 @@ import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { getFileIcon } from '../Shared/FileIcon';
 import { getAvatarForPerson } from '../../utils/personAvatars';
 import { InferredTaskCardExperimental } from '../Chat/InferredTaskCardExperimental';
+import { IconButton } from '../Shared/IconButton';
 
 interface OptionCViewProps {
   todoItems: any[];
@@ -388,11 +389,23 @@ export function OptionCView({
   };
 
   return (
-    <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-1 overflow-hidden relative">
+    <div className="w-full h-full min-h-[560px] flex flex-col gap-4 bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
+      {/* Floating Close Button positioned absolutely at top right */}
+      {isPlayMode && (
+        <div className="absolute top-4 right-4 z-50">
+          <IconButton
+            variant="card"
+            onClick={onClose}
+            title="Close Play mode"
+          >
+            <X className="w-5 h-5 text-slate-800 dark:text-white" />
+          </IconButton>
+        </div>
+      )}
 
       <LayoutGroup id="option-c-cells-reel">
         {!isPlayMode ? (
-          /* Landing Page View: Section headers and task cards with exact commit 96a1ee0 styling */
+          /* Landing Page View: Section headers and task cards */
           <div className="w-full flex-1 flex flex-col gap-6 max-w-4xl mx-auto overflow-y-auto custom-scrollbar py-2 text-left">
             {needsApprovalItems.length > 0 && (
               <div className="flex flex-col gap-2">
@@ -490,304 +503,287 @@ export function OptionCView({
             )}
           </div>
         ) : (
-          /* Play Mode View: Cell reel positioned within 16px of top without drop shadows or x-axis bounce */
-          <div className="w-full flex-1 min-h-0 flex flex-col gap-2 relative overflow-hidden pt-1 pb-1">
-            <AnimatePresence mode="popLayout" initial={false}>
+          /* Play Mode View: Cell reel layout with smooth Framer Motion morphing */
+          <div className="w-full flex-1 min-h-0 flex flex-col gap-4 relative overflow-hidden pb-4">
+            <AnimatePresence initial={false}>
               {orderedTodoItems.map((item, idx) => {
-                const isFocused = idx === activeIndex;
-                const isTopPeek = idx === activeIndex - 1;
-                const isBottomPeek = idx === activeIndex + 1;
+                const isFocused = isPlayMode && idx === activeIndex;
+                const isTopPeek = isPlayMode && idx === activeIndex - 1;
+                const isBottomPeek = isPlayMode && idx === activeIndex + 1;
                 const isVisibleInPlay = isFocused || isTopPeek || isBottomPeek;
 
                 const itemId = item.id || `cell-${idx}`;
                 const isCurrentSignedOff = completedTaskIds.has(item.id);
-                const cellTitle = isFocused 
-                  ? (isCurrentSignedOff 
-                      ? (item.titleDone || item.title || item.description)
-                      : (item.title || item.titleDone || item.description))
-                  : getAbbreviatedCellTitle(item, isCurrentSignedOff);
+                const cellTitle = isCurrentSignedOff 
+                  ? (item.titleDone || item.title || item.description)
+                  : (item.title || item.titleDone || item.description);
 
-                const cellMeta = isFocused
-                  ? (isCurrentSignedOff
-                      ? (item.descriptionDone || item.description || item.action || 'Your tasks will be added to "My tasks" when notes are ready')
-                      : (item.description || item.descriptionDone || item.action || 'Gemini will write a professional follow-up email for you...'))
-                  : (item.description || item.descriptionDone || item.action || '');
+                const cellMeta = isCurrentSignedOff
+                  ? (item.descriptionDone || item.description || item.action || 'Your tasks will be added to "My tasks" when notes are ready')
+                  : (item.description || item.descriptionDone || item.action || 'Gemini will write a professional follow-up email for you...');
 
                 return (
                   <motion.div
                     key={itemId}
                     layoutId={`cell-${item.id}`}
                     ref={(el) => { itemRefs.current[idx] = el; }}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ 
                       opacity: isVisibleInPlay ? 1 : 0, 
                       y: 0,
-                      height: isFocused ? '100%' : isVisibleInPlay ? 48 : 0
+                      height: isFocused ? '100%' : isVisibleInPlay ? 'auto' : 0
                     }}
-                    exit={{ opacity: 0, y: -20, transition: { duration: 0.2, ease: 'easeInOut' } }}
+                    exit={{ opacity: 0, y: -20 }}
                     onClick={() => {
                       if (!isFocused) {
                         setActiveIndex(idx);
                       }
                     }}
-                    className={`flex flex-col justify-start items-start select-none overflow-hidden origin-top transition-[background-color,border-radius,padding,max-width] duration-300 ease-in-out ${
+                    className={`w-full flex flex-col justify-start items-start select-none overflow-hidden origin-top transition-[background-color,border-radius] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                       isFocused
-                        ? 'flex-1 h-full min-h-0 w-full max-w-[1140px] self-center rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default shrink-0'
+                        ? 'flex-1 h-full min-h-0 max-w-[1140px] w-full self-center rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default shrink-0 shadow-sm'
                         : isVisibleInPlay
-                          ? 'shrink-0 h-[48px] w-full max-w-[720px] self-center rounded-[14px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] px-5 py-2.5 cursor-pointer flex items-center justify-between'
+                          ? 'shrink-0 w-full max-w-4xl self-center rounded-[16px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] p-4 px-5 cursor-pointer flex items-center justify-between gap-4'
                           : 'h-0 p-0 m-0 opacity-0 pointer-events-none'
                     }`}
                     transition={{
-                      height: { duration: 0.3, ease: 'easeInOut' },
-                      layout: { duration: 0.3, ease: 'easeInOut' },
-                      opacity: { duration: 0.2 },
-                      y: { duration: 0.3, ease: 'easeInOut' }
+                      height: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                      layout: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                      opacity: { duration: 0.25 },
+                      y: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
                     }}
                   >
-                  {/* Cell Header and Content Layout */}
-                  {!isFocused ? (
-                    <div className="w-full flex flex-col text-left shrink-0 min-w-0 select-text">
-                      <motion.h3 
-                        layout="position"
-                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                        className="font-sans text-slate-900 dark:text-white tracking-normal text-[16px] leading-[22px] font-medium truncate"
+                    {!isFocused ? (
+                      /* Collapsed Peek Cell - Exact match to Home card layout (title on top, metaline below) without action buttons */
+                      <div className="w-full flex flex-col text-left shrink-0 min-w-0 select-text">
+                        <h4 className="text-[16px] leading-[24px] font-medium font-sans text-slate-900 dark:text-white truncate">
+                          {cellTitle}
+                        </h4>
+                        <p className="text-[14px] leading-[20px] font-normal font-sans text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                          {cellMeta}
+                        </p>
+                      </div>
+                    ) : (
+                      /* Focused Canvas Content - EXACT MATCH to Option B Layout */
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.25, delay: 0.1 }}
+                        className="w-full h-full flex flex-col min-h-0 overflow-hidden select-text"
                       >
-                        {cellTitle}
-                      </motion.h3>
+                        {isChatReplyTask ? (
+                          <div className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                            {/* Left Column: Title, Meta, and Context Unit (Half of Canvas) */}
+                            <div className="w-full md:w-1/2 h-full flex flex-col items-start justify-center pr-0 md:pr-6 min-w-0">
+                              {/* Title */}
+                              <h3 className="text-[32px] md:text-[36px] leading-[40px] font-normal text-slate-900 dark:text-white tracking-normal font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                                {canvasTitleText}
+                              </h3>
 
-                      <motion.p 
-                        layout="position"
-                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                        className="font-sans text-slate-600 dark:text-[#9AA0A6] text-[13px] leading-[18px] font-normal mt-0.5 truncate"
-                      >
-                        {cellMeta}
-                      </motion.p>
-                    </div>
-                  ) : (
-                    <div className="w-full flex-1 min-h-[340px] overflow-hidden flex flex-col select-text">
-                      {isChatReplyTask ? (
-                        <div className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                          {/* Left Column: Title, Subtitle, and Sources centered vertically */}
-                          <div className="w-full md:w-1/2 h-full flex flex-col items-start justify-center pr-0 md:pr-6 min-w-0 select-text">
-                            <motion.h3 
-                              layout="position"
-                              transition={{ duration: 0.3, ease: 'easeInOut' }}
-                              className="font-sans text-slate-900 dark:text-white tracking-normal text-[26px] md:text-[30px] leading-[32px] md:leading-[36px] font-normal"
-                            >
-                              {cellTitle}
-                            </motion.h3>
+                              {/* Meta */}
+                              <p className="text-[20px] md:text-[22px] leading-[28px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 md:mt-4 font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                                {canvasMetaText}
+                              </p>
 
-                            <motion.p 
-                              layout="position"
-                              transition={{ duration: 0.3, ease: 'easeInOut' }}
-                              className="font-sans text-slate-600 dark:text-[#9AA0A6] text-[16px] md:text-[18px] leading-[24px] md:leading-[26px] font-normal mt-2 line-clamp-3"
-                            >
-                              {cellMeta}
-                            </motion.p>
-
-                            {/* Chips / Context Unit inside Left Column */}
-                            <div className="flex items-center gap-2 flex-wrap mt-4 md:mt-6">
-                              {activePersonName && (
-                                <div 
-                                  onClick={() => handleOpenSourceChip(activePersonName)}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                                >
-                                  {canvasAvatarElement}
-                                  <span className="truncate max-w-[140px]">{activePersonName}</span>
-                                </div>
-                              )}
-
-                              {activeSourceName && (
-                                <div 
-                                  onClick={() => handleOpenSourceChip(activeSourceName)}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                                >
-                                  {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                                  <span className="truncate max-w-[160px]">{activeSourceName}</span>
-                                </div>
-                              )}
-
-                              {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
-                                <a
-                                  key={linkIdx}
-                                  href={link.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
-                                >
-                                  {link.label || 'Open Link'}
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Right Column: Chat UI */}
-                          <div className="w-full md:w-1/2 h-full flex flex-col justify-center gap-6 pl-0 md:pl-6 min-w-0 select-text">
-                            {/* Sender Message Row */}
-                            <div className="flex items-start gap-3 justify-start max-w-[85%]">
-                              <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
-                                <img 
-                                  src={activeAvatar} 
-                                  alt={activePersonName} 
-                                  className="w-full h-full object-cover" 
-                                  onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
-                                />
-                              </div>
-
-                              <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
-                                {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
-                              </div>
-                            </div>
-
-                            {/* Proposed Reply Row */}
-                            <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
-                              <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[16px] md:text-[17px] leading-[24px] md:leading-[25px] font-normal px-5 py-3.5 rounded-[22px] max-w-[75%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-4 relative group">
-                                {isEditingProposal ? (
-                                  <div className="flex flex-col gap-2 min-w-[220px] w-full">
-                                    <textarea
-                                      value={editableProposalText}
-                                      onChange={(e) => setEditableProposalText(e.target.value)}
-                                      className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[15px] leading-[22px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
-                                      rows={3}
-                                      autoFocus
-                                    />
-                                    <div className="flex items-center justify-end gap-2">
-                                      <button
-                                        onClick={() => setIsEditingProposal(false)}
-                                        className="px-3 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
-                                      >
-                                        Cancel
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          if (activeTask) activeTask.proposedReply = editableProposalText;
-                                          setIsEditingProposal(false);
-                                        }}
-                                        className="px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white cursor-pointer"
-                                      >
-                                        Save
-                                      </button>
-                                    </div>
+                              {/* Context Unit (Chips) */}
+                              <div className="flex items-center gap-2 flex-wrap mt-3.5 md:mt-4.5">
+                                {activePersonName && (
+                                  <div 
+                                    onClick={() => handleOpenSourceChip(activePersonName)}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                  >
+                                    {canvasAvatarElement}
+                                    <span className="truncate max-w-[140px]">{activePersonName}</span>
                                   </div>
-                                ) : (
-                                  <>
-                                    <div className="whitespace-pre-wrap flex-1 min-w-0">
-                                      {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
-                                    </div>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setIsEditingProposal(true);
-                                      }}
-                                      className="inline-flex items-center justify-center p-1 rounded-full text-slate-600 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
-                                      title="Edit proposed reply"
-                                    >
-                                      <Pencil size={18} className="stroke-[2.2]" />
-                                    </button>
-                                  </>
                                 )}
+
+                                {activeSourceName && (
+                                  <div 
+                                    onClick={() => handleOpenSourceChip(activeSourceName)}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                  >
+                                    {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                                    <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                                  </div>
+                                )}
+
+                                {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
+                                  <a
+                                    key={linkIdx}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
+                                  >
+                                    {link.label || 'Open Link'}
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Right Column: Chat UI (Half of Canvas) */}
+                            <div className="w-full md:w-1/2 h-full flex flex-col justify-center gap-6 pl-0 md:pl-6 min-w-0 select-text">
+                              {/* Sender Message Row */}
+                              <div className="flex items-start gap-3 justify-start max-w-[85%]">
+                                <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md border border-slate-200 dark:border-white/10">
+                                  <img 
+                                    src={activeAvatar} 
+                                    alt={activePersonName} 
+                                    className="w-full h-full object-cover" 
+                                    onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                                  />
+                                </div>
+
+                                <div className="bg-slate-200/80 dark:bg-[#2D2E30] text-slate-900 dark:text-white/90 text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                                  {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
+                                </div>
                               </div>
 
-                              <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-md">
-                                <img 
-                                  src={userProfile?.picture || '/people/sarah_lin.jpg'} 
-                                  alt="User" 
-                                  className="w-full h-full object-cover" 
-                                />
+                              {/* Proposed Reply Row */}
+                              <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
+                                <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-5 relative group">
+                                  {isEditingProposal ? (
+                                    <div className="flex flex-col gap-2 min-w-[220px] w-full">
+                                      <textarea
+                                        value={editableProposalText}
+                                        onChange={(e) => setEditableProposalText(e.target.value)}
+                                        className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[16px] leading-[24px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
+                                        rows={3}
+                                        autoFocus
+                                      />
+                                      <div className="flex items-center justify-end gap-2">
+                                        <button
+                                          onClick={() => setIsEditingProposal(false)}
+                                          className="px-3 py-1 rounded-full text-xs font-medium text-slate-600 dark:text-neutral-300 hover:text-slate-900 cursor-pointer"
+                                        >
+                                          Cancel
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            if (activeTask) activeTask.proposedReply = editableProposalText;
+                                            setIsEditingProposal(false);
+                                          }}
+                                          className="px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white cursor-pointer"
+                                        >
+                                          Save
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <div className="whitespace-pre-wrap flex-1 min-w-0">
+                                        {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
+                                      </div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setIsEditingProposal(true);
+                                        }}
+                                        className="inline-flex items-center justify-center p-1 rounded-full text-slate-700 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
+                                        title="Edit proposed reply"
+                                      >
+                                        <Pencil size={20} className="stroke-[2.2]" />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+
+                                <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md border border-slate-200 dark:border-white/10">
+                                  <img 
+                                    src={userProfile?.picture || '/people/sarah_lin.jpg'} 
+                                    alt="User" 
+                                    className="w-full h-full object-cover" 
+                                  />
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="w-full h-full flex flex-col min-h-0">
-                          {/* Header Block: Title, Subtitle, Badges restricted to Column 1 (w-full md:w-1/2 md:max-w-[50%]) on wide screen */}
-                          <div className="w-full md:w-1/2 md:max-w-[50%] md:pr-4 flex flex-col items-start shrink-0 min-w-0 mb-4 select-text">
-                            <motion.h3 
-                              layout="position"
-                              transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
-                              className="font-sans text-slate-900 dark:text-white tracking-normal text-[22px] md:text-[26px] leading-[28px] md:leading-[32px] font-normal"
-                            >
-                              {cellTitle}
-                            </motion.h3>
+                        ) : (
+                          <div className="w-full h-full flex flex-col min-h-0">
+                            {/* Title, Metaline (capped at 2 lines), and Sources Unit (matching Option B structure) */}
+                            {activeTask && (
+                              <div className="w-full shrink-0 flex flex-col items-start max-w-[70%] mb-[30px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                                {/* Title: 32px with leading-[38px] */}
+                                <h3 className="text-[32px] leading-[38px] font-normal text-slate-900 dark:text-white">
+                                  {canvasTitleText}
+                                </h3>
 
-                            <motion.p 
-                              layout="position"
-                              transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
-                              className="font-sans text-slate-600 dark:text-[#9AA0A6] text-[14px] md:text-[16px] leading-[20px] md:leading-[22px] font-normal mt-1.5 line-clamp-2"
-                            >
-                              {cellMeta}
-                            </motion.p>
+                                {/* Metaline: 20px with auto line height, capped at 2 lines */}
+                                <p className="text-[20px] leading-normal font-normal text-slate-600 dark:text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
+                                  {canvasMetaText}
+                                </p>
 
-                            {/* Chips / Metadata Row */}
-                            <div className="flex items-center gap-2 flex-wrap mt-3">
-                              {activePersonName && (
-                                <div 
-                                  onClick={() => handleOpenSourceChip(activePersonName)}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                                >
-                                  {canvasAvatarElement}
-                                  <span className="truncate max-w-[140px]">{activePersonName}</span>
+                                {/* Sources below that */}
+                                <div className="flex items-center gap-2 flex-wrap mt-4">
+                                  {activePersonName && (
+                                    <div 
+                                      onClick={() => handleOpenSourceChip(activePersonName)}
+                                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[12px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                    >
+                                      {canvasAvatarElement}
+                                      <span className="truncate max-w-[140px]">{activePersonName}</span>
+                                    </div>
+                                  )}
+
+                                  {activeSourceName && (
+                                    <div 
+                                      onClick={() => handleOpenSourceChip(activeSourceName)}
+                                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[12px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
+                                    >
+                                      {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
+                                      <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                                    </div>
+                                  )}
+
+                                  {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
+                                    <a
+                                      key={linkIdx}
+                                      href={link.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[12px] font-normal transition-colors"
+                                    >
+                                      {link.label || 'Open Link'}
+                                    </a>
+                                  ))}
                                 </div>
-                              )}
-
-                              {activeSourceName && (
-                                <div 
-                                  onClick={() => handleOpenSourceChip(activeSourceName)}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
-                                >
-                                  {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                                  <span className="truncate max-w-[160px]">{activeSourceName}</span>
-                                </div>
-                              )}
-
-                              {activeTask?.links && activeTask.links.map((link: any, linkIdx: number) => (
-                                <a
-                                  key={linkIdx}
-                                  href={link.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[13px] font-normal transition-colors"
-                                >
-                                  {link.label || 'Open Link'}
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Viewer Container */}
-                          <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
-                            {activeFileObject ? (
-                              activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
-                                <InferredTaskDiffView 
-                                  file={activeFileObject}
-                                  theme="light"
-                                  className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
-                                  hideFooterText={true}
-                                />
-                              ) : (
-                                <NativeViewer
-                                  file={activeFileObject}
-                                  hideHeader={true}
-                                  mode="preview"
-                                  theme="light"
-                                />
-                              )
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium text-sm">
-                                No artifact preview available for this task.
                               </div>
                             )}
+
+                            {/* Artifact Viewer Container filling remaining height */}
+                            <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+                              {activeFileObject ? (
+                                activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
+                                  <InferredTaskDiffView 
+                                    file={activeFileObject}
+                                    theme="light"
+                                    className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
+                                    hideFooterText={true}
+                                  />
+                                ) : (
+                                  <NativeViewer
+                                    file={activeFileObject}
+                                    hideHeader={true}
+                                    mode="preview"
+                                    theme="light"
+                                  />
+                                )
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium text-sm">
+                                  No artifact preview available for this task.
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
-      )}
+                        )}
+                      </motion.div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        )}
       </LayoutGroup>
 
       {/* Action Toast Overlay */}
@@ -819,39 +815,31 @@ export function OptionCView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 15 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="w-full shrink-0 flex items-center justify-center gap-3 relative z-30 mt-auto pb-4 pt-1"
+            className="w-full shrink-0 flex items-center justify-center gap-3 relative z-30"
           >
-            {/* Animated Previous Button */}
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            {/* Standard Previous Button */}
+            <IconButton
+              variant="card"
               onClick={handlePrev}
               disabled={activeIndex === 0}
-              className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
               title="Previous task"
             >
               <ArrowLeft className="w-5 h-5 stroke-[2]" />
-            </motion.button>
+            </IconButton>
 
-            {/* Animated Decline X Button */}
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            {/* Standard Decline X Button */}
+            <IconButton
+              variant="card"
               onClick={handleReject}
-              className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0"
               title="Decline"
             >
-              <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
-            </motion.button>
+              <X className="w-5 h-5 text-red-600 dark:text-red-400 stroke-[2.5]" />
+            </IconButton>
 
             {/* Central Chat Input Pill matching LandingInput layout */}
             <motion.div 
               layoutId="landing-input-main"
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
               className="w-full max-w-[560px] h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all cursor-text"
               onClick={() => {
                 const el = document.getElementById('optionc-steer-input');
@@ -926,12 +914,9 @@ export function OptionCView({
               </div>
             </motion.div>
 
-            {/* Animated Approve Check Button */}
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            {/* Standard Approve Check Button */}
+            <IconButton
+              variant="card"
               onClick={() => {
                 if (steerInput.trim()) {
                   handleSteerSubmit(steerInput);
@@ -940,25 +925,20 @@ export function OptionCView({
                   handleApprove();
                 }
               }}
-              className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0"
               title={steerInput.trim() ? "Submit steer" : "Accept"}
             >
-              <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
-            </motion.button>
+              <Check className="w-5 h-5 text-green-600 dark:text-green-400 stroke-[2.5]" />
+            </IconButton>
 
-            {/* Animated Next Button */}
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            {/* Standard Next Button */}
+            <IconButton
+              variant="card"
               onClick={handleNext}
               disabled={activeIndex === orderedTodoItems.length - 1}
-              className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
               title="Next task"
             >
               <ArrowRight className="w-5 h-5 stroke-[2]" />
-            </motion.button>
+            </IconButton>
           </motion.div>
         )}
       </AnimatePresence>
