@@ -21,6 +21,7 @@ import { AISummaryView } from './components/Canvas/AISummaryView';
 import { InferredTaskDiffView } from './components/Canvas/InferredTaskDiffView';
 import { TheatreView } from './components/Canvas/TheatreView';
 import { OptionCView } from './components/Canvas/OptionCView';
+import { OptionDView } from './components/Canvas/OptionDView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
@@ -164,9 +165,9 @@ export default function App() {
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
   const [isTheatreOpen, setIsTheatreOpen] = useState(false);
-  const [playOptionMode, setPlayOptionMode] = useState<'A' | 'B' | 'C'>('C');
+  const [playOptionMode, setPlayOptionMode] = useState<'A' | 'B' | 'C' | 'D'>('C');
 
-  const handleOpenTheatre = (mode?: 'A' | 'B' | 'C') => {
+  const handleOpenTheatre = (mode?: 'A' | 'B' | 'C' | 'D') => {
     const targetMode = mode || playOptionMode;
     setPlayOptionMode(targetMode);
     if (targetMode === 'A') {
@@ -6811,6 +6812,23 @@ export default function App() {
             theme={appTheme}
             driveFiles={driveFiles}
           />
+      )}
+
+      {/* UI Mode D Overlay (Light Mode left task column & classic canvas with bottom controls) */}
+      {isTheatreOpen && playOptionMode === 'D' && (
+        <OptionDView
+          todoItems={todoItems}
+          onClose={() => setIsTheatreOpen(false)}
+          onSendMessage={handleSendMessage}
+          setActiveSidebar={setActiveSidebar}
+          onUpdateTaskStatus={(taskId, status) => {
+            setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+          }}
+          userProfile={userProfile}
+          accessToken={accessToken}
+          theme={appTheme}
+          driveFiles={driveFiles}
+        />
       )}
 
     </div>

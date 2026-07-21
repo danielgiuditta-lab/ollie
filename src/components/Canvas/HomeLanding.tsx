@@ -92,8 +92,8 @@ interface HomeLandingProps {
   onReorderPins?: (newOrderedIds: string[]) => void;
   onSelectArtifact?: (file: any) => void;
   envId?: string | null;
-  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C') => void;
-  playOptionMode?: 'A' | 'B' | 'C';
+  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C' | 'D') => void;
+  playOptionMode?: 'A' | 'B' | 'C' | 'D';
   isOptionCOpen?: boolean;
   onCloseOptionC?: () => void;
   onSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
