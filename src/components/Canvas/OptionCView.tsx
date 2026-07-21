@@ -397,15 +397,15 @@ export function OptionCView({
                       setActiveIndex(idx);
                     }
                   }}
-                  className={`w-full flex flex-col select-none overflow-hidden origin-center transition-[height,background-color,border-radius,padding] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  className={`w-full flex flex-col select-none overflow-hidden origin-center transition-[height,background-color,border-radius,padding] duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
                     isFocused
                       ? 'flex-1 min-h-[380px] rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default'
                       : 'h-[64px] shrink-0 bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] rounded-[16px] p-4 cursor-pointer flex justify-center'
                   }`}
                   transition={{
-                    layout: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
-                    opacity: { duration: 0.4 },
-                    y: { duration: 0.7, ease: [0.16, 1, 0.3, 1] }
+                    layout: { duration: 1.4, ease: [0.16, 1, 0.3, 1] },
+                    opacity: { duration: 0.8 },
+                    y: { duration: 1.4, ease: [0.16, 1, 0.3, 1] }
                   }}
                 >
                 {isFocused ? (
@@ -413,7 +413,7 @@ export function OptionCView({
                     <motion.div 
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                      transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
                       className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-2 md:p-6 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]"
                     >
                       {/* Left Column: Title, Meta, and Context Chips (50% width) */}
@@ -421,7 +421,7 @@ export function OptionCView({
                         <motion.h3 
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.55, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                           className="font-sans text-[30px] leading-[36px] font-normal text-slate-900 dark:text-white tracking-normal"
                         >
                           {cellTitle}
@@ -430,7 +430,7 @@ export function OptionCView({
                         <motion.p 
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.55, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ duration: 1.1, delay: 0.36, ease: [0.16, 1, 0.3, 1] }}
                           className="font-sans text-[18px] leading-[26px] font-normal text-slate-600 dark:text-[#9AA0A6] mt-3 line-clamp-3"
                         >
                           {cellMeta}
@@ -440,7 +440,7 @@ export function OptionCView({
                         <motion.div 
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.55, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ duration: 1.1, delay: 0.48, ease: [0.16, 1, 0.3, 1] }}
                           className="flex items-center gap-2 flex-wrap mt-4"
                         >
                           {activePersonName && (
@@ -481,7 +481,7 @@ export function OptionCView({
                       <motion.div 
                         initial={{ opacity: 0, y: 14, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ duration: 0.65, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 1.3, delay: 0.44, ease: [0.16, 1, 0.3, 1] }}
                         className="w-1/2 h-full flex flex-col justify-center gap-6 pl-4 md:pl-6 min-w-0 select-text"
                       >
                         {/* Sender Message Row */}
@@ -565,7 +565,7 @@ export function OptionCView({
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.55, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         className="w-full flex items-start justify-between gap-4 min-w-0 shrink-0 select-text"
                       >
                         <div className="flex-1 min-w-0 flex flex-col text-left">
@@ -583,7 +583,7 @@ export function OptionCView({
                       <motion.div 
                         initial={{ opacity: 0, y: 14, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ duration: 0.65, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 1.3, delay: 0.44, ease: [0.16, 1, 0.3, 1] }}
                         className="w-full flex-1 min-h-0 flex flex-col overflow-y-auto relative mt-4"
                       >
                         {/* Chips / Metadata Row */}
@@ -653,7 +653,7 @@ export function OptionCView({
                   <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 0.1 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
                     className="w-full flex items-start justify-between gap-4 min-w-0 shrink-0 select-text"
                   >
                     <div className="flex-1 min-w-0 flex flex-col text-left">
