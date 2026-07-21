@@ -18,6 +18,8 @@ import { getAvatarForPerson } from '../../utils/personAvatars';
 interface OptionCViewProps {
   todoItems: any[];
   initialIndex?: number;
+  isOpen?: boolean;
+  onToggleOpen?: (open: boolean, index?: number) => void;
   onClose: () => void;
   onSendMessage: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
   setActiveSidebar?: any;
@@ -42,6 +44,8 @@ function getAbbreviatedCellTitle(item: any, isSignedOff: boolean): string {
 export function OptionCView({
   todoItems = [],
   initialIndex = 0,
+  isOpen = true,
+  onToggleOpen,
   onClose,
   onSendMessage,
   setActiveSidebar,
@@ -56,16 +60,17 @@ export function OptionCView({
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [actionToast, setActionToast] = useState<{ text: 'Approved' | 'Declined' | 'Skipped'; key: number } | null>(null);
 
+  const isPlayMode = Boolean(isOpen);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    if (itemRefs.current[activeIndex]) {
+    if (isPlayMode && itemRefs.current[activeIndex]) {
       itemRefs.current[activeIndex]?.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
     }
-  }, [activeIndex]);
+  }, [activeIndex, isPlayMode]);
 
   const triggerActionToast = (text: 'Approved' | 'Declined' | 'Skipped') => {
     const key = Date.now();
@@ -373,11 +378,11 @@ export function OptionCView({
     <div className="w-full h-full min-h-[560px] flex flex-col bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
       {/* Reel layout list: Each cell is a persistent motion element that layout-animates from collapsed Home card to expanded Canvas view */}
       {/* Reel layout list: All cells rendered in a scrollable list overflowing under the control bar */}
-      <div className="flex-1 w-full min-h-0 overflow-y-auto custom-scrollbar flex flex-col gap-3 pb-24 relative">
+      <div className={`w-full flex-1 min-h-0 flex flex-col gap-3 relative ${isPlayMode ? 'overflow-y-auto custom-scrollbar pb-24' : ''}`}>
         <LayoutGroup id="option-c-cells-reel">
           <AnimatePresence mode="popLayout" initial={false}>
             {orderedTodoItems.map((item, idx) => {
-              const isFocused = idx === activeIndex;
+              const isFocused = isPlayMode && idx === activeIndex;
               const itemId = item.id || `cell-${idx}`;
               const isCurrentSignedOff = completedTaskIds.has(item.id);
               const cellTitle = isFocused 
@@ -405,7 +410,10 @@ export function OptionCView({
                   }}
                   exit={{ opacity: 0, y: -30 }}
                   onClick={() => {
-                    if (!isFocused) {
+                    if (!isPlayMode) {
+                      if (onToggleOpen) onToggleOpen(true, idx);
+                      setActiveIndex(idx);
+                    } else if (!isFocused) {
                       setActiveIndex(idx);
                     }
                   }}
@@ -426,7 +434,7 @@ export function OptionCView({
                     <div className="w-full flex flex-col text-left shrink-0 min-w-0 select-text">
                       <motion.h3 
                         layout="position"
-                        transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                         className="font-sans text-slate-900 dark:text-white tracking-normal text-[16px] leading-[22px] font-medium truncate"
                       >
                         {cellTitle}
@@ -434,7 +442,7 @@ export function OptionCView({
 
                       <motion.p 
                         layout="position"
-                        transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                         className="font-sans text-slate-600 dark:text-[#9AA0A6] text-[13px] leading-[18px] font-normal mt-0.5 truncate"
                       >
                         {cellMeta}
@@ -448,7 +456,7 @@ export function OptionCView({
                           <div className="w-full md:w-1/2 h-full flex flex-col items-start justify-center pr-0 md:pr-6 min-w-0 select-text">
                             <motion.h3 
                               layout="position"
-                              transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                               className="font-sans text-slate-900 dark:text-white tracking-normal text-[26px] md:text-[30px] leading-[32px] md:leading-[36px] font-normal"
                             >
                               {cellTitle}
@@ -456,7 +464,7 @@ export function OptionCView({
 
                             <motion.p 
                               layout="position"
-                              transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+                              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                               className="font-sans text-slate-600 dark:text-[#9AA0A6] text-[16px] md:text-[18px] leading-[24px] md:leading-[26px] font-normal mt-2 line-clamp-3"
                             >
                               {cellMeta}
@@ -687,143 +695,153 @@ export function OptionCView({
         )}
       </AnimatePresence>
 
-      {/* Control Bar: Our main chat input pill with the 4 action buttons animated out from its sides */}
-      <div className="w-full h-[80px] shrink-0 flex items-center justify-center gap-3 relative z-30 pt-2 pb-2">
-        {/* Animated Previous Button */}
-        <motion.button
-          initial={{ opacity: 0, x: 120, scale: 0.2 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          onClick={handlePrev}
-          disabled={activeIndex === 0}
-          className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
-          title="Previous task"
-        >
-          <ArrowLeft className="w-5 h-5 stroke-[2]" />
-        </motion.button>
-
-        {/* Animated Decline X Button */}
-        <motion.button
-          initial={{ opacity: 0, x: 60, scale: 0.2 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          onClick={handleReject}
-          className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
-          title="Decline"
-        >
-          <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
-        </motion.button>
-
-        {/* Central Chat Input Pill matching LandingInput layout */}
-        <motion.div 
-          layoutId="landing-input-main"
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-[560px] h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 shadow-lg relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all cursor-text"
-          onClick={() => {
-            const el = document.getElementById('optionc-steer-input');
-            if (el) el.focus();
-          }}
-        >
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); }}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0 transition cursor-pointer flex items-center justify-center p-1 rounded-full border-none outline-none"
-            title="Add attachment or context"
+      {/* Control Bar: Main chat input pill with action buttons springs in when in play mode */}
+      <AnimatePresence>
+        {isPlayMode && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full h-[80px] shrink-0 flex items-center justify-center gap-3 relative z-30 pt-2 pb-2"
           >
-            <Plus size={20} className="stroke-[2.5]" />
-          </button>
+            {/* Animated Previous Button */}
+            <motion.button
+              initial={{ opacity: 0, x: 120, scale: 0.2 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              onClick={handlePrev}
+              disabled={activeIndex === 0}
+              className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
+              title="Previous task"
+            >
+              <ArrowLeft className="w-5 h-5 stroke-[2]" />
+            </motion.button>
 
-          <input
-            id="optionc-steer-input"
-            type="text"
-            value={steerInput}
-            onFocus={() => setIsInputFocused(true)}
-            onBlur={() => setIsInputFocused(false)}
-            onChange={(e) => setSteerInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
+            {/* Animated Decline X Button */}
+            <motion.button
+              initial={{ opacity: 0, x: 60, scale: 0.2 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              onClick={handleReject}
+              className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
+              title="Decline"
+            >
+              <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
+            </motion.button>
+
+            {/* Central Chat Input Pill matching LandingInput layout */}
+            <motion.div 
+              layoutId="landing-input-main"
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-[560px] h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 shadow-lg relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all cursor-text"
+              onClick={() => {
+                const el = document.getElementById('optionc-steer-input');
+                if (el) el.focus();
+              }}
+            >
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); }}
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0 transition cursor-pointer flex items-center justify-center p-1 rounded-full border-none outline-none"
+                title="Add attachment or context"
+              >
+                <Plus size={20} className="stroke-[2.5]" />
+              </button>
+
+              <input
+                id="optionc-steer-input"
+                type="text"
+                value={steerInput}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+                onChange={(e) => setSteerInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (steerInput.trim()) {
+                      handleSteerSubmit(steerInput);
+                      setSteerInput('');
+                    } else {
+                      handleApprove();
+                    }
+                  }
+                }}
+                placeholder={getSteerPlaceholder()}
+                className="flex-1 bg-transparent text-slate-900 dark:text-white text-[15px] font-normal placeholder-slate-400 focus:outline-none truncate border-none ring-0 h-full"
+              />
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDockToSide();
+                  }}
+                  className="w-9 h-9 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-500 dark:text-neutral-400 flex items-center justify-center transition cursor-pointer border-none outline-none"
+                  title="Snap to side chat"
+                >
+                  <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (steerInput.trim()) {
+                      handleSteerSubmit(steerInput);
+                      setSteerInput('');
+                    } else {
+                      handleApprove();
+                    }
+                  }}
+                  disabled={!steerInput.trim()}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
+                    steerInput.trim()
+                      ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer shadow-md'
+                      : 'bg-black/10 dark:bg-white/10 text-slate-400 dark:text-neutral-500 cursor-not-allowed'
+                  }`}
+                  title={steerInput.trim() ? "Submit steer" : "Send"}
+                >
+                  <ArrowUp size={16} className="stroke-[2.5]" />
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Animated Approve Check Button */}
+            <motion.button
+              initial={{ opacity: 0, x: -60, scale: 0.2 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => {
                 if (steerInput.trim()) {
                   handleSteerSubmit(steerInput);
                   setSteerInput('');
                 } else {
                   handleApprove();
                 }
-              }
-            }}
-            placeholder={getSteerPlaceholder()}
-            className="flex-1 bg-transparent text-slate-900 dark:text-white text-[15px] font-normal placeholder-slate-400 focus:outline-none truncate border-none ring-0 h-full"
-          />
-
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDockToSide();
               }}
-              className="w-9 h-9 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-500 dark:text-neutral-400 flex items-center justify-center transition cursor-pointer border-none outline-none"
-              title="Snap to side chat"
+              className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
+              title={steerInput.trim() ? "Submit steer" : "Accept"}
             >
-              <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
-            </button>
+              <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
+            </motion.button>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (steerInput.trim()) {
-                  handleSteerSubmit(steerInput);
-                  setSteerInput('');
-                } else {
-                  handleApprove();
-                }
-              }}
-              disabled={!steerInput.trim()}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
-                steerInput.trim()
-                  ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer shadow-md'
-                  : 'bg-black/10 dark:bg-white/10 text-slate-400 dark:text-neutral-500 cursor-not-allowed'
-              }`}
-              title={steerInput.trim() ? "Submit steer" : "Send"}
+            {/* Animated Next Button */}
+            <motion.button
+              initial={{ opacity: 0, x: -120, scale: 0.2 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              onClick={handleNext}
+              disabled={activeIndex === orderedTodoItems.length - 1}
+              className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
+              title="Next task"
             >
-              <ArrowUp size={16} className="stroke-[2.5]" />
-            </button>
-          </div>
-        </motion.div>
-
-        {/* Animated Approve Check Button */}
-        <motion.button
-          initial={{ opacity: 0, x: -60, scale: 0.2 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          onClick={() => {
-            if (steerInput.trim()) {
-              handleSteerSubmit(steerInput);
-              setSteerInput('');
-            } else {
-              handleApprove();
-            }
-          }}
-          className="w-13 h-13 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-md"
-          title={steerInput.trim() ? "Submit steer" : "Accept"}
-        >
-          <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
-        </motion.button>
-
-        {/* Animated Next Button */}
-        <motion.button
-          initial={{ opacity: 0, x: -120, scale: 0.2 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          onClick={handleNext}
-          disabled={activeIndex === orderedTodoItems.length - 1}
-          className="w-12 h-12 rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] hover:bg-slate-50 dark:hover:bg-[#282A2D] active:scale-95 text-slate-800 dark:text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md"
-          title="Next task"
-        >
-          <ArrowRight className="w-5 h-5 stroke-[2]" />
-        </motion.button>
-      </div>
+              <ArrowRight className="w-5 h-5 stroke-[2]" />
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

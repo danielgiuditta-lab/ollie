@@ -727,94 +727,31 @@ export function SpaceDashboardExperimental({
           )}
         </AnimatePresence>
 
-        {isOptionCOpen ? (
-          <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden p-2 md:p-4">
-            <OptionCView
-              todoItems={todoItems || []}
-              onClose={onCloseOptionC || (() => setIsTheatreOpen(false))}
-              onSendMessage={onSendMessage || handleSendMessage || (() => {})}
-              setActiveSidebar={setActiveSidebar}
-              onUpdateTaskStatus={onUpdateTaskStatus}
-              userProfile={userProfile}
-              accessToken={accessToken}
-              driveFiles={driveFiles}
-            />
-          </div>
-        ) : (
-          <div className="max-w-4xl mx-auto px-12 pb-12 flex flex-col gap-8 flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-6 md:px-12 pb-12 flex flex-col gap-6 flex-1 min-h-0 w-full">
+          <OptionCView
+            todoItems={todoItems || []}
+            isOpen={isOptionCOpen}
+            initialIndex={0}
+            onToggleOpen={(open) => {
+              if (open) {
+                if (onOpenTheatre) onOpenTheatre();
+                setIsTheatreOpen(true);
+              } else {
+                setIsTheatreOpen(false);
+                if (onCloseOptionC) onCloseOptionC();
+              }
+            }}
+            onClose={onCloseOptionC || (() => setIsTheatreOpen(false))}
+            onSendMessage={onSendMessage || handleSendMessage || (() => {})}
+            setActiveSidebar={setActiveSidebar}
+            onUpdateTaskStatus={onUpdateTaskStatus}
+            userProfile={userProfile}
+            accessToken={accessToken}
+            driveFiles={driveFiles}
+          />
 
-          {/* Section 1: Needs your approval */}
-          {needsApprovalTasks.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1">
-                Needs your approval...
-              </h2>
-              <div className="w-full flex flex-col gap-[4px] py-1 bg-transparent">
-                {needsApprovalTasks.map((item) => (
-                  <InferredTaskCardExperimental
-                    key={item.id}
-                    item={item}
-                    sectionType="decision"
-                    onClick={() => {
-                      if (onProactiveTaskClick) {
-                        onProactiveTaskClick(item);
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Section 2: Continue working on */}
-          {needsInputTasks.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1">
-                Continue working on...
-              </h2>
-              <div className="w-full flex flex-col gap-[4px] py-1 bg-transparent">
-                {needsInputTasks.map((item) => (
-                  <InferredTaskCardExperimental
-                    key={item.id}
-                    item={item}
-                    sectionType="generative"
-                    onClick={() => {
-                      if (onProactiveTaskClick) {
-                        onProactiveTaskClick(item);
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Section 3: For your information */}
-          {fyiTasks.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1">
-                For your information...
-              </h2>
-              <div className="w-full flex flex-col gap-[4px] py-1 bg-transparent">
-                {fyiTasks.map((item) => (
-                  <InferredTaskCardExperimental
-                    key={item.id}
-                    item={item}
-                    sectionType="fyi"
-                    onClick={() => {
-                      if (onProactiveTaskClick) {
-                        onProactiveTaskClick(item);
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Section 3: Pinned Widgets / Cards */}
-          {pinnedFiles.length > 0 && (
-            <div className="flex flex-col gap-4">
+          {!isOptionCOpen && pinnedFiles.length > 0 && (
+            <div className="flex flex-col gap-4 mt-4">
               <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left font-sans">
                 Pinned
               </h2>
@@ -824,10 +761,10 @@ export function SpaceDashboardExperimental({
             </div>
           )}
         </div>
-      )}
       </div>
-    );
-  }
+    </LayoutGroup>
+  );
+}
 
   const totalCardsCount = pinnedFiles.length;
 
@@ -942,9 +879,9 @@ export function SpaceDashboardExperimental({
           }}
           userProfile={userProfile}
           accessToken={accessToken}
-          theme="dark"
-        </div>
-      </LayoutGroup>
-    );
-  }
+        />
+      )}
+    </div>
+  );
+}
 
