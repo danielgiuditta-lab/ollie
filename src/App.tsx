@@ -21,7 +21,6 @@ import { AISummaryView } from './components/Canvas/AISummaryView';
 import { InferredTaskDiffView } from './components/Canvas/InferredTaskDiffView';
 import { TheatreView } from './components/Canvas/TheatreView';
 import { OptionCView } from './components/Canvas/OptionCView';
-import { OptionDView } from './components/Canvas/OptionDView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon } from './components/Shared/FileIcon';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
@@ -6149,6 +6148,7 @@ export default function App() {
         onToggleExpand={setIsLeftNavExpanded}
         activeView={viewState}
         onViewChange={(view) => {
+          setIsTheatreOpen(false);
           setSelectedFile(null);
           if (view === 'home') {
             setHomeJourney('search');
@@ -6181,9 +6181,11 @@ export default function App() {
         }}
         activeChatId={activeChatId}
         onSelectChat={async (space, chat) => {
+          setIsTheatreOpen(false);
           await openChat(chat.id, space.id);
         }}
         onSelectProject={async (proj) => {
+          setIsTheatreOpen(false);
           if (typeof proj === 'object' && proj !== null) {
             if (proj.type === 'ai_summary') {
               setActiveAiSummaryTaskId(proj.id);
@@ -6210,6 +6212,7 @@ export default function App() {
         }}
         activeAiSummaryTaskId={activeAiSummaryTaskId}
         onSelectTask={async (task) => {
+          setIsTheatreOpen(false);
           if (typeof task === 'object' && task !== null) {
             if (task.type === 'ai_summary') {
               setActiveAiSummaryTaskId(task.id);
@@ -6375,6 +6378,24 @@ export default function App() {
           onCloseOptionC={() => setIsTheatreOpen(false)}
         />
         <div className={`flex-1 flex overflow-hidden relative ${isSourcesPanelOpen ? 'gap-0' : 'gap-4'}`}>
+          {isTheatreOpen && playOptionMode === 'D' && (
+            <div className="absolute inset-0 z-40">
+              <TheatreView
+                todoItems={todoItems}
+                onClose={() => setIsTheatreOpen(false)}
+                onSendMessage={handleSendMessage}
+                setActiveSidebar={setActiveSidebar}
+                onUpdateTaskStatus={(taskId, status) => {
+                  setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+                }}
+                userProfile={userProfile}
+                accessToken={accessToken}
+                theme="light"
+                driveFiles={driveFiles}
+                initialTaskListOpen={true}
+              />
+            </div>
+          )}
           
           {/* Main Viewport Content first (on the LEFT) */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative gap-4">
@@ -6812,23 +6833,6 @@ export default function App() {
             theme={appTheme}
             driveFiles={driveFiles}
           />
-      )}
-
-      {/* UI Mode D Overlay (Light Mode left task column & classic canvas with bottom controls) */}
-      {isTheatreOpen && playOptionMode === 'D' && (
-        <OptionDView
-          todoItems={todoItems}
-          onClose={() => setIsTheatreOpen(false)}
-          onSendMessage={handleSendMessage}
-          setActiveSidebar={setActiveSidebar}
-          onUpdateTaskStatus={(taskId, status) => {
-            setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
-          }}
-          userProfile={userProfile}
-          accessToken={accessToken}
-          theme={appTheme}
-          driveFiles={driveFiles}
-        />
       )}
 
     </div>

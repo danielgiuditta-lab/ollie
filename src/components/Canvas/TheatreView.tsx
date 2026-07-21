@@ -23,6 +23,7 @@ interface TheatreTaskCellProps {
   onClick: () => void;
   onOpenSource: (urlOrName?: string) => void;
   onToggleComplete?: (taskId: string) => void;
+  theme?: 'light' | 'dark';
 }
 
 function getAbbreviatedCellTitle(item: any, isSignedOff: boolean): string {
@@ -37,7 +38,7 @@ function getAbbreviatedCellTitle(item: any, isSignedOff: boolean): string {
   return raw.trim();
 }
 
-function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource, onToggleComplete }: TheatreTaskCellProps) {
+function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource, onToggleComplete, theme = 'dark' }: TheatreTaskCellProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
 
   const titleText = getAbbreviatedCellTitle(item, isSignedOff);
@@ -50,42 +51,40 @@ function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource,
   const resolvedPersonName = item.personName || 'Maya Lin';
   const resolvedAvatar = item.personAvatar || getAvatarForPerson(resolvedPersonName);
 
-  const avatarElement = (
-    <img 
-      src={resolvedAvatar} 
-      alt={resolvedPersonName} 
-      className="w-4 h-4 rounded-full object-cover shrink-0"
-      onError={(e) => { (e.target as HTMLImageElement).src = '/people/sarah_lin.jpg'; }}
-    />
-  );
+  const isLight = theme === 'light';
 
   return (
     <div
       onClick={onClick}
-      className={`p-4 rounded-[2px] first:rounded-t-[16px] last:rounded-b-[16px] bg-[#1E1F22] hover:bg-[#232529] cursor-pointer transition-all duration-150 select-none flex items-start justify-between gap-3 min-w-0 ${
-        isSelected ? 'bg-[#222428]' : ''
+      className={`p-4 rounded-[2px] first:rounded-t-[16px] last:rounded-b-[16px] cursor-pointer transition-all duration-150 select-none flex items-start justify-between gap-3 min-w-0 ${
+        isLight
+          ? isSelected ? 'bg-blue-50 border border-blue-200' : 'bg-slate-50 hover:bg-slate-100 border border-slate-200/60'
+          : isSelected ? 'bg-[#222428]' : 'bg-[#1E1F22] hover:bg-[#232529]'
       }`}
     >
       <div className={`flex-1 min-w-0 flex flex-col gap-1 ${isSignedOff && !isSelected ? 'opacity-30' : 'opacity-100'}`}>
-        {/* Cell Title: Google Sans Regular 14/20 in #E3E3E3 */}
-        <h4 className="text-[14px] leading-[20px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3] truncate">
+        <h4 className={`text-[14px] leading-[20px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] truncate ${
+          isLight ? (isSelected ? 'text-blue-900 font-medium' : 'text-slate-800') : 'text-[#E3E3E3]'
+        }`}>
           {titleText}
         </h4>
 
-        {/* Cell Subtitle: Google Sans Regular 12/16 in #E3E3E3 0.7 opacity */}
-        <p className="text-[12px] leading-[16px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] text-[#E3E3E3]/70 truncate">
+        <p className={`text-[12px] leading-[16px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] truncate ${
+          isLight ? 'text-slate-500' : 'text-[#E3E3E3]/70'
+        }`}>
           {descText}
         </p>
       </div>
 
-      {/* Signed Off Checkmark Button (no border stroke, click unmarks as completed) */}
       {isSignedOff && (
         <div 
           onClick={(e) => {
             e.stopPropagation();
             if (onToggleComplete) onToggleComplete(item.id);
           }}
-          className="w-8 h-8 rounded-full bg-[#080809] hover:bg-[#18191C] text-white flex items-center justify-center shrink-0 self-center transition-colors cursor-pointer"
+          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 self-center transition-colors cursor-pointer ${
+            isLight ? 'bg-slate-800 hover:bg-slate-900 text-white' : 'bg-[#080809] hover:bg-[#18191C] text-white'
+          }`}
           title="Unmark as completed"
         >
           <Check size={16} className="text-white stroke-[2.5]" />
@@ -106,6 +105,7 @@ interface TheatreViewProps {
   accessToken?: string | null;
   theme?: 'light' | 'dark';
   driveFiles?: any[];
+  initialTaskListOpen?: boolean;
 }
 
 export function TheatreView({
@@ -118,13 +118,14 @@ export function TheatreView({
   userProfile,
   accessToken,
   theme = 'dark',
-  driveFiles = []
+  driveFiles = [],
+  initialTaskListOpen
 }: TheatreViewProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
   const [steerInput, setSteerInput] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [isTaskListOpen, setIsTaskListOpen] = useState(false);
+  const [isTaskListOpen, setIsTaskListOpen] = useState(initialTaskListOpen !== undefined ? initialTaskListOpen : false);
   const [slideDirection, setSlideDirection] = useState(1);
   const [actionToast, setActionToast] = useState<{ text: 'Approved' | 'Declined' | 'Skipped'; key: number } | null>(null);
 
@@ -567,15 +568,21 @@ export function TheatreView({
 
   const hasAnyDone = orderedTodoItems.some(t => completedTaskIds.has(t.id));
 
+  const isLight = theme === 'light';
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl text-white flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 pb-0 md:pb-0 overflow-hidden">
+    <div className={`fixed inset-0 z-50 flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 pb-0 md:pb-0 overflow-hidden ${
+      isLight ? 'bg-[#F8F9FA] text-slate-900' : 'bg-black/85 backdrop-blur-xl text-white'
+    }`}>
       {/* Top Header Bar matching design specs */}
       <div className="w-full shrink-0 flex items-center justify-between pb-3 px-1">
         {/* Left Title with Toggle Button & Breadcrumbs */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsTaskListOpen(!isTaskListOpen)}
-            className="p-1 text-neutral-300 hover:text-white transition-colors cursor-pointer flex items-center justify-center rounded-lg hover:bg-white/10 shrink-0"
+            className={`p-1 transition-colors cursor-pointer flex items-center justify-center rounded-lg shrink-0 ${
+              isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60' : 'text-neutral-300 hover:text-white hover:bg-white/10'
+            }`}
             title={isTaskListOpen ? "Close task list" : "Open task list"}
           >
             <span 
@@ -585,32 +592,36 @@ export function TheatreView({
               {isTaskListOpen ? 'left_panel_close' : 'left_panel_open'}
             </span>
           </button>
-          <div className="flex items-center gap-2 text-[17px] font-normal text-neutral-400">
+          <div className={`flex items-center gap-2 text-[17px] font-normal ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
             <span 
               onClick={onClose}
-              className="cursor-pointer hover:text-white transition-colors font-normal text-neutral-300"
+              className={`cursor-pointer transition-colors font-normal ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-neutral-300 hover:text-white'}`}
             >
               Home
             </span>
-            <ChevronRight size={18} className="text-neutral-500 shrink-0" />
-            <span className="text-white font-medium">
-              Taskviewer <span className="text-neutral-400 font-normal">({orderedTodoItems.length > 0 ? activeIndex + 1 : 0} of {orderedTodoItems.length})</span>
+            <ChevronRight size={18} className={isLight ? 'text-slate-400 shrink-0' : 'text-neutral-500 shrink-0'} />
+            <span className={`font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              Taskviewer <span className={`font-normal ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>({orderedTodoItems.length > 0 ? activeIndex + 1 : 0} of {orderedTodoItems.length})</span>
             </span>
           </div>
         </div>
 
-        {/* Right Action Buttons (Open in Native Tool + Close, black background matching canvas/cells) */}
+        {/* Right Action Buttons */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleOpenSourceChip(activeTask?.links?.[0]?.url || activeTask?.sourceName || activeTask?.title)}
-            className="h-9 px-4 rounded-full bg-black hover:bg-[#1E1F22] text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer border border-white/10"
+            className={`h-9 px-4 rounded-full text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer border ${
+              isLight ? 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-3xs' : 'bg-black hover:bg-[#1E1F22] text-white border-white/10'
+            }`}
           >
             {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}
             <span>{getNativeToolLabel()}</span>
           </button>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-black hover:bg-[#1E1F22] text-white flex items-center justify-center transition-all cursor-pointer border border-white/10"
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer border ${
+              isLight ? 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-3xs' : 'bg-black hover:bg-[#1E1F22] text-white border-white/10'
+            }`}
             title="Close Taskview"
           >
             <X size={16} />
@@ -620,7 +631,7 @@ export function TheatreView({
 
       {/* Main Split Container */}
       <div className="flex-1 w-full min-h-0 flex gap-6 overflow-hidden">
-        {/* Left Panel: Home Tasks Directory Card with smooth opening/closing animation */}
+        {/* Left Panel: Home Tasks Directory Card */}
         <AnimatePresence initial={false}>
           {isTaskListOpen && (
             <motion.div 
@@ -631,11 +642,13 @@ export function TheatreView({
               transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
               className="shrink-0 h-full overflow-hidden"
             >
-              <div className="w-80 md:w-[380px] h-full bg-[#131314]/90 backdrop-blur-md rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] shadow-2xl border border-white/5">
+              <div className={`w-80 md:w-[380px] h-full rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] shadow-xl border ${
+                isLight ? 'bg-white/95 border-slate-200/90 text-slate-900' : 'bg-[#131314]/90 border-white/5 text-white backdrop-blur-md'
+              }`}>
                 {/* Needs your approval */}
                 {approvalTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className="text-[20px] leading-[28px] font-normal text-[#E3E3E3] pt-2 mb-4 px-1">
+                    <h3 className={`text-[20px] leading-[28px] font-normal pt-2 mb-4 px-1 ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       Needs your approval
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
@@ -652,6 +665,7 @@ export function TheatreView({
                             onClick={() => handleSelectIndex(itemIndex)}
                             onOpenSource={handleOpenSourceChip}
                             onToggleComplete={handleToggleComplete}
+                            theme={theme}
                           />
                         );
                       })}
@@ -662,7 +676,7 @@ export function TheatreView({
                 {/* Continue working on... */}
                 {continueWorkingTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${approvalTasks.length > 0 ? 'pt-6' : 'pt-2'}`}>
+                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-1 ${approvalTasks.length > 0 ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       Continue working on...
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
@@ -679,6 +693,7 @@ export function TheatreView({
                             onClick={() => handleSelectIndex(itemIndex)}
                             onOpenSource={handleOpenSourceChip}
                             onToggleComplete={handleToggleComplete}
+                            theme={theme}
                           />
                         );
                       })}
@@ -689,7 +704,7 @@ export function TheatreView({
                 {/* FYI Tasks ("For your FYI") */}
                 {fyiTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal text-[#E3E3E3] mb-4 px-1 ${(approvalTasks.length > 0 || continueWorkingTasks.length > 0) ? 'pt-6' : 'pt-2'}`}>
+                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-1 ${(approvalTasks.length > 0 || continueWorkingTasks.length > 0) ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       For your FYI
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
@@ -706,6 +721,7 @@ export function TheatreView({
                             onClick={() => handleSelectIndex(itemIndex)}
                             onOpenSource={handleOpenSourceChip}
                             onToggleComplete={handleToggleComplete}
+                            theme={theme}
                           />
                         );
                       })}
@@ -717,9 +733,8 @@ export function TheatreView({
           )}
         </AnimatePresence>
 
-        {/* Right Area: Artifact View + Centered Controls Dock directly under it */}
+        {/* Right Area: Artifact View */}
         <div className="flex-1 h-full min-w-0 flex flex-col gap-0 overflow-hidden">
-          {/* Selected Task Target Artifact View Container (overflow-hidden clips sliding cards) */}
           <div className="flex-1 min-h-0 relative overflow-hidden">
             <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
               <motion.div
@@ -734,7 +749,9 @@ export function TheatreView({
                   opacity: { duration: 0.75 },
                   scale: { duration: 0.75 }
                 }}
-                className="w-full h-full rounded-[24px] overflow-y-auto bg-[#131314]/90 backdrop-blur-md shadow-2xl flex flex-col p-8 select-text border border-white/5 absolute inset-0"
+                className={`w-full h-full rounded-[24px] overflow-y-auto shadow-2xl flex flex-col p-8 select-text border absolute inset-0 ${
+                  isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#131314]/90 border-white/5 text-white backdrop-blur-md'
+                }`}
               >
                 {isChatReplyTask ? (
                   <div className="w-full h-full flex flex-row items-center justify-between gap-6 md:gap-10 p-6 md:p-10 select-text font-['Google_Sans','Google_Sans_Text',sans-serif]">
@@ -989,30 +1006,36 @@ export function TheatreView({
             </AnimatePresence>
           </div>
 
-          {/* Bottom Controls Dock (Fixed h-[88px] height so canvas size NEVER changes; padding goes from 16px when collapsed to 8px when expanded) */}
+          {/* Bottom Controls Dock */}
           <div className="w-full h-[88px] shrink-0 flex items-center justify-center gap-2 relative z-20">
             {/* Previous Task Arrow Button */}
             <button
               onClick={handlePrev}
               disabled={activeIndex === 0}
-              className="w-12 h-12 rounded-full bg-[#121316] hover:bg-[#1C1D21] active:scale-95 text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-lg"
+              className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-lg ${
+                isLight ? 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
+              }`}
               title="Previous task"
             >
-              <ArrowLeft className="w-5 h-5 text-white stroke-[2]" />
+              <ArrowLeft className={`w-5 h-5 stroke-[2] ${isLight ? 'text-slate-800' : 'text-white'}`} />
             </button>
 
             {/* Reject / Decline Button */}
             <button
               onClick={handleReject}
-              className="w-14 h-14 rounded-full bg-[#121316] hover:bg-[#1C1D21] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-lg"
+              className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-lg ${
+                isLight ? 'bg-white hover:bg-slate-100 border border-slate-200 text-rose-600' : 'bg-[#121316] hover:bg-[#1C1D21]'
+              }`}
               title="Decline"
             >
               <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
             </button>
 
-            {/* Center Steer Input Pill (Expands to h-[72px] matching non-theatre mode input) */}
+            {/* Center Steer Input Pill */}
             <div 
-              className={`rounded-full bg-[#121316] border-none flex items-center gap-3 transition-all duration-300 ease-in-out backdrop-blur-md shadow-lg ${
+              className={`rounded-full flex items-center gap-3 transition-all duration-300 ease-in-out shadow-lg ${
+                isLight ? 'bg-white border border-slate-200 text-slate-900' : 'bg-[#121316] border-none text-white backdrop-blur-md'
+              } ${
                 (isInputFocused || steerInput.trim().length > 0)
                   ? 'h-[72px] w-[340px] md:w-[620px] px-4' 
                   : 'h-14 w-[160px] px-4 cursor-pointer'
@@ -1022,14 +1045,16 @@ export function TheatreView({
                 if (el) el.focus();
               }}
             >
-              {/* Left Plus Attachment Button (visible when focused/typing) */}
+              {/* Left Plus Attachment Button */}
               {(isInputFocused || steerInput.trim().length > 0) && (
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
-                  className="w-11 h-11 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none"
+                  className={`w-11 h-11 rounded-full flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none ${
+                    isLight ? 'hover:bg-slate-100 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
+                  }`}
                   title="Add attachment or context"
                 >
                   <Plus size={20} className="stroke-[2.5]" />
@@ -1056,26 +1081,28 @@ export function TheatreView({
                   }
                 }}
                 placeholder={(isInputFocused || steerInput.trim().length > 0) ? getSteerPlaceholder() : "Do differently..."}
-                className="w-full bg-transparent text-white text-[15px] font-normal placeholder-neutral-400 focus:outline-none truncate px-1 border-none ring-0"
+                className={`w-full bg-transparent text-[15px] font-normal focus:outline-none truncate px-1 border-none ring-0 ${
+                  isLight ? 'text-slate-900 placeholder-slate-400' : 'text-white placeholder-neutral-400'
+                }`}
               />
 
-              {/* Right Action Buttons: Snap to side chat & Send button */}
+              {/* Right Action Buttons */}
               {(isInputFocused || steerInput.trim().length > 0) && (
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* Snap to Side Chat Button */}
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDockToSide();
                     }}
-                    className="w-11 h-11 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition cursor-pointer border-none outline-none"
+                    className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
+                      isLight ? 'hover:bg-slate-100 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
+                    }`}
                     title="Snap to side chat"
                   >
                     <span className="material-symbols-rounded text-[22px] select-none">dock_to_right</span>
                   </button>
 
-                  {/* Send Button */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -1091,7 +1118,7 @@ export function TheatreView({
                     className={`w-11 h-11 rounded-full flex items-center justify-center transition border-none outline-none ${
                       steerInput.trim()
                         ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer shadow-md'
-                        : 'bg-white/10 text-neutral-500 cursor-not-allowed'
+                        : isLight ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white/10 text-neutral-500 cursor-not-allowed'
                     }`}
                     title={steerInput.trim() ? "Submit steer" : "Send"}
                   >
@@ -1111,7 +1138,9 @@ export function TheatreView({
                   handleApprove();
                 }
               }}
-              className="w-14 h-14 rounded-full bg-[#121316] hover:bg-[#1C1D21] active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-lg"
+              className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-lg ${
+                isLight ? 'bg-white hover:bg-slate-100 border border-slate-200' : 'bg-[#121316] hover:bg-[#1C1D21]'
+              }`}
               title={steerInput.trim() ? "Submit steer" : "Accept"}
             >
               <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
@@ -1121,10 +1150,12 @@ export function TheatreView({
             <button
               onClick={handleNext}
               disabled={activeIndex === todoItems.length - 1}
-              className="w-12 h-12 rounded-full bg-[#121316] hover:bg-[#1C1D21] active:scale-95 text-white flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-lg"
+              className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-lg ${
+                isLight ? 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
+              }`}
               title="Next task"
             >
-              <ArrowRight className="w-5 h-5 text-white stroke-[2]" />
+              <ArrowRight className={`w-5 h-5 stroke-[2] ${isLight ? 'text-slate-800' : 'text-white'}`} />
             </button>
           </div>
         </div>
