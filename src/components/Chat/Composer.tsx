@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, ArrowUp, ChevronDown, X } from 'lucide-react';
+import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
 
 import docsIcon from '../../assets/docs.png';
 import sheetsIcon from '../../assets/sheets.png';
@@ -174,7 +175,7 @@ export function Composer({
               {isDrawerOpen ? (
                 <X size={20} className="stroke-[2.5]" />
               ) : (
-                <Plus size={20} className="stroke-[2.5]" />
+                <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
               )}
             </button>
 

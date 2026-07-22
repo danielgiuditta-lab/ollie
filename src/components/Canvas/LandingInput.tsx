@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Plus, ArrowUp, X, Sparkles, FileText, User } from 'lucide-react';
+import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
 import { AIModeButton } from '../Shared/AIModeButton';
 import { RainbowRimOverlay } from '../Shared/RainbowRimOverlay';
 import { TypeAhead } from './TypeAhead';
@@ -221,7 +222,7 @@ export function LandingInput({
               {isPlusOpen ? (
                 <X id="landing-input-plus" size={20} className="stroke-[2.5]" />
               ) : (
-                <Plus id="landing-input-plus" size={20} className="text-gray-400 stroke-[2.5]" />
+                <img id="landing-input-plus" src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
               )}
             </button>
           )}

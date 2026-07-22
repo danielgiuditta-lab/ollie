@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BotMessage } from './BotMessage';
 import { UserMessage } from './UserMessage';
 import { Composer } from './Composer';
+import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
 import { HeroTitle } from '../Shared/HeroTitle';
 import { NullTitle } from '../Shared/NullTitle';
 import { IconButton } from '../Shared/IconButton';
@@ -239,7 +240,12 @@ export function ChatSidebar({
       >
         {/* Header Panel */}
         <div className="flex items-center justify-between px-6 w-full h-[64px] shrink-0 border-b border-transparent">
-          <h2 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{getTitle()}</h2>
+          <div className="flex items-center gap-2">
+            {!isBottom && (
+              <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain shrink-0" />
+            )}
+            <h2 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{getTitle()}</h2>
+          </div>
           <div className="flex items-center gap-1.5">
             {chatModel === 'B' && onNewChat && variant === 'gemini' && (
               <IconButton 

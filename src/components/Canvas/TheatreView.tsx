@@ -12,6 +12,7 @@ import {
   Plus,
   ArrowUp
 } from 'lucide-react';
+import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { Composer } from '../Chat/Composer';
@@ -1197,7 +1198,7 @@ export function TheatreView({
                   }`}
                   title="Add attachment or context"
                 >
-                  <Plus size={20} className="stroke-[2.5]" />
+                  <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
                 </button>
               )}
 

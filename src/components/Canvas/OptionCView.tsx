@@ -10,6 +10,7 @@ import {
   Plus,
   ArrowUp
 } from 'lucide-react';
+import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
 import ReactMarkdown from 'react-markdown';
 import { BotMessage } from '../Chat/BotMessage';
 import { NativeViewer } from './NativeViewer';
@@ -936,7 +937,7 @@ export function OptionCView({
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0 transition cursor-pointer flex items-center justify-center p-1 rounded-full border-none outline-none"
                 title="Add attachment or context"
               >
-                <Plus size={20} className="stroke-[2.5]" />
+                <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
               </button>
 
               <input
