@@ -6333,11 +6333,13 @@ export default function App() {
             animate={{ width: 380, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="shrink-0 h-full overflow-hidden z-20"
+            className="shrink-0 h-full overflow-hidden z-10"
           >
-            <div className="w-80 md:w-[380px] h-full flex flex-col select-text font-['Google_Sans','Google_Sans_Text',sans-serif] bg-white text-slate-900 border-r border-slate-200/80 dark:border-neutral-800 overflow-hidden">
+            <div className={`w-80 md:w-[380px] h-full flex flex-col select-text font-['Google_Sans','Google_Sans_Text',sans-serif] bg-white text-slate-900 ${
+              isLeftNavExpanded ? 'border-r-0' : 'border-r border-slate-200/80 dark:border-neutral-800'
+            } overflow-hidden`}>
               {/* Header matching CanvasHeader height & font baseline */}
-              <div className="h-[64px] shrink-0 flex items-center justify-between px-6 border-b border-slate-100 dark:border-neutral-800">
+              <div className="h-[64px] shrink-0 flex items-center justify-between px-6 border-b-0">
                 <span className="text-slate-800 dark:text-white text-lg font-normal truncate">
                   {optionEApprovalTasks.length > 0 ? "Needs your approval" : (optionEContinueTasks.length > 0 ? "Continue working on..." : "For your FYI")}
                 </span>
@@ -6498,7 +6500,7 @@ export default function App() {
       <div className={`flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-white dark:bg-[#1E1F22] border-t-0 border-r-0 border-b-0 ${
         (viewState !== 'ai_summary' && chatDockPosition === 'side') ? 'border-l' : 'border-l-0'
       } border-[#E9EEF6] dark:border-[#2B2D31] rounded-none p-0 z-20 transition-shadow duration-300 ${
-        isLeftNavExpanded ? 'shadow-card' : 'shadow-none'
+        (isLeftNavExpanded || (isTheatreOpen && playOptionMode === 'A' && isOptionATaskListOpen)) ? 'shadow-card' : 'shadow-none'
       }`}>
         <CanvasHeader 
           projectName={projectName}
