@@ -105,14 +105,17 @@ export function SourceChip({ href, children, onClick, sources = [] }: SourceChip
   const personName = matched?.personName || matched?.author || (matched?.type === 'person' ? matched?.name : null);
   const iconSrc = personName ? getAvatarForPerson(personName) : getChipIcon(matched?.name || textStr, matched?.mimeType);
 
+  // Strip file extension (.gslides, .gdoc, .gsheet, .gform, etc.)
+  const cleanLabel = textStr.replace(/\.(gslides|gdoc|gsheet|gform|csv|pdf|html|doc|docx|ppt|pptx)$/i, '').trim();
+
   return (
     <a
       href={href}
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 bg-[#F0F4F9] hover:bg-[#D3E3FD] dark:bg-[#2B2D31] dark:hover:bg-[#3E4042] text-slate-700 dark:text-[#E3E3E3] text-xs px-2.5 py-1 rounded-full font-medium transition cursor-pointer border border-[#E9EEF6] dark:border-neutral-700 mx-1 select-none decoration-transparent shrink-0"
+      className="inline-flex items-center gap-2 bg-white hover:bg-slate-50/90 dark:bg-[#1E1F22] dark:hover:bg-[#2B2D31] text-slate-800 dark:text-[#E3E3E3] text-xs px-3 py-1.5 rounded-full font-medium transition cursor-pointer border-none shadow-xs ml-2.5 mr-1 my-0.5 select-none decoration-transparent shrink-0 max-w-full"
     >
       <img src={iconSrc} alt="" className={`w-3.5 h-3.5 ${personName ? 'rounded-full object-cover' : 'object-contain'} shrink-0`} />
-      <span>{textStr || children}</span>
+      <span className="max-w-[200px] sm:max-w-[240px] truncate">{cleanLabel || children}</span>
     </a>
   );
 }
