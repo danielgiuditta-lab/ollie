@@ -106,6 +106,7 @@ interface TheatreViewProps {
   theme?: 'light' | 'dark';
   driveFiles?: any[];
   initialTaskListOpen?: boolean;
+  embedded?: boolean;
 }
 
 export function TheatreView({
@@ -119,7 +120,8 @@ export function TheatreView({
   accessToken,
   theme = 'dark',
   driveFiles = [],
-  initialTaskListOpen
+  initialTaskListOpen,
+  embedded = false
 }: TheatreViewProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
@@ -571,7 +573,7 @@ export function TheatreView({
   const isLight = theme === 'light';
 
   return (
-    <div className={`fixed inset-0 z-50 flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 pb-0 md:pb-0 overflow-hidden ${
+    <div className={`${embedded ? 'w-full h-full relative' : 'fixed inset-0 z-50'} flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 pb-0 md:pb-0 overflow-hidden ${
       isLight ? 'bg-[#F8F9FA] text-slate-900' : 'bg-black/85 backdrop-blur-xl text-white'
     }`}>
       {/* Top Header Bar matching design specs */}
