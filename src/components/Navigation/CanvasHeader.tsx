@@ -180,6 +180,40 @@ export function CanvasHeader({
   }
 
   const renderBreadcrumbs = () => {
+    if (activeProactiveTask) {
+      let artifactName = '';
+      if (activeProactiveTask.shortTitle) {
+        artifactName = activeProactiveTask.shortTitle;
+      } else {
+        const isDone = activeProactiveTask.status === 'done' || activeProactiveTask.status === 'approved';
+        let rawTaskTitle = isDone ? (activeProactiveTask.titleDone || activeProactiveTask.title) : (activeProactiveTask.title || activeProactiveTask.description || 'Task');
+        const words = rawTaskTitle.trim().split(/\s+/).filter(Boolean);
+        artifactName = words.length <= 3 ? words.join(' ') : words.slice(0, 3).join(' ') + '...';
+      }
+      if (artifactName.length > 28) {
+        artifactName = artifactName.substring(0, 26).trim() + '...';
+      }
+      const parentSpaceObj = (projects || []).find((p: any) => p && (p.id === activeSpaceId || p.activeSpaceId === activeSpaceId)) ||
+                             (recentTasks || []).find((t: any) => t && (t.id === activeSpaceId || (t.type === 'space' && t.activeSpaceId === activeSpaceId)));
+      const rawSpaceName = isHomeSpace ? 'Home Tasks' : (parentSpaceObj?.name || parentSpaceObj?.chatName || projectName);
+      const rootDisplayName = isHomeSpace ? 'Home Tasks' : (rawSpaceName === 'New Space' ? 'New Space' : cleanWorkspaceName(rawSpaceName));
+
+      return (
+        <div className="flex items-center text-slate-700 dark:text-slate-200 text-lg font-medium font-sans">
+          <span 
+            onClick={onHomeClick}
+            className="cursor-pointer hover:text-slate-900 dark:hover:text-white transition font-medium"
+          >
+            {rootDisplayName}
+          </span>
+          <ChevronRight size={18} className="mx-2 text-slate-400 dark:text-slate-500 shrink-0" />
+          <div className="flex items-center gap-1.5 text-slate-800 dark:text-white font-medium group/title">
+            <span>{artifactName}</span>
+          </div>
+        </div>
+      );
+    }
+
     if (chatModel === 'B' && !selectedFile && viewState !== 'ai_summary' && !activeProactiveTask) {
       return null;
     }

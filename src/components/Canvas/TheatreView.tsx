@@ -63,13 +63,13 @@ export function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpen
       }`}
     >
       <div className={`flex-1 min-w-0 flex flex-col gap-1 ${isSignedOff && !isSelected ? 'opacity-30' : 'opacity-100'}`}>
-        <h4 className={`text-[14px] leading-[20px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] truncate ${
+        <h4 className={`text-[16px] leading-[22px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] truncate ${
           isLight ? (isSelected ? 'text-blue-900 font-medium' : 'text-slate-800') : 'text-[#E3E3E3]'
         }`}>
           {titleText}
         </h4>
 
-        <p className={`text-[12px] leading-[16px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] truncate ${
+        <p className={`text-[14px] leading-[20px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] truncate ${
           isLight ? 'text-slate-500' : 'text-[#E3E3E3]/70'
         }`}>
           {descText}
@@ -83,11 +83,11 @@ export function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpen
             if (onToggleComplete) onToggleComplete(item.id);
           }}
           className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 self-center transition-colors cursor-pointer ${
-            isLight ? 'bg-slate-800 hover:bg-slate-900 text-white' : 'bg-[#080809] hover:bg-[#18191C] text-white'
+            isLight ? 'bg-slate-200 hover:bg-slate-300 text-slate-700' : 'bg-[#28292D] hover:bg-[#33353B] text-slate-300'
           }`}
           title="Unmark as completed"
         >
-          <Check size={16} className="text-white stroke-[2.5]" />
+          <Check size={16} className={`stroke-[2.5] ${isLight ? 'text-slate-700' : 'text-slate-300'}`} />
         </div>
       )}
     </div>
@@ -682,7 +682,7 @@ export function TheatreView({
                 {/* Needs your approval */}
                 {approvalTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal pt-2 mb-4 px-4 text-left ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
+                    <h3 className={`text-lg font-normal pt-2 mb-3 px-4 text-left ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       Needs your approval
                     </h3>
                     <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
@@ -710,7 +710,7 @@ export function TheatreView({
                 {/* Continue working on... */}
                 {continueWorkingTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 text-left ${approvalTasks.length > 0 ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
+                    <h3 className={`text-lg font-normal mb-3 px-4 text-left ${approvalTasks.length > 0 ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       Continue working on...
                     </h3>
                     <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
@@ -738,7 +738,7 @@ export function TheatreView({
                 {/* FYI Tasks ("For your FYI") */}
                 {fyiTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 text-left ${(approvalTasks.length > 0 || continueWorkingTasks.length > 0) ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
+                    <h3 className={`text-lg font-normal mb-3 px-4 text-left ${(approvalTasks.length > 0 || continueWorkingTasks.length > 0) ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       For your FYI
                     </h3>
                     <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">

@@ -6328,7 +6328,7 @@ export default function App() {
         <div className="w-80 md:w-[380px] shrink-0 h-full flex flex-col select-text font-['Google_Sans','Google_Sans_Text',sans-serif] bg-white text-slate-900 border-r border-slate-200/80 dark:border-neutral-800 z-20 overflow-hidden">
           {/* Header matching CanvasHeader height & font baseline */}
           <div className="h-[64px] shrink-0 flex items-center px-6">
-            <span className="text-slate-800 dark:text-white text-lg font-medium">
+            <span className="text-slate-800 dark:text-white text-lg font-normal">
               {optionEApprovalTasks.length > 0 ? "Needs your approval" : (optionEContinueTasks.length > 0 ? "Continue working on..." : "For your FYI")}
             </span>
           </div>
@@ -6362,7 +6362,7 @@ export default function App() {
             {optionEContinueTasks.length > 0 && (
               <div className="flex flex-col">
                 {optionEApprovalTasks.length > 0 && (
-                  <h4 className="text-[14px] leading-[20px] font-medium text-slate-500 pt-4 mb-2 px-2 text-left">
+                  <h4 className="text-lg font-normal text-slate-800 dark:text-white pt-6 mb-3 px-2 text-left">
                     Continue working on...
                   </h4>
                 )}
@@ -6390,7 +6390,7 @@ export default function App() {
             {/* For your FYI */}
             {optionEFyiTasks.length > 0 && (
               <div className="flex flex-col">
-                <h4 className="text-[14px] leading-[20px] font-medium text-slate-500 pt-4 mb-2 px-2 text-left">
+                <h4 className="text-lg font-normal text-slate-800 dark:text-white pt-6 mb-3 px-2 text-left">
                   For your FYI
                 </h4>
                 <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
