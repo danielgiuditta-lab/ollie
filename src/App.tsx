@@ -6543,6 +6543,7 @@ export default function App() {
                 onClose={() => setIsTheatreOpen(false)}
                 onSendMessage={handleSendMessage}
                 setActiveSidebar={setActiveSidebar}
+                onChangeChatDockPosition={setChatDockPosition}
                 onUpdateTaskStatus={(taskId, status) => {
                   setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
                 }}
@@ -6719,6 +6720,7 @@ export default function App() {
                             onClose={() => setIsTheatreOpen(false)}
                             onSendMessage={handleSendMessage}
                             setActiveSidebar={setActiveSidebar}
+                            onChangeChatDockPosition={setChatDockPosition}
                             onUpdateTaskStatus={(taskId, status) => {
                               setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
                             }}
@@ -6834,7 +6836,10 @@ export default function App() {
                   theme={appTheme}
                   onCreateArtifact={handleCreateArtifactApp}
                   layout="bottom"
-                  onDockToSide={() => setChatDockPosition('side')}
+                  onDockToSide={() => {
+                    setChatDockPosition('side');
+                    setActiveSidebar('gemini');
+                  }}
                 />
               </div>
             )}

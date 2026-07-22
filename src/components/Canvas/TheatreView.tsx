@@ -104,6 +104,7 @@ interface TheatreViewProps {
   onClose: () => void;
   onSendMessage: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
   setActiveSidebar?: any;
+  onChangeChatDockPosition?: (pos: 'side' | 'bottom') => void;
   onUpdateTaskStatus?: (taskId: string, status: 'done' | 'working' | 'rejected') => void;
   userProfile?: any;
   accessToken?: string | null;
@@ -123,6 +124,7 @@ export function TheatreView({
   onClose,
   onSendMessage,
   setActiveSidebar,
+  onChangeChatDockPosition,
   onUpdateTaskStatus,
   userProfile,
   accessToken,
@@ -377,6 +379,9 @@ export function TheatreView({
     }
     if (!embedded) {
       onClose();
+    }
+    if (onChangeChatDockPosition) {
+      onChangeChatDockPosition('side');
     }
     if (setActiveSidebar) {
       setActiveSidebar('gemini');
