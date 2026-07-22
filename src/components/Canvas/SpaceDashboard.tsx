@@ -722,7 +722,7 @@ export function SpaceDashboard({
                             <>
                               {needsApproval.length > 0 && (
                                 <div className="flex flex-col gap-1">
-                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
+                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-4 pb-1">
                                     Needs your approval
                                   </span>
                                   <div className="flex flex-col gap-[2px]">
@@ -741,7 +741,7 @@ export function SpaceDashboard({
 
                               {continueWorking.length > 0 && (
                                 <div className="flex flex-col gap-1">
-                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
+                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-4 pb-1">
                                     Continue working on...
                                   </span>
                                   <div className="flex flex-col gap-[2px]">
@@ -760,7 +760,7 @@ export function SpaceDashboard({
 
                               {fyiItems.length > 0 && (
                                 <div className="flex flex-col gap-1">
-                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-1 pb-1">
+                                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-neutral-500 uppercase px-4 pb-1">
                                     For your FYI
                                   </span>
                                   <div className="flex flex-col gap-[2px]">

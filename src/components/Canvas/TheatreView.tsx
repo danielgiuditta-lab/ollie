@@ -648,7 +648,7 @@ export function TheatreView({
                 {/* Needs your approval */}
                 {approvalTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal pt-2 mb-4 px-1 ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
+                    <h3 className={`text-[20px] leading-[28px] font-normal pt-2 mb-4 px-4 ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       Needs your approval
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
@@ -676,7 +676,7 @@ export function TheatreView({
                 {/* Continue working on... */}
                 {continueWorkingTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-1 ${approvalTasks.length > 0 ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
+                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 ${approvalTasks.length > 0 ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       Continue working on...
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
@@ -704,7 +704,7 @@ export function TheatreView({
                 {/* FYI Tasks ("For your FYI") */}
                 {fyiTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-1 ${(approvalTasks.length > 0 || continueWorkingTasks.length > 0) ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
+                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 ${(approvalTasks.length > 0 || continueWorkingTasks.length > 0) ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       For your FYI
                     </h3>
                     <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
