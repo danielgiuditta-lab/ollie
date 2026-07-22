@@ -173,6 +173,7 @@ export default function App() {
   const handleOpenTheatre = (mode?: 'A' | 'B' | 'C' | 'D' | 'E') => {
     const targetMode = mode || playOptionMode;
     setPlayOptionMode(targetMode);
+    setMessages([]);
     if (targetMode === 'C') {
       if (todoItems.length > 0) {
         handleProactiveTaskClick(todoItems[0]);
@@ -498,13 +499,24 @@ export default function App() {
   // Ref to track file IDs created from the composer in order to format output of blank docs
   const createdFromComposerFileIdsRef = useRef<Set<string>>(new Set());
 
-  // Ref and effect for floating bottom overlay chat auto-scrolling
+  // Ref and effect for floating bottom overlay chat auto-scrolling & 30s auto-fade
   const bottomOverlayScrollRef = useRef<HTMLDivElement>(null);
+  const [overlayNow, setOverlayNow] = useState(Date.now());
+
   useEffect(() => {
     if (bottomOverlayScrollRef.current) {
       bottomOverlayScrollRef.current.scrollTop = bottomOverlayScrollRef.current.scrollHeight;
     }
   }, [messages, isLoading, chatDockPosition]);
+
+  useEffect(() => {
+    if (chatDockPosition === 'bottom' && messages && messages.length > 0) {
+      const interval = setInterval(() => {
+        setOverlayNow(Date.now());
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [chatDockPosition, messages?.length]);
 
   // Initialize cursor tracking and co-presence
   const { peers, localUser, registerIframe } = usePresence(userProfile, envId);
@@ -5166,9 +5178,33 @@ export default function App() {
       const matchingTask = recentTasks.find(t => t.id === file.id || t.id === file.chatId);
       folderId = matchingTask?.activeSpaceId || (matchingTask?.type === 'space' ? matchingTask.id : null);
     }
-    if (!folderId) {
-      folderId = (activeSpaceId && !isHomeChatId(activeSpaceId)) ? activeSpaceId : getHomeChatId();
+    const isSpaceObject = typeof file === 'object' && file && Boolean(
+      file.type?.includes('space') || 
+      file.type === 'workspace' || 
+      file.isProject || 
+      Boolean(file.chats)
+    ) && !file.name?.includes('.');
+
+    if (!targetChatId && !options?.isParentSpaceClick && typeof file === 'object' && file && !isSpaceObject) {
+      targetChatId = `${folderId}-chat-${Date.now()}`;
+      const taskTitle = file.titleDone || file.title || file.name || file.description || 'Task Chat';
+      const fileIdVal = file.id || file.driveId;
+      const newChatObj = {
+        id: targetChatId,
+        name: projectName || 'Workspace',
+        chatName: taskTitle,
+        type: 'workspace',
+        taskType: file.taskType || file.type || 'doc',
+        associatedFileId: fileIdVal,
+        associatedFileName: file.name || taskTitle,
+        activeSpaceId: folderId,
+        messages: [],
+        updatedAt: Date.now()
+      };
+      setRecentTasks(prev => [newChatObj, ...prev.filter(t => t.id !== targetChatId)]);
+      chatSessionsCacheRef.current[targetChatId] = { messages: [] };
     }
+
     if (!targetChatId) {
       targetChatId = folderId;
     }
@@ -6901,11 +6937,17 @@ export default function App() {
                     }}
                   >
                     {messages.map((msg, index) => {
+                      const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());
+                      const ageMs = overlayNow - msgTime;
+                      if (ageMs >= 30000) return null;
+                      const isFading = ageMs >= 29000;
+                      const fadeClass = isFading ? 'opacity-0 transition-opacity duration-1000' : 'opacity-100 transition-opacity duration-300';
+
                       if (msg.role === 'user') {
                         return (
                           <div 
                             key={index} 
-                            className="self-end bg-blue-600 text-white rounded-[22px] px-4 py-2.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed"
+                            className={`self-end bg-blue-600 text-white rounded-[22px] px-4 py-2.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed ${fadeClass}`}
                             style={{ fontFamily: '"Inter", sans-serif' }}
                           >
                             <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
@@ -6918,7 +6960,7 @@ export default function App() {
                       return (
                         <div 
                           key={index} 
-                          className="self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] p-4 text-xs sm:text-sm font-normal max-w-[90%] shadow-lg leading-relaxed"
+                          className={`self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] p-4 text-xs sm:text-sm font-normal max-w-[90%] shadow-lg leading-relaxed ${fadeClass}`}
                           style={{ fontFamily: '"Inter", sans-serif' }}
                         >
                           <BotMessage 

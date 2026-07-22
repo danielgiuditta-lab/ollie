@@ -148,12 +148,22 @@ export function LeftNav({
         }
       }
 
-      if (c.messages && c.messages.length > 0 && chatIdVal !== spaceId) {
+      const isChildSession = chatIdVal !== spaceId && (
+        c.activeSpaceId === spaceId ||
+        c.parentSpaceId === spaceId ||
+        c.type === 'chat' ||
+        Boolean(c.taskType) ||
+        Boolean(c.associatedFileId) ||
+        Boolean(c.messages && c.messages.length > 0) ||
+        (typeof chatIdVal === 'string' && chatIdVal.includes('-chat-'))
+      );
+
+      if (isChildSession) {
         const exists = spacesMap[spaceId].chats.some(item => item.id === chatIdVal);
         if (!exists) {
           spacesMap[spaceId].chats.push({
             id: chatIdVal,
-            name: c.chatName || `Chat ${spacesMap[spaceId].chats.length + 1}`,
+            name: c.chatName || c.name || c.title || c.associatedFileName || `Chat ${spacesMap[spaceId].chats.length + 1}`,
             raw: c
           });
         }
