@@ -68,7 +68,7 @@ export function SpaceDashboard({
   userProfile,
   accessToken,
   onOpenTheatre,
-  playOptionMode = 'C',
+  playOptionMode = 'A',
   isOptionCOpen,
   onCloseOptionC,
   onSendMessage,

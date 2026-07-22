@@ -482,7 +482,7 @@ export function HomeLanding({
   onSelectArtifact,
   envId,
   onOpenTheatre,
-  playOptionMode = 'C',
+  playOptionMode = 'A',
   isOptionCOpen,
   onCloseOptionC,
   onSendMessage,

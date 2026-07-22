@@ -1147,19 +1147,22 @@ export function TheatreView({
 
               {/* Right Action Buttons */}
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDockToSide();
-                  }}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
-                    isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
-                  }`}
-                  title="Snap to side chat"
-                >
-                  <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
-                </button>
+                {(isInputFocused || steerInput.trim().length > 0) && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDockToSide();
+                    }}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
+                      isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
+                    }`}
+                    title="Snap to side chat"
+                  >
+                    <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+                  </button>
+                )}
 
                 {(isInputFocused || steerInput.trim().length > 0) && (
                   <button

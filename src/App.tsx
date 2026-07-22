@@ -166,12 +166,12 @@ export default function App() {
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
   const [isTheatreOpen, setIsTheatreOpen] = useState(false);
-  const [playOptionMode, setPlayOptionMode] = useState<'A' | 'B' | 'C' | 'D' | 'E'>('C');
+  const [playOptionMode, setPlayOptionMode] = useState<'A' | 'B' | 'C' | 'D' | 'E'>('A');
 
   const handleOpenTheatre = (mode?: 'A' | 'B' | 'C' | 'D' | 'E') => {
     const targetMode = mode || playOptionMode;
     setPlayOptionMode(targetMode);
-    if (targetMode === 'A') {
+    if (targetMode === 'C') {
       if (todoItems.length > 0) {
         handleProactiveTaskClick(todoItems[0]);
       }
@@ -6323,8 +6323,8 @@ export default function App() {
         isChatSide={viewState !== 'ai_summary' && chatDockPosition === 'side'}
         isGroupChat={isGroupChat}
       />
-      {/* 1.5 Task List Column for Option E (only visible when Play is clicked) */}
-      {isTheatreOpen && playOptionMode === 'E' && (
+      {/* 1.5 Task List Column for Option A (only visible when Play is clicked) */}
+      {isTheatreOpen && playOptionMode === 'A' && (
         <div className="w-80 md:w-[380px] shrink-0 h-full flex flex-col select-text font-['Google_Sans','Google_Sans_Text',sans-serif] bg-white text-slate-900 border-r border-slate-200/80 dark:border-neutral-800 z-20 overflow-hidden">
           {/* Header matching CanvasHeader height & font baseline */}
           <div className="h-[64px] shrink-0 flex items-center px-6">
@@ -6513,14 +6513,14 @@ export default function App() {
               handleFileClick(getHomeChatId(), true, { isFromRecents: true, targetChatId: getHomeChatId() });
             }
           }}
-          selectedFile={isTheatreOpen && playOptionMode === 'E' ? getOptionEFileObject(optionEActiveTask) : selectedFile}
+          selectedFile={isTheatreOpen && playOptionMode === 'A' ? getOptionEFileObject(optionEActiveTask) : selectedFile}
           members={members}
           onOpenInDrive={handleOpenInDrive}
           onToggleSourcesPanel={() => setIsSourcesPanelOpen(!isSourcesPanelOpen)}
           isSourcesPanelOpen={isSourcesPanelOpen}
           peers={peers}
           theme={appTheme}
-          activeProactiveTask={isTheatreOpen && playOptionMode === 'E' ? optionEActiveTask : activeProactiveTask}
+          activeProactiveTask={isTheatreOpen && playOptionMode === 'A' ? optionEActiveTask : activeProactiveTask}
           activeSpaceId={activeSpaceId}
           onPinArtifact={handlePinArtifact}
           onUnpinArtifact={handleUnpinArtifact}
@@ -6532,7 +6532,7 @@ export default function App() {
               getSpacePins(activeSpaceId)?.includes((selectedFile || activeProactiveTask)?.id || (selectedFile || activeProactiveTask)?.driveId)
             )
           }
-          isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+          isOptionCOpen={isTheatreOpen && playOptionMode === 'D'}
           onCloseOptionC={() => setIsTheatreOpen(false)}
           onToggleSideChat={() => {
             setChatDockPosition('side');
@@ -6540,7 +6540,7 @@ export default function App() {
           }}
         />
         <div className={`flex-1 flex overflow-hidden relative ${isSourcesPanelOpen ? 'gap-0' : 'gap-4'}`}>
-          {isTheatreOpen && playOptionMode === 'D' && (
+          {isTheatreOpen && playOptionMode === 'E' && (
             <div className="absolute inset-0 z-40">
               <TheatreView
                 todoItems={todoItems}
@@ -6565,7 +6565,7 @@ export default function App() {
           {/* Main Viewport Content / Right Canvas Area */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative gap-4">
             <div className="flex-1 min-h-0 relative">
-              {(viewState === 'home' || viewState === 'dashboard' || viewState === 'ai_summary' || viewState === 'app' || viewState === 'files' || selectedFile || (isTheatreOpen && playOptionMode === 'E')) && (
+              {(viewState === 'home' || viewState === 'dashboard' || viewState === 'ai_summary' || viewState === 'app' || viewState === 'files' || selectedFile || (isTheatreOpen && playOptionMode === 'A')) && (
                 <CanvasMain 
                   viewState={viewState} 
                   setViewState={setViewState} 
@@ -6574,9 +6574,9 @@ export default function App() {
                   appTheme={appTheme} 
                   peers={peers}
                   currentUserId={localUser?.id}
-                  selectedFile={isTheatreOpen && playOptionMode === 'E' ? getOptionEFileObject(optionEActiveTask) : selectedFile}
+                  selectedFile={isTheatreOpen && playOptionMode === 'A' ? getOptionEFileObject(optionEActiveTask) : selectedFile}
                 >
-                  <div className={(!isIngesting && !(isTheatreOpen && playOptionMode === 'E') && ((viewState === 'home' && !selectedFile) || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                  <div className={(!isIngesting && !(isTheatreOpen && playOptionMode === 'A') && ((viewState === 'home' && !selectedFile) || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
                     {chatModel === 'B' ? (
                       <HomeLandingExperimental 
                         accessToken={accessToken} 
@@ -6620,7 +6620,7 @@ export default function App() {
                         onSelectArtifact={handleArtifactSelect}
                         onOpenTheatre={handleOpenTheatre}
                         playOptionMode={playOptionMode}
-                        isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+                        isOptionCOpen={isTheatreOpen && playOptionMode === 'D'}
                         onCloseOptionC={() => setIsTheatreOpen(false)}
                         onSendMessage={handleSendMessage}
                         onUpdateTaskStatus={(taskId, status) => {
@@ -6671,7 +6671,7 @@ export default function App() {
                         onSelectArtifact={handleArtifactSelect}
                         onOpenTheatre={handleOpenTheatre}
                         playOptionMode={playOptionMode}
-                        isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+                        isOptionCOpen={isTheatreOpen && playOptionMode === 'D'}
                         onCloseOptionC={() => setIsTheatreOpen(false)}
                         onSendMessage={handleSendMessage}
                         onUpdateTaskStatus={(taskId, status) => {
@@ -6708,12 +6708,12 @@ export default function App() {
                       accessToken={accessToken}
                     />
                   )}
-                  {((viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') || (isTheatreOpen && playOptionMode === 'E')) && (selectedFile || viewState === 'app' || isLoading || (isTheatreOpen && playOptionMode === 'E')) && (
+                  {((viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') || (isTheatreOpen && playOptionMode === 'A')) && (selectedFile || viewState === 'app' || isLoading || (isTheatreOpen && playOptionMode === 'A')) && (
                     <div 
                       className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200 p-4" 
                       id="canvas-unified-workspace"
                     >
-                      {isTheatreOpen && playOptionMode === 'E' ? (
+                      {isTheatreOpen && playOptionMode === 'A' ? (
                         <div className="w-full h-full relative overflow-hidden bg-white dark:bg-[#18191B] select-text">
                           <TheatreView
                             todoItems={todoItems}
@@ -6788,7 +6788,7 @@ export default function App() {
                         accessToken={accessToken}
                         onOpenTheatre={handleOpenTheatre}
                         playOptionMode={playOptionMode}
-                        isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+                        isOptionCOpen={isTheatreOpen && playOptionMode === 'D'}
                         onCloseOptionC={() => setIsTheatreOpen(false)}
                         onSendMessage={handleSendMessage}
                         onUpdateTaskStatus={(taskId, status) => {
@@ -6814,7 +6814,7 @@ export default function App() {
                         accessToken={accessToken}
                         onOpenTheatre={handleOpenTheatre}
                         playOptionMode={playOptionMode}
-                        isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
+                        isOptionCOpen={isTheatreOpen && playOptionMode === 'D'}
                         onCloseOptionC={() => setIsTheatreOpen(false)}
                         onSendMessage={handleSendMessage}
                         onUpdateTaskStatus={(taskId, status) => {
@@ -6828,7 +6828,7 @@ export default function App() {
               )}
             </div>
 
-            {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && !(isTheatreOpen && (playOptionMode === 'C' || playOptionMode === 'E')) && (
+            {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && !(isTheatreOpen && (playOptionMode === 'D' || playOptionMode === 'A')) && (
               <div 
                 className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text"
                 id="floating-bottom-chat"

@@ -70,7 +70,7 @@ export function SpaceDashboardExperimental({
   onOpenTheatre,
   userProfile,
   accessToken,
-  playOptionMode = 'C',
+  playOptionMode = 'A',
   isOptionCOpen,
   onCloseOptionC,
   onSendMessage,

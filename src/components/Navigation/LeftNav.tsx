@@ -79,7 +79,7 @@ export function LeftNav({
   onLogout,
   isGroupChat = false,
   onOpenTheatre,
-  playOptionMode = 'C',
+  playOptionMode = 'A',
   onSelectPlayOptionMode
 }: LeftNavProps) {
   const [localExpanded, setLocalExpanded] = useState(false);
@@ -492,19 +492,22 @@ export function LeftNav({
           <div className="flex flex-col gap-2">
             <button
               onClick={() => {
-                if (onChangeChatModel) onChangeChatModel('A');
+                if (onChangeChatModel) onChangeChatModel('B');
                 if (onSelectPlayOptionMode) onSelectPlayOptionMode('A');
                 setShowSettingsPopover(false);
               }}
               className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-colors flex flex-col gap-0.5 ${
-                chatModel === 'A' && playOptionMode === 'A'
+                playOptionMode === 'A'
                   ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
                   : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
               }`}
             >
-              <span>Model A: Classic UI</span>
+              <span className="flex items-center justify-between">
+                <span>Option A: Zen Mode in Product</span>
+                <span className="text-[9px] bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-1 py-0.5 rounded font-bold">Light</span>
+              </span>
               <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
-                Original layout & classic inferred tasks.
+                Snapped left cell list with standard product canvas & bottom controls.
               </span>
             </button>
             <button
@@ -520,7 +523,7 @@ export function LeftNav({
               }`}
             >
               <span className="flex items-center justify-between">
-                <span>Model B: Theatre Mode</span>
+                <span>Option B: Theatre Mode</span>
                 <span className="text-[9px] bg-neutral-200 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 px-1 py-0.5 rounded font-bold">Dark</span>
               </span>
               <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
@@ -529,22 +532,19 @@ export function LeftNav({
             </button>
             <button
               onClick={() => {
-                if (onChangeChatModel) onChangeChatModel('B');
+                if (onChangeChatModel) onChangeChatModel('A');
                 if (onSelectPlayOptionMode) onSelectPlayOptionMode('C');
                 setShowSettingsPopover(false);
               }}
               className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-colors flex flex-col gap-0.5 ${
-                playOptionMode === 'C'
+                chatModel === 'A' && playOptionMode === 'C'
                   ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
                   : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
               }`}
             >
-              <span className="flex items-center justify-between">
-                <span>Option C: Expanded Cell UI</span>
-                <span className="text-[9px] bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-1 py-0.5 rounded font-bold">Light</span>
-              </span>
+              <span>Option C: Classic UI</span>
               <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
-                Inline expanding cells in Light Mode with full canvas visuals.
+                Original layout & classic inferred tasks.
               </span>
             </button>
             <button
@@ -560,11 +560,11 @@ export function LeftNav({
               }`}
             >
               <span className="flex items-center justify-between">
-                <span>Option D: Light Column UI</span>
-                <span className="text-[9px] bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 px-1 py-0.5 rounded font-bold">Light</span>
+                <span>Option D: Expanded Cell UI</span>
+                <span className="text-[9px] bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-1 py-0.5 rounded font-bold">Light</span>
               </span>
               <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
-                Snapped left task column in Light Mode with classic canvas & bottom controls.
+                Inline expanding cells in Light Mode with full canvas visuals.
               </span>
             </button>
             <button
@@ -580,11 +580,11 @@ export function LeftNav({
               }`}
             >
               <span className="flex items-center justify-between">
-                <span>Option E: Zen Mode in Product</span>
-                <span className="text-[9px] bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-1 py-0.5 rounded font-bold">Light</span>
+                <span>Option E: Light Column UI</span>
+                <span className="text-[9px] bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 px-1 py-0.5 rounded font-bold">Light</span>
               </span>
               <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
-                Snapped left cell list with standard product canvas & bottom controls.
+                Snapped left task column in Light Mode with classic canvas & bottom controls.
               </span>
             </button>
           </div>

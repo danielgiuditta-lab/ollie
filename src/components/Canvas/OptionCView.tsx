@@ -880,17 +880,20 @@ export function OptionCView({
               />
 
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDockToSide();
-                  }}
-                  className="w-9 h-9 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-500 dark:text-neutral-400 flex items-center justify-center transition cursor-pointer border-none outline-none"
-                  title="Snap to side chat"
-                >
-                  <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
-                </button>
+                {(isInputFocused || steerInput.trim().length > 0) && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDockToSide();
+                    }}
+                    className="w-9 h-9 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-500 dark:text-neutral-400 flex items-center justify-center transition cursor-pointer border-none outline-none"
+                    title="Snap to side chat"
+                  >
+                    <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+                  </button>
+                )}
 
                 <button
                   type="button"
