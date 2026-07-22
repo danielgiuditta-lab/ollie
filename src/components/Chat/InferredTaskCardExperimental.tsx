@@ -33,7 +33,7 @@ export const InferredTaskCardExperimental: React.FC<InferredTaskCardProps> = ({
       {/* Title & Subtitle */}
       <div className="flex-1 min-w-0 flex flex-col text-left">
         <h4 className="text-[16px] leading-[24px] font-medium font-sans text-slate-900 dark:text-white truncate">
-          {item.title}
+          {(item as any).titleHome || item.title}
         </h4>
         <p className="text-[14px] leading-[20px] font-normal font-sans text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
           {item.description}

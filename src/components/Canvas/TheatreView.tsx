@@ -41,7 +41,7 @@ function getAbbreviatedCellTitle(item: any, isSignedOff: boolean): string {
 export function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource, onToggleComplete, theme = 'dark' }: TheatreTaskCellProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
 
-  const titleText = getAbbreviatedCellTitle(item, isSignedOff);
+  const titleText = item.titleCell || item.shortTitle || getAbbreviatedCellTitle(item, isSignedOff);
 
   const descText = isSignedOff
     ? (item.descriptionDone || item.description || item.action || 'Your tasks will be added to "My tasks" when notes are ready')

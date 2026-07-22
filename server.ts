@@ -1254,7 +1254,10 @@ Provide the response as a JSON object matching the following structure:
   "immediateActions": [
     {
       "id": "string",
-      "title": "Task title in first-person ('I...') as if the agent completed the action (e.g., I addressed Miriam's comment on your post)",
+      "titleHome": "Longest and most descriptive title explaining trigger and action (e.g., 'Chloe asked for the Q3 AI Safety Deck link in a chat so I created a draft reply with the presentation link')",
+      "titleCell": "Shorter title version for collapsed task cells (e.g., 'Chloe asked for Q3 AI Safety Deck link')",
+      "titleBreadcrumb": "Concise 2-4 word description of action/output for header breadcrumbs (e.g., 'AI Safety Deck Draft')",
+      "title": "Fallback title matching titleHome",
       "titleDone": "Completed task title in first-person ('I...') (e.g., I addressed Miriam's comment on your post)",
       "description": "Task description in first-person ('I...') as if the agent completed the action (e.g., I replied to Miriam's comment and updated branding.doc for your review)",
       "descriptionDone": "Completed description in first-person ('I...') (e.g., I replied to Miriam's comment and updated branding.doc for your review)",

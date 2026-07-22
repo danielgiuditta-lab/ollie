@@ -182,8 +182,12 @@ export function CanvasHeader({
   const renderBreadcrumbs = () => {
     if (activeProactiveTask) {
       let artifactName = '';
-      if (activeProactiveTask.shortTitle) {
+      if (activeProactiveTask.titleBreadcrumb) {
+        artifactName = activeProactiveTask.titleBreadcrumb;
+      } else if (activeProactiveTask.shortTitle) {
         artifactName = activeProactiveTask.shortTitle;
+      } else if (activeProactiveTask.titleCell) {
+        artifactName = activeProactiveTask.titleCell;
       } else {
         const isDone = activeProactiveTask.status === 'done' || activeProactiveTask.status === 'approved';
         let rawTaskTitle = isDone ? (activeProactiveTask.titleDone || activeProactiveTask.title) : (activeProactiveTask.title || activeProactiveTask.description || 'Task');
