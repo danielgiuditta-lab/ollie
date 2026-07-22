@@ -17,6 +17,7 @@ import ollieOutlineSvg from '../../assets/ollie-avatar-outline.svg';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { Composer } from '../Chat/Composer';
+import { renderTextWithSourceChips } from '../../utils/sourceChipUtils';
 import { getFileIcon } from '../Shared/FileIcon';
 import { getAvatarForPerson } from '../../utils/personAvatars';
 
@@ -908,7 +909,7 @@ export function TheatreView({
                         <div className={`text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif] ${
                           isLight ? 'bg-slate-100 text-slate-900' : 'bg-[#2D2E30] text-white/90 shadow-lg'
                         }`}>
-                          {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
+                          {renderTextWithSourceChips(activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?", activeTask?.filesToLoad || [], handleOpenSourceChip)}
                         </div>
                       </div>
 
@@ -918,27 +919,36 @@ export function TheatreView({
                         <div className={`text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[85%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-start justify-between gap-3 relative group ${
                           isLight ? 'bg-blue-50/80 text-blue-950' : 'bg-[#45474A] text-white shadow-lg'
                         }`}>
-                          <textarea
-                            ref={proposalTextareaRef}
-                            value={editableProposalText}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setEditableProposalText(val);
-                              if (activeTask) activeTask.proposedReply = val;
-                              e.target.style.height = 'auto';
-                              e.target.style.height = `${e.target.scrollHeight}px`;
-                            }}
-                            onFocus={() => setIsEditingProposal(true)}
-                            onBlur={() => {
-                              if (activeTask) activeTask.proposedReply = editableProposalText;
-                              setIsEditingProposal(false);
-                            }}
-                            style={{ height: 'auto', minHeight: '26px' }}
-                            className={`w-full bg-transparent text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal focus:outline-none resize-none overflow-hidden font-['Google_Sans','Google_Sans_Text',sans-serif] ${
-                              isLight ? 'text-blue-950 placeholder-blue-400' : 'text-white placeholder-neutral-400'
-                            }`}
-                            placeholder="Type reply..."
-                          />
+                          {isEditingProposal ? (
+                            <textarea
+                              ref={proposalTextareaRef}
+                              value={editableProposalText}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setEditableProposalText(val);
+                                if (activeTask) activeTask.proposedReply = val;
+                                e.target.style.height = 'auto';
+                                e.target.style.height = `${e.target.scrollHeight}px`;
+                              }}
+                              onFocus={() => setIsEditingProposal(true)}
+                              onBlur={() => {
+                                if (activeTask) activeTask.proposedReply = editableProposalText;
+                                setIsEditingProposal(false);
+                              }}
+                              style={{ height: 'auto', minHeight: '26px' }}
+                              className={`w-full bg-transparent text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal focus:outline-none resize-none overflow-hidden font-['Google_Sans','Google_Sans_Text',sans-serif] ${
+                                isLight ? 'text-blue-950 placeholder-blue-400' : 'text-white placeholder-neutral-400'
+                              }`}
+                              placeholder="Type reply..."
+                            />
+                          ) : (
+                            <div 
+                              className="w-full cursor-text"
+                              onClick={() => setIsEditingProposal(true)}
+                            >
+                              {renderTextWithSourceChips(editableProposalText, activeTask?.filesToLoad || [], handleOpenSourceChip)}
+                            </div>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
