@@ -13,6 +13,7 @@ import {
   ArrowUp
 } from 'lucide-react';
 import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
+import ollieOutlineSvg from '../../assets/ollie-avatar-outline.svg';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { Composer } from '../Chat/Composer';
@@ -1174,33 +1175,35 @@ export function TheatreView({
 
             {/* Center Steer Input Pill */}
             <div 
-              className={`rounded-full flex items-center gap-3 transition-all duration-300 ease-in-out ${
+              className={`rounded-full flex items-center gap-2 transition-all duration-300 ease-in-out ${
                 isLight ? 'bg-slate-100 text-slate-900' : 'bg-[#121316] text-white backdrop-blur-md'
               } ${
                 (isInputFocused || steerInput.trim().length > 0)
                   ? 'h-[72px] w-[340px] md:w-[620px] px-4' 
-                  : 'h-14 w-[160px] px-4 cursor-pointer'
+                  : 'h-14 w-[192px] pl-3 pr-3.5 cursor-pointer'
               }`}
               onClick={() => {
                 const el = document.getElementById('theatre-steer-input');
                 if (el) el.focus();
               }}
             >
-              {/* Left Plus Attachment Button */}
-              {(isInputFocused || steerInput.trim().length > 0) && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none ${
-                    isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
-                  }`}
-                  title="Add attachment or context"
-                >
-                  <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
-                </button>
-              )}
+              {/* Left Attachment / Ollie Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none ${
+                  isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
+                }`}
+                title="Add attachment or context"
+              >
+                <img 
+                  src={(isInputFocused || steerInput.trim().length > 0) ? ollieAvatarSvg : ollieOutlineSvg} 
+                  alt="Ollie" 
+                  className={`w-5 h-5 object-contain transition-all duration-200 ${(isInputFocused || steerInput.trim().length > 0) ? '' : 'opacity-70 dark:opacity-80'}`} 
+                />
+              </button>
 
               {/* Text Input */}
               <input
@@ -1222,7 +1225,7 @@ export function TheatreView({
                   }
                 }}
                 placeholder={(isInputFocused || steerInput.trim().length > 0) ? getSteerPlaceholder() : "Do differently..."}
-                className={`w-full bg-transparent text-[15px] font-normal focus:outline-none truncate px-1 border-none ring-0 ${
+                className={`flex-1 bg-transparent text-[15px] font-normal focus:outline-none truncate border-none ring-0 ${
                   isLight ? 'text-slate-900 placeholder-slate-400' : 'text-white placeholder-neutral-400'
                 }`}
               />

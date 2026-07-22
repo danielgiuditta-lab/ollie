@@ -11,6 +11,7 @@ import {
   ArrowUp
 } from 'lucide-react';
 import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
+import ollieOutlineSvg from '../../assets/ollie-avatar-outline.svg';
 import ReactMarkdown from 'react-markdown';
 import { BotMessage } from '../Chat/BotMessage';
 import { NativeViewer } from './NativeViewer';
@@ -937,7 +938,11 @@ export function OptionCView({
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0 transition cursor-pointer flex items-center justify-center p-1 rounded-full border-none outline-none"
                 title="Add attachment or context"
               >
-                <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
+                <img 
+                  src={(isInputFocused || steerInput.trim().length > 0) ? ollieAvatarSvg : ollieOutlineSvg} 
+                  alt="Ollie" 
+                  className={`w-5 h-5 object-contain transition-all duration-200 ${(isInputFocused || steerInput.trim().length > 0) ? '' : 'opacity-70 dark:opacity-80'}`} 
+                />
               </button>
 
               <input
