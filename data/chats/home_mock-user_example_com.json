@@ -1,92 +1,17 @@
 {
   "chatId": "home_mock-user_example_com",
-  "projectName": "AI Policy & Governance",
-  "chatName": "Regulating Frontier AI  Global Policy Keynote P...",
+  "projectName": "Home Dashboard",
+  "chatName": "",
   "type": "workspace",
-  "taskType": "slide",
+  "taskType": "app",
   "viewState": null,
   "associatedFileId": "mock-drive-todo-1",
   "associatedFileName": "Regulating Frontier AI  Global Policy Keynote P....gslides",
   "messages": [],
   "envId": null,
-  "activeSpaceId": "home",
+  "activeSpaceId": "home_mock-user_example_com",
   "sandboxUrl": "",
-  "sandboxFiles": [
-    {
-      "id": "proactive-slide-todo-1",
-      "title": "I started an outline for the AI Governance Policy Keynote slides per Maya's comment",
-      "titleDone": "I started an outline for the AI Governance Policy Keynote slides per Maya's comment",
-      "description": "Maya commented: 'Slide 4 needs a high-level policy framework comparing European Risk-Based Rules with US Innovation Frameworks.'",
-      "descriptionDone": "Maya commented: 'Slide 4 needs a high-level policy framework comparing European Risk-Based Rules with US Innovation Frameworks.'",
-      "workspace": "AI Policy & Governance",
-      "sourceName": "AI Policy & Governance Keynote Outline.gslides",
-      "sourceMimeType": "application/vnd.google-apps.presentation",
-      "type": "slide",
-      "category": "needs_input",
-      "personName": "Maya Lin",
-      "personAvatar": "/people/david.jpg",
-      "commentTime": "2 hours ago",
-      "commentText": "Slide 4 needs a high-level policy framework comparing European Risk-Based Rules with US Innovation Frameworks.",
-      "targetElement": "Slide 4 — Comparative Global AI Regulatory Models",
-      "status": "done",
-      "hasPreview": true,
-      "involvesMe": true,
-      "directSlideView": true,
-      "showDiffView": false,
-      "originalContext": "Maya requested incorporating international legislative comparisons into the upcoming keynote policy presentation.",
-      "summaryOfChanges": "Maya commented: 'Slide 4 needs a high-level policy framework comparing European Risk-Based Rules with US Innovation Frameworks.'",
-      "originalMarkdown": "# Regulating Frontier AI — Keynote Outline\n\n## Global Policy Overview\n- Overview of emerging international AI oversight bodies.\n- Discussion of open source versus closed API models.",
-      "updatedMarkdown": "# Regulating Frontier AI — Global Policy Keynote Presentation\n\n---\n\n# Executive Policy Outlook & Regulatory Philosophy\n\n- **Target Audience**: Foreign Policy Advisory Board & Technology Policy Summit\n- **Core Essay Thesis**: Democratic governance must institute proactive institutional oversight without stifling open scientific inquiry.\n- **Key Policy Mandate**: Harmonizing safety standards across international jurisdictions while maintaining public transparency.\n\n---\n\n# Comparative Global Regulatory Frameworks\n\n## European Union AI Act Model\n- **Categorical Risk Classification**: Statutory compliance requirements tied to system deployment domain.\n- **Independent Compliance Audits**: Mandatory third-party impact assessments for foundational models prior to market access.\n\n## United States Federal Policy Approach\n- **Executive Order Directives**: Voluntary red-teaming standards and federal procurement policy levers.\n- **Liability & Antitrust Framework**: Shifting accountability to foundation model creators for systemic downstream harms.\n\n---\n\n# Public Interest Guardrails & Democratic Accountability\n\n## Institutional Governance Controls\n- **Open Scientific Access**: Statutory exemptions protecting public-interest academic research.\n- **Algorithmic Watermarking Mandates**: Universal provenance standards for synthesized media in civic elections.\n\n## Transatlantic Policy Alignment Roadmap\n- **Harmonized Safety Protocols**: Shared benchmark definitions for foundation model capabilities.\n- **Bilateral Regulatory Coordination**: Joint oversight bodies monitoring cross-border AI deployment risks.\n\n---\n\n# Foundation Model Liability & IP Governance Protocols\n\n## Upstream Provider Liability\n- **Duty of Care Obligations**: Imposing statutory liability on base model creators for foreseeable systemic harms.\n- **Safe Harbors for Integrators**: Protecting downstream small businesses and non-profit application developers.\n\n## IP & Training Dataset Transparency\n- **Public Registry Disclosure**: Mandatory documentation of copyright-protected ingestion corpora.\n- **Fair-Use Statutory Guidance**: Clear guidelines establishing legal rights for public-interest model training.\n\n---\n\n# Protecting Open Scientific Inquiry & Academic Sovereignty\n\n## Democratizing AI Compute & Infrastructure\n- **National Research Cloud**: Funding open compute infrastructure to prevent monopoly concentrations of technological power.\n- **Tiered Compute Thresholds**: Enforcing strict regulatory reporting triggers only above massive training limits (`10^26 FLOPs`).\n\n## Safeguarding Open-Weights Model Dissemination\n- **Academic Verification Rights**: Protecting open distribution of weights to allow independent safety audits and public accountability.\n- **Preventing Regulatory Capture**: Ensuring incumbent AI firms cannot leverage compliance costs to eliminate independent competition.\n\n---\n\n# Actionable Policy Recommendations for Technology Summits\n\n## Immediate Legislative Action Plan\n- **1. Establish Independent AI Audit Commission**: Multidisciplinary body composed of ethicists, security experts, and public advocates.\n- **2. Standardize Synthetic Content Provenance**: Universal C2PA watermarking legislation ahead of major civic election cycles.\n- **3. Bilateral Safety Treaties**: Codifying transatlantic mutual recognition of safety benchmarks and risk mitigation protocols.",
-      "filesToLoad": [
-        {
-          "name": "AI Policy & Governance Keynote Outline.gslides",
-          "type": "slide",
-          "mimeType": "application/vnd.google-apps.presentation"
-        }
-      ],
-      "isDrafting": true,
-      "name": "Regulating Frontier AI  Global Policy Keynote P....gslides",
-      "taskType": "slide",
-      "content": "# Regulating Frontier AI — Global Policy Keynote Presentation\n\n---\n\n# Executive Policy Outlook & Regulatory Philosophy\n\n- **Target Audience**: Foreign Policy Advisory Board & Technology Policy Summit\n- **Core Essay Thesis**: Democratic governance must institute proactive institutional oversight without stifling open scientific inquiry.\n- **Key Policy Mandate**: Harmonizing safety standards across international jurisdictions while maintaining public transparency.\n\n---\n\n# Comparative Global Regulatory Frameworks\n\n## European Union AI Act Model\n- **Categorical Risk Classification**: Statutory compliance requirements tied to system deployment domain.\n- **Independent Compliance Audits**: Mandatory third-party impact assessments for foundational models prior to market access.\n\n## United States Federal Policy Approach\n- **Executive Order Directives**: Voluntary red-teaming standards and federal procurement policy levers.\n- **Liability & Antitrust Framework**: Shifting accountability to foundation model creators for systemic downstream harms.\n\n---\n\n# Public Interest Guardrails & Democratic Accountability\n\n## Institutional Governance Controls\n- **Open Scientific Access**: Statutory exemptions protecting public-interest academic research.\n- **Algorithmic Watermarking Mandates**: Universal provenance standards for synthesized media in civic elections.\n\n## Transatlantic Policy Alignment Roadmap\n- **Harmonized Safety Protocols**: Shared benchmark definitions for foundation model capabilities.\n- **Bilateral Regulatory Coordination**: Joint oversight bodies monitoring cross-border AI deployment risks.\n\n---\n\n# Foundation Model Liability & IP Governance Protocols\n\n## Upstream Provider Liability\n- **Duty of Care Obligations**: Imposing statutory liability on base model creators for foreseeable systemic harms.\n- **Safe Harbors for Integrators**: Protecting downstream small businesses and non-profit application developers.\n\n## IP & Training Dataset Transparency\n- **Public Registry Disclosure**: Mandatory documentation of copyright-protected ingestion corpora.\n- **Fair-Use Statutory Guidance**: Clear guidelines establishing legal rights for public-interest model training.\n\n---\n\n# Protecting Open Scientific Inquiry & Academic Sovereignty\n\n## Democratizing AI Compute & Infrastructure\n- **National Research Cloud**: Funding open compute infrastructure to prevent monopoly concentrations of technological power.\n- **Tiered Compute Thresholds**: Enforcing strict regulatory reporting triggers only above massive training limits (`10^26 FLOPs`).\n\n## Safeguarding Open-Weights Model Dissemination\n- **Academic Verification Rights**: Protecting open distribution of weights to allow independent safety audits and public accountability.\n- **Preventing Regulatory Capture**: Ensuring incumbent AI firms cannot leverage compliance costs to eliminate independent competition.\n\n---\n\n# Actionable Policy Recommendations for Technology Summits\n\n## Immediate Legislative Action Plan\n- **1. Establish Independent AI Audit Commission**: Multidisciplinary body composed of ethicists, security experts, and public advocates.\n- **2. Standardize Synthetic Content Provenance**: Universal C2PA watermarking legislation ahead of major civic election cycles.\n- **3. Bilateral Safety Treaties**: Codifying transatlantic mutual recognition of safety benchmarks and risk mitigation protocols.",
-      "driveId": "mock-drive-todo-1",
-      "mimeType": "application/vnd.google-apps.presentation",
-      "isProactiveDraft": false,
-      "task": {
-        "id": "todo-1",
-        "title": "I started an outline for the AI Governance Policy Keynote slides per Maya's comment",
-        "titleDone": "I started an outline for the AI Governance Policy Keynote slides per Maya's comment",
-        "description": "Maya commented: 'Slide 4 needs a high-level policy framework comparing European Risk-Based Rules with US Innovation Frameworks.'",
-        "descriptionDone": "Maya commented: 'Slide 4 needs a high-level policy framework comparing European Risk-Based Rules with US Innovation Frameworks.'",
-        "workspace": "AI Policy & Governance",
-        "sourceName": "AI Policy & Governance Keynote Outline.gslides",
-        "sourceMimeType": "application/vnd.google-apps.presentation",
-        "type": "slide",
-        "category": "needs_input",
-        "personName": "Maya Lin",
-        "personAvatar": "/people/david.jpg",
-        "commentTime": "2 hours ago",
-        "commentText": "Slide 4 needs a high-level policy framework comparing European Risk-Based Rules with US Innovation Frameworks.",
-        "targetElement": "Slide 4 — Comparative Global AI Regulatory Models",
-        "status": "done",
-        "hasPreview": true,
-        "involvesMe": true,
-        "directSlideView": true,
-        "showDiffView": false,
-        "originalContext": "Maya requested incorporating international legislative comparisons into the upcoming keynote policy presentation.",
-        "summaryOfChanges": "I updated Slide 4 and added detailed policy slides on global regulatory comparisons, foundation model liability, open scientific access, and bilateral trade alignment.",
-        "originalMarkdown": "# Regulating Frontier AI — Keynote Outline\n\n## Global Policy Overview\n- Overview of emerging international AI oversight bodies.\n- Discussion of open source versus closed API models.",
-        "updatedMarkdown": "# Regulating Frontier AI — Global Policy Keynote Presentation\n\n---\n\n# Executive Policy Outlook & Regulatory Philosophy\n\n- **Target Audience**: Foreign Policy Advisory Board & Technology Policy Summit\n- **Core Essay Thesis**: Democratic governance must institute proactive institutional oversight without stifling open scientific inquiry.\n- **Key Policy Mandate**: Harmonizing safety standards across international jurisdictions while maintaining public transparency.\n\n---\n\n# Comparative Global Regulatory Frameworks\n\n## European Union AI Act Model\n- **Categorical Risk Classification**: Statutory compliance requirements tied to system deployment domain.\n- **Independent Compliance Audits**: Mandatory third-party impact assessments for foundational models prior to market access.\n\n## United States Federal Policy Approach\n- **Executive Order Directives**: Voluntary red-teaming standards and federal procurement policy levers.\n- **Liability & Antitrust Framework**: Shifting accountability to foundation model creators for systemic downstream harms.\n\n---\n\n# Public Interest Guardrails & Democratic Accountability\n\n## Institutional Governance Controls\n- **Open Scientific Access**: Statutory exemptions protecting public-interest academic research.\n- **Algorithmic Watermarking Mandates**: Universal provenance standards for synthesized media in civic elections.\n\n## Transatlantic Policy Alignment Roadmap\n- **Harmonized Safety Protocols**: Shared benchmark definitions for foundation model capabilities.\n- **Bilateral Regulatory Coordination**: Joint oversight bodies monitoring cross-border AI deployment risks.\n\n---\n\n# Foundation Model Liability & IP Governance Protocols\n\n## Upstream Provider Liability\n- **Duty of Care Obligations**: Imposing statutory liability on base model creators for foreseeable systemic harms.\n- **Safe Harbors for Integrators**: Protecting downstream small businesses and non-profit application developers.\n\n## IP & Training Dataset Transparency\n- **Public Registry Disclosure**: Mandatory documentation of copyright-protected ingestion corpora.\n- **Fair-Use Statutory Guidance**: Clear guidelines establishing legal rights for public-interest model training.\n\n---\n\n# Protecting Open Scientific Inquiry & Academic Sovereignty\n\n## Democratizing AI Compute & Infrastructure\n- **National Research Cloud**: Funding open compute infrastructure to prevent monopoly concentrations of technological power.\n- **Tiered Compute Thresholds**: Enforcing strict regulatory reporting triggers only above massive training limits (`10^26 FLOPs`).\n\n## Safeguarding Open-Weights Model Dissemination\n- **Academic Verification Rights**: Protecting open distribution of weights to allow independent safety audits and public accountability.\n- **Preventing Regulatory Capture**: Ensuring incumbent AI firms cannot leverage compliance costs to eliminate independent competition.\n\n---\n\n# Actionable Policy Recommendations for Technology Summits\n\n## Immediate Legislative Action Plan\n- **1. Establish Independent AI Audit Commission**: Multidisciplinary body composed of ethicists, security experts, and public advocates.\n- **2. Standardize Synthetic Content Provenance**: Universal C2PA watermarking legislation ahead of major civic election cycles.\n- **3. Bilateral Safety Treaties**: Codifying transatlantic mutual recognition of safety benchmarks and risk mitigation protocols.",
-        "filesToLoad": [
-          {
-            "name": "AI Policy & Governance Keynote Outline.gslides",
-            "type": "slide",
-            "mimeType": "application/vnd.google-apps.presentation"
-          }
-        ],
-        "isDrafting": true
-      }
-    }
-  ],
+  "sandboxFiles": [],
   "userEmail": "mock-user@example.com",
   "members": [],
   "pinnedArtifactIds": [
@@ -95,5 +20,5 @@
     "space-veritas-social",
     "space-nexus-pay"
   ],
-  "updatedAt": "2026-07-22T18:25:42.067Z"
+  "updatedAt": "2026-07-22T20:06:31.044Z"
 }

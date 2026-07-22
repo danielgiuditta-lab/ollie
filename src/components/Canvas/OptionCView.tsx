@@ -10,6 +10,8 @@ import {
   Plus,
   ArrowUp
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { BotMessage } from '../Chat/BotMessage';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { getFileIcon } from '../Shared/FileIcon';
@@ -25,10 +27,13 @@ interface OptionCViewProps {
   onClose: () => void;
   onSendMessage: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
   setActiveSidebar?: any;
+  chatDockPosition?: 'side' | 'bottom';
   onUpdateTaskStatus?: (taskId: string, status: 'done' | 'working' | 'rejected') => void;
   userProfile?: any;
   accessToken?: string | null;
   driveFiles?: any[];
+  messages?: any[];
+  isLoading?: boolean;
 }
 
 function getAbbreviatedCellTitle(item: any, isSignedOff: boolean): string {
@@ -54,10 +59,20 @@ export function OptionCView({
   onUpdateTaskStatus,
   userProfile,
   accessToken,
-  driveFiles = []
+  driveFiles = [],
+  chatDockPosition = 'bottom',
+  messages = [],
+  isLoading = false
 }: OptionCViewProps) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
+
+  const overlayScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (overlayScrollRef.current) {
+      overlayScrollRef.current.scrollTop = overlayScrollRef.current.scrollHeight;
+    }
+  }, [messages, isLoading, chatDockPosition]);
   const [steerInput, setSteerInput] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [actionToast, setActionToast] = useState<{ text: 'Approved' | 'Declined' | 'Skipped'; key: number } | null>(null);
@@ -239,7 +254,7 @@ export function OptionCView({
       : val;
 
     onSendMessage(fullMsg);
-    if (setActiveSidebar) {
+    if (setActiveSidebar && chatDockPosition === 'side') {
       setActiveSidebar('gemini');
     }
 
@@ -817,8 +832,58 @@ export function OptionCView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 15 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="w-full shrink-0 flex items-center justify-center gap-3 relative z-30"
+            className="w-full shrink-0 flex flex-col items-center justify-center gap-3 relative z-30 pointer-events-none"
           >
+            {/* Floating virtual overlay chat in bottom mode */}
+            {chatDockPosition === 'bottom' && messages && messages.length > 0 && (
+              <div 
+                ref={overlayScrollRef}
+                className="w-full max-w-[560px] max-h-[40vh] overflow-y-auto flex flex-col gap-3 p-3 select-text scrollbar-hide pointer-events-auto z-30 mb-1"
+                style={{
+                  maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+                  WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+                }}
+              >
+                {messages.map((msg, index) => {
+                  if (msg.role === 'user') {
+                    return (
+                      <div 
+                        key={index} 
+                        className="self-end bg-blue-600 text-white rounded-[22px] px-4 py-2.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed"
+                        style={{ fontFamily: '"Inter", sans-serif' }}
+                      >
+                        <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
+                          {msg.text}
+                        </ReactMarkdown>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div 
+                      key={index} 
+                      className="self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] p-4 text-xs sm:text-sm font-normal max-w-[90%] shadow-lg leading-relaxed"
+                      style={{ fontFamily: '"Inter", sans-serif' }}
+                    >
+                      <BotMessage 
+                        text={msg.text} 
+                        theme="light" 
+                        sources={driveFiles} 
+                        actionPills={msg.actionPills}
+                      />
+                    </div>
+                  );
+                })}
+                {isLoading && (
+                  <div className="self-start bg-white text-slate-800 border border-slate-200/80 rounded-[22px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-md flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <span className="text-slate-500 font-medium font-sans">Gemini is thinking...</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="w-full flex items-center justify-center gap-3 pointer-events-auto">
             {/* Standard Previous Button */}
             <IconButton
               variant="card"
@@ -944,6 +1009,7 @@ export function OptionCView({
             >
               <ArrowRight className="w-5 h-5 stroke-[2]" />
             </IconButton>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

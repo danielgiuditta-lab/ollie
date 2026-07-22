@@ -42,6 +42,9 @@ interface SpaceDashboardProps {
   onSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
   onUpdateTaskStatus?: (taskId: string, status: 'done' | 'working' | 'rejected') => void;
   driveFiles?: any[];
+  chatDockPosition?: 'side' | 'bottom';
+  messages?: any[];
+  isLoading?: boolean;
 }
 
 export function SpaceDashboard({
@@ -73,7 +76,10 @@ export function SpaceDashboard({
   onCloseOptionC,
   onSendMessage,
   onUpdateTaskStatus,
-  driveFiles = []
+  driveFiles = [],
+  chatDockPosition = 'bottom',
+  messages = [],
+  isLoading = false
 }: SpaceDashboardProps) {
   const [cardWidths, setCardWidths] = useState<Record<string, number>>({});
   const meeting = useCalendarMeeting(accessToken, userProfile);
@@ -518,6 +524,9 @@ export function SpaceDashboard({
             userProfile={userProfile}
             accessToken={accessToken}
             driveFiles={driveFiles}
+            chatDockPosition={chatDockPosition}
+            messages={messages}
+            isLoading={isLoading}
           />
         </div>
       ) : (

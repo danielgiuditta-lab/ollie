@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { BotMessage } from '../Chat/BotMessage';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Check, 
@@ -95,7 +97,7 @@ export function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpen
 }
 
 interface TheatreViewProps {
-  todoItems: any[];
+  todoItems?: any[];
   initialIndex?: number;
   activeIndexProp?: number;
   onIndexChange?: (index: number) => void;
@@ -105,6 +107,7 @@ interface TheatreViewProps {
   onSendMessage: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
   setActiveSidebar?: any;
   onChangeChatDockPosition?: (pos: 'side' | 'bottom') => void;
+  chatDockPosition?: 'side' | 'bottom';
   onUpdateTaskStatus?: (taskId: string, status: 'done' | 'working' | 'rejected') => void;
   userProfile?: any;
   accessToken?: string | null;
@@ -112,6 +115,8 @@ interface TheatreViewProps {
   driveFiles?: any[];
   initialTaskListOpen?: boolean;
   embedded?: boolean;
+  messages?: any[];
+  isLoading?: boolean;
 }
 
 export function TheatreView({
@@ -125,16 +130,26 @@ export function TheatreView({
   onSendMessage,
   setActiveSidebar,
   onChangeChatDockPosition,
+  chatDockPosition = 'bottom',
   onUpdateTaskStatus,
   userProfile,
   accessToken,
   theme = 'dark',
   driveFiles = [],
   initialTaskListOpen,
-  embedded = false
+  embedded = false,
+  messages = [],
+  isLoading = false
 }: TheatreViewProps) {
   const [localActiveIndex, setLocalActiveIndex] = useState(initialIndex);
   const [localCompletedTaskIds, setLocalCompletedTaskIds] = useState<Set<string>>(new Set());
+
+  const overlayScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (overlayScrollRef.current) {
+      overlayScrollRef.current.scrollTop = overlayScrollRef.current.scrollHeight;
+    }
+  }, [messages, isLoading, chatDockPosition]);
 
   const activeIndex = activeIndexProp !== undefined ? activeIndexProp : localActiveIndex;
   const completedTaskIds = completedTaskIdsProp !== undefined ? completedTaskIdsProp : localCompletedTaskIds;
@@ -343,7 +358,7 @@ export function TheatreView({
       : val;
 
     onSendMessage(fullMsg);
-    if (setActiveSidebar) {
+    if (setActiveSidebar && chatDockPosition === 'side') {
       setActiveSidebar('gemini');
     }
 
@@ -1064,6 +1079,55 @@ export function TheatreView({
               )}
             </AnimatePresence>
           </div>
+
+          {/* Floating virtual overlay chat in bottom mode */}
+          {chatDockPosition === 'bottom' && messages && messages.length > 0 && (
+            <div 
+              ref={overlayScrollRef}
+              className="w-full max-w-[600px] max-h-[40vh] overflow-y-auto flex flex-col gap-3 p-3 select-text scrollbar-hide pointer-events-auto z-30 mb-1"
+              style={{
+                maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+                WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+              }}
+            >
+              {messages.map((msg, index) => {
+                if (msg.role === 'user') {
+                  return (
+                    <div 
+                      key={index} 
+                      className="self-end bg-blue-600 text-white rounded-[22px] px-4 py-2.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed"
+                      style={{ fontFamily: '"Inter", sans-serif' }}
+                    >
+                      <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
+                        {msg.text}
+                      </ReactMarkdown>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div 
+                    key={index} 
+                    className="self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] p-4 text-xs sm:text-sm font-normal max-w-[90%] shadow-lg leading-relaxed"
+                    style={{ fontFamily: '"Inter", sans-serif' }}
+                  >
+                    <BotMessage 
+                      text={msg.text} 
+                      theme="light" 
+                      sources={driveFiles} 
+                      actionPills={msg.actionPills}
+                    />
+                  </div>
+                );
+              })}
+              {isLoading && (
+                <div className="self-start bg-white text-slate-800 border border-slate-200/80 rounded-[22px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-md flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-slate-500 font-medium font-sans">Gemini is thinking...</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Bottom Controls Dock */}
           <div className="w-full h-[88px] shrink-0 flex items-center justify-center gap-2 relative z-20">

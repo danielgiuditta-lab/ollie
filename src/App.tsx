@@ -26,7 +26,8 @@ import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon, getFileIcon } from './components/Shared/FileIcon';
 import { getAvatarForPerson } from './utils/personAvatars';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
-import { formatPeopleNames } from './components/Chat/BotMessage';
+import ReactMarkdown from 'react-markdown';
+import { BotMessage, formatPeopleNames } from './components/Chat/BotMessage';
 import { inferChatName, resolveArtifactForChat, findAssociatedChatForFile } from './utils/artifactResolver';
 
 
@@ -496,6 +497,14 @@ export default function App() {
 
   // Ref to track file IDs created from the composer in order to format output of blank docs
   const createdFromComposerFileIdsRef = useRef<Set<string>>(new Set());
+
+  // Ref and effect for floating bottom overlay chat auto-scrolling
+  const bottomOverlayScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (bottomOverlayScrollRef.current) {
+      bottomOverlayScrollRef.current.scrollTop = bottomOverlayScrollRef.current.scrollHeight;
+    }
+  }, [messages, isLoading, chatDockPosition]);
 
   // Initialize cursor tracking and co-presence
   const { peers, localUser, registerIframe } = usePresence(userProfile, envId);
@@ -1588,7 +1597,9 @@ export default function App() {
       if (viewState === 'home') {
         setViewState('app');
       }
-      setActiveSidebar('gemini');
+      if (chatDockPosition === 'side') {
+        setActiveSidebar('gemini');
+      }
 
       let activeFilesToOrganize: any[] = [];
       const baseFiles = sandboxFiles.length > 0 ? sandboxFiles : (selectedDriveFiles.length > 0 ? selectedDriveFiles : driveFiles);
@@ -1771,7 +1782,9 @@ export default function App() {
       setIsLoading(true);
       setCurrentTask(activeTaskMode === 'slide' ? 'slide' : 'doc');
       setViewState('files');
-      setActiveSidebar('gemini');
+      if (chatDockPosition === 'side') {
+        setActiveSidebar('gemini');
+      }
 
       let activeFolderId = initialSpaceId;
       if (!activeFolderId) {
@@ -2049,7 +2062,9 @@ export default function App() {
       setSandboxFiles([initialIndexFile]);
       setSelectedFile(initialIndexFile);
       setIndexFileSelected(true);
-      setActiveSidebar('gemini');
+      if (chatDockPosition === 'side') {
+        setActiveSidebar('gemini');
+      }
     }
 
     if (activeAiMode) {
@@ -6589,6 +6604,9 @@ export default function App() {
                 theme="light"
                 driveFiles={driveFiles}
                 initialTaskListOpen={true}
+                chatDockPosition={chatDockPosition}
+                messages={messages}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -6767,6 +6785,9 @@ export default function App() {
                             driveFiles={driveFiles}
                             initialTaskListOpen={false}
                             embedded={true}
+                            chatDockPosition={chatDockPosition}
+                            messages={messages}
+                            isLoading={isLoading}
                           />
                         </div>
                       ) : (((selectedFile?.name?.toLowerCase().endsWith('.html') || selectedFile?.name?.toLowerCase().endsWith('.htm')) && viewMode === 'preview') || (indexFileSelected && viewMode === 'preview') || (viewState === 'app' && viewMode === 'preview')) ? (
@@ -6854,6 +6875,9 @@ export default function App() {
                           setTodoItems(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
                         }}
                         driveFiles={driveFiles}
+                        chatDockPosition={chatDockPosition}
+                        messages={messages}
+                        isLoading={isLoading}
                       />
                     )
                   )}
@@ -6863,21 +6887,73 @@ export default function App() {
 
             {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && !(isTheatreOpen && (playOptionMode === 'D' || playOptionMode === 'A')) && (
               <div 
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text"
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
                 id="floating-bottom-chat"
               >
-                <Composer 
-                  onSend={handleSendMessage}
-                  disabled={isLoading}
-                  placeholder="Search, add files or tell me what you want to build..."
-                  theme={appTheme}
-                  onCreateArtifact={handleCreateArtifactApp}
-                  layout="bottom"
-                  onDockToSide={() => {
-                    setChatDockPosition('side');
-                    setActiveSidebar('gemini');
-                  }}
-                />
+                {/* Floating overlay chat messages fading out at top 40% of viewport */}
+                {messages && messages.length > 0 && (
+                  <div 
+                    ref={bottomOverlayScrollRef}
+                    className="w-full max-h-[40vh] overflow-y-auto flex flex-col gap-3 p-3 select-text scrollbar-hide pointer-events-auto"
+                    style={{
+                      maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+                      WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+                    }}
+                  >
+                    {messages.map((msg, index) => {
+                      if (msg.role === 'user') {
+                        return (
+                          <div 
+                            key={index} 
+                            className="self-end bg-blue-600 text-white rounded-[22px] px-4 py-2.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed"
+                            style={{ fontFamily: '"Inter", sans-serif' }}
+                          >
+                            <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
+                              {msg.text}
+                            </ReactMarkdown>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div 
+                          key={index} 
+                          className="self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] p-4 text-xs sm:text-sm font-normal max-w-[90%] shadow-lg leading-relaxed"
+                          style={{ fontFamily: '"Inter", sans-serif' }}
+                        >
+                          <BotMessage 
+                            text={msg.text} 
+                            theme="light" 
+                            sources={driveFiles} 
+                            onSourceClick={handleFileClick}
+                            actionPills={msg.actionPills}
+                          />
+                        </div>
+                      );
+                    })}
+                    {isLoading && (
+                      <div className="self-start bg-white text-slate-800 border border-slate-200/80 rounded-[22px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-md flex items-center gap-3">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <span className="text-slate-500 font-medium font-sans">Gemini is thinking...</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="w-full pointer-events-auto">
+                  <Composer 
+                    onSend={handleSendMessage}
+                    disabled={isLoading}
+                    placeholder="Search, add files or tell me what you want to build..."
+                    theme={appTheme}
+                    onCreateArtifact={handleCreateArtifactApp}
+                    layout="bottom"
+                    onDockToSide={() => {
+                      setChatDockPosition('side');
+                      setActiveSidebar('gemini');
+                    }}
+                  />
+                </div>
               </div>
             )}
           </div>
