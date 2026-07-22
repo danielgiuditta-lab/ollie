@@ -97,6 +97,10 @@ export function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpen
 interface TheatreViewProps {
   todoItems: any[];
   initialIndex?: number;
+  activeIndexProp?: number;
+  onIndexChange?: (index: number) => void;
+  completedTaskIdsProp?: Set<string>;
+  onCompletedTaskIdsChange?: (completedIds: Set<string>) => void;
   onClose: () => void;
   onSendMessage: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
   setActiveSidebar?: any;
@@ -112,6 +116,10 @@ interface TheatreViewProps {
 export function TheatreView({
   todoItems = [],
   initialIndex = 0,
+  activeIndexProp,
+  onIndexChange,
+  completedTaskIdsProp,
+  onCompletedTaskIdsChange,
   onClose,
   onSendMessage,
   setActiveSidebar,
@@ -123,8 +131,24 @@ export function TheatreView({
   initialTaskListOpen,
   embedded = false
 }: TheatreViewProps) {
-  const [activeIndex, setActiveIndex] = useState(initialIndex);
-  const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
+  const [localActiveIndex, setLocalActiveIndex] = useState(initialIndex);
+  const [localCompletedTaskIds, setLocalCompletedTaskIds] = useState<Set<string>>(new Set());
+
+  const activeIndex = activeIndexProp !== undefined ? activeIndexProp : localActiveIndex;
+  const completedTaskIds = completedTaskIdsProp !== undefined ? completedTaskIdsProp : localCompletedTaskIds;
+
+  const setActiveIndex = (newVal: number | ((prev: number) => number)) => {
+    const computed = typeof newVal === 'function' ? newVal(activeIndex) : newVal;
+    if (onIndexChange) onIndexChange(computed);
+    setLocalActiveIndex(computed);
+  };
+
+  const setCompletedTaskIds = (newVal: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+    const computed = typeof newVal === 'function' ? newVal(completedTaskIds) : newVal;
+    if (onCompletedTaskIdsChange) onCompletedTaskIdsChange(computed);
+    setLocalCompletedTaskIds(computed);
+  };
+
   const [steerInput, setSteerInput] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isTaskListOpen, setIsTaskListOpen] = useState(initialTaskListOpen !== undefined ? initialTaskListOpen : false);
@@ -168,11 +192,11 @@ export function TheatreView({
 
   // Sync initial index if todoItems changes
   useEffect(() => {
-    if (initialIndex >= 0 && initialIndex < orderedTodoItems.length) {
-      setActiveIndex(initialIndex);
+    if (initialIndex >= 0 && initialIndex < orderedTodoItems.length && activeIndexProp === undefined) {
+      setLocalActiveIndex(initialIndex);
       setSteerInput('');
     }
-  }, [initialIndex, orderedTodoItems.length]);
+  }, [initialIndex, orderedTodoItems.length, activeIndexProp]);
 
   const activeTask = orderedTodoItems[activeIndex] || orderedTodoItems[0] || null;
 

@@ -6712,7 +6712,10 @@ export default function App() {
                         <div className="w-full h-full relative overflow-hidden bg-white dark:bg-[#18191B] select-text">
                           <TheatreView
                             todoItems={todoItems}
-                            initialIndex={optionETaskIndex}
+                            activeIndexProp={optionETaskIndex}
+                            onIndexChange={setOptionETaskIndex}
+                            completedTaskIdsProp={optionECompletedTaskIds}
+                            onCompletedTaskIdsChange={setOptionECompletedTaskIds}
                             onClose={() => setIsTheatreOpen(false)}
                             onSendMessage={handleSendMessage}
                             setActiveSidebar={setActiveSidebar}

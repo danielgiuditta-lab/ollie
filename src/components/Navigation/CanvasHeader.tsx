@@ -5,6 +5,7 @@ import { themeTokens } from '../../utils/themeTokens';
 import { cleanWorkspaceName } from '../Canvas/HomeLanding';
 
 import { getAvatarForPerson } from '../../utils/personAvatars';
+import { getFileIcon } from '../Shared/FileIcon';
 
 const AvatarCircle = ({ member }: { member: any }) => {
   const [error, setError] = useState(false);
@@ -127,9 +128,37 @@ export function CanvasHeader({
   );
   const isForm = mimeLower.includes('form') || nameLower.includes('form');
 
+  const activeTaskObj = activeProactiveTask || selectedFile;
+
   const isChatTask = Boolean(
-    (selectedFile && (selectedFile.type === 'chat' || selectedFile.workspace === 'Google Chat' || selectedFile.senderMessage || selectedFile.proposedReply || (typeof selectedFile.sourceName === 'string' && selectedFile.sourceName.toLowerCase().includes('chat')))) ||
-    (activeProactiveTask && (activeProactiveTask.type === 'chat' || activeProactiveTask.workspace === 'Google Chat' || activeProactiveTask.senderMessage || activeProactiveTask.proposedReply || (typeof activeProactiveTask.sourceName === 'string' && activeProactiveTask.sourceName.toLowerCase().includes('chat'))))
+    activeTaskObj && (
+      activeTaskObj.type === 'chat' || 
+      activeTaskObj.workspace === 'Google Chat' || 
+      activeTaskObj.senderMessage || 
+      activeTaskObj.proposedReply || 
+      (typeof activeTaskObj.sourceName === 'string' && activeTaskObj.sourceName.toLowerCase().includes('chat'))
+    )
+  );
+
+  const isSlideTask = Boolean(
+    !isChatTask && (
+      (activeTaskObj && (activeTaskObj.type === 'slide' || activeTaskObj.taskType === 'slide' || (typeof activeTaskObj.sourceName === 'string' && activeTaskObj.sourceName.toLowerCase().endsWith('.gslides')))) ||
+      (selectedFile && isSlide)
+    )
+  );
+
+  const isSheetTask = Boolean(
+    !isChatTask && !isSlideTask && (
+      (activeTaskObj && (activeTaskObj.type === 'sheet' || activeTaskObj.taskType === 'sheet' || (typeof activeTaskObj.sourceName === 'string' && (activeTaskObj.sourceName.toLowerCase().endsWith('.gsheet') || activeTaskObj.sourceName.toLowerCase().endsWith('.csv'))))) ||
+      (selectedFile && isSheet)
+    )
+  );
+
+  const isDocTask = Boolean(
+    !isChatTask && !isSlideTask && !isSheetTask && (
+      (activeTaskObj && (activeTaskObj.type === 'doc' || activeTaskObj.taskType === 'doc')) ||
+      (selectedFile && isDoc)
+    )
   );
 
   const isNativeDrive = selectedFile && (isDoc || isSheet || isSlide || isForm);
@@ -322,77 +351,29 @@ export function CanvasHeader({
         {/* Actual people avatars shared with */}
         {!isHome && !isHomeSpace && <SharedMembersAvatars />}
 
-        {/* Open in Chat button */}
-        {(isChatTask || (selectedFile && (selectedFile.type === 'chat' || selectedFile.workspace === 'Google Chat' || selectedFile.senderMessage || selectedFile.proposedReply))) && (
-          <button
-            onClick={() => window.open('https://chat.google.com', '_blank')}
-            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
-            title="Open in Google Chat"
-          >
-            <span>Open in Chat</span>
-          </button>
-        )}
-
-        {/* Open in Slides button on direct slide view */}
-        {selectedFile && isSlide && !isChatTask && (
+        {/* Single Contextual Tool Button matching TheatreView logic */}
+        {activeTaskObj && (isChatTask || isSlideTask || isSheetTask || isDocTask) && (
           <button
             onClick={() => {
-              if (onOpenInDrive) {
-                onOpenInDrive(selectedFile);
+              if (isChatTask) {
+                window.open('https://chat.google.com', '_blank');
+              } else if (onOpenInDrive) {
+                onOpenInDrive(activeTaskObj);
+              } else if (isSlideTask) {
+                window.open('https://docs.google.com/presentation', '_blank');
+              } else if (isSheetTask) {
+                window.open('https://docs.google.com/spreadsheets', '_blank');
               } else {
-                const slideDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-|proactive-doc-|proactive-slide-|proactive-sheet-|proactive-)+/, '').replace(/(-preview)+$/, '');
-                const targetUrl = (slideDriveId && slideDriveId.length > 5 && !slideDriveId.includes('local') && !slideDriveId.includes('mock') && !slideDriveId.includes('space') && !slideDriveId.includes('workspace')) 
-                  ? `https://docs.google.com/presentation/d/${slideDriveId}/edit` 
-                  : 'https://docs.google.com/presentation';
-                window.open(targetUrl, '_blank');
+                window.open('https://docs.google.com/document', '_blank');
               }
             }}
-            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
-            title="Open in Google Slides"
+            className={`h-10 px-4 rounded-full text-xs font-medium tracking-wide transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
+            title={isChatTask ? "Open in Google Chat" : (isSlideTask ? "Open in Google Slides" : (isSheetTask ? "Open in Google Sheets" : "Open in Google Docs"))}
           >
-            <span>Open in Slides</span>
-          </button>
-        )}
-
-        {/* Open in Docs button on direct doc view */}
-        {selectedFile && isDoc && (
-          <button
-            onClick={() => {
-              if (onOpenInDrive) {
-                onOpenInDrive(selectedFile);
-              } else {
-                const docDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-|proactive-doc-|proactive-slide-|proactive-sheet-|proactive-)+/, '').replace(/(-preview)+$/, '');
-                const targetUrl = (docDriveId && docDriveId.length > 5 && !docDriveId.includes('local') && !docDriveId.includes('mock') && !docDriveId.includes('space') && !docDriveId.includes('workspace')) 
-                  ? `https://docs.google.com/document/d/${docDriveId}/edit` 
-                  : 'https://docs.google.com/document';
-                window.open(targetUrl, '_blank');
-              }
-            }}
-            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
-            title="Open in Google Docs"
-          >
-            <span>Open in Docs</span>
-          </button>
-        )}
-
-        {/* Open in Sheets button */}
-        {selectedFile && isSheet && (
-          <button
-            onClick={() => {
-              if (onOpenInDrive) {
-                onOpenInDrive(selectedFile);
-              } else {
-                const sheetDriveId = (selectedFile.driveId || selectedFile.id || '').replace(/^(real-file-|suggested-|copied-|sandbox-|sug-|created-|ingested-|proactive-doc-|proactive-slide-|proactive-sheet-|proactive-)+/, '').replace(/(-preview)+$/, '');
-                const targetUrl = (sheetDriveId && sheetDriveId.length > 5 && !sheetDriveId.includes('local') && !sheetDriveId.includes('mock') && !sheetDriveId.includes('space') && !sheetDriveId.includes('workspace')) 
-                  ? `https://docs.google.com/spreadsheets/d/${sheetDriveId}/edit` 
-                  : 'https://docs.google.com/spreadsheets';
-                window.open(targetUrl, '_blank');
-              }
-            }}
-            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
-            title="Open in Google Sheets"
-          >
-            <span>Open in Sheets</span>
+            {getFileIcon(activeTaskObj.sourceName || activeTaskObj.title || (isChatTask ? 'Google Chat' : 'Doc'), activeTaskObj.sourceMimeType || activeTaskObj.type || (isChatTask ? 'chat' : 'doc'))}
+            <span>
+              {isChatTask ? "Open in Chat" : (isSlideTask ? "Open in Slides" : (isSheetTask ? "Open in Sheets" : "Open in Docs"))}
+            </span>
           </button>
         )}
 
