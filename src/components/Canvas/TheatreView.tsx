@@ -582,60 +582,62 @@ export function TheatreView({
     <div className={`${embedded ? 'w-full h-full relative' : 'fixed inset-0 z-50'} flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 pb-0 md:pb-0 overflow-hidden ${
       isLight ? 'bg-[#F8F9FA] text-slate-900' : 'bg-black/85 backdrop-blur-xl text-white'
     }`}>
-      {/* Top Header Bar matching design specs */}
-      <div className="w-full shrink-0 flex items-center justify-between pb-3 px-1">
-        {/* Left Title with Toggle Button & Breadcrumbs */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsTaskListOpen(!isTaskListOpen)}
-            className={`p-1 transition-colors cursor-pointer flex items-center justify-center rounded-lg shrink-0 ${
-              isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60' : 'text-neutral-300 hover:text-white hover:bg-white/10'
-            }`}
-            title={isTaskListOpen ? "Close task list" : "Open task list"}
-          >
-            <span 
-              className="material-symbols-rounded select-none"
-              style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1, 'wght' 700" }}
+      {/* Top Header Bar matching design specs (only rendered when NOT embedded) */}
+      {!embedded && (
+        <div className="w-full shrink-0 flex items-center justify-between pb-3 px-1">
+          {/* Left Title with Toggle Button & Breadcrumbs */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsTaskListOpen(!isTaskListOpen)}
+              className={`p-1 transition-colors cursor-pointer flex items-center justify-center rounded-lg shrink-0 ${
+                isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60' : 'text-neutral-300 hover:text-white hover:bg-white/10'
+              }`}
+              title={isTaskListOpen ? "Close task list" : "Open task list"}
             >
-              {isTaskListOpen ? 'left_panel_close' : 'left_panel_open'}
-            </span>
-          </button>
-          <div className={`flex items-center gap-2 text-[17px] font-normal ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
-            <span 
+              <span 
+                className="material-symbols-rounded select-none"
+                style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1, 'wght' 700" }}
+              >
+                {isTaskListOpen ? 'left_panel_close' : 'left_panel_open'}
+              </span>
+            </button>
+            <div className={`flex items-center gap-2 text-[17px] font-normal ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
+              <span 
+                onClick={onClose}
+                className={`cursor-pointer transition-colors font-normal ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-neutral-300 hover:text-white'}`}
+              >
+                Home
+              </span>
+              <ChevronRight size={18} className={isLight ? 'text-slate-400 shrink-0' : 'text-neutral-500 shrink-0'} />
+              <span className={`font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                Taskviewer <span className={`font-normal ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>({orderedTodoItems.length > 0 ? activeIndex + 1 : 0} of {orderedTodoItems.length})</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Right Action Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleOpenSourceChip(activeTask?.links?.[0]?.url || activeTask?.sourceName || activeTask?.title)}
+              className={`h-9 px-4 rounded-full text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-black hover:bg-[#1E1F22] text-white'
+              }`}
+            >
+              {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}
+              <span>{getNativeToolLabel()}</span>
+            </button>
+            <button
               onClick={onClose}
-              className={`cursor-pointer transition-colors font-normal ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-neutral-300 hover:text-white'}`}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-black hover:bg-[#1E1F22] text-white'
+              }`}
+              title="Close Taskview"
             >
-              Home
-            </span>
-            <ChevronRight size={18} className={isLight ? 'text-slate-400 shrink-0' : 'text-neutral-500 shrink-0'} />
-            <span className={`font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}>
-              Taskviewer <span className={`font-normal ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>({orderedTodoItems.length > 0 ? activeIndex + 1 : 0} of {orderedTodoItems.length})</span>
-            </span>
+              <X size={16} />
+            </button>
           </div>
         </div>
-
-        {/* Right Action Buttons */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleOpenSourceChip(activeTask?.links?.[0]?.url || activeTask?.sourceName || activeTask?.title)}
-            className={`h-9 px-4 rounded-full text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-black hover:bg-[#1E1F22] text-white'
-            }`}
-          >
-            {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}
-            <span>{getNativeToolLabel()}</span>
-          </button>
-          <button
-            onClick={onClose}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-              isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-black hover:bg-[#1E1F22] text-white'
-            }`}
-            title="Close Taskview"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Main Split Container */}
       <div className="flex-1 w-full min-h-0 flex gap-6 overflow-hidden">

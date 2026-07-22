@@ -127,6 +127,11 @@ export function CanvasHeader({
   );
   const isForm = mimeLower.includes('form') || nameLower.includes('form');
 
+  const isChatTask = Boolean(
+    (selectedFile && (selectedFile.type === 'chat' || selectedFile.workspace === 'Google Chat' || selectedFile.senderMessage || selectedFile.proposedReply || (typeof selectedFile.sourceName === 'string' && selectedFile.sourceName.toLowerCase().includes('chat')))) ||
+    (activeProactiveTask && (activeProactiveTask.type === 'chat' || activeProactiveTask.workspace === 'Google Chat' || activeProactiveTask.senderMessage || activeProactiveTask.proposedReply || (typeof activeProactiveTask.sourceName === 'string' && activeProactiveTask.sourceName.toLowerCase().includes('chat'))))
+  );
+
   const isNativeDrive = selectedFile && (isDoc || isSheet || isSlide || isForm);
 
   let editorName = 'Docs';
@@ -320,8 +325,19 @@ export function CanvasHeader({
         {/* Actual people avatars shared with */}
         {!isHome && !isHomeSpace && <SharedMembersAvatars />}
 
+        {/* Open in Chat button */}
+        {(isChatTask || (selectedFile && (selectedFile.type === 'chat' || selectedFile.workspace === 'Google Chat' || selectedFile.senderMessage || selectedFile.proposedReply))) && (
+          <button
+            onClick={() => window.open('https://chat.google.com', '_blank')}
+            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
+            title="Open in Google Chat"
+          >
+            <span>Open in Chat</span>
+          </button>
+        )}
+
         {/* Open in Slides button on direct slide view */}
-        {selectedFile && isSlide && (
+        {selectedFile && isSlide && !isChatTask && (
           <button
             onClick={() => {
               if (onOpenInDrive) {
