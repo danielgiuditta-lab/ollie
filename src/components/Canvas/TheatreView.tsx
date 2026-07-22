@@ -198,7 +198,13 @@ export function TheatreView({
     }
   }, [activeTask?.id]);
 
-  const [canvasAvatarFailed, setCanvasAvatarFailed] = useState(false);
+  const proposalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (proposalTextareaRef.current) {
+      proposalTextareaRef.current.style.height = 'auto';
+      proposalTextareaRef.current.style.height = `${proposalTextareaRef.current.scrollHeight}px`;
+    }
+  }, [editableProposalText, isEditingProposal]);
 
   const activeSourceName = activeTask?.sourceName || activeTask?.workspace || 'Google Drive';
   const activePersonName = activeTask?.personName || 'Maya Lin';
@@ -848,63 +854,51 @@ export function TheatreView({
                       {/* Proposed Reply Row */}
                       <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
                         {/* Proposed Reply Bubble */}
-                        <div className={`text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-5 relative group ${
+                        <div className={`text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[85%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-start justify-between gap-3 relative group ${
                           isLight ? 'bg-blue-50/80 text-blue-950' : 'bg-[#45474A] text-white shadow-lg'
                         }`}>
-                          {isEditingProposal ? (
-                            <div className="flex flex-col gap-2 min-w-[220px] w-full">
-                              <textarea
-                                value={editableProposalText}
-                                onChange={(e) => setEditableProposalText(e.target.value)}
-                                className={`w-full text-[16px] leading-[24px] font-normal p-3 rounded-xl focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif] ${
-                                  isLight ? 'bg-white text-slate-900 border-none' : 'bg-black/40 text-white border border-white/30 focus:border-white'
-                                }`}
-                                rows={3}
-                                autoFocus
-                              />
-                              <div className="flex items-center justify-end gap-2">
-                                <button
-                                  onClick={() => setIsEditingProposal(false)}
-                                  className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${
-                                    isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60' : 'text-neutral-300 hover:text-white hover:bg-white/10'
-                                  }`}
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    if (activeTask) {
-                                      activeTask.proposedReply = editableProposalText;
-                                    }
-                                    setIsEditingProposal(false);
-                                  }}
-                                  className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${
-                                    isLight ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-white text-black hover:bg-neutral-200'
-                                  }`}
-                                >
-                                  Save
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="whitespace-pre-wrap flex-1 min-w-0">
-                                {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
-                              </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setIsEditingProposal(true);
-                                }}
-                                className={`inline-flex items-center justify-center p-1 rounded-full transition-all cursor-pointer shrink-0 self-center ${
-                                  isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60' : 'text-white/90 hover:text-white hover:bg-white/20'
-                                }`}
-                                title="Edit proposed reply"
-                              >
-                                <Pencil size={20} className="stroke-[2.2]" />
-                              </button>
-                            </>
-                          )}
+                          <textarea
+                            ref={proposalTextareaRef}
+                            value={editableProposalText}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setEditableProposalText(val);
+                              if (activeTask) activeTask.proposedReply = val;
+                              e.target.style.height = 'auto';
+                              e.target.style.height = `${e.target.scrollHeight}px`;
+                            }}
+                            onFocus={() => setIsEditingProposal(true)}
+                            onBlur={() => {
+                              if (activeTask) activeTask.proposedReply = editableProposalText;
+                              setIsEditingProposal(false);
+                            }}
+                            style={{ height: 'auto', minHeight: '26px' }}
+                            className={`w-full bg-transparent text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal focus:outline-none resize-none overflow-hidden font-['Google_Sans','Google_Sans_Text',sans-serif] ${
+                              isLight ? 'text-blue-950 placeholder-blue-400' : 'text-white placeholder-neutral-400'
+                            }`}
+                            placeholder="Type reply..."
+                          />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isEditingProposal) {
+                                if (activeTask) activeTask.proposedReply = editableProposalText;
+                                setIsEditingProposal(false);
+                              } else {
+                                setIsEditingProposal(true);
+                              }
+                            }}
+                            className={`inline-flex items-center justify-center p-1 rounded-full transition-all cursor-pointer shrink-0 self-start mt-0.5 ${
+                              isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60' : 'text-white/90 hover:text-white hover:bg-white/20'
+                            }`}
+                            title={isEditingProposal ? "Save proposed reply" : "Edit proposed reply"}
+                          >
+                            {isEditingProposal ? (
+                              <Check size={20} className="stroke-[2.5] text-green-600 dark:text-green-400" />
+                            ) : (
+                              <Pencil size={20} className="stroke-[2.2]" />
+                            )}
+                          </button>
                         </div>
 
                         {/* User Avatar */}
@@ -985,7 +979,7 @@ export function TheatreView({
                         {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
                           <InferredTaskDiffView 
                             file={activeFileObject}
-                            theme={theme}
+                            theme="light"
                             className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
                             hideFooterText={true}
                           />
@@ -994,7 +988,7 @@ export function TheatreView({
                             file={activeFileObject}
                             hideHeader={true}
                             mode="preview"
-                            theme={theme}
+                            theme="light"
                           />
                         )}
                       </div>

@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { InferredTaskCard } from '../Chat/InferredTaskCard';
 import { NullTitle } from '../Shared/NullTitle';
-import { RenderSlideMarkdown, RenderDocMarkdown } from './InferredTaskDiffView';
+import { RenderSlideMarkdown, RenderDocMarkdown, RenderEditableMarkdown } from './InferredTaskDiffView';
 import { getAvatarForPerson } from '../../utils/personAvatars';
 
 interface NativeViewerProps {
@@ -67,6 +67,11 @@ export const RenderEmailViewer = ({ file, theme = 'light' }: { file: any; theme?
   const date = file.date || task.commentTime || 'Recent';
 
   const draftReply = task.draftData?.emailDraft?.body || file.draftReply || (task.action && task.action !== snippet ? task.action : null);
+  const [editableDraft, setEditableDraft] = useState(draftReply || '');
+
+  React.useEffect(() => {
+    setEditableDraft(draftReply || '');
+  }, [draftReply]);
 
   return (
     <div className={`w-full h-full flex flex-col items-center justify-start p-6 sm:p-10 overflow-y-auto ${
@@ -112,9 +117,20 @@ export const RenderEmailViewer = ({ file, theme = 'light' }: { file: any; theme?
                 Agent Prepared Draft Reply
               </span>
             </div>
-            <div className="text-sm leading-relaxed whitespace-pre-wrap font-sans">
-              {draftReply}
-            </div>
+            <textarea
+              value={editableDraft}
+              onChange={(e) => {
+                const val = e.target.value;
+                setEditableDraft(val);
+                if (task.draftData?.emailDraft) task.draftData.emailDraft.body = val;
+                file.draftReply = val;
+              }}
+              className={`w-full bg-transparent text-sm leading-relaxed focus:outline-none resize-none font-sans ${
+                isDark ? 'text-blue-200' : 'text-slate-800'
+              }`}
+              rows={Math.max(3, editableDraft.split('\n').length)}
+              placeholder="Type draft reply..."
+            />
           </div>
         )}
       </div>
@@ -212,6 +228,8 @@ export function NativeViewer({
   }
 
   const [internalMode, setInternalMode] = useState<'file' | 'preview'>('preview');
+  const [isEditingSlide, setIsEditingSlide] = useState(false);
+  const [isEditingDoc, setIsEditingDoc] = useState(false);
 
   const [localActiveSlideIndex, setLocalActiveSlideIndex] = useState(0);
   const activeSlideIndex = propActiveSlideIndex !== undefined ? propActiveSlideIndex : localActiveSlideIndex;
@@ -1072,8 +1090,20 @@ export function NativeViewer({
                 <div className={`w-full aspect-[16/9] max-h-[62vh] max-w-[110vh] rounded-[24px] sm:rounded-[28px] p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden transition-all duration-300 ${
                   isDark ? 'bg-[#1E1F22] text-white' : 'bg-slate-50/70 text-slate-900'
                 }`}>
-                  <div className={`w-full text-[16px] sm:text-[18px] leading-relaxed flex-1 flex flex-col justify-center overflow-y-auto ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-                    <RenderSlideMarkdown text={currentSlideContent} isDark={isDark} />
+                  <div className={`w-full text-[16px] sm:text-[18px] leading-relaxed flex-1 flex flex-col justify-center overflow-y-auto cursor-text ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+                    <RenderEditableMarkdown 
+                      text={currentSlideContent} 
+                      isDark={isDark} 
+                      isSlide={true}
+                      onChange={(val: string) => {
+                        rawSlides[safeIndex] = val;
+                        const newFull = rawSlides.join('\n\n---\n\n');
+                        file.content = newFull;
+                        file.updatedMarkdown = newFull;
+                        file.description = newFull;
+                        if (onSave) onSave(file);
+                      }}
+                    />
                   </div>
                   <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-neutral-800 text-xs text-slate-400 font-medium shrink-0">
                     <span className="truncate max-w-[70%]">{file.name}</span>
@@ -1373,10 +1403,20 @@ export function NativeViewer({
                 By {author}
               </div>
             )}
-            <div className={`markdown-body prose max-w-none text-[16px] space-y-4 font-sans ${
+            <div className={`markdown-body prose max-w-none text-[16px] space-y-4 font-sans cursor-text ${
               isDark ? 'prose-invert text-slate-200' : 'text-slate-700'
             }`} style={{ fontFamily: '"Google Sans", "Product Sans", "Inter", sans-serif' }}>
-              <ReactMarkdown>{bodyParagraphs.join('\n')}</ReactMarkdown>
+              <RenderEditableMarkdown
+                text={file.content || file.updatedMarkdown || bodyParagraphs.join('\n')}
+                isDark={isDark}
+                isSlide={false}
+                onChange={(val: string) => {
+                  file.content = val;
+                  file.updatedMarkdown = val;
+                  file.description = val;
+                  if (onSave) onSave(file);
+                }}
+              />
             </div>
           </div>
         );
@@ -1488,8 +1528,18 @@ export function NativeViewer({
                 </div>
               </div>
 
-              <div className="markdown-body prose prose-slate max-w-none text-[16px] text-slate-700 leading-7 pr-4 focus:outline-none native-serif-viewer">
-                <ReactMarkdown>{bodyParagraphs.join('\n')}</ReactMarkdown>
+              <div className="markdown-body prose prose-slate max-w-none text-[16px] text-slate-700 leading-7 pr-4 focus:outline-none native-serif-viewer cursor-text">
+                <RenderEditableMarkdown
+                  text={file.content || file.updatedMarkdown || bodyParagraphs.join('\n')}
+                  isDark={false}
+                  isSlide={false}
+                  onChange={(val: string) => {
+                    file.content = val;
+                    file.updatedMarkdown = val;
+                    file.description = val;
+                    if (onSave) onSave(file);
+                  }}
+                />
               </div>
             </div>
           </div>

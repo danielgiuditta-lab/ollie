@@ -133,6 +133,14 @@ export function OptionCView({
     }
   }, [activeTask?.id]);
 
+  const proposalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (proposalTextareaRef.current) {
+      proposalTextareaRef.current.style.height = 'auto';
+      proposalTextareaRef.current.style.height = `${proposalTextareaRef.current.scrollHeight}px`;
+    }
+  }, [editableProposalText, isEditingProposal]);
+
   const activeSourceName = activeTask?.sourceName || activeTask?.workspace || 'Google Drive';
   const activePersonName = activeTask?.personName || 'Maya Lin';
   const activeAvatar = activeTask?.personAvatar || getAvatarForPerson(activePersonName);
@@ -641,51 +649,45 @@ export function OptionCView({
 
                               {/* Proposed Reply Row */}
                               <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
-                                <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-5 relative group">
-                                  {isEditingProposal ? (
-                                    <div className="flex flex-col gap-2 min-w-[220px] w-full">
-                                      <textarea
-                                        value={editableProposalText}
-                                        onChange={(e) => setEditableProposalText(e.target.value)}
-                                        className="w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white text-[16px] leading-[24px] font-normal p-3 rounded-xl border border-slate-300 focus:outline-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
-                                        rows={3}
-                                        autoFocus
-                                      />
-                                      <div className="flex items-center justify-end gap-2">
-                                        <button
-                                          onClick={() => setIsEditingProposal(false)}
-                                          className="px-3 py-1 rounded-full text-xs font-medium text-slate-600 dark:text-neutral-300 hover:text-slate-900 cursor-pointer"
-                                        >
-                                          Cancel
-                                        </button>
-                                        <button
-                                          onClick={() => {
-                                            if (activeTask) activeTask.proposedReply = editableProposalText;
-                                            setIsEditingProposal(false);
-                                          }}
-                                          className="px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white cursor-pointer"
-                                        >
-                                          Save
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <div className="whitespace-pre-wrap flex-1 min-w-0">
-                                        {editableProposalText || activeTask?.proposedReply || activeTask?.action || "hey alan!\nconversion is steady at 21%"}
-                                      </div>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setIsEditingProposal(true);
-                                        }}
-                                        className="inline-flex items-center justify-center p-1 rounded-full text-slate-700 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-center"
-                                        title="Edit proposed reply"
-                                      >
-                                        <Pencil size={20} className="stroke-[2.2]" />
-                                      </button>
-                                    </>
-                                  )}
+                                <div className="bg-slate-300/70 dark:bg-[#45474A] text-slate-900 dark:text-white text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[85%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-start justify-between gap-3 relative group">
+                                  <textarea
+                                    ref={proposalTextareaRef}
+                                    value={editableProposalText}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setEditableProposalText(val);
+                                      if (activeTask) activeTask.proposedReply = val;
+                                      e.target.style.height = 'auto';
+                                      e.target.style.height = `${e.target.scrollHeight}px`;
+                                    }}
+                                    onFocus={() => setIsEditingProposal(true)}
+                                    onBlur={() => {
+                                      if (activeTask) activeTask.proposedReply = editableProposalText;
+                                      setIsEditingProposal(false);
+                                    }}
+                                    style={{ height: 'auto', minHeight: '26px' }}
+                                    className="w-full bg-transparent text-slate-900 dark:text-white text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal focus:outline-none resize-none overflow-hidden font-['Google_Sans','Google_Sans_Text',sans-serif] placeholder-slate-500 dark:placeholder-neutral-400"
+                                    placeholder="Type reply..."
+                                  />
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (isEditingProposal) {
+                                        if (activeTask) activeTask.proposedReply = editableProposalText;
+                                        setIsEditingProposal(false);
+                                      } else {
+                                        setIsEditingProposal(true);
+                                      }
+                                    }}
+                                    className="inline-flex items-center justify-center p-1 rounded-full text-slate-700 dark:text-white/90 hover:text-slate-900 hover:bg-slate-300/50 transition-all cursor-pointer shrink-0 self-start mt-0.5"
+                                    title={isEditingProposal ? "Save proposed reply" : "Edit proposed reply"}
+                                  >
+                                    {isEditingProposal ? (
+                                      <Check size={20} className="stroke-[2.5] text-green-600 dark:text-green-400" />
+                                    ) : (
+                                      <Pencil size={20} className="stroke-[2.2]" />
+                                    )}
+                                  </button>
                                 </div>
 
                                 <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md border border-slate-200 dark:border-white/10">

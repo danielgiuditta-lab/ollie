@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface InferredTaskDiffViewProps {
   file: any;
@@ -370,34 +370,271 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
   );
 };
 
+interface BlockItem {
+  id: string;
+  type: 'h1' | 'h2' | 'h3' | 'bullet' | 'p';
+  content: string;
+}
+
+function parseMarkdownToBlocks(text: string): BlockItem[] {
+  if (!text) return [{ id: 'b-0', type: 'p', content: '' }];
+  const lines = text.split(/\r?\n/);
+  const blocks: BlockItem[] = [];
+
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed && idx > 0 && idx < lines.length - 1 && !lines[idx-1].trim()) {
+      return;
+    }
+    const id = `block-${idx}-${Math.random().toString(36).substr(2, 4)}`;
+    if (trimmed.startsWith('# ')) {
+      blocks.push({ id, type: 'h1', content: trimmed.replace(/^#\s+/, '') });
+    } else if (trimmed.startsWith('## ')) {
+      blocks.push({ id, type: 'h2', content: trimmed.replace(/^##\s+/, '') });
+    } else if (trimmed.startsWith('### ')) {
+      blocks.push({ id, type: 'h3', content: trimmed.replace(/^###\s+/, '') });
+    } else if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+      blocks.push({ id, type: 'bullet', content: trimmed.replace(/^[\-•]\s*/, '') });
+    } else {
+      blocks.push({ id, type: 'p', content: trimmed });
+    }
+  });
+
+  return blocks.length > 0 ? blocks : [{ id: 'b-0', type: 'p', content: '' }];
+}
+
+function serializeBlocksToMarkdown(blocks: BlockItem[]): string {
+  return blocks.map(b => {
+    if (b.type === 'h1') return `# ${b.content}`;
+    if (b.type === 'h2') return `## ${b.content}`;
+    if (b.type === 'h3') return `### ${b.content}`;
+    if (b.type === 'bullet') return `- ${b.content}`;
+    return b.content;
+  }).join('\n\n');
+}
+
+export const RenderBlockMarkdownEditor = ({
+  text,
+  isDark = false,
+  isSlide = false,
+  onChange
+}: {
+  text: string;
+  isDark?: boolean;
+  isSlide?: boolean;
+  onChange?: (newMarkdown: string) => void;
+}) => {
+  const [blocks, setBlocks] = useState<BlockItem[]>(() => parseMarkdownToBlocks(text));
+
+  useEffect(() => {
+    setBlocks(parseMarkdownToBlocks(text));
+  }, [text]);
+
+  const updateBlock = (index: number, newContent: string) => {
+    const next = [...blocks];
+    let type = next[index].type;
+
+    if (type === 'p' && (newContent.startsWith('- ') || newContent.startsWith('• '))) {
+      type = 'bullet';
+      newContent = newContent.replace(/^[\-•]\s*/, '');
+    }
+
+    next[index] = { ...next[index], type, content: newContent };
+    setBlocks(next);
+    if (onChange) {
+      onChange(serializeBlocksToMarkdown(next));
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const currentBlock = blocks[index];
+      const nextType = (currentBlock.type === 'h1' || currentBlock.type === 'h2' || currentBlock.type === 'h3') ? 'p' : currentBlock.type;
+      
+      const newBlock: BlockItem = {
+        id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        type: nextType,
+        content: ''
+      };
+      const next = [...blocks];
+      next.splice(index + 1, 0, newBlock);
+      setBlocks(next);
+      if (onChange) onChange(serializeBlocksToMarkdown(next));
+
+      setTimeout(() => {
+        const nextInput = document.getElementById(`editor-block-${index + 1}`);
+        if (nextInput) nextInput.focus();
+      }, 10);
+    } else if (e.key === 'Backspace' && blocks[index].content === '' && blocks.length > 1) {
+      e.preventDefault();
+      const next = blocks.filter((_, i) => i !== index);
+      setBlocks(next);
+      if (onChange) onChange(serializeBlocksToMarkdown(next));
+
+      setTimeout(() => {
+        const prevInput = document.getElementById(`editor-block-${Math.max(0, index - 1)}`);
+        if (prevInput) prevInput.focus();
+      }, 10);
+    }
+  };
+
+  return (
+    <div className={`w-full h-full flex flex-col justify-start space-y-2 select-text ${isDark ? 'text-white' : 'text-slate-900'}`}>
+      {blocks.map((block, i) => {
+        if (block.type === 'h1') {
+          return (
+            <textarea
+              key={block.id || i}
+              id={`editor-block-${i}`}
+              value={block.content}
+              onChange={(e) => updateBlock(i, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(i, e)}
+              rows={1}
+              ref={(el) => {
+                if (el) {
+                  el.style.height = 'auto';
+                  el.style.height = `${el.scrollHeight}px`;
+                }
+              }}
+              className={`w-full bg-transparent text-[18px] sm:text-[20px] font-extrabold tracking-tight border-b pb-1 focus:outline-none resize-none font-sans ${
+                isDark ? 'text-white border-neutral-700' : 'text-slate-900 border-slate-200'
+              }`}
+              placeholder="Title..."
+            />
+          );
+        }
+
+        if (block.type === 'h2') {
+          return (
+            <textarea
+              key={block.id || i}
+              id={`editor-block-${i}`}
+              value={block.content}
+              onChange={(e) => updateBlock(i, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(i, e)}
+              rows={1}
+              ref={(el) => {
+                if (el) {
+                  el.style.height = 'auto';
+                  el.style.height = `${el.scrollHeight}px`;
+                }
+              }}
+              className={`w-full bg-transparent text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mt-2 focus:outline-none resize-none font-sans ${
+                isDark ? 'text-slate-100 border-neutral-700' : 'text-slate-800 border-slate-200'
+              }`}
+              placeholder="Section..."
+            />
+          );
+        }
+
+        if (block.type === 'h3') {
+          return (
+            <textarea
+              key={block.id || i}
+              id={`editor-block-${i}`}
+              value={block.content}
+              onChange={(e) => updateBlock(i, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(i, e)}
+              rows={1}
+              ref={(el) => {
+                if (el) {
+                  el.style.height = 'auto';
+                  el.style.height = `${el.scrollHeight}px`;
+                }
+              }}
+              className={`w-full bg-transparent text-[14px] sm:text-[15px] font-semibold tracking-tight focus:outline-none resize-none font-sans ${
+                isDark ? 'text-slate-200' : 'text-slate-800'
+              }`}
+              placeholder="Subheading..."
+            />
+          );
+        }
+
+        if (block.type === 'bullet') {
+          return (
+            <div key={block.id || i} className="flex items-start gap-2.5 pl-1 my-0.5">
+              <span className={`font-bold shrink-0 mt-1.5 text-[8px] ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}>●</span>
+              <textarea
+                id={`editor-block-${i}`}
+                value={block.content}
+                onChange={(e) => updateBlock(i, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(i, e)}
+                rows={1}
+                ref={(el) => {
+                  if (el) {
+                    el.style.height = 'auto';
+                    el.style.height = `${el.scrollHeight}px`;
+                  }
+                }}
+                className={`w-full bg-transparent text-[13px] sm:text-[14px] leading-snug focus:outline-none resize-none font-sans ${
+                  isDark ? 'text-slate-200' : 'text-slate-800'
+                }`}
+                placeholder="List item..."
+              />
+            </div>
+          );
+        }
+
+        return (
+          <textarea
+            key={block.id || i}
+            id={`editor-block-${i}`}
+            value={block.content}
+            onChange={(e) => updateBlock(i, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(i, e)}
+            rows={1}
+            ref={(el) => {
+              if (el) {
+                el.style.height = 'auto';
+                el.style.height = `${el.scrollHeight}px`;
+              }
+            }}
+            className={`w-full bg-transparent text-[13px] sm:text-[14px] leading-relaxed focus:outline-none resize-none font-sans ${
+              isDark ? 'text-slate-300' : 'text-slate-700'
+            }`}
+            placeholder="Type text..."
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+export const RenderEditableMarkdown = RenderBlockMarkdownEditor;
+
 const SlideCard = ({
   markdown = "",
-  isDark = false
+  isDark = false,
+  onChange
 }: {
   markdown?: string;
   isDark?: boolean;
+  onChange?: (val: string) => void;
 }) => {
   return (
     <div className={`w-full h-full flex-1 min-h-0 rounded-[20px] p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
-      isDark ? 'bg-[#1E2024] text-white' : 'bg-slate-50/70 text-slate-900'
+      isDark ? 'bg-[#1E2024] text-white' : 'bg-white text-slate-900 border border-slate-200/80 shadow-xs'
     }`}>
-      <RenderSlideMarkdown text={markdown} isDark={isDark} />
+      <RenderBlockMarkdownEditor text={markdown} isDark={isDark} isSlide={true} onChange={onChange} />
     </div>
   );
 };
 
 const DocCard = ({
   markdown = "",
-  isDark = false
+  isDark = false,
+  onChange
 }: {
   markdown?: string;
   isDark?: boolean;
+  onChange?: (val: string) => void;
 }) => {
   return (
     <div className={`w-full h-full flex-1 min-h-0 rounded-[18px] p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
-      isDark ? 'bg-[#222427] text-white' : 'bg-slate-50/70 text-slate-900'
+      isDark ? 'bg-[#222427] text-white' : 'bg-white text-slate-900 border border-slate-200/80 shadow-xs'
     }`}>
-      <RenderDocMarkdown text={markdown} isDark={isDark} />
+      <RenderBlockMarkdownEditor text={markdown} isDark={isDark} isSlide={false} onChange={onChange} />
     </div>
   );
 };
@@ -449,7 +686,8 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
   }`;
 
   const CardComponent = isSlide ? SlideCard : DocCard;
-  const headerTextColor = isDark ? 'text-white' : 'text-[#1B1C1D]';
+  const isOuterDark = isDark || Boolean(className?.includes('bg-transparent'));
+  const headerTextColor = isOuterDark ? 'text-white/90 dark:text-white/90' : 'text-[#1B1C1D]';
 
   return (
     <div className={className || defaultClasses}>
@@ -466,7 +704,14 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
           </h2>
 
           <div className={hideFooterText ? "mb-0 flex-1 min-h-0 flex flex-col overflow-hidden" : "mb-4"}>
-            <CardComponent markdown={col1Markdown} isDark={isDark} />
+            <CardComponent 
+              markdown={col1Markdown} 
+              isDark={isDark} 
+              onChange={(val: string) => {
+                if (file) file.originalMarkdown = val;
+                if (task) task.originalMarkdown = val;
+              }}
+            />
           </div>
 
           {!hideFooterText && (
@@ -490,7 +735,19 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
           </h2>
 
           <div className={hideFooterText ? "mb-0 flex-1 min-h-0 flex flex-col overflow-hidden" : "mb-4"}>
-            <CardComponent markdown={col2Markdown} isDark={isDark} />
+            <CardComponent 
+              markdown={col2Markdown} 
+              isDark={isDark} 
+              onChange={(val: string) => {
+                if (file) {
+                  file.updatedMarkdown = val;
+                  file.content = val;
+                }
+                if (task) {
+                  task.updatedMarkdown = val;
+                }
+              }}
+            />
           </div>
 
           {!hideFooterText && (
