@@ -34,10 +34,10 @@ interface SpaceDashboardProps {
   setViewState?: (state: any) => void;
   setActiveSidebar?: (sidebar: any) => void;
   handleSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
-  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C' | 'D') => void;
+  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C' | 'D' | 'E') => void;
   userProfile?: any;
   accessToken?: string | null;
-  playOptionMode?: 'A' | 'B' | 'C' | 'D';
+  playOptionMode?: 'A' | 'B' | 'C' | 'D' | 'E';
   isOptionCOpen?: boolean;
   onCloseOptionC?: () => void;
   onSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;

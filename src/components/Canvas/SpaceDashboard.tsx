@@ -9,6 +9,7 @@ import { CardHeader } from '../Shared/CardHeader';
 import { NullTitle } from '../Shared/NullTitle';
 import { AddWidgetModal } from './AddWidgetModal';
 import { OptionCView } from './OptionCView';
+import { TheatreTaskCell } from './TheatreView';
 import { useCalendarMeeting } from '../../hooks/useCalendarMeeting';
 
 interface SpaceDashboardProps {
@@ -34,8 +35,8 @@ interface SpaceDashboardProps {
   setActiveSidebar?: (sidebar: any) => void;
   userProfile?: any;
   accessToken?: string | null;
-  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C' | 'D') => void;
-  playOptionMode?: 'A' | 'B' | 'C' | 'D';
+  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C' | 'D' | 'E') => void;
+  playOptionMode?: 'A' | 'B' | 'C' | 'D' | 'E';
   isOptionCOpen?: boolean;
   onCloseOptionC?: () => void;
   onSendMessage?: (text: string, aiMode?: boolean, contextFiles?: any[]) => void;
@@ -506,7 +507,107 @@ export function SpaceDashboard({
         )}
       </AnimatePresence>
 
-      {isOptionCOpen ? (
+      {playOptionMode === 'E' ? (
+        <div className="w-full h-full flex-1 flex overflow-hidden p-4 gap-4 select-text">
+          {/* Option E Snapped Left Cell List */}
+          <div className="w-80 shrink-0 h-full bg-white dark:bg-[#18191B] rounded-[24px] border border-slate-200 dark:border-neutral-800 p-4 flex flex-col overflow-y-auto font-['Google_Sans','Google_Sans_Text',sans-serif]">
+            <h3 className="text-[18px] leading-[24px] font-medium mb-3 px-2 text-slate-900 dark:text-white text-left">
+              Tasks ({todoItems?.length || 0})
+            </h3>
+            <div className="flex flex-col gap-2">
+              {(todoItems || []).map((item, idx) => (
+                <TheatreTaskCell
+                  key={item.id || idx}
+                  item={item}
+                  isSelected={false}
+                  isSignedOff={item.status === 'done'}
+                  onClick={() => {
+                    if (onProactiveTaskClick) {
+                      onProactiveTaskClick(item);
+                    }
+                  }}
+                  onOpenSource={() => {}}
+                  theme="light"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Main Dashboard Grid */}
+          <div 
+            ref={containerRef}
+            onDragOver={handleContainerDragOver}
+            onDragLeave={(e) => {
+              if (!containerRef.current?.contains(e.relatedTarget as Node)) {
+                setDragOverCardId(null);
+                setDragOverPosition(null);
+              }
+            }}
+            onDrop={handleContainerDrop}
+            className={`flex-1 grid ${gridLayoutClass} gap-4 px-2 pt-2 pb-6 overflow-y-auto items-stretch justify-stretch relative`}
+          >
+            {pinnedFiles.map((file, idx) => {
+              if (!file) return null;
+              const fileId = file.id || file.driveId || 'file-' + idx;
+              const isTodo = file.isInferredTask || file.id === 'todo-card' || file.name === 'inferred_tasks.json' || file.name === 'To-dos';
+              const isHtml = !isTodo && file.name && (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase() === 'index.html');
+              const isDragOver = dragOverCardId === fileId;
+              const isSelected = activeMenuCardId === fileId || draggedCardId === fileId;
+              let todoTitle = 'To-dos';
+              if (isTodo && file.content) {
+                try {
+                  const parsed = JSON.parse(file.content);
+                  if (parsed.title) todoTitle = parsed.title;
+                } catch (e) {}
+              }
+
+              return (
+                <div 
+                  key={fileId}
+                  className="relative group w-full h-full min-h-[360px]"
+                >
+                  <Card 
+                    theme={theme}
+                    isSelected={isSelected}
+                    className="w-full h-full flex-1 flex flex-col overflow-hidden"
+                    header={
+                      <CardHeader 
+                        title={isTodo ? todoTitle : (file.name || 'Untitled')}
+                        count={isTodo && todoItems && todoItems.length > 0 ? todoItems.length : undefined}
+                        onTitleClick={(e) => {
+                          e.stopPropagation();
+                          onSelectArtifact(file);
+                        }}
+                        theme={theme}
+                      />
+                    }
+                  >
+                    <div className="flex-1 min-h-0 relative w-full h-full">
+                      {isTodo ? (
+                        <div className="w-full h-full p-4 overflow-y-auto">
+                          <InferredTaskCard 
+                            item={file}
+                            onClick={() => onSelectArtifact(file)}
+                            getFileIcon={getFileIcon}
+                          />
+                        </div>
+                      ) : isHtml ? (
+                        <AppView 
+                          sandboxUrl={sandboxUrl || ''} 
+                          envId={envId} 
+                          files={sandboxFiles}
+                        />
+                      ) : (
+                        <NativeViewer file={file} theme={theme} />
+                      )}
+                    </div>
+                  </Card>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : isOptionCOpen ? (
         <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden p-0">
           <OptionCView
             todoItems={todoItems || []}

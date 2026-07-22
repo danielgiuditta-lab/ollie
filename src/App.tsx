@@ -164,12 +164,17 @@ export default function App() {
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
   const [isTheatreOpen, setIsTheatreOpen] = useState(false);
-  const [playOptionMode, setPlayOptionMode] = useState<'A' | 'B' | 'C' | 'D'>('C');
+  const [playOptionMode, setPlayOptionMode] = useState<'A' | 'B' | 'C' | 'D' | 'E'>('C');
 
-  const handleOpenTheatre = (mode?: 'A' | 'B' | 'C' | 'D') => {
+  const handleOpenTheatre = (mode?: 'A' | 'B' | 'C' | 'D' | 'E') => {
     const targetMode = mode || playOptionMode;
     setPlayOptionMode(targetMode);
     if (targetMode === 'A') {
+      if (todoItems.length > 0) {
+        handleProactiveTaskClick(todoItems[0]);
+      }
+    } else if (targetMode === 'E') {
+      setIsTheatreOpen(true);
       if (todoItems.length > 0) {
         handleProactiveTaskClick(todoItems[0]);
       }

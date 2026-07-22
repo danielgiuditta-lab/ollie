@@ -29,9 +29,9 @@ interface LeftNavProps {
   onSelectChat?: (space: any, chat: any) => void;
   onLogout?: () => void;
   isGroupChat?: boolean;
-  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C' | 'D') => void;
-  playOptionMode?: 'A' | 'B' | 'C' | 'D';
-  onSelectPlayOptionMode?: (mode: 'A' | 'B' | 'C' | 'D') => void;
+  onOpenTheatre?: (optionMode?: 'A' | 'B' | 'C' | 'D' | 'E') => void;
+  playOptionMode?: 'A' | 'B' | 'C' | 'D' | 'E';
+  onSelectPlayOptionMode?: (mode: 'A' | 'B' | 'C' | 'D' | 'E') => void;
 }
 
 // Deterministic emoji helper based on space name hash & domain keywords
@@ -565,6 +565,26 @@ export function LeftNav({
               </span>
               <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
                 Snapped left task column in Light Mode with classic canvas & bottom controls.
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                if (onChangeChatModel) onChangeChatModel('B');
+                if (onSelectPlayOptionMode) onSelectPlayOptionMode('E');
+                setShowSettingsPopover(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-colors flex flex-col gap-0.5 ${
+                playOptionMode === 'E'
+                  ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-semibold'
+                  : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'
+              }`}
+            >
+              <span className="flex items-center justify-between">
+                <span>Option E: Zen Mode in Product</span>
+                <span className="text-[9px] bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-1 py-0.5 rounded font-bold">Light</span>
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-normal">
+                Snapped left cell list with standard product canvas & bottom controls.
               </span>
             </button>
           </div>
