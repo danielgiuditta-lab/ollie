@@ -375,7 +375,9 @@ export function TheatreView({
       onSendMessage(fullMsg);
       setSteerInput('');
     }
-    onClose();
+    if (!embedded) {
+      onClose();
+    }
     if (setActiveSidebar) {
       setActiveSidebar('gemini');
     }
