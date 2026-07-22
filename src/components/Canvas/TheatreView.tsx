@@ -56,9 +56,9 @@ function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpenSource,
   return (
     <div
       onClick={onClick}
-      className={`p-4 rounded-[2px] first:rounded-t-[16px] last:rounded-b-[16px] cursor-pointer transition-all duration-150 select-none flex items-start justify-between gap-3 min-w-0 ${
+      className={`p-4 rounded-[4px] cursor-pointer transition-all duration-150 select-none flex items-start justify-between gap-3 min-w-0 ${
         isLight
-          ? isSelected ? 'bg-blue-50 border border-blue-200' : 'bg-slate-50 hover:bg-slate-100 border border-slate-200/60'
+          ? isSelected ? 'bg-blue-50/80 text-blue-900 font-medium' : 'bg-slate-100/60 hover:bg-slate-100 text-slate-800'
           : isSelected ? 'bg-[#222428]' : 'bg-[#1E1F22] hover:bg-[#232529]'
       }`}
     >
@@ -610,8 +610,8 @@ export function TheatreView({
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleOpenSourceChip(activeTask?.links?.[0]?.url || activeTask?.sourceName || activeTask?.title)}
-            className={`h-9 px-4 rounded-full text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer border ${
-              isLight ? 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-3xs' : 'bg-black hover:bg-[#1E1F22] text-white border-white/10'
+            className={`h-9 px-4 rounded-full text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-black hover:bg-[#1E1F22] text-white'
             }`}
           >
             {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}
@@ -619,8 +619,8 @@ export function TheatreView({
           </button>
           <button
             onClick={onClose}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer border ${
-              isLight ? 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-3xs' : 'bg-black hover:bg-[#1E1F22] text-white border-white/10'
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-black hover:bg-[#1E1F22] text-white'
             }`}
             title="Close Taskview"
           >
@@ -642,16 +642,16 @@ export function TheatreView({
               transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
               className="shrink-0 h-full overflow-hidden"
             >
-              <div className={`w-80 md:w-[380px] h-full rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] shadow-xl border ${
-                isLight ? 'bg-white/95 border-slate-200/90 text-slate-900' : 'bg-[#131314]/90 border-white/5 text-white backdrop-blur-md'
+              <div className={`w-80 md:w-[380px] h-full rounded-[24px] p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] ${
+                isLight ? 'bg-white text-slate-900' : 'bg-[#131314]/90 text-white backdrop-blur-md'
               }`}>
                 {/* Needs your approval */}
                 {approvalTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal pt-2 mb-4 px-4 ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
+                    <h3 className={`text-[20px] leading-[28px] font-normal pt-2 mb-4 px-4 text-left ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       Needs your approval
                     </h3>
-                    <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
+                    <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
                       {approvalTasks.map((item) => {
                         const itemIndex = orderedTodoItems.findIndex(t => t.id === item.id);
                         const isSelected = itemIndex === activeIndex;
@@ -676,10 +676,10 @@ export function TheatreView({
                 {/* Continue working on... */}
                 {continueWorkingTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 ${approvalTasks.length > 0 ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
+                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 text-left ${approvalTasks.length > 0 ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       Continue working on...
                     </h3>
-                    <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
+                    <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
                       {continueWorkingTasks.map((item) => {
                         const itemIndex = orderedTodoItems.findIndex(t => t.id === item.id);
                         const isSelected = itemIndex === activeIndex;
@@ -704,10 +704,10 @@ export function TheatreView({
                 {/* FYI Tasks ("For your FYI") */}
                 {fyiTasks.length > 0 && (
                   <div className="flex flex-col">
-                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 ${(approvalTasks.length > 0 || continueWorkingTasks.length > 0) ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
+                    <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 text-left ${(approvalTasks.length > 0 || continueWorkingTasks.length > 0) ? 'pt-6' : 'pt-2'} ${isLight ? 'text-slate-900' : 'text-[#E3E3E3]'}`}>
                       For your FYI
                     </h3>
-                    <div className="flex flex-col gap-[2px] rounded-[16px] overflow-hidden">
+                    <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
                       {fyiTasks.map((item) => {
                         const itemIndex = orderedTodoItems.findIndex(t => t.id === item.id);
                         const isSelected = itemIndex === activeIndex;
@@ -749,8 +749,8 @@ export function TheatreView({
                   opacity: { duration: 0.75 },
                   scale: { duration: 0.75 }
                 }}
-                className={`w-full h-full rounded-[24px] overflow-y-auto shadow-2xl flex flex-col p-8 select-text border absolute inset-0 ${
-                  isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#131314]/90 border-white/5 text-white backdrop-blur-md'
+                className={`w-full h-full rounded-[24px] overflow-y-auto flex flex-col p-8 select-text absolute inset-0 ${
+                  isLight ? 'bg-white text-slate-900' : 'bg-[#131314]/90 text-white backdrop-blur-md'
                 }`}
               >
                 {isChatReplyTask ? (
@@ -758,12 +758,16 @@ export function TheatreView({
                     {/* Left Column: Title, Meta, and Context Unit (Half of Canvas) */}
                     <div className="w-1/2 h-full flex flex-col items-start justify-center pr-4 md:pr-6 min-w-0">
                       {/* Title */}
-                      <h3 className="text-[32px] md:text-[36px] leading-[40px] font-normal text-white tracking-normal font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                      <h3 className={`text-[32px] md:text-[36px] leading-[40px] font-normal tracking-normal font-['Google_Sans','Google_Sans_Text',sans-serif] ${
+                        isLight ? 'text-slate-900' : 'text-white'
+                      }`}>
                         {canvasTitleText}
                       </h3>
 
                       {/* Meta */}
-                      <p className="text-[20px] md:text-[22px] leading-[28px] font-normal text-[#9AA0A6] mt-3 md:mt-4 font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                      <p className={`text-[20px] md:text-[22px] leading-[28px] font-normal mt-3 md:mt-4 font-['Google_Sans','Google_Sans_Text',sans-serif] ${
+                        isLight ? 'text-slate-500' : 'text-[#9AA0A6]'
+                      }`}>
                         {canvasMetaText}
                       </p>
 
@@ -772,7 +776,9 @@ export function TheatreView({
                         {activePersonName && (
                           <div 
                             onClick={() => handleOpenSourceChip(activePersonName)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[13px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[13px] font-normal transition-colors cursor-pointer ${
+                              isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#28292D] hover:bg-[#33353B] text-[#E3E3E3]'
+                            }`}
                           >
                             {canvasAvatarElement}
                             <span className="truncate max-w-[140px]">{activePersonName}</span>
@@ -782,7 +788,9 @@ export function TheatreView({
                         {activeSourceName && (
                           <div 
                             onClick={() => handleOpenSourceChip(activeSourceName)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[13px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[13px] font-normal transition-colors cursor-pointer ${
+                              isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#28292D] hover:bg-[#33353B] text-[#E3E3E3]'
+                            }`}
                           >
                             {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
                             <span className="truncate max-w-[160px]">{activeSourceName}</span>
@@ -795,7 +803,9 @@ export function TheatreView({
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-[13px] font-normal transition-colors"
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-normal transition-colors ${
+                              isLight ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' : 'bg-blue-950/40 hover:bg-blue-900/50 text-blue-400'
+                            }`}
                           >
                             {link.label || 'Open Link'}
                           </a>
@@ -808,7 +818,7 @@ export function TheatreView({
                       {/* Sender Message Row */}
                       <div className="flex items-start gap-3 justify-start max-w-[85%]">
                         {/* Sender Avatar */}
-                        <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md border border-white/10">
+                        <div className="w-11 h-11 rounded-full overflow-hidden shrink-0">
                           {activeAvatar ? (
                             <img 
                               src={activeAvatar} 
@@ -826,7 +836,9 @@ export function TheatreView({
                         </div>
 
                         {/* Sender Bubble */}
-                        <div className="bg-[#2D2E30] text-white/90 text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-lg max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                        <div className={`text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif] ${
+                          isLight ? 'bg-slate-100 text-slate-900' : 'bg-[#2D2E30] text-white/90 shadow-lg'
+                        }`}>
                           {activeTask?.senderMessage || activeTask?.commentText || "hey dan, what was the conversation rate right after launch?"}
                         </div>
                       </div>
@@ -834,20 +846,26 @@ export function TheatreView({
                       {/* Proposed Reply Row */}
                       <div className="flex items-end gap-3 justify-end max-w-[85%] ml-auto mt-2">
                         {/* Proposed Reply Bubble */}
-                        <div className="bg-[#45474A] text-white text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] shadow-lg max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-5 relative group">
+                        <div className={`text-[17px] md:text-[18px] leading-[25px] md:leading-[26px] font-normal px-6 py-4 rounded-[26px] max-w-[70%] font-['Google_Sans','Google_Sans_Text',sans-serif] flex items-center justify-between gap-5 relative group ${
+                          isLight ? 'bg-blue-50/80 text-blue-950' : 'bg-[#45474A] text-white shadow-lg'
+                        }`}>
                           {isEditingProposal ? (
                             <div className="flex flex-col gap-2 min-w-[220px] w-full">
                               <textarea
                                 value={editableProposalText}
                                 onChange={(e) => setEditableProposalText(e.target.value)}
-                                className="w-full bg-black/40 text-white text-[16px] leading-[24px] font-normal p-3 rounded-xl border border-white/30 focus:outline-none focus:border-white resize-none font-['Google_Sans','Google_Sans_Text',sans-serif]"
+                                className={`w-full text-[16px] leading-[24px] font-normal p-3 rounded-xl focus:outline-none resize-none font-['Google_Sans','Google_Sans_Text',sans-serif] ${
+                                  isLight ? 'bg-white text-slate-900 border-none' : 'bg-black/40 text-white border border-white/30 focus:border-white'
+                                }`}
                                 rows={3}
                                 autoFocus
                               />
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => setIsEditingProposal(false)}
-                                  className="px-3 py-1 rounded-full text-xs font-medium text-neutral-300 hover:text-white hover:bg-white/10 cursor-pointer"
+                                  className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${
+                                    isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60' : 'text-neutral-300 hover:text-white hover:bg-white/10'
+                                  }`}
                                 >
                                   Cancel
                                 </button>
@@ -858,7 +876,9 @@ export function TheatreView({
                                     }
                                     setIsEditingProposal(false);
                                   }}
-                                  className="px-3 py-1 rounded-full text-xs font-medium bg-white text-black hover:bg-neutral-200 cursor-pointer"
+                                  className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${
+                                    isLight ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-white text-black hover:bg-neutral-200'
+                                  }`}
                                 >
                                   Save
                                 </button>
@@ -874,17 +894,19 @@ export function TheatreView({
                                   e.stopPropagation();
                                   setIsEditingProposal(true);
                                 }}
-                                className="inline-flex items-center justify-center p-1 rounded-full text-white/90 hover:text-white hover:bg-white/20 transition-all cursor-pointer shrink-0 self-center"
+                                className={`inline-flex items-center justify-center p-1 rounded-full transition-all cursor-pointer shrink-0 self-center ${
+                                  isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60' : 'text-white/90 hover:text-white hover:bg-white/20'
+                                }`}
                                 title="Edit proposed reply"
                               >
-                                <Pencil size={20} className="text-white stroke-[2.2]" />
+                                <Pencil size={20} className="stroke-[2.2]" />
                               </button>
                             </>
                           )}
                         </div>
 
                         {/* User Avatar */}
-                        <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-md border border-white/10">
+                        <div className="w-11 h-11 rounded-full overflow-hidden shrink-0">
                           <img 
                             src={userProfile?.picture || '/people/sarah_lin.jpg'} 
                             alt="User" 
@@ -903,12 +925,12 @@ export function TheatreView({
                     {activeTask && (
                       <div className={`w-full shrink-0 flex flex-col items-start ${isTaskListOpen ? 'max-w-[70%]' : 'max-w-[50%]'} mb-[40px] font-['Google_Sans','Google_Sans_Text',sans-serif] transition-all duration-300`}>
                         {/* Title: 32px with tightened line spacing (leading-[38px]) */}
-                        <h3 className="text-[32px] leading-[38px] font-normal text-white">
+                        <h3 className={`text-[32px] leading-[38px] font-normal ${isLight ? 'text-slate-900' : 'text-white'}`}>
                           {canvasTitleText}
                         </h3>
 
                         {/* Metaline: 20px with auto line height, capped at 2 lines */}
-                        <p className="text-[20px] leading-normal font-normal text-neutral-300 mt-2 line-clamp-2 overflow-hidden text-ellipsis">
+                        <p className={`text-[20px] leading-normal font-normal mt-2 line-clamp-2 overflow-hidden text-ellipsis ${isLight ? 'text-slate-500' : 'text-neutral-300'}`}>
                           {canvasMetaText}
                         </p>
 
@@ -917,7 +939,9 @@ export function TheatreView({
                           {activePersonName && (
                             <div 
                               onClick={() => handleOpenSourceChip(activePersonName)}
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] font-normal transition-colors cursor-pointer ${
+                                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#28292D] hover:bg-[#33353B] text-[#E3E3E3]'
+                              }`}
                             >
                               {canvasAvatarElement}
                               <span className="truncate max-w-[140px]">{activePersonName}</span>
@@ -927,7 +951,9 @@ export function TheatreView({
                           {activeSourceName && (
                             <div 
                               onClick={() => handleOpenSourceChip(activeSourceName)}
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#28292D] hover:bg-[#33353B] text-[12px] font-normal text-[#E3E3E3] transition-colors cursor-pointer"
+                              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] font-normal transition-colors cursor-pointer ${
+                                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#28292D] hover:bg-[#33353B] text-[#E3E3E3]'
+                              }`}
                             >
                               {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
                               <span className="truncate max-w-[160px]">{activeSourceName}</span>
@@ -940,7 +966,9 @@ export function TheatreView({
                               href={link.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-[12px] font-normal transition-colors"
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-normal transition-colors ${
+                                isLight ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' : 'bg-blue-950/40 hover:bg-blue-900/50 text-blue-400'
+                              }`}
                             >
                               {link.label || 'Open Link'}
                             </a>
@@ -955,7 +983,7 @@ export function TheatreView({
                         {activeFileObject.originalMarkdown || activeFileObject.updatedMarkdown ? (
                           <InferredTaskDiffView 
                             file={activeFileObject}
-                            theme="light"
+                            theme={theme}
                             className="w-full h-full flex flex-col items-stretch justify-start bg-transparent p-0 overflow-hidden"
                             hideFooterText={true}
                           />
@@ -964,7 +992,7 @@ export function TheatreView({
                             file={activeFileObject}
                             hideHeader={true}
                             mode="preview"
-                            theme="light"
+                            theme={theme}
                           />
                         )}
                       </div>
@@ -989,7 +1017,9 @@ export function TheatreView({
                   transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
                   className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
                 >
-                  <div className="bg-black/95 text-white font-['Google_Sans','Google_Sans_Text',sans-serif] text-[32px] leading-none font-normal p-4 px-8 rounded-full shadow-2xl border border-white/10 flex items-center gap-3 backdrop-blur-md">
+                  <div className={`font-['Google_Sans','Google_Sans_Text',sans-serif] text-[32px] leading-none font-normal p-4 px-8 rounded-full flex items-center gap-3 ${
+                    isLight ? 'bg-slate-900 text-white' : 'bg-black/95 text-white border border-white/10 backdrop-blur-md'
+                  }`}>
                     {actionToast.text === 'Approved' && (
                       <Check className="w-8 h-8 text-[#34A853] stroke-[2.5] shrink-0" />
                     )}
@@ -1012,8 +1042,8 @@ export function TheatreView({
             <button
               onClick={handlePrev}
               disabled={activeIndex === 0}
-              className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-lg ${
-                isLight ? 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
+              className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 ${
+                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
               }`}
               title="Previous task"
             >
@@ -1023,8 +1053,8 @@ export function TheatreView({
             {/* Reject / Decline Button */}
             <button
               onClick={handleReject}
-              className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-lg ${
-                isLight ? 'bg-white hover:bg-slate-100 border border-slate-200 text-rose-600' : 'bg-[#121316] hover:bg-[#1C1D21]'
+              className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-rose-600' : 'bg-[#121316] hover:bg-[#1C1D21]'
               }`}
               title="Decline"
             >
@@ -1033,8 +1063,8 @@ export function TheatreView({
 
             {/* Center Steer Input Pill */}
             <div 
-              className={`rounded-full flex items-center gap-3 transition-all duration-300 ease-in-out shadow-lg ${
-                isLight ? 'bg-white border border-slate-200 text-slate-900' : 'bg-[#121316] border-none text-white backdrop-blur-md'
+              className={`rounded-full flex items-center gap-3 transition-all duration-300 ease-in-out ${
+                isLight ? 'bg-slate-100 text-slate-900' : 'bg-[#121316] text-white backdrop-blur-md'
               } ${
                 (isInputFocused || steerInput.trim().length > 0)
                   ? 'h-[72px] w-[340px] md:w-[620px] px-4' 
@@ -1053,7 +1083,7 @@ export function TheatreView({
                     e.stopPropagation();
                   }}
                   className={`w-11 h-11 rounded-full flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none ${
-                    isLight ? 'hover:bg-slate-100 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
+                    isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
                   }`}
                   title="Add attachment or context"
                 >
@@ -1096,7 +1126,7 @@ export function TheatreView({
                       handleDockToSide();
                     }}
                     className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
-                      isLight ? 'hover:bg-slate-100 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
+                      isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
                     }`}
                     title="Snap to side chat"
                   >
@@ -1117,8 +1147,8 @@ export function TheatreView({
                     disabled={!steerInput.trim()}
                     className={`w-11 h-11 rounded-full flex items-center justify-center transition border-none outline-none ${
                       steerInput.trim()
-                        ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer shadow-md'
-                        : isLight ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white/10 text-neutral-500 cursor-not-allowed'
+                        ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer'
+                        : isLight ? 'bg-slate-200/60 text-slate-400 cursor-not-allowed' : 'bg-white/10 text-neutral-500 cursor-not-allowed'
                     }`}
                     title={steerInput.trim() ? "Submit steer" : "Send"}
                   >
@@ -1138,8 +1168,8 @@ export function TheatreView({
                   handleApprove();
                 }
               }}
-              className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 shadow-lg ${
-                isLight ? 'bg-white hover:bg-slate-100 border border-slate-200' : 'bg-[#121316] hover:bg-[#1C1D21]'
+              className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                isLight ? 'bg-slate-100 hover:bg-slate-200/80' : 'bg-[#121316] hover:bg-[#1C1D21]'
               }`}
               title={steerInput.trim() ? "Submit steer" : "Accept"}
             >
@@ -1150,8 +1180,8 @@ export function TheatreView({
             <button
               onClick={handleNext}
               disabled={activeIndex === todoItems.length - 1}
-              className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 shadow-lg ${
-                isLight ? 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
+              className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 ${
+                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
               }`}
               title="Next task"
             >

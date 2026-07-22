@@ -1069,8 +1069,8 @@ export function NativeViewer({
             <div className="flex-1 w-full h-full p-4 sm:p-6 flex flex-col items-center justify-between overflow-y-auto">
               {/* Active Main Viewport Slide Card - Full Width with 16px (px-4) canvas side padding */}
               <div className="w-full px-4 flex-1 flex flex-col items-center justify-center max-w-full">
-                <div className={`w-full aspect-[16/9] max-h-[62vh] max-w-[110vh] rounded-[24px] sm:rounded-[28px] p-8 sm:p-12 flex flex-col justify-between border relative overflow-hidden transition-all duration-300 ${
-                  isDark ? 'border-neutral-800 bg-[#1E1F22] text-white shadow-none' : 'border-slate-200/90 bg-white text-slate-900 shadow-sm'
+                <div className={`w-full aspect-[16/9] max-h-[62vh] max-w-[110vh] rounded-[24px] sm:rounded-[28px] p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden transition-all duration-300 ${
+                  isDark ? 'bg-[#1E1F22] text-white' : 'bg-slate-50/70 text-slate-900'
                 }`}>
                   <div className={`w-full text-[16px] sm:text-[18px] leading-relaxed flex-1 flex flex-col justify-center overflow-y-auto ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
                     <RenderSlideMarkdown text={currentSlideContent} isDark={isDark} />
@@ -1093,10 +1093,10 @@ export function NativeViewer({
                       </span>
                       <button
                         onClick={() => handleSelectSlide(idx)}
-                        className={`w-[164px] h-[104px] rounded-xl border transition-all duration-200 overflow-hidden relative cursor-pointer text-left p-2 flex flex-col justify-start ${
+                        className={`w-[164px] h-[104px] rounded-xl transition-all duration-200 overflow-hidden relative cursor-pointer text-left p-2 flex flex-col justify-start ${
                           isActive
-                            ? 'ring-2 ring-blue-500 border-blue-500 dark:border-blue-400 bg-white dark:bg-[#1E1F22] shadow-md scale-[1.02]'
-                            : 'border-slate-200 dark:border-neutral-800 bg-white dark:bg-[#1E1F22] hover:border-slate-300 dark:hover:border-neutral-700 opacity-90 hover:opacity-100'
+                            ? 'ring-2 ring-blue-500 bg-white dark:bg-[#1E1F22] scale-[1.02]'
+                            : 'bg-slate-100 dark:bg-[#1E1F22] opacity-90 hover:opacity-100'
                         }`}
                         title={`Slide ${idx + 1}`}
                       >

@@ -170,14 +170,14 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
         )}
 
         {/* Hero Stat Banner Pill */}
-        <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs ${
-          isDark ? 'bg-neutral-800/90 border-neutral-700 text-amber-300' : 'bg-slate-900 text-white border-slate-800'
+        <div className={`p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+          isDark ? 'bg-neutral-800/90 text-amber-300' : 'bg-blue-50 text-blue-950'
         }`}>
           <div className="text-[13px] sm:text-[14px] font-bold leading-snug">
             {heroContent.replace(/\*\*/g, '').replace(/`/g, '')}
           </div>
           <span className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-extrabold font-mono tracking-wide ${
-            isDark ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-amber-400 text-slate-950'
+            isDark ? 'bg-amber-400/20 text-amber-300' : 'bg-amber-200/70 text-blue-950'
           }`}>
             KEY METRIC
           </span>
@@ -186,15 +186,15 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
         {/* Bullet Points below Hero Metric */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
           {nonQuoteSections.map((secStr, sIdx) => (
-            <div key={sIdx} className={`p-3.5 rounded-xl border min-w-0 ${
-              isDark ? 'bg-neutral-800/50 border-neutral-700/80' : 'bg-slate-50 border-slate-200/80'
+            <div key={sIdx} className={`p-3.5 rounded-xl min-w-0 ${
+              isDark ? 'bg-neutral-800/50' : 'bg-slate-50'
             }`}>
               {secStr.split('\n').map((line, lIdx) => {
                 const trimmed = line.trim();
                 if (!trimmed || trimmed.startsWith('> ')) return null;
                 if (trimmed.startsWith('## ')) {
                   return (
-                    <h3 key={lIdx} className={`text-[13px] font-bold pb-1 mb-1 border-b ${isDark ? 'text-slate-200 border-neutral-700' : 'text-slate-800 border-slate-200'}`}>
+                    <h3 key={lIdx} className={`text-[13px] font-bold pb-1 mb-1 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                       {trimmed.replace(/^##\s+/, '')}
                     </h3>
                   );
@@ -237,8 +237,8 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
           {sections.map((secStr, sIdx) => (
-            <div key={sIdx} className={`p-3.5 rounded-xl border flex flex-col justify-between min-w-0 shadow-2xs ${
-              isDark ? 'bg-neutral-800/60 border-neutral-700 text-white' : 'bg-white border-slate-200 text-slate-900'
+            <div key={sIdx} className={`p-3.5 rounded-xl flex flex-col justify-between min-w-0 ${
+              isDark ? 'bg-neutral-800/60 text-white' : 'bg-slate-50 text-slate-900'
             }`}>
               <div className="space-y-1.5">
                 {secStr.split('\n').map((line, lIdx) => {
@@ -246,7 +246,7 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
                   if (!trimmed) return null;
                   if (trimmed.startsWith('# ') || trimmed.startsWith('## ')) {
                     return (
-                      <h3 key={lIdx} className={`text-[13px] font-bold pb-1 border-b ${isDark ? 'text-amber-300 border-neutral-700' : 'text-slate-900 border-slate-200'}`}>
+                      <h3 key={lIdx} className={`text-[13px] font-bold pb-1 ${isDark ? 'text-amber-300' : 'text-slate-900'}`}>
                         {trimmed.replace(/^#+\s+/, '')}
                       </h3>
                     );
@@ -286,8 +286,8 @@ export const RenderSlideMarkdown = ({ text, isDark = false }: { text: string; is
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start w-full">
           {sections.map((secStr, sIdx) => (
-            <div key={sIdx} className={`p-4 rounded-xl border min-w-0 shadow-2xs ${
-              isDark ? 'bg-neutral-800/70 border-neutral-700 text-white' : 'bg-slate-50 border-slate-200/90 text-slate-900'
+            <div key={sIdx} className={`p-4 rounded-xl min-w-0 ${
+              isDark ? 'bg-neutral-800/70 text-white' : 'bg-slate-50 text-slate-900'
             }`}>
               {secStr.split('\n').map((line, lIdx) => {
                 const trimmed = line.trim();
@@ -378,8 +378,8 @@ const SlideCard = ({
   isDark?: boolean;
 }) => {
   return (
-    <div className={`w-full h-full flex-1 min-h-0 rounded-[20px] border shadow-xs p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
-      isDark ? 'border-[#3E4042] bg-[#1E2024] text-white' : 'border-slate-200/90 bg-white text-slate-900'
+    <div className={`w-full h-full flex-1 min-h-0 rounded-[20px] p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
+      isDark ? 'bg-[#1E2024] text-white' : 'bg-slate-50/70 text-slate-900'
     }`}>
       <RenderSlideMarkdown text={markdown} isDark={isDark} />
     </div>
@@ -394,8 +394,8 @@ const DocCard = ({
   isDark?: boolean;
 }) => {
   return (
-    <div className={`w-full h-full flex-1 min-h-0 rounded-[18px] border shadow-sm p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
-      isDark ? 'border-[#3E4042] bg-[#222427] text-white' : 'border-slate-200/90 bg-white text-slate-900'
+    <div className={`w-full h-full flex-1 min-h-0 rounded-[18px] p-6 sm:p-7 flex flex-col justify-start relative overflow-y-auto select-text transition-all duration-300 ${
+      isDark ? 'bg-[#222427] text-white' : 'bg-slate-50/70 text-slate-900'
     }`}>
       <RenderDocMarkdown text={markdown} isDark={isDark} />
     </div>
@@ -449,7 +449,7 @@ export const InferredTaskDiffView: React.FC<InferredTaskDiffViewProps> = ({ file
   }`;
 
   const CardComponent = isSlide ? SlideCard : DocCard;
-  const headerTextColor = (isDark || hideFooterText || className?.includes('text-white')) ? 'text-white' : 'text-[#1B1C1D]';
+  const headerTextColor = isDark ? 'text-white' : 'text-[#1B1C1D]';
 
   return (
     <div className={className || defaultClasses}>
