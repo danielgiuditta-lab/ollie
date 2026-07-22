@@ -6495,7 +6495,9 @@ export default function App() {
       )}
 
       {/* 3. Canvas Container (Everything else) */}
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-white dark:bg-[#1E1F22] border-t-0 border-r-0 border-b-0 border-l border-[#E9EEF6] dark:border-[#2B2D31] rounded-none p-0 z-20 shadow-card">
+      <div className={`flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-white dark:bg-[#1E1F22] border-t-0 border-r-0 border-b-0 border-l border-[#E9EEF6] dark:border-[#2B2D31] rounded-none p-0 z-20 transition-shadow duration-300 ${
+        isLeftNavExpanded ? 'shadow-card' : 'shadow-none'
+      }`}>
         <CanvasHeader 
           projectName={projectName}
           projects={projects}

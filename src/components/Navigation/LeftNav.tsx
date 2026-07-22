@@ -105,7 +105,7 @@ export function LeftNav({
   };
 
   if (hideControls) {
-    return <div className="w-[72px] shrink-0 z-10 h-full" />;
+    return <div className="w-[72px] shrink-0 z-30 h-full" />;
   }
 
   // Combine projects (pinned) and recentTasks (recent workspaces) into a single Spaces list
@@ -233,10 +233,10 @@ export function LeftNav({
       }}
       transition={{ type: 'spring', stiffness: 320, damping: 32 }}
       className={`h-full pt-0 pb-6 flex flex-col gap-6 shrink-0 select-none border-t-0 border-b-0 border-l-0 ${
-        isChatSide && isExpandedActive
-          ? 'z-20 shadow-card border-r border-[#E9EEF6] dark:border-[#2B2D31]' 
-          : 'z-10 shadow-none border-r border-[#E9EEF6] dark:border-[#2B2D31]'
-      } transition-shadow duration-300 outline-none overflow-hidden relative bg-white dark:bg-[#0B0B0C] text-slate-800 dark:text-white`}
+        isExpandedActive
+          ? 'z-30 shadow-card border-r border-[#E9EEF6] dark:border-[#2B2D31]' 
+          : 'z-30 shadow-none border-r border-[#E9EEF6] dark:border-[#2B2D31]'
+      } transition-shadow duration-300 outline-none overflow-visible relative bg-white dark:bg-[#0B0B0C] text-slate-800 dark:text-white`}
       id={isExpandedActive ? 'left-nav-expanded' : 'left-nav-collapsed'}
     >
       {/* 1. Brand Logo Header */}
