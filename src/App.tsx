@@ -6534,6 +6534,10 @@ export default function App() {
           }
           isOptionCOpen={isTheatreOpen && playOptionMode === 'C'}
           onCloseOptionC={() => setIsTheatreOpen(false)}
+          onToggleSideChat={() => {
+            setChatDockPosition('side');
+            setActiveSidebar('gemini');
+          }}
         />
         <div className={`flex-1 flex overflow-hidden relative ${isSourcesPanelOpen ? 'gap-0' : 'gap-4'}`}>
           {isTheatreOpen && playOptionMode === 'D' && (

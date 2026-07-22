@@ -56,6 +56,7 @@ interface CanvasHeaderProps {
   chatModel?: 'A' | 'B';
   isOptionCOpen?: boolean;
   onCloseOptionC?: () => void;
+  onToggleSideChat?: () => void;
 }
 
 export function CanvasHeader({
@@ -82,7 +83,8 @@ export function CanvasHeader({
   recentTasks = [],
   chatModel = 'A',
   isOptionCOpen = false,
-  onCloseOptionC
+  onCloseOptionC,
+  onToggleSideChat
 }: CanvasHeaderProps) {
   if (isOptionCOpen) return null;
   const [isPinMenuOpen, setIsPinMenuOpen] = useState(false);
@@ -417,21 +419,32 @@ export function CanvasHeader({
 
         {/* Library side panel toggle button OR Close button for Play mode */}
         {(isOptionCOpen || activeProactiveTask) ? (
-          <button
-            onClick={() => {
-              if (onCloseOptionC) {
-                onCloseOptionC();
-              } else if (onCloseFile) {
-                onCloseFile();
-              } else if (onCloseWorkspace) {
-                onCloseWorkspace();
-              }
-            }}
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-slate-700 dark:text-white transition-all cursor-pointer border-none outline-none shrink-0"
-            title="Close view"
-          >
-            <X className="w-5 h-5 stroke-[2]" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onToggleSideChat && (
+              <button
+                onClick={onToggleSideChat}
+                className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-slate-700 dark:text-white transition-all cursor-pointer border-none outline-none shrink-0"
+                title="Snap chat to side panel"
+              >
+                <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (onCloseOptionC) {
+                  onCloseOptionC();
+                } else if (onCloseFile) {
+                  onCloseFile();
+                } else if (onCloseWorkspace) {
+                  onCloseWorkspace();
+                }
+              }}
+              className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-slate-700 dark:text-white transition-all cursor-pointer border-none outline-none shrink-0"
+              title="Close view"
+            >
+              <X className="w-5 h-5 stroke-[2]" />
+            </button>
+          </div>
         ) : (
           onToggleSourcesPanel && (
             <button

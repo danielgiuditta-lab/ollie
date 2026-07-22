@@ -1146,22 +1146,22 @@ export function TheatreView({
               />
 
               {/* Right Action Buttons */}
-              {(isInputFocused || steerInput.trim().length > 0) && (
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDockToSide();
-                    }}
-                    className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
-                      isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
-                    }`}
-                    title="Snap to side chat"
-                  >
-                    <span className="material-symbols-rounded text-[22px] select-none">dock_to_right</span>
-                  </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDockToSide();
+                  }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
+                    isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
+                  }`}
+                  title="Snap to side chat"
+                >
+                  <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+                </button>
 
+                {(isInputFocused || steerInput.trim().length > 0) && (
                   <button
                     type="button"
                     onClick={(e) => {
@@ -1174,7 +1174,7 @@ export function TheatreView({
                       }
                     }}
                     disabled={!steerInput.trim()}
-                    className={`w-11 h-11 rounded-full flex items-center justify-center transition border-none outline-none ${
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition border-none outline-none ${
                       steerInput.trim()
                         ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer'
                         : isLight ? 'bg-slate-200/60 text-slate-400 cursor-not-allowed' : 'bg-white/10 text-neutral-500 cursor-not-allowed'
@@ -1183,8 +1183,8 @@ export function TheatreView({
                   >
                     <ArrowUp size={18} className="stroke-[2.5]" />
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Approve / Accept Button */}
