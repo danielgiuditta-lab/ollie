@@ -222,7 +222,7 @@ export function LandingInput({
               {isPlusOpen ? (
                 <X id="landing-input-plus" size={20} className="stroke-[2.5]" />
               ) : (
-                <img id="landing-input-plus" src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
+                <img id="landing-input-plus" src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain grayscale opacity-90" />
               )}
             </button>
           )}
