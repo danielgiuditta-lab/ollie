@@ -57,6 +57,8 @@ interface CanvasHeaderProps {
   isOptionCOpen?: boolean;
   onCloseOptionC?: () => void;
   onToggleSideChat?: () => void;
+  isOptionATaskListOpen?: boolean;
+  onToggleOptionATaskList?: () => void;
 }
 
 export function CanvasHeader({
@@ -84,7 +86,9 @@ export function CanvasHeader({
   chatModel = 'A',
   isOptionCOpen = false,
   onCloseOptionC,
-  onToggleSideChat
+  onToggleSideChat,
+  isOptionATaskListOpen = true,
+  onToggleOptionATaskList
 }: CanvasHeaderProps) {
   if (isOptionCOpen) return null;
   const [isPinMenuOpen, setIsPinMenuOpen] = useState(false);
@@ -181,6 +185,29 @@ export function CanvasHeader({
     url = selectedFile?.id ? `https://docs.google.com/document/d/${selectedFile.id}/edit` : 'https://docs.google.com/document';
   }
 
+  const CollapseToggleButton = () => {
+    if (!onToggleOptionATaskList) return null;
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleOptionATaskList();
+        }}
+        className={`p-1 transition-colors cursor-pointer flex items-center justify-center rounded-lg shrink-0 mr-1.5 ${
+          isDark ? 'text-neutral-300 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+        }`}
+        title={isOptionATaskListOpen ? "Close task list" : "Open task list"}
+      >
+        <span 
+          className="material-symbols-rounded select-none"
+          style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1, 'wght' 700" }}
+        >
+          {isOptionATaskListOpen ? 'left_panel_close' : 'left_panel_open'}
+        </span>
+      </button>
+    );
+  };
+
   const renderBreadcrumbs = () => {
     if (activeProactiveTask) {
       let artifactName = '';
@@ -206,6 +233,7 @@ export function CanvasHeader({
 
       return (
         <div className="flex items-center text-slate-700 dark:text-slate-200 text-lg font-medium font-sans">
+          <CollapseToggleButton />
           <span 
             onClick={onHomeClick}
             className="cursor-pointer hover:text-slate-900 dark:hover:text-white transition font-medium"
@@ -225,9 +253,10 @@ export function CanvasHeader({
     }
     if (isHome) {
       return (
-        <span className="text-slate-800 dark:text-white text-lg font-medium">
-          Home
-        </span>
+        <div className="flex items-center text-slate-800 dark:text-white text-lg font-medium">
+          <CollapseToggleButton />
+          <span>Home</span>
+        </div>
       );
     }
 
@@ -238,9 +267,10 @@ export function CanvasHeader({
 
     if (!selectedFile && viewState !== 'ai_summary' && !activeProactiveTask) {
       return (
-        <span className="text-slate-800 dark:text-white text-lg font-medium">
-          {spaceName}
-        </span>
+        <div className="flex items-center text-slate-800 dark:text-white text-lg font-medium">
+          <CollapseToggleButton />
+          <span>{spaceName}</span>
+        </div>
       );
     }
 
@@ -295,6 +325,7 @@ export function CanvasHeader({
 
     return (
       <div className="flex items-center text-slate-700 dark:text-slate-200 text-lg font-medium font-sans">
+        <CollapseToggleButton />
         <span 
           onClick={onHomeClick}
           className="cursor-pointer hover:text-slate-900 dark:hover:text-white transition font-medium"
