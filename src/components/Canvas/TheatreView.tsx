@@ -145,11 +145,22 @@ export function TheatreView({
   const [localCompletedTaskIds, setLocalCompletedTaskIds] = useState<Set<string>>(new Set());
 
   const overlayScrollRef = useRef<HTMLDivElement>(null);
+  const [overlayNow, setOverlayNow] = useState(Date.now());
+
   useEffect(() => {
     if (overlayScrollRef.current) {
       overlayScrollRef.current.scrollTop = overlayScrollRef.current.scrollHeight;
     }
   }, [messages, isLoading, chatDockPosition]);
+
+  useEffect(() => {
+    if (chatDockPosition === 'bottom' && messages && messages.length > 0) {
+      const interval = setInterval(() => {
+        setOverlayNow(Date.now());
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [chatDockPosition, messages?.length]);
 
   const activeIndex = activeIndexProp !== undefined ? activeIndexProp : localActiveIndex;
   const completedTaskIds = completedTaskIdsProp !== undefined ? completedTaskIdsProp : localCompletedTaskIds;
@@ -1091,11 +1102,17 @@ export function TheatreView({
               }}
             >
               {messages.map((msg, index) => {
+                const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());
+                const ageMs = overlayNow - msgTime;
+                if (ageMs >= 30000) return null;
+                const isFading = ageMs >= 29000;
+                const fadeClass = isFading ? 'opacity-0 transition-opacity duration-1000' : 'opacity-100 transition-opacity duration-300';
+
                 if (msg.role === 'user') {
                   return (
                     <div 
                       key={index} 
-                      className="self-end bg-blue-600 text-white rounded-[22px] px-4 py-2.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed"
+                      className={`self-end bg-blue-600 text-white rounded-[22px] px-4 py-2.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed ${fadeClass}`}
                       style={{ fontFamily: '"Inter", sans-serif' }}
                     >
                       <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
@@ -1108,7 +1125,7 @@ export function TheatreView({
                 return (
                   <div 
                     key={index} 
-                    className="self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] p-4 text-xs sm:text-sm font-normal max-w-[90%] shadow-lg leading-relaxed"
+                    className={`self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] p-4 text-xs sm:text-sm font-normal max-w-[90%] shadow-lg leading-relaxed ${fadeClass}`}
                     style={{ fontFamily: '"Inter", sans-serif' }}
                   >
                     <BotMessage 
