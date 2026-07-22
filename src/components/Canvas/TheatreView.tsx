@@ -579,8 +579,8 @@ export function TheatreView({
   const isLight = theme === 'light';
 
   return (
-    <div className={`${embedded ? 'w-full h-full relative' : 'fixed inset-0 z-50'} flex flex-col select-none font-sans animate-in fade-in duration-200 p-4 md:p-6 pb-0 md:pb-0 overflow-hidden ${
-      isLight ? 'bg-[#F8F9FA] text-slate-900' : 'bg-black/85 backdrop-blur-xl text-white'
+    <div className={`${embedded ? 'w-full h-full relative p-0' : 'fixed inset-0 z-50 p-4 md:p-6 pb-0 md:pb-0'} flex flex-col select-none font-sans animate-in fade-in duration-200 overflow-hidden ${
+      isLight ? (embedded ? 'bg-white text-slate-900' : 'bg-[#F8F9FA] text-slate-900') : 'bg-black/85 backdrop-blur-xl text-white'
     }`}>
       {/* Top Header Bar matching design specs (only rendered when NOT embedded) */}
       {!embedded && (
@@ -759,7 +759,7 @@ export function TheatreView({
                   opacity: { duration: 0.75 },
                   scale: { duration: 0.75 }
                 }}
-                className={`w-full h-full rounded-[24px] overflow-y-auto flex flex-col p-8 select-text absolute inset-0 ${
+                className={`w-full h-full ${embedded ? 'rounded-none' : 'rounded-[24px]'} overflow-y-auto flex flex-col p-8 select-text absolute inset-0 ${
                   isLight ? 'bg-white text-slate-900' : 'bg-[#131314]/90 text-white backdrop-blur-md'
                 }`}
               >

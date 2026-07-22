@@ -6325,87 +6325,95 @@ export default function App() {
       />
       {/* 1.5 Task List Column for Option E (only visible when Play is clicked) */}
       {isTheatreOpen && playOptionMode === 'E' && (
-        <div className="w-80 md:w-[380px] shrink-0 h-full p-4 flex flex-col overflow-y-auto select-text font-['Google_Sans','Google_Sans_Text',sans-serif] bg-white text-slate-900 border-r border-slate-200/80 dark:border-neutral-800 z-20">
-          {/* Needs your approval */}
-          {optionEApprovalTasks.length > 0 && (
-            <div className="flex flex-col">
-              <h3 className="text-[20px] leading-[28px] font-normal pt-2 mb-4 px-4 text-left text-slate-900">
-                Needs your approval
-              </h3>
-              <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
-                {optionEApprovalTasks.map((item) => {
-                  const itemIndex = optionEOrderedTodoItems.findIndex(t => t.id === item.id);
-                  const isSelected = itemIndex === optionETaskIndex;
-                  const isSignedOff = optionECompletedTaskIds.has(item.id);
-                  return (
-                    <TheatreTaskCell
-                      key={item.id}
-                      item={item}
-                      isSelected={isSelected}
-                      isSignedOff={isSignedOff}
-                      onClick={() => setOptionETaskIndex(itemIndex)}
-                      onOpenSource={() => {}}
-                      theme="light"
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          )}
+        <div className="w-80 md:w-[380px] shrink-0 h-full flex flex-col select-text font-['Google_Sans','Google_Sans_Text',sans-serif] bg-white text-slate-900 border-r border-slate-200/80 dark:border-neutral-800 z-20 overflow-hidden">
+          {/* Header matching CanvasHeader height & font baseline */}
+          <div className="h-[64px] shrink-0 flex items-center px-6">
+            <span className="text-slate-800 dark:text-white text-lg font-medium">
+              {optionEApprovalTasks.length > 0 ? "Needs your approval" : (optionEContinueTasks.length > 0 ? "Continue working on..." : "For your FYI")}
+            </span>
+          </div>
 
-          {/* Continue working on... */}
-          {optionEContinueTasks.length > 0 && (
-            <div className="flex flex-col">
-              <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 text-left ${optionEApprovalTasks.length > 0 ? 'pt-6' : 'pt-2'} text-slate-900`}>
-                Continue working on...
-              </h3>
-              <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
-                {optionEContinueTasks.map((item) => {
-                  const itemIndex = optionEOrderedTodoItems.findIndex(t => t.id === item.id);
-                  const isSelected = itemIndex === optionETaskIndex;
-                  const isSignedOff = optionECompletedTaskIds.has(item.id);
-                  return (
-                    <TheatreTaskCell
-                      key={item.id}
-                      item={item}
-                      isSelected={isSelected}
-                      isSignedOff={isSignedOff}
-                      onClick={() => setOptionETaskIndex(itemIndex)}
-                      onOpenSource={() => {}}
-                      theme="light"
-                    />
-                  );
-                })}
+          <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col">
+            {/* Needs your approval */}
+            {optionEApprovalTasks.length > 0 && (
+              <div className="flex flex-col">
+                <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
+                  {optionEApprovalTasks.map((item) => {
+                    const itemIndex = optionEOrderedTodoItems.findIndex(t => t.id === item.id);
+                    const isSelected = itemIndex === optionETaskIndex;
+                    const isSignedOff = optionECompletedTaskIds.has(item.id);
+                    return (
+                      <TheatreTaskCell
+                        key={item.id}
+                        item={item}
+                        isSelected={isSelected}
+                        isSignedOff={isSignedOff}
+                        onClick={() => setOptionETaskIndex(itemIndex)}
+                        onOpenSource={() => {}}
+                        theme="light"
+                      />
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* For your FYI */}
-          {optionEFyiTasks.length > 0 && (
-            <div className="flex flex-col">
-              <h3 className={`text-[20px] leading-[28px] font-normal mb-4 px-4 text-left ${optionEApprovalTasks.length > 0 || optionEContinueTasks.length > 0 ? 'pt-6' : 'pt-2'} text-slate-900`}>
-                For your FYI
-              </h3>
-              <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
-                {optionEFyiTasks.map((item) => {
-                  const itemIndex = optionEOrderedTodoItems.findIndex(t => t.id === item.id);
-                  const isSelected = itemIndex === optionETaskIndex;
-                  const isSignedOff = optionECompletedTaskIds.has(item.id);
-                  return (
-                    <TheatreTaskCell
-                      key={item.id}
-                      item={item}
-                      isSelected={isSelected}
-                      isSignedOff={isSignedOff}
-                      onClick={() => setOptionETaskIndex(itemIndex)}
-                      onOpenSource={() => {}}
-                      theme="light"
-                    />
-                  );
-                })}
+            {/* Continue working on... */}
+            {optionEContinueTasks.length > 0 && (
+              <div className="flex flex-col">
+                {optionEApprovalTasks.length > 0 && (
+                  <h4 className="text-[14px] leading-[20px] font-medium text-slate-500 pt-4 mb-2 px-2 text-left">
+                    Continue working on...
+                  </h4>
+                )}
+                <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
+                  {optionEContinueTasks.map((item) => {
+                    const itemIndex = optionEOrderedTodoItems.findIndex(t => t.id === item.id);
+                    const isSelected = itemIndex === optionETaskIndex;
+                    const isSignedOff = optionECompletedTaskIds.has(item.id);
+                    return (
+                      <TheatreTaskCell
+                        key={item.id}
+                        item={item}
+                        isSelected={isSelected}
+                        isSignedOff={isSignedOff}
+                        onClick={() => setOptionETaskIndex(itemIndex)}
+                        onOpenSource={() => {}}
+                        theme="light"
+                      />
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* For your FYI */}
+            {optionEFyiTasks.length > 0 && (
+              <div className="flex flex-col">
+                <h4 className="text-[14px] leading-[20px] font-medium text-slate-500 pt-4 mb-2 px-2 text-left">
+                  For your FYI
+                </h4>
+                <div className="flex flex-col gap-[4px] rounded-[16px] overflow-hidden">
+                  {optionEFyiTasks.map((item) => {
+                    const itemIndex = optionEOrderedTodoItems.findIndex(t => t.id === item.id);
+                    const isSelected = itemIndex === optionETaskIndex;
+                    const isSignedOff = optionECompletedTaskIds.has(item.id);
+                    return (
+                      <TheatreTaskCell
+                        key={item.id}
+                        item={item}
+                        isSelected={isSelected}
+                        isSignedOff={isSignedOff}
+                        onClick={() => setOptionETaskIndex(itemIndex)}
+                        onOpenSource={() => {}}
+                        theme="light"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
       {/* 2. Chat Sidebar (Docked to Side) */}

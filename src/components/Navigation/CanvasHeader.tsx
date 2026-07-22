@@ -203,12 +203,14 @@ export function CanvasHeader({
         if (artifactName.toLowerCase() === 'index') artifactName = 'Custom Tool';
       }
     } else if (activeProactiveTask) {
-      const isDone = activeProactiveTask.status === 'done' || activeProactiveTask.status === 'approved';
-      let rawTaskTitle = isDone ? (activeProactiveTask.titleDone || activeProactiveTask.title) : (activeProactiveTask.title || activeProactiveTask.description || 'Task');
-      if (rawTaskTitle.length > 38) {
-        rawTaskTitle = rawTaskTitle.substring(0, 36).trim() + '...';
+      if (activeProactiveTask.shortTitle) {
+        artifactName = activeProactiveTask.shortTitle;
+      } else {
+        const isDone = activeProactiveTask.status === 'done' || activeProactiveTask.status === 'approved';
+        let rawTaskTitle = isDone ? (activeProactiveTask.titleDone || activeProactiveTask.title) : (activeProactiveTask.title || activeProactiveTask.description || 'Task');
+        const words = rawTaskTitle.trim().split(/\s+/).filter(Boolean);
+        artifactName = words.length <= 3 ? words.join(' ') : words.slice(0, 3).join(' ') + '...';
       }
-      artifactName = rawTaskTitle;
     } else if (artifactName && typeof artifactName === 'string') {
       artifactName = artifactName.replace(/\.(doc|gdoc|gslides|gsheet|docx|pptx|xlsx|pdf|md|csv|html|htm)$/i, '');
       if (artifactName.toLowerCase() === 'document') artifactName = 'Doc';
@@ -220,25 +222,20 @@ export function CanvasHeader({
       artifactName = artifactName.substring(0, 26).trim() + '...';
     }
 
+    const rootDisplayName = activeProactiveTask ? (isHomeSpace ? 'Home Tasks' : spaceName) : spaceName;
+
     return (
-      <div className="flex items-center text-slate-700 dark:text-slate-200 text-lg font-normal font-sans">
+      <div className="flex items-center text-slate-700 dark:text-slate-200 text-lg font-medium font-sans">
         <span 
           onClick={onHomeClick}
           className="cursor-pointer hover:text-slate-900 dark:hover:text-white transition font-medium"
         >
-          {spaceName}
+          {rootDisplayName}
         </span>
         <ChevronRight size={18} className="mx-2 text-slate-400 dark:text-slate-500 shrink-0" />
         
         <div className="flex items-center gap-1.5 text-slate-800 dark:text-white font-medium group/title">
           <span>{artifactName}</span>
-          <button 
-            onClick={selectedFile ? onCloseFile : onCloseWorkspace}
-            className="hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition cursor-pointer border-none outline-none flex items-center justify-center animate-fade-in"
-            title={selectedFile ? "Close file" : "Close search"}
-          >
-            <X size={14} className="text-slate-500 dark:text-slate-400" />
-          </button>
           {onPinArtifact && (selectedFile || activeProactiveTask) && (() => {
             const activeFile = selectedFile || activeProactiveTask;
             const fileId = activeFile?.id || activeFile?.driveId;
@@ -399,17 +396,22 @@ export function CanvasHeader({
           </button>
         )}
 
-        {/* Library side panel toggle button OR Option C Close button */}
-        {isOptionCOpen ? (
+        {/* Library side panel toggle button OR Close button for Play mode */}
+        {(isOptionCOpen || activeProactiveTask) ? (
           <button
             onClick={() => {
-              if (onCloseOptionC) onCloseOptionC();
+              if (onCloseOptionC) {
+                onCloseOptionC();
+              } else if (onCloseFile) {
+                onCloseFile();
+              } else if (onCloseWorkspace) {
+                onCloseWorkspace();
+              }
             }}
-            className={`h-10 px-4 rounded-full text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-0 outline-none shrink-0 ${themeTokens.filledBg} ${themeTokens.filledHoverBg} text-slate-700 dark:text-white`}
-            title="Close Play mode"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-slate-700 dark:text-white transition-all cursor-pointer border-none outline-none shrink-0"
+            title="Close view"
           >
-            <X className="w-4 h-4 text-slate-700 dark:text-white" />
-            <span>Close</span>
+            <X className="w-5 h-5 stroke-[2]" />
           </button>
         ) : (
           onToggleSourcesPanel && (
