@@ -166,7 +166,7 @@ export default function App() {
   const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
   const [todoItems, setTodoItems] = useState<any[]>(() => DEFAULT_TODO_ITEMS);
   const [isTheatreOpen, setIsTheatreOpen] = useState(false);
-  const [isOptionATaskListOpen, setIsOptionATaskListOpen] = useState(true);
+  const [isOptionATaskListOpen, setIsOptionATaskListOpen] = useState(false);
   const [playOptionMode, setPlayOptionMode] = useState<'A' | 'B' | 'C' | 'D' | 'E'>('A');
 
   const handleOpenTheatre = (mode?: 'A' | 'B' | 'C' | 'D' | 'E') => {
@@ -177,7 +177,6 @@ export default function App() {
         handleProactiveTaskClick(todoItems[0]);
       }
     } else {
-      setIsOptionATaskListOpen(true);
       setIsTheatreOpen(true);
     }
   };
@@ -6565,6 +6564,7 @@ export default function App() {
           }}
           isOptionATaskListOpen={isOptionATaskListOpen}
           onToggleOptionATaskList={isTheatreOpen && playOptionMode === 'A' ? () => setIsOptionATaskListOpen(prev => !prev) : undefined}
+          taskProgress={isTheatreOpen && playOptionMode === 'A' && optionEOrderedTodoItems.length > 0 ? { current: optionETaskIndex + 1, total: optionEOrderedTodoItems.length } : undefined}
         />
         <div className={`flex-1 flex overflow-hidden relative ${isSourcesPanelOpen ? 'gap-0' : 'gap-4'}`}>
           {isTheatreOpen && playOptionMode === 'E' && (

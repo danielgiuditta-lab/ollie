@@ -59,6 +59,7 @@ interface CanvasHeaderProps {
   onToggleSideChat?: () => void;
   isOptionATaskListOpen?: boolean;
   onToggleOptionATaskList?: () => void;
+  taskProgress?: { current: number; total: number };
 }
 
 export function CanvasHeader({
@@ -88,7 +89,8 @@ export function CanvasHeader({
   onCloseOptionC,
   onToggleSideChat,
   isOptionATaskListOpen = true,
-  onToggleOptionATaskList
+  onToggleOptionATaskList,
+  taskProgress
 }: CanvasHeaderProps) {
   if (isOptionCOpen) return null;
   const [isPinMenuOpen, setIsPinMenuOpen] = useState(false);
@@ -186,7 +188,7 @@ export function CanvasHeader({
   }
 
   const CollapseToggleButton = () => {
-    if (!onToggleOptionATaskList) return null;
+    if (!onToggleOptionATaskList || isOptionATaskListOpen) return null;
     return (
       <button
         onClick={(e) => {
@@ -196,13 +198,13 @@ export function CanvasHeader({
         className={`p-1 transition-colors cursor-pointer flex items-center justify-center rounded-lg shrink-0 mr-1.5 ${
           isDark ? 'text-neutral-300 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
         }`}
-        title={isOptionATaskListOpen ? "Close task list" : "Open task list"}
+        title="Open task list"
       >
         <span 
           className="material-symbols-rounded select-none"
           style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1, 'wght' 700" }}
         >
-          {isOptionATaskListOpen ? 'left_panel_close' : 'left_panel_open'}
+          left_panel_open
         </span>
       </button>
     );
@@ -243,6 +245,11 @@ export function CanvasHeader({
           <ChevronRight size={18} className="mx-2 text-slate-400 dark:text-slate-500 shrink-0" />
           <div className="flex items-center gap-1.5 text-slate-800 dark:text-white font-medium group/title">
             <span>{artifactName}</span>
+            {taskProgress && (
+              <span className="font-normal text-slate-500 dark:text-neutral-400 text-base ml-1 select-none">
+                ({taskProgress.current} of {taskProgress.total})
+              </span>
+            )}
           </div>
         </div>
       );
@@ -336,6 +343,11 @@ export function CanvasHeader({
         
         <div className="flex items-center gap-1.5 text-slate-800 dark:text-white font-medium group/title">
           <span>{artifactName}</span>
+          {taskProgress && (
+            <span className="font-normal text-slate-500 dark:text-neutral-400 text-base ml-1 select-none">
+              ({taskProgress.current} of {taskProgress.total})
+            </span>
+          )}
           {onPinArtifact && (selectedFile || activeProactiveTask) && (() => {
             const activeFile = selectedFile || activeProactiveTask;
             const fileId = activeFile?.id || activeFile?.driveId;
@@ -451,15 +463,6 @@ export function CanvasHeader({
         {/* Library side panel toggle button OR Close button for Play mode */}
         {(isOptionCOpen || activeProactiveTask) ? (
           <div className="flex items-center gap-2">
-            {onToggleSideChat && (
-              <button
-                onClick={onToggleSideChat}
-                className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-slate-700 dark:text-white transition-all cursor-pointer border-none outline-none shrink-0"
-                title="Snap chat to side panel"
-              >
-                <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
-              </button>
-            )}
             <button
               onClick={() => {
                 if (onCloseOptionC) {

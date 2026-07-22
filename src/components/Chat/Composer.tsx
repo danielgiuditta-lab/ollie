@@ -188,6 +188,9 @@ export function Composer({
                 } py-1.5 max-h-[48px] min-h-[30px] border-none ring-0 focus:ring-0 focus:border-none focus:outline-none overflow-y-auto align-middle`}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
+                onFocus={() => {
+                  if (onDockToSide) onDockToSide();
+                }}
                 onKeyDown={handleKeyDown}
                 disabled={disabled}
                 style={{ scrollbarWidth: 'none' }}
