@@ -6694,7 +6694,7 @@ export default function App() {
                       accessToken={accessToken}
                     />
                   )}
-                  {(viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') && (selectedFile || viewState === 'app' || isLoading) && (
+                  {((viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') || (isTheatreOpen && playOptionMode === 'E')) && (selectedFile || viewState === 'app' || isLoading || (isTheatreOpen && playOptionMode === 'E')) && (
                     <div 
                       className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200 p-4" 
                       id="canvas-unified-workspace"
