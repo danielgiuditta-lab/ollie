@@ -58,19 +58,19 @@ export function TheatreTaskCell({ item, isSelected, isSignedOff, onClick, onOpen
       onClick={onClick}
       className={`p-4 rounded-[4px] cursor-pointer transition-all duration-150 select-none flex items-start justify-between gap-3 min-w-0 ${
         isLight
-          ? isSelected ? 'bg-blue-50/80 text-blue-900 font-medium' : 'bg-slate-100/60 hover:bg-slate-100 text-slate-800'
+          ? isSelected ? 'bg-slate-200 text-black font-medium' : 'bg-slate-100/60 hover:bg-slate-100 text-slate-800'
           : isSelected ? 'bg-[#222428]' : 'bg-[#1E1F22] hover:bg-[#232529]'
       }`}
     >
       <div className={`flex-1 min-w-0 flex flex-col gap-1 ${isSignedOff && !isSelected ? 'opacity-30' : 'opacity-100'}`}>
         <h4 className={`text-[16px] leading-[22px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] truncate ${
-          isLight ? (isSelected ? 'text-blue-900 font-medium' : 'text-slate-800') : 'text-[#E3E3E3]'
+          isLight ? (isSelected ? 'text-black font-medium' : 'text-slate-800') : 'text-[#E3E3E3]'
         }`}>
           {titleText}
         </h4>
 
         <p className={`text-[14px] leading-[20px] font-normal font-['Google_Sans','Google_Sans_Text',sans-serif] truncate ${
-          isLight ? 'text-slate-500' : 'text-[#E3E3E3]/70'
+          isLight ? (isSelected ? 'text-slate-600' : 'text-slate-500') : 'text-[#E3E3E3]/70'
         }`}>
           {descText}
         </p>
