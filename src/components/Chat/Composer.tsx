@@ -175,7 +175,7 @@ export function Composer({
               {isDrawerOpen ? (
                 <X size={20} className="stroke-[2.5]" />
               ) : (
-                <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain grayscale opacity-90" />
+                <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
               )}
             </button>
 

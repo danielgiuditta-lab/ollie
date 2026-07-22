@@ -1198,7 +1198,7 @@ export function TheatreView({
                   }`}
                   title="Add attachment or context"
                 >
-                  <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain grayscale opacity-90" />
+                  <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
                 </button>
               )}
 

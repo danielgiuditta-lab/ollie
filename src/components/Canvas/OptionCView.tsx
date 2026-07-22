@@ -937,7 +937,7 @@ export function OptionCView({
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0 transition cursor-pointer flex items-center justify-center p-1 rounded-full border-none outline-none"
                 title="Add attachment or context"
               >
-                <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain grayscale opacity-90" />
+                <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain" />
               </button>
 
               <input

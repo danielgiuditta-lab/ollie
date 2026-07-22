@@ -242,7 +242,7 @@ export function ChatSidebar({
         <div className="flex items-center justify-between px-6 w-full h-[64px] shrink-0 border-b border-transparent">
           <div className="flex items-center gap-2">
             {!isBottom && (
-              <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain shrink-0 grayscale opacity-90" />
+              <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain shrink-0" />
             )}
             <h2 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{getTitle()}</h2>
           </div>
