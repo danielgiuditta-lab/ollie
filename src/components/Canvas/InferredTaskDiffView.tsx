@@ -413,6 +413,101 @@ function serializeBlocksToMarkdown(blocks: BlockItem[]): string {
   }).join('\n\n');
 }
 
+const RenderFormattedLine = ({
+  content,
+  type,
+  isDark = false,
+  onClick
+}: {
+  content: string;
+  type: 'h1' | 'h2' | 'h3' | 'bullet' | 'p';
+  isDark?: boolean;
+  onClick: () => void;
+}) => {
+  const parseInline = (text: string) => {
+    if (!text) return null;
+    const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
+    return parts.map((part, pIdx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <strong key={pIdx} className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return (
+          <code key={pIdx} className={`px-1.5 py-0.5 rounded text-[11px] font-mono ${isDark ? 'bg-neutral-800 text-amber-300' : 'bg-slate-100 text-slate-900 border border-slate-200'}`}>
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      return part;
+    });
+  };
+
+  if (type === 'h1') {
+    return (
+      <h2
+        onClick={onClick}
+        className={`w-full text-[18px] sm:text-[20px] font-extrabold tracking-tight border-b pb-1 cursor-text select-text ${
+          isDark ? 'text-white border-neutral-700' : 'text-slate-900 border-slate-200'
+        }`}
+      >
+        {parseInline(content) || '\u00A0'}
+      </h2>
+    );
+  }
+
+  if (type === 'h2') {
+    return (
+      <h3
+        onClick={onClick}
+        className={`w-full text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mt-2 cursor-text select-text ${
+          isDark ? 'text-slate-100 border-neutral-700' : 'text-slate-800 border-slate-200'
+        }`}
+      >
+        {parseInline(content) || '\u00A0'}
+      </h3>
+    );
+  }
+
+  if (type === 'h3') {
+    return (
+      <h4
+        onClick={onClick}
+        className={`w-full text-[14px] sm:text-[15px] font-semibold tracking-tight cursor-text select-text ${
+          isDark ? 'text-slate-200' : 'text-slate-800'
+        }`}
+      >
+        {parseInline(content) || '\u00A0'}
+      </h4>
+    );
+  }
+
+  if (type === 'bullet') {
+    return (
+      <div onClick={onClick} className="flex items-start gap-2.5 pl-1 my-0.5 cursor-text select-text">
+        <span className={`font-bold shrink-0 mt-1 text-[8px] ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}>●</span>
+        <span className={`w-full text-[13px] sm:text-[14px] leading-snug ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+          {parseInline(content) || '\u00A0'}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <p
+      onClick={onClick}
+      className={`w-full text-[13px] sm:text-[14px] leading-relaxed cursor-text select-text min-h-[22px] ${
+        isDark ? 'text-slate-300' : 'text-slate-700'
+      }`}
+    >
+      {parseInline(content) || '\u00A0'}
+    </p>
+  );
+};
+
 export const RenderBlockMarkdownEditor = ({
   text,
   isDark = false,
@@ -425,6 +520,7 @@ export const RenderBlockMarkdownEditor = ({
   onChange?: (newMarkdown: string) => void;
 }) => {
   const [blocks, setBlocks] = useState<BlockItem[]>(() => parseMarkdownToBlocks(text));
+  const [focusedBlockIndex, setFocusedBlockIndex] = useState<number | null>(null);
 
   useEffect(() => {
     setBlocks(parseMarkdownToBlocks(text));
@@ -460,35 +556,42 @@ export const RenderBlockMarkdownEditor = ({
       const next = [...blocks];
       next.splice(index + 1, 0, newBlock);
       setBlocks(next);
+      setFocusedBlockIndex(index + 1);
       if (onChange) onChange(serializeBlocksToMarkdown(next));
-
-      setTimeout(() => {
-        const nextInput = document.getElementById(`editor-block-${index + 1}`);
-        if (nextInput) nextInput.focus();
-      }, 10);
     } else if (e.key === 'Backspace' && blocks[index].content === '' && blocks.length > 1) {
       e.preventDefault();
       const next = blocks.filter((_, i) => i !== index);
       setBlocks(next);
+      setFocusedBlockIndex(Math.max(0, index - 1));
       if (onChange) onChange(serializeBlocksToMarkdown(next));
-
-      setTimeout(() => {
-        const prevInput = document.getElementById(`editor-block-${Math.max(0, index - 1)}`);
-        if (prevInput) prevInput.focus();
-      }, 10);
     }
   };
 
   return (
     <div className={`w-full h-full flex flex-col justify-start space-y-2 select-text ${isDark ? 'text-white' : 'text-slate-900'}`}>
       {blocks.map((block, i) => {
+        const isEditingThisLine = focusedBlockIndex === i;
+
+        if (!isEditingThisLine) {
+          return (
+            <RenderFormattedLine
+              key={block.id || i}
+              content={block.content}
+              type={block.type}
+              isDark={isDark}
+              onClick={() => setFocusedBlockIndex(i)}
+            />
+          );
+        }
+
         if (block.type === 'h1') {
           return (
             <textarea
               key={block.id || i}
-              id={`editor-block-${i}`}
+              autoFocus
               value={block.content}
               onChange={(e) => updateBlock(i, e.target.value)}
+              onBlur={() => setFocusedBlockIndex(null)}
               onKeyDown={(e) => handleKeyDown(i, e)}
               rows={1}
               ref={(el) => {
@@ -500,7 +603,6 @@ export const RenderBlockMarkdownEditor = ({
               className={`w-full bg-transparent text-[18px] sm:text-[20px] font-extrabold tracking-tight border-b pb-1 focus:outline-none resize-none font-sans ${
                 isDark ? 'text-white border-neutral-700' : 'text-slate-900 border-slate-200'
               }`}
-              placeholder="Title..."
             />
           );
         }
@@ -509,9 +611,10 @@ export const RenderBlockMarkdownEditor = ({
           return (
             <textarea
               key={block.id || i}
-              id={`editor-block-${i}`}
+              autoFocus
               value={block.content}
               onChange={(e) => updateBlock(i, e.target.value)}
+              onBlur={() => setFocusedBlockIndex(null)}
               onKeyDown={(e) => handleKeyDown(i, e)}
               rows={1}
               ref={(el) => {
@@ -523,7 +626,6 @@ export const RenderBlockMarkdownEditor = ({
               className={`w-full bg-transparent text-[15px] sm:text-[16px] font-bold tracking-tight border-b pb-1 mt-2 focus:outline-none resize-none font-sans ${
                 isDark ? 'text-slate-100 border-neutral-700' : 'text-slate-800 border-slate-200'
               }`}
-              placeholder="Section..."
             />
           );
         }
@@ -532,9 +634,10 @@ export const RenderBlockMarkdownEditor = ({
           return (
             <textarea
               key={block.id || i}
-              id={`editor-block-${i}`}
+              autoFocus
               value={block.content}
               onChange={(e) => updateBlock(i, e.target.value)}
+              onBlur={() => setFocusedBlockIndex(null)}
               onKeyDown={(e) => handleKeyDown(i, e)}
               rows={1}
               ref={(el) => {
@@ -546,7 +649,6 @@ export const RenderBlockMarkdownEditor = ({
               className={`w-full bg-transparent text-[14px] sm:text-[15px] font-semibold tracking-tight focus:outline-none resize-none font-sans ${
                 isDark ? 'text-slate-200' : 'text-slate-800'
               }`}
-              placeholder="Subheading..."
             />
           );
         }
@@ -556,9 +658,10 @@ export const RenderBlockMarkdownEditor = ({
             <div key={block.id || i} className="flex items-start gap-2.5 pl-1 my-0.5">
               <span className={`font-bold shrink-0 mt-1.5 text-[8px] ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}>●</span>
               <textarea
-                id={`editor-block-${i}`}
+                autoFocus
                 value={block.content}
                 onChange={(e) => updateBlock(i, e.target.value)}
+                onBlur={() => setFocusedBlockIndex(null)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
                 rows={1}
                 ref={(el) => {
@@ -570,7 +673,6 @@ export const RenderBlockMarkdownEditor = ({
                 className={`w-full bg-transparent text-[13px] sm:text-[14px] leading-snug focus:outline-none resize-none font-sans ${
                   isDark ? 'text-slate-200' : 'text-slate-800'
                 }`}
-                placeholder="List item..."
               />
             </div>
           );
@@ -579,9 +681,10 @@ export const RenderBlockMarkdownEditor = ({
         return (
           <textarea
             key={block.id || i}
-            id={`editor-block-${i}`}
+            autoFocus
             value={block.content}
             onChange={(e) => updateBlock(i, e.target.value)}
+            onBlur={() => setFocusedBlockIndex(null)}
             onKeyDown={(e) => handleKeyDown(i, e)}
             rows={1}
             ref={(el) => {
@@ -593,7 +696,6 @@ export const RenderBlockMarkdownEditor = ({
             className={`w-full bg-transparent text-[13px] sm:text-[14px] leading-relaxed focus:outline-none resize-none font-sans ${
               isDark ? 'text-slate-300' : 'text-slate-700'
             }`}
-            placeholder="Type text..."
           />
         );
       })}
