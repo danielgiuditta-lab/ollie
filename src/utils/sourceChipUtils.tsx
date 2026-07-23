@@ -55,7 +55,7 @@ export const renderTextWithSourceChips = (
   return (
     <span className="whitespace-pre-wrap">
       {parts.map((part, i) => (
-        typeof part === 'string' ? part : <span key={i} className="inline-block align-middle my-1 ml-1 mr-1">{part}</span>
+        typeof part === 'string' ? part : <span key={i} className="inline-block align-middle my-1 mr-1">{part}</span>
       ))}
     </span>
   );
