@@ -728,7 +728,7 @@ export function SpaceDashboardExperimental({
         </AnimatePresence>
 
         {isOptionCOpen ? (
-          <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden p-0">
+          <div className="w-full h-full flex-1 min-h-0 relative flex flex-col overflow-hidden p-0">
             <OptionCView
               todoItems={todoItems || []}
               isOpen={isOptionCOpen}

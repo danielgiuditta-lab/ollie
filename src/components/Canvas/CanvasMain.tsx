@@ -47,7 +47,7 @@ export function CanvasMain({
           {!(isLoading && viewState !== 'ai_summary') ? (
             <div 
               id="canvas-main-viewport"
-              className="flex-1 w-full h-full relative z-0 min-h-0 overflow-y-auto custom-scrollbar transition-all duration-300 pt-0"
+              className="flex-1 w-full h-full relative z-0 min-h-0 overflow-y-auto custom-scrollbar transition-all duration-300 pt-0 flex flex-col"
             >
               {children}
               {peers && viewState !== 'home' && viewState !== 'ai_summary' && (

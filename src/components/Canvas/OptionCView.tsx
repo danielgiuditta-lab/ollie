@@ -429,7 +429,7 @@ export function OptionCView({
   };
 
   return (
-    <div className="w-full min-h-full flex flex-col gap-4 bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-48 relative">
+    <div className={`w-full ${isPlayMode ? 'h-full flex-1 min-h-0 pb-0' : 'min-h-full pb-48'} flex flex-col gap-4 bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 relative overflow-hidden`}>
       {/* Floating Close Button positioned absolutely at top right */}
       {isPlayMode && (
         <div className="absolute top-4 right-4 z-50">
@@ -581,7 +581,7 @@ export function OptionCView({
                     }}
                     className={`w-full flex flex-col justify-start items-start select-none overflow-hidden origin-top transition-[background-color,border-radius] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                       isFocused
-                        ? 'flex-1 h-full min-h-0 max-w-[1140px] w-full self-center rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default shrink-0 shadow-sm'
+                        ? 'flex-1 h-full min-h-0 max-w-[1140px] w-full self-center rounded-[24px] bg-[#F8FAFD] dark:bg-[#1E1F22] p-6 md:p-8 select-text cursor-default shadow-sm'
                         : isVisibleInPlay
                           ? 'shrink-0 w-full max-w-4xl self-center rounded-[16px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] p-4 px-5 cursor-pointer flex items-center justify-between gap-4'
                           : 'h-0 p-0 m-0 opacity-0 pointer-events-none'
@@ -745,7 +745,7 @@ export function OptionCView({
                           <div className="w-full h-full flex flex-col min-h-0">
                             {/* Title, Metaline (capped at 2 lines), and Sources Unit (matching Option B structure) */}
                             {activeTask && (
-                              <div className="w-full shrink-0 flex flex-col items-start max-w-[70%] mb-[30px] font-['Google_Sans','Google_Sans_Text',sans-serif]">
+                              <div className="w-full shrink-0 flex flex-col items-start max-w-[85%] mb-4 md:mb-5 font-['Google_Sans','Google_Sans_Text',sans-serif]">
                                 {/* Title: 32px with leading-[38px] */}
                                 <h3 className="text-[32px] leading-[38px] font-normal text-slate-900 dark:text-white">
                                   {canvasTitleText}

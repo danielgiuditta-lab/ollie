@@ -483,7 +483,7 @@ export function SpaceDashboard({
   const isHomeDashboard = spaceId === 'home' || spaceId === 'home_guest' || spaceId === '';
 
   return (
-    <div className="w-full min-h-full flex flex-col relative select-none">
+    <div className={`w-full ${isOptionCOpen ? 'h-full flex-1 min-h-0' : 'min-h-full'} flex flex-col relative select-none`}>
       <AnimatePresence mode="popLayout">
         {isHomeDashboard && !isOptionCOpen && (
           <motion.div 
@@ -514,7 +514,7 @@ export function SpaceDashboard({
       </AnimatePresence>
 
       {isOptionCOpen ? (
-        <div className="w-full relative flex flex-col p-0">
+        <div className="w-full h-full flex-1 min-h-0 relative flex flex-col p-0 overflow-hidden">
           <OptionCView
             todoItems={todoItems || []}
             onClose={onCloseOptionC || (() => {})}
