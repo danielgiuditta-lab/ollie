@@ -1118,100 +1118,75 @@ export function TheatreView({
                       key="theatre-chat-blur"
                       initial={false}
                       animate={{ 
+                        clipPath: isBackdropActive ? 'inset(0% 0% 0% 0%)' : 'inset(100% 0% 0% 0%)',
                         opacity: isBackdropActive ? 1 : 0,
                         pointerEvents: isBackdropActive ? 'auto' : 'none'
                       }}
-                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                       className="fixed inset-x-0 bottom-0 h-[38vh] max-h-[340px] z-20 pointer-events-none overflow-hidden"
                     >
                       {/* Progressive Blur Layer 1: 0.5px */}
-                      <motion.div 
-                        animate={{ 
-                          opacity: isBackdropActive ? 1 : 0,
-                          backdropFilter: isBackdropActive ? 'blur(0.5px)' : 'blur(0px)'
-                        }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      <div 
                         className="absolute inset-0 pointer-events-none"
                         style={{
-                          WebkitBackdropFilter: isBackdropActive ? 'blur(0.5px)' : 'blur(0px)',
+                          backdropFilter: 'blur(0.5px)',
+                          WebkitBackdropFilter: 'blur(0.5px)',
                           maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 30%)',
                           WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 30%)',
                         }}
                       />
                       {/* Progressive Blur Layer 2: 1px */}
-                      <motion.div 
-                        animate={{ 
-                          opacity: isBackdropActive ? 1 : 0,
-                          backdropFilter: isBackdropActive ? 'blur(1px)' : 'blur(0px)'
-                        }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      <div 
                         className="absolute inset-0 pointer-events-none"
                         style={{
-                          WebkitBackdropFilter: isBackdropActive ? 'blur(1px)' : 'blur(0px)',
+                          backdropFilter: 'blur(1px)',
+                          WebkitBackdropFilter: 'blur(1px)',
                           maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 45%)',
                           WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 45%)',
                         }}
                       />
                       {/* Progressive Blur Layer 3: 2px */}
-                      <motion.div 
-                        animate={{ 
-                          opacity: isBackdropActive ? 1 : 0,
-                          backdropFilter: isBackdropActive ? 'blur(2px)' : 'blur(0px)'
-                        }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      <div 
                         className="absolute inset-0 pointer-events-none"
                         style={{
-                          WebkitBackdropFilter: isBackdropActive ? 'blur(2px)' : 'blur(0px)',
+                          backdropFilter: 'blur(2px)',
+                          WebkitBackdropFilter: 'blur(2px)',
                           maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 60%)',
                           WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 60%)',
                         }}
                       />
                       {/* Progressive Blur Layer 4: 4px */}
-                      <motion.div 
-                        animate={{ 
-                          opacity: isBackdropActive ? 1 : 0,
-                          backdropFilter: isBackdropActive ? 'blur(4px)' : 'blur(0px)'
-                        }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      <div 
                         className="absolute inset-0 pointer-events-none"
                         style={{
-                          WebkitBackdropFilter: isBackdropActive ? 'blur(4px)' : 'blur(0px)',
+                          backdropFilter: 'blur(4px)',
+                          WebkitBackdropFilter: 'blur(4px)',
                           maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 75%)',
                           WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 75%)',
                         }}
                       />
                       {/* Progressive Blur Layer 5: 8px */}
-                      <motion.div 
-                        animate={{ 
-                          opacity: isBackdropActive ? 1 : 0,
-                          backdropFilter: isBackdropActive ? 'blur(8px)' : 'blur(0px)'
-                        }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      <div 
                         className="absolute inset-0 pointer-events-none"
                         style={{
-                          WebkitBackdropFilter: isBackdropActive ? 'blur(8px)' : 'blur(0px)',
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
                           maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 90%)',
                           WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 90%)',
                         }}
                       />
                       {/* Progressive Blur Layer 6: 12px (max at bottom edge) */}
-                      <motion.div 
-                        animate={{ 
-                          opacity: isBackdropActive ? 1 : 0,
-                          backdropFilter: isBackdropActive ? 'blur(12px)' : 'blur(0px)'
-                        }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      <div 
                         className="absolute inset-0 pointer-events-none"
                         style={{
-                          WebkitBackdropFilter: isBackdropActive ? 'blur(12px)' : 'blur(0px)',
+                          backdropFilter: 'blur(12px)',
+                          WebkitBackdropFilter: 'blur(12px)',
                           maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)',
                           WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)',
                         }}
                       />
                       {/* Very subtle color gradient ramp matching blur localization */}
-                      <motion.div 
-                        animate={{ opacity: isBackdropActive ? 1 : 0 }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      <div 
                         className="absolute inset-0 pointer-events-none"
                         style={{
                           background: isLight
