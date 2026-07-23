@@ -1240,6 +1240,13 @@ export function TheatreView({
                 className={`flex-1 bg-transparent text-[15px] font-normal focus:outline-none truncate border-none ring-0 ${
                   isLight ? 'text-slate-900 placeholder-slate-400' : 'text-white placeholder-neutral-400'
                 }`}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
               />
 
               {/* Right Action Buttons */}

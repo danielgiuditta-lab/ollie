@@ -6923,7 +6923,7 @@ export default function App() {
 
             {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && !(isTheatreOpen && (playOptionMode === 'D' || playOptionMode === 'A')) && (
               <div 
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
                 id="floating-bottom-chat"
               >
                 {/* Floating overlay chat messages fading out at top 40% of viewport */}

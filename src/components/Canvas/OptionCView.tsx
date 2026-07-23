@@ -444,7 +444,7 @@ export function OptionCView({
       <LayoutGroup id="option-c-cells-reel">
         {!isPlayMode ? (
           /* Landing Page View: Section headers and task cards */
-          <div className="w-full flex-1 flex flex-col gap-6 max-w-4xl mx-auto overflow-y-auto custom-scrollbar py-2 text-left">
+          <div className="w-full flex-1 flex flex-col gap-6 max-w-4xl mx-auto overflow-y-auto custom-scrollbar py-2 pb-28 text-left">
             {needsApprovalItems.length > 0 && (
               <div className="flex flex-col gap-2">
                 <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left">
@@ -977,6 +977,13 @@ export function OptionCView({
                 }}
                 placeholder={getSteerPlaceholder()}
                 className="flex-1 bg-transparent text-slate-900 dark:text-white text-[15px] font-normal placeholder-slate-400 focus:outline-none truncate border-none ring-0 h-full"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
               />
 
               <div className="flex items-center gap-2 shrink-0">

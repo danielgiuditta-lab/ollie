@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Plus, ArrowUp, ChevronDown, X } from 'lucide-react';
 import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
 import { OllieMascot } from '../Shared/OllieMascot';
@@ -193,6 +193,13 @@ export function Composer({
                 onKeyDown={handleKeyDown}
                 disabled={disabled}
                 style={{ scrollbarWidth: 'none' }}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
               />
             </div>
 
@@ -243,6 +250,13 @@ export function Composer({
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={disabled}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            data-lpignore="true"
+            data-1p-ignore="true"
+            data-form-type="other"
           />
           <div className="flex items-center justify-between mt-2">
             <button 

@@ -251,6 +251,9 @@ export function LandingInput({
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
+            data-lpignore="true"
+            data-1p-ignore="true"
+            data-form-type="other"
             className={`flex-1 bg-transparent border-none outline-none font-sans text-slate-700 dark:text-[#E3E3E3] placeholder-slate-400 text-sm sm:text-[15px] ${mode === 'create' ? 'mr-14' : 'mr-44'} min-w-0 truncate placeholder:truncate h-12`}
           />
 
