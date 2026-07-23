@@ -1108,17 +1108,6 @@ export function TheatreView({
           {/* Floating virtual overlay chat in bottom mode */}
           {chatDockPosition === 'bottom' && messages && messages.length > 0 && (
             <div className="w-full max-w-[600px] relative z-30 flex flex-col items-center">
-              {/* Radiant background gradient blur with surface color alpha at 40% (only when active messages exist) */}
-              {messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
-                <div 
-                  className="absolute inset-x-0 bottom-0 top-0 -z-10 pointer-events-none rounded-[32px] backdrop-blur-xl transition-all duration-500"
-                  style={{
-                    background: isLight
-                      ? 'linear-gradient(to top, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.40) 55%, rgba(255, 255, 255, 0.0) 100%)'
-                      : 'linear-gradient(to top, rgba(24, 25, 27, 0.85) 0%, rgba(24, 25, 27, 0.40) 55%, rgba(24, 25, 27, 0.0) 100%)',
-                  }}
-                />
-              )}
 
               <div 
                 ref={overlayScrollRef}

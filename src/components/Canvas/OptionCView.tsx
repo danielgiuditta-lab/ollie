@@ -428,7 +428,7 @@ export function OptionCView({
   };
 
   return (
-    <div className="w-full h-full min-h-[560px] flex flex-col gap-4 bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-4 overflow-hidden relative">
+    <div className="w-full h-full min-h-[560px] flex flex-col gap-4 bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-0 relative">
       {/* Floating Close Button positioned absolutely at top right */}
       {isPlayMode && (
         <div className="absolute top-4 right-4 z-50">
@@ -445,7 +445,7 @@ export function OptionCView({
       <LayoutGroup id="option-c-cells-reel">
         {!isPlayMode ? (
           /* Landing Page View: Section headers and task cards */
-          <div className="w-full flex-1 flex flex-col gap-6 max-w-4xl mx-auto overflow-y-auto custom-scrollbar py-2 pb-28 text-left">
+          <div className="w-full flex-1 flex flex-col gap-6 max-w-4xl mx-auto overflow-y-auto custom-scrollbar py-2 pb-36 text-left">
             {needsApprovalItems.length > 0 && (
               <div className="flex flex-col gap-2">
                 <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left">
@@ -862,15 +862,6 @@ export function OptionCView({
             {/* Floating virtual overlay chat in bottom mode */}
             {chatDockPosition === 'bottom' && messages && messages.length > 0 && (
               <div className="w-full max-w-[560px] relative z-30 flex flex-col items-center">
-                {/* Radiant background gradient blur with surface color alpha at 40% (only when active messages exist) */}
-                {messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
-                  <div 
-                    className="absolute inset-x-0 bottom-0 top-0 -z-10 pointer-events-none rounded-[32px] backdrop-blur-xl transition-all duration-500"
-                    style={{
-                      background: 'linear-gradient(to top, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.40) 55%, rgba(255, 255, 255, 0.0) 100%)',
-                    }}
-                  />
-                )}
 
                 <div 
                   ref={overlayScrollRef}

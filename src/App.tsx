@@ -6923,21 +6923,9 @@ export default function App() {
 
             {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && !(isTheatreOpen && (playOptionMode === 'D' || playOptionMode === 'A')) && (
               <div 
-                className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none relative"
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
                 id="floating-bottom-chat"
               >
-                {/* Radiant background gradient blur with surface color alpha at 40% (only when active messages exist) */}
-                {messages && messages.length > 0 && messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
-                  <div 
-                    className="absolute inset-x-0 bottom-0 top-0 -z-10 pointer-events-none rounded-[32px] backdrop-blur-xl transition-all duration-500"
-                    style={{
-                      background: appTheme === 'dark'
-                        ? 'linear-gradient(to top, rgba(24, 25, 27, 0.85) 0%, rgba(24, 25, 27, 0.40) 55%, rgba(24, 25, 27, 0.0) 100%)'
-                        : 'linear-gradient(to top, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.40) 55%, rgba(255, 255, 255, 0.0) 100%)',
-                    }}
-                  />
-                )}
-
                 {/* Floating overlay chat messages fading out at top 40% of viewport */}
                 {messages && messages.length > 0 && (
                   <div 
