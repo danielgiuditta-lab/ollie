@@ -6922,32 +6922,89 @@ export default function App() {
               )}
             </div>
 
-            {/* Localized subtle glassmorphism backdrop under bottom input and messages */}
+            {/* Full-bleed subtle progressive blur gradient ramp going seamlessly to 0px blur emanating from bottom */}
             <AnimatePresence>
               {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && messages && messages.length > 0 && messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
                 <motion.div 
                   key="bottom-chat-blur-backdrop"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: 20, scaleY: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scaleY: 1 }}
+                  exit={{ opacity: 0, y: 12, scaleY: 0.95 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   onClick={() => setMessages([])}
-                  className="fixed inset-x-0 bottom-0 h-[28vh] max-h-[240px] z-20 pointer-events-auto cursor-pointer overflow-hidden backdrop-blur-md"
+                  className="fixed inset-x-0 bottom-0 h-[38vh] max-h-[340px] z-20 pointer-events-auto cursor-pointer overflow-hidden origin-bottom"
                   style={{
-                    backdropFilter: 'blur(14px)',
-                    WebkitBackdropFilter: 'blur(14px)',
-                    maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%)',
-                    WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%)',
+                    willChange: 'transform, opacity',
                   }}
                   title="Click to dismiss chat overlay"
                 >
-                  {/* Subtle hint of blue gradient ramp localized under bottom input */}
+                  {/* Progressive Blur Layer 1: 0.5px */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backdropFilter: 'blur(0.5px)',
+                      WebkitBackdropFilter: 'blur(0.5px)',
+                      maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 30%)',
+                      WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 30%)',
+                    }}
+                  />
+                  {/* Progressive Blur Layer 2: 1px */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backdropFilter: 'blur(1px)',
+                      WebkitBackdropFilter: 'blur(1px)',
+                      maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 45%)',
+                      WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 45%)',
+                    }}
+                  />
+                  {/* Progressive Blur Layer 3: 2px */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backdropFilter: 'blur(2px)',
+                      WebkitBackdropFilter: 'blur(2px)',
+                      maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 60%)',
+                      WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 60%)',
+                    }}
+                  />
+                  {/* Progressive Blur Layer 4: 4px */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backdropFilter: 'blur(4px)',
+                      WebkitBackdropFilter: 'blur(4px)',
+                      maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 75%)',
+                      WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 75%)',
+                    }}
+                  />
+                  {/* Progressive Blur Layer 5: 8px */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 90%)',
+                      WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 90%)',
+                    }}
+                  />
+                  {/* Progressive Blur Layer 6: 12px (max at bottom edge) */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)',
+                      WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)',
+                    }}
+                  />
+                  {/* Very subtle color gradient ramp matching blur localization */}
                   <div 
                     className="absolute inset-0 pointer-events-none"
                     style={{
                       background: appTheme === 'dark'
-                        ? 'linear-gradient(to top, rgba(99, 102, 241, 0.08) 0%, rgba(59, 130, 246, 0.04) 40%, rgba(18, 19, 21, 0.0) 100%)'
-                        : 'linear-gradient(to top, rgba(99, 102, 241, 0.05) 0%, rgba(59, 130, 246, 0.02) 40%, rgba(255, 255, 255, 0.0) 100%)'
+                        ? 'linear-gradient(to top, rgba(18, 19, 21, 0.45) 0%, rgba(18, 19, 21, 0.20) 45%, rgba(18, 19, 21, 0.05) 75%, rgba(18, 19, 21, 0.0) 100%)'
+                        : 'linear-gradient(to top, rgba(255, 255, 255, 0.40) 0%, rgba(255, 255, 255, 0.18) 45%, rgba(255, 255, 255, 0.04) 75%, rgba(255, 255, 255, 0.0) 100%)'
                     }}
                   />
                 </motion.div>
