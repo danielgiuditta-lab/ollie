@@ -675,15 +675,11 @@ export function SpaceDashboardExperimental({
     return (
       <LayoutGroup id="option-c-cells-reel">
         <div className={`w-full ${isOptionCOpen ? 'h-full flex-1 min-h-0' : 'min-h-full'} flex flex-col relative bg-transparent select-text`}>
-          <AnimatePresence mode="popLayout">
-            {isHomeDashboard && !isOptionCOpen && (
-              <motion.div 
-                key="welcome-back-header-exp"
-                initial={{ opacity: 0, y: -20, height: 'auto' }}
-                animate={{ opacity: 1, y: 0, height: 'auto' }}
-                exit={{ opacity: 0, y: -80, height: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }}
-                className="max-w-4xl mx-auto px-12 pt-8 pb-4 flex flex-col gap-8 shrink-0 overflow-hidden"
-              >
+          {isHomeDashboard && !isOptionCOpen && (
+            <div 
+              key="welcome-back-header-exp"
+              className="max-w-4xl mx-auto px-12 pt-8 pb-4 flex flex-col gap-8 shrink-0 overflow-hidden"
+            >
               {/* Welcome Greeting */}
               <div className="flex flex-col text-left gap-1 mt-2">
                 <h1 className="text-[45px] leading-[52px] font-normal font-sans text-slate-900 dark:text-white flex items-center gap-3">
@@ -723,9 +719,8 @@ export function SpaceDashboardExperimental({
                   )}
                 </p>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
 
         {isOptionCOpen ? (
           <div className="w-full h-full flex-1 min-h-0 relative flex flex-col overflow-hidden p-0">

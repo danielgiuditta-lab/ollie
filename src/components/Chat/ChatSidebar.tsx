@@ -453,6 +453,13 @@ export function ChatSidebar({
                 );
               })()}
 
+              {isLoading && (
+                <div className="flex items-center gap-2 py-2 px-3 text-xs text-slate-500 dark:text-neutral-400 font-medium font-sans select-none">
+                  <OllieMascot variant="flat" size={16} state="idle" className="grayscale opacity-70" />
+                  <span>thinking...</span>
+                </div>
+              )}
+
               <div ref={messagesEndRef} />
             </>
           )}

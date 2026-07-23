@@ -7142,9 +7142,9 @@ export default function App() {
                       );
                     })}
                     {isLoading && (
-                      <div className="bg-white/95 dark:bg-[#1E1F22]/95 text-slate-800 dark:text-white border border-[#E9EEF6] dark:border-[#2B2D31] rounded-[24px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-card backdrop-blur-md flex items-center gap-3">
-                        <OllieMascot variant="flat" size={24} state="idle" />
-                        <span className="text-slate-600 dark:text-neutral-300 font-medium font-sans">Ollie is thinking...</span>
+                      <div className="flex items-center gap-2 py-1.5 px-3 text-xs sm:text-sm text-slate-500 dark:text-neutral-400 font-medium font-sans select-none pointer-events-none">
+                        <OllieMascot variant="flat" size={16} state="idle" className="grayscale opacity-70" />
+                        <span>thinking...</span>
                       </div>
                     )}
                     </motion.div>
