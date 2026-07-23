@@ -383,7 +383,11 @@ export function ChatSidebar({
                 <>
                   {messages.map((msg, index) => {
                     if (msg.role === 'user') {
-                      return <UserMessage key={index} text={msg.text} theme={theme} isGroupChat={isGroupChat} />;
+                      return (
+                        <div key={index} className="w-full flex justify-end">
+                          <UserMessage text={msg.text} theme={theme} isGroupChat={isGroupChat} />
+                        </div>
+                      );
                     }
                     const isProactive = Boolean(msg.isProactiveReview);
 

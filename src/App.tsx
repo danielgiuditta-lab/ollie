@@ -24,8 +24,8 @@ import { ArrowLeft, ArrowRight, Check, X, Pencil, Zap } from 'lucide-react';
 import { OptionCView } from './components/Canvas/OptionCView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon, getFileIcon } from './components/Shared/FileIcon';
-import { getAvatarForPerson } from './utils/personAvatars';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
+import { OllieMascot } from './components/Shared/OllieMascot';
 import ReactMarkdown from 'react-markdown';
 import { BotMessage, formatPeopleNames } from './components/Chat/BotMessage';
 import { UserMessage } from './components/Chat/UserMessage';
@@ -6922,23 +6922,37 @@ export default function App() {
               )}
             </div>
 
-            {/* Full-bleed subtle gradient ramp going to 0% blur emanating from the bottom screen edge */}
-            {messages && messages.length > 0 && messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
-              <div 
-                onClick={() => setMessages([])}
-                className="fixed inset-x-0 bottom-0 h-[60vh] z-20 pointer-events-auto cursor-pointer transition-all duration-500"
-                title="Click to dismiss chat overlay"
-                style={{
-                  background: appTheme === 'dark'
-                    ? 'linear-gradient(to top, rgba(24, 25, 27, 0.70) 0%, rgba(24, 25, 27, 0.45) 40%, rgba(24, 25, 27, 0.18) 70%, rgba(24, 25, 27, 0.0) 100%)'
-                    : 'linear-gradient(to top, rgba(255, 255, 255, 0.70) 0%, rgba(255, 255, 255, 0.45) 40%, rgba(255, 255, 255, 0.18) 70%, rgba(255, 255, 255, 0.0) 100%)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
-                  maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)',
-                  WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)',
-                }}
-              />
-            )}
+            {/* Localized subtle glassmorphism backdrop under bottom input and messages */}
+            <AnimatePresence>
+              {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && messages && messages.length > 0 && messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
+                <motion.div 
+                  key="bottom-chat-blur-backdrop"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  onClick={() => setMessages([])}
+                  className="fixed inset-x-0 bottom-0 h-[28vh] max-h-[240px] z-20 pointer-events-auto cursor-pointer overflow-hidden backdrop-blur-md"
+                  style={{
+                    backdropFilter: 'blur(14px)',
+                    WebkitBackdropFilter: 'blur(14px)',
+                    maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%)',
+                    WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%)',
+                  }}
+                  title="Click to dismiss chat overlay"
+                >
+                  {/* Subtle hint of blue gradient ramp localized under bottom input */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: appTheme === 'dark'
+                        ? 'linear-gradient(to top, rgba(99, 102, 241, 0.08) 0%, rgba(59, 130, 246, 0.04) 40%, rgba(18, 19, 21, 0.0) 100%)'
+                        : 'linear-gradient(to top, rgba(99, 102, 241, 0.05) 0%, rgba(59, 130, 246, 0.02) 40%, rgba(255, 255, 255, 0.0) 100%)'
+                    }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
               <div 
@@ -6947,13 +6961,14 @@ export default function App() {
               >
 
                 {/* Floating overlay chat messages fading out at top 40% of viewport */}
-                <AnimatePresence mode="popLayout">
-                  {messages && messages.length > 0 && (
+                <AnimatePresence>
+                  {messages && messages.length > 0 && messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
                     <motion.div 
                       key="floating-chat-overlay"
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10, transition: { duration: 0.35, ease: 'easeInOut' } }}
+                      exit={{ opacity: 0, y: 12 }}
+                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                       ref={bottomOverlayScrollRef}
                       className="w-full max-h-[40vh] overflow-y-auto flex flex-col gap-3 px-0 py-2 select-text scrollbar-hide pointer-events-auto"
                     >
@@ -6967,7 +6982,7 @@ export default function App() {
                       if (msg.role === 'user') {
                         return (
                           <div key={`user-${index}`} className={`w-full flex justify-end px-0 ${fadeClass}`}>
-                            <UserMessage text={msg.text} theme={appTheme} />
+                            <UserMessage text={msg.text} theme={appTheme} shadowClass="shadow-card" borderClass="border border-[#E9EEF6] dark:border-[#2B2D31]" />
                           </div>
                         );
                       }
@@ -6980,7 +6995,7 @@ export default function App() {
                           {hasText && (
                             <div className={`w-full flex justify-start px-0 ${fadeClass}`}>
                               <div 
-                                className="w-fit max-w-[85%] bg-white dark:bg-[#1E1F22] text-slate-900 dark:text-white text-sm sm:text-base font-normal leading-relaxed rounded-[40px] px-6 py-4 shadow-none opacity-100 text-left border-0"
+                                className="w-fit max-w-[85%] bg-white/95 dark:bg-[#1E1F22]/95 text-slate-900 dark:text-white text-sm sm:text-base font-normal leading-relaxed rounded-[40px] px-6 py-4 border border-[#E9EEF6] dark:border-[#2B2D31] shadow-card backdrop-blur-md opacity-100 text-left"
                                 style={{ fontFamily: '"Inter", sans-serif' }}
                               >
                                 <BotMessage 
@@ -7002,7 +7017,7 @@ export default function App() {
                                   key={pIdx}
                                   type="button"
                                   onClick={pill.onClick}
-                                  className="w-fit max-w-full flex items-center gap-2.5 py-3 px-6 rounded-full bg-white dark:bg-[#1E1F22] hover:bg-slate-50 dark:hover:bg-[#282A2D] text-slate-900 dark:text-white text-sm font-medium transition-all duration-150 cursor-pointer border-0 shadow-none active:scale-95"
+                                  className="w-fit max-w-full flex items-center gap-2.5 py-3 px-6 rounded-full bg-white/95 dark:bg-[#1E1F22]/95 hover:bg-slate-50 dark:hover:bg-[#282A2D] text-slate-900 dark:text-white text-sm font-medium transition-all duration-150 cursor-pointer border border-[#E9EEF6] dark:border-[#2B2D31] shadow-card backdrop-blur-md active:scale-95"
                                 >
                                   <Zap size={16} className="shrink-0 text-slate-600 dark:text-neutral-300" />
                                   <span style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}>
@@ -7016,9 +7031,9 @@ export default function App() {
                       );
                     })}
                     {isLoading && (
-                      <div className="bg-white dark:bg-[#1E1F22] text-slate-800 dark:text-white border border-slate-200/80 dark:border-[#2B2D31] rounded-[24px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-sm flex items-center gap-3">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                        <span className="text-slate-500 dark:text-neutral-400 font-medium font-sans">Gemini is thinking...</span>
+                      <div className="bg-white/95 dark:bg-[#1E1F22]/95 text-slate-800 dark:text-white border border-[#E9EEF6] dark:border-[#2B2D31] rounded-[24px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-card backdrop-blur-md flex items-center gap-3">
+                        <OllieMascot variant="flat" size={24} state="idle" />
+                        <span className="text-slate-600 dark:text-neutral-300 font-medium font-sans">Ollie is thinking...</span>
                       </div>
                     )}
                     </motion.div>

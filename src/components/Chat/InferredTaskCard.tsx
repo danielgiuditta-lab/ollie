@@ -237,12 +237,10 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
   const showThumbnail = !isNonNativeEmailOrChat && !effectiveNarrow && item.category !== 'fyi';
 
   return (
-    <motion.div 
-      layoutId={`cell-${item.id}`}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+    <div 
       ref={cardRef}
       onClick={onClick}
-      className="w-full flex items-center justify-between gap-4 p-4 rounded-[4px] first:rounded-t-[16px] first:rounded-b-[4px] last:rounded-b-[16px] last:rounded-t-[4px] only:rounded-[16px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] cursor-pointer transition-all duration-200 select-none min-w-0"
+      className="w-full flex items-center justify-between gap-4 p-4 rounded-[4px] first:rounded-t-[16px] first:rounded-b-[4px] last:rounded-b-[16px] last:rounded-t-[4px] only:rounded-[16px] bg-[#F8FAFD] dark:bg-[#282A2D] hover:bg-[#EEF4FE] dark:hover:bg-[#35373A] cursor-pointer transition-colors duration-200 select-none min-w-0"
     >
       {/* Left Column: Status Indicator */}
       <div className="shrink-0 w-8 h-8 flex items-center justify-center">
@@ -307,6 +305,6 @@ export const InferredTaskCard: React.FC<InferredTaskCardProps> = ({ item, getFil
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
