@@ -13,9 +13,9 @@ export function UserMessage({ text, theme = 'light', isGroupChat = false }: User
   const isDark = theme === 'dark';
   return (
     <div 
-      className={`${themeTokens.filledBg} ${
-        isDark ? 'text-[#E3E3E3]' : 'text-slate-800'
-      } rounded-[24px] p-4 text-xs sm:text-base font-normal leading-relaxed max-w-[90%]`}
+      className={`bg-[#F0F4F9] dark:bg-[#282A2D] ${
+        isDark ? 'text-[#E3E3E3]' : 'text-slate-900'
+      } rounded-[20px] px-4 py-3 text-xs sm:text-base font-normal leading-relaxed max-w-[85%] shadow-sm opacity-100 border border-slate-200/80 dark:border-neutral-700/80`}
       style={{ fontFamily: '"Inter", sans-serif' }}
     >
       <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>

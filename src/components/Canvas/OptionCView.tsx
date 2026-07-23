@@ -890,7 +890,7 @@ export function OptionCView({
 
                     if (msg.role === 'user') {
                       return (
-                        <div key={`user-${index}`} className={`w-full flex justify-center ${fadeClass}`}>
+                        <div key={`user-${index}`} className={`w-full flex justify-end px-2 ${fadeClass}`}>
                           <UserMessage text={msg.text} theme="light" />
                         </div>
                       );
@@ -902,21 +902,23 @@ export function OptionCView({
                     return (
                       <React.Fragment key={`bot-${index}`}>
                         {hasText && (
-                          <div 
-                            className={`w-fit max-w-[90%] text-slate-800 dark:text-white text-base sm:text-lg font-normal leading-relaxed text-center px-4 py-2 ${fadeClass}`}
-                            style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}
-                          >
-                            <BotMessage 
-                              text={msg.text} 
-                              theme="light" 
-                              sources={driveFiles} 
-                            />
+                          <div className={`w-full flex justify-start px-2 ${fadeClass}`}>
+                            <div 
+                              className="w-fit max-w-[85%] bg-white dark:bg-[#1E1F22] text-slate-900 dark:text-white text-sm sm:text-base font-normal leading-relaxed rounded-[20px] p-4 border border-slate-200/80 dark:border-[#2B2D31] shadow-sm opacity-100 text-left"
+                              style={{ fontFamily: '"Inter", sans-serif' }}
+                            >
+                              <BotMessage 
+                                text={msg.text} 
+                                theme="light" 
+                                sources={driveFiles} 
+                              />
+                            </div>
                           </div>
                         )}
 
                         {hasPills && (
                           <div 
-                            className={`flex flex-wrap gap-2.5 max-w-[90%] justify-center pointer-events-auto ${fadeClass}`}
+                            className={`w-full flex flex-wrap gap-2.5 max-w-[90%] justify-start px-2 pointer-events-auto ${fadeClass}`}
                           >
                             {msg.actionPills.map((pill: any, pIdx: number) => (
                               <button
