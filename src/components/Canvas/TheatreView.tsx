@@ -682,8 +682,8 @@ export function TheatreView({
           <div className="flex items-center gap-3">
             <button
               onClick={() => handleOpenSourceChip(activeTask?.links?.[0]?.url || activeTask?.sourceName || activeTask?.title)}
-              className={`h-9 px-4 rounded-full text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-black hover:bg-[#1E1F22] text-white'
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[13px] font-normal transition-colors cursor-pointer ${
+                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#28292D] hover:bg-[#33353B] text-[#E3E3E3]'
               }`}
             >
               {getFileIcon(activeTask?.sourceName || activeTask?.title, activeTask?.sourceMimeType || activeTask?.type)}
@@ -1202,7 +1202,7 @@ export function TheatreView({
                     exit={{ opacity: 0, y: 12 }}
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                     ref={overlayScrollRef}
-                    className="w-full max-h-[36vh] overflow-hidden flex flex-col gap-3 px-0 py-2 select-text pointer-events-auto mb-1"
+                    className="w-full max-h-[36vh] overflow-y-auto no-scrollbar flex flex-col gap-3 px-0 py-2 select-text pointer-events-auto mb-1"
                     style={{
                       maskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',
                       WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',

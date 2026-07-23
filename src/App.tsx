@@ -6925,6 +6925,7 @@ export default function App() {
             {/* Full-bleed subtle progressive blur gradient ramp going seamlessly to 0px blur emanating from bottom */}
             {(() => {
               const isBackdropVisible = Boolean(
+                !isTheatreOpen &&
                 viewState !== 'ai_summary' && 
                 chatDockPosition === 'bottom' && 
                 messages && 
@@ -7065,7 +7066,7 @@ export default function App() {
               );
             })()}
 
-            {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
+            {!isTheatreOpen && viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
               <div 
                 className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
                 id="floating-bottom-chat"
@@ -7080,7 +7081,7 @@ export default function App() {
                       animate={{ opacity: 1, y: 0, transition: { duration: 0.35, delay: 0.14, ease: [0.16, 1, 0.3, 1] } }}
                       exit={{ opacity: 0, y: 12, transition: { duration: 0.2, delay: 0, ease: [0.16, 1, 0.3, 1] } }}
                       ref={bottomOverlayScrollRef}
-                      className="w-full max-h-[36vh] overflow-hidden flex flex-col gap-3 px-0 py-2 select-text pointer-events-auto"
+                      className="w-full max-h-[36vh] overflow-y-auto no-scrollbar flex flex-col gap-3 px-0 py-2 select-text pointer-events-auto"
                       style={{
                         maskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',
                         WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',
