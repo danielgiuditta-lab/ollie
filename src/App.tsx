@@ -6940,7 +6940,6 @@ export default function App() {
                   }}
                   onClick={() => setMessages([])}
                   className="fixed inset-0 z-20 cursor-pointer overflow-hidden"
-                  title="Click to dismiss chat overlay"
                 >
                   <div className="absolute bottom-0 inset-x-0 h-[38vh] max-h-[340px] pointer-events-none">
                     {/* Progressive Blur Layer 1: 0.5px */}
@@ -7081,7 +7080,11 @@ export default function App() {
                       animate={{ opacity: 1, y: 0, transition: { duration: 0.35, delay: 0.14, ease: [0.16, 1, 0.3, 1] } }}
                       exit={{ opacity: 0, y: 12, transition: { duration: 0.2, delay: 0, ease: [0.16, 1, 0.3, 1] } }}
                       ref={bottomOverlayScrollRef}
-                      className="w-full max-h-[40vh] overflow-y-auto flex flex-col gap-3 px-0 py-2 select-text scrollbar-hide pointer-events-auto"
+                      className="w-full max-h-[36vh] overflow-hidden flex flex-col gap-3 px-0 py-2 select-text pointer-events-auto"
+                      style={{
+                        maskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',
+                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',
+                      }}
                     >
                     {messages.map((msg, index) => {
                       const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());

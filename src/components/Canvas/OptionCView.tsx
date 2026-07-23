@@ -954,7 +954,11 @@ export function OptionCView({
                       exit={{ opacity: 0, y: 12 }}
                       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                       ref={overlayScrollRef}
-                      className="w-full max-h-[40vh] overflow-y-auto flex flex-col gap-3 px-0 py-2 select-text scrollbar-hide pointer-events-auto mb-1"
+                      className="w-full max-h-[36vh] overflow-hidden flex flex-col gap-3 px-0 py-2 select-text pointer-events-auto mb-1"
+                      style={{
+                        maskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',
+                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',
+                      }}
                     >
                       {messages.map((msg, index) => {
                         const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());
