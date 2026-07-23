@@ -1449,8 +1449,8 @@ export function HomeLandingExperimental({
   }
 
   return (
-    <div id="home-landing-content" className="w-full h-full flex flex-col items-center justify-start overflow-hidden p-0 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text">
-      <div className="w-full h-full flex-1 min-h-0 flex flex-col relative">
+    <div id="home-landing-content" className={`w-full ${isOptionCOpen ? 'h-full flex-1 min-h-0' : 'min-h-full'} flex flex-col items-center justify-start p-0 animate-in fade-in-30 slide-in-from-bottom-2 duration-300 bg-transparent select-text`}>
+      <div className={`w-full ${isOptionCOpen ? 'h-full flex-1 min-h-0' : 'min-h-full'} relative flex flex-col`}>
         <SpaceDashboardExperimental
           spaceId={activeSpaceId || 'home'}
           spaceName="Home Dashboard"

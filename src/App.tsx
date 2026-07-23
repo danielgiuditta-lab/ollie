@@ -6664,7 +6664,7 @@ export default function App() {
                   currentUserId={localUser?.id}
                   selectedFile={isTheatreOpen && playOptionMode === 'A' ? getOptionEFileObject(optionEActiveTask) : selectedFile}
                 >
-                  <div className={(!isIngesting && !(isTheatreOpen && playOptionMode === 'A') && ((viewState === 'home' && !selectedFile) || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full h-full flex flex-col min-h-0" : "hidden"}>
+                  <div className={(!isIngesting && !(isTheatreOpen && playOptionMode === 'A') && ((viewState === 'home' && !selectedFile) || ((viewState === 'files' || viewState === 'app') && !selectedFile))) ? "w-full min-h-full flex flex-col" : "hidden"}>
                     {chatModel === 'B' ? (
                       <HomeLandingExperimental 
                         accessToken={accessToken} 

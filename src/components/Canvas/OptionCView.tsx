@@ -429,7 +429,7 @@ export function OptionCView({
   };
 
   return (
-    <div className={`w-full ${isPlayMode ? 'h-full flex-1 min-h-0 pb-0' : 'min-h-full pb-48'} flex flex-col gap-4 bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 relative overflow-hidden`}>
+    <div className={`w-full ${isPlayMode ? 'h-full flex-1 min-h-0 pb-0 overflow-hidden' : 'min-h-full pb-48 overflow-visible'} flex flex-col gap-4 bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 relative`}>
       {/* Floating Close Button positioned absolutely at top right */}
       {isPlayMode && (
         <div className="absolute top-4 right-4 z-50">

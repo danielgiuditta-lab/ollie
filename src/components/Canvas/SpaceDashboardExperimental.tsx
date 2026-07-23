@@ -674,7 +674,7 @@ export function SpaceDashboardExperimental({
 
     return (
       <LayoutGroup id="option-c-cells-reel">
-        <div className="w-full h-full flex flex-col min-h-0 bg-white dark:bg-[#111214] select-text">
+        <div className={`w-full ${isOptionCOpen ? 'h-full flex-1 min-h-0' : 'min-h-full'} flex flex-col relative bg-transparent select-text`}>
           <AnimatePresence mode="popLayout">
             {isHomeDashboard && !isOptionCOpen && (
               <motion.div 
@@ -752,7 +752,7 @@ export function SpaceDashboardExperimental({
             />
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto px-6 md:px-12 pb-12 flex flex-col gap-6 flex-1 min-h-0 w-full">
+          <div className={`max-w-4xl mx-auto px-6 md:px-12 ${isOptionCOpen ? 'pb-12 flex-1 min-h-0' : 'pb-48 min-h-full'} flex flex-col gap-6 w-full`}>
             <OptionCView
               todoItems={todoItems || []}
               isOpen={isOptionCOpen}
