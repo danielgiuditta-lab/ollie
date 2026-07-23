@@ -904,7 +904,7 @@ export function OptionCView({
                         {hasText && (
                           <div className={`w-full flex justify-start px-2 ${fadeClass}`}>
                             <div 
-                              className="w-fit max-w-[85%] bg-white dark:bg-[#1E1F22] text-slate-900 dark:text-white text-sm sm:text-base font-normal leading-relaxed rounded-[20px] p-4 border border-slate-200/80 dark:border-[#2B2D31] shadow-sm opacity-100 text-left"
+                              className="w-fit max-w-[85%] bg-white dark:bg-[#1E1F22] text-slate-900 dark:text-white text-sm sm:text-base font-normal leading-relaxed rounded-[40px] px-6 py-4 shadow-none opacity-100 text-left border-0"
                               style={{ fontFamily: '"Inter", sans-serif' }}
                             >
                               <BotMessage 

@@ -15,7 +15,7 @@ export function UserMessage({ text, theme = 'light', isGroupChat = false }: User
     <div 
       className={`bg-[#F0F4F9] dark:bg-[#282A2D] ${
         isDark ? 'text-[#E3E3E3]' : 'text-slate-900'
-      } rounded-[20px] px-4 py-3 text-xs sm:text-base font-normal leading-relaxed max-w-[85%] shadow-sm opacity-100 border border-slate-200/80 dark:border-neutral-700/80`}
+      } rounded-[40px] px-6 py-3.5 text-xs sm:text-base font-normal leading-relaxed max-w-[85%] shadow-none opacity-100 border-0`}
       style={{ fontFamily: '"Inter", sans-serif' }}
     >
       <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>

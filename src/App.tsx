@@ -6925,7 +6925,9 @@ export default function App() {
             {/* Full-bleed subtle gradient ramp going to 0% blur emanating from the bottom screen edge */}
             {messages && messages.length > 0 && messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
               <div 
-                className="fixed inset-x-0 bottom-0 h-[60vh] z-20 pointer-events-none transition-all duration-500"
+                onClick={() => setMessages([])}
+                className="fixed inset-x-0 bottom-0 h-[60vh] z-20 pointer-events-auto cursor-pointer transition-all duration-500"
+                title="Click to dismiss chat overlay"
                 style={{
                   background: appTheme === 'dark'
                     ? 'linear-gradient(to top, rgba(24, 25, 27, 0.70) 0%, rgba(24, 25, 27, 0.45) 40%, rgba(24, 25, 27, 0.18) 70%, rgba(24, 25, 27, 0.0) 100%)'
@@ -6938,7 +6940,7 @@ export default function App() {
               />
             )}
 
-            {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && !(isTheatreOpen && (playOptionMode === 'D' || playOptionMode === 'A')) && (
+            {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
               <div 
                 className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
                 id="floating-bottom-chat"
@@ -6978,7 +6980,7 @@ export default function App() {
                           {hasText && (
                             <div className={`w-full flex justify-start px-2 ${fadeClass}`}>
                               <div 
-                                className="w-fit max-w-[85%] bg-white dark:bg-[#1E1F22] text-slate-900 dark:text-white text-sm sm:text-base font-normal leading-relaxed rounded-[20px] p-4 border border-slate-200/80 dark:border-[#2B2D31] shadow-sm opacity-100 text-left"
+                                className="w-fit max-w-[85%] bg-white dark:bg-[#1E1F22] text-slate-900 dark:text-white text-sm sm:text-base font-normal leading-relaxed rounded-[40px] px-6 py-4 shadow-none opacity-100 text-left border-0"
                                 style={{ fontFamily: '"Inter", sans-serif' }}
                               >
                                 <BotMessage 
