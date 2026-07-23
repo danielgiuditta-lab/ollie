@@ -7078,9 +7078,8 @@ export default function App() {
                     <motion.div 
                       key="floating-chat-overlay"
                       initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 12 }}
-                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      animate={{ opacity: 1, y: 0, transition: { duration: 0.35, delay: 0.14, ease: [0.16, 1, 0.3, 1] } }}
+                      exit={{ opacity: 0, y: 12, transition: { duration: 0.2, delay: 0, ease: [0.16, 1, 0.3, 1] } }}
                       ref={bottomOverlayScrollRef}
                       className="w-full max-h-[40vh] overflow-y-auto flex flex-col gap-3 px-0 py-2 select-text scrollbar-hide pointer-events-auto"
                     >
