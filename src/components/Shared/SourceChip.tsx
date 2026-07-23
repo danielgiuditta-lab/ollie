@@ -115,7 +115,7 @@ export function SourceChip({ href, children, onClick, sources = [] }: SourceChip
       className="inline-flex items-center gap-2 bg-white hover:bg-slate-50/90 dark:bg-[#1E1F22] dark:hover:bg-[#2B2D31] text-slate-800 dark:text-[#E3E3E3] text-xs px-2.5 py-1 rounded-full font-medium transition cursor-pointer border-none shadow-none my-1 mr-1 select-none decoration-transparent shrink-0 max-w-full align-middle"
     >
       <img src={iconSrc} alt="" className={`w-3.5 h-3.5 ${personName ? 'rounded-full object-cover' : 'object-contain'} shrink-0`} />
-      <span className="max-w-[200px] sm:max-w-[240px] truncate">{cleanLabel || children}</span>
+      <span className="max-w-[130px] sm:max-w-[140px] truncate" title={cleanLabel || textStr}>{cleanLabel || children}</span>
     </a>
   );
 }

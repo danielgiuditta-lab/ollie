@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
 import ollieOutlineSvg from '../../assets/ollie-avatar-outline.svg';
+import { OllieMascot } from '../Shared/OllieMascot';
 import ReactMarkdown from 'react-markdown';
 import { BotMessage } from '../Chat/BotMessage';
 import { NativeViewer } from './NativeViewer';
@@ -187,8 +188,8 @@ export function OptionCView({
 
   const canvasTitleText = activeTask ? (
     isCurrentSignedOff 
-      ? (activeTask.titleDone || activeTask.title || activeTask.description)
-      : (activeTask.title || activeTask.titleDone || activeTask.description)
+      ? (activeTask.titleCell || activeTask.shortTitle || activeTask.titleDone || activeTask.title || activeTask.description)
+      : (activeTask.titleCell || activeTask.shortTitle || activeTask.title || activeTask.titleDone || activeTask.description)
   ) : '';
 
   const canvasMetaText = activeTask ? (
@@ -552,8 +553,8 @@ export function OptionCView({
                 const itemId = item.id || `cell-${idx}`;
                 const isCurrentSignedOff = completedTaskIds.has(item.id);
                 const cellTitle = isCurrentSignedOff 
-                  ? (item.titleDone || item.title || item.description)
-                  : (item.title || item.titleDone || item.description);
+                  ? (item.titleCell || item.shortTitle || item.titleDone || item.title || item.description)
+                  : (item.titleCell || item.shortTitle || item.title || item.titleDone || item.description);
 
                 const cellMeta = isCurrentSignedOff
                   ? (item.descriptionDone || item.description || item.action || 'Your tasks will be added to "My tasks" when notes are ready')
@@ -640,7 +641,7 @@ export function OptionCView({
                                     className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[13px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
                                   >
                                     {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                                    <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                                    <span className="truncate max-w-[130px] sm:max-w-[140px]" title={activeSourceName}>{activeSourceName.replace(/\.(gslides|gdoc|gsheet|gform|csv|pdf|html|doc|docx|ppt|pptx)$/i, '')}</span>
                                   </div>
                                 )}
 
@@ -771,7 +772,7 @@ export function OptionCView({
                                       className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/80 dark:bg-[#28292D] dark:hover:bg-[#33353B] text-[12px] font-normal text-slate-800 dark:text-[#E3E3E3] transition-colors cursor-pointer"
                                     >
                                       {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                                      <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                                      <span className="truncate max-w-[130px] sm:max-w-[140px]" title={activeSourceName}>{activeSourceName.replace(/\.(gslides|gdoc|gsheet|gform|csv|pdf|html|doc|docx|ppt|pptx)$/i, '')}</span>
                                     </div>
                                   )}
 
@@ -948,10 +949,11 @@ export function OptionCView({
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0 transition cursor-pointer flex items-center justify-center p-1 rounded-full border-none outline-none"
                 title="Add attachment or context"
               >
-                <img 
-                  src={(isInputFocused || steerInput.trim().length > 0) ? ollieAvatarSvg : ollieOutlineSvg} 
-                  alt="Ollie" 
-                  className={`w-5 h-5 object-contain transition-all duration-200 ${(isInputFocused || steerInput.trim().length > 0) ? '' : 'opacity-70 dark:opacity-80'}`} 
+                <OllieMascot 
+                  variant={(isInputFocused || steerInput.trim().length > 0) ? 'gradient' : 'flat'}
+                  size={20}
+                  state={isLoading ? 'working' : 'idle'}
+                  followCursor={true}
                 />
               </button>
 

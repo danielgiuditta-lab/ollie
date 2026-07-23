@@ -694,3 +694,146 @@ body.is-resizing iframe {
   40% { transform: scale(1.06); }
   100% { transform: scale(1); }
 }
+
+/* ==========================================
+   Ollie Mascot Keyframes & Styles
+   ========================================== */
+@keyframes ollie-look-and-blink {
+  0%, 30%, 50%, 75%, 84%, 88%, 100% { transform: scaleY(1) translateX(0) translateY(0); }
+  35%, 45% { transform: scaleY(1) translateX(1.5px) translateY(-0.5px); }
+  60%, 70% { transform: scaleY(1) translateX(-2px) translateY(0); }
+  82%, 86% { transform: scaleY(0.1) translateX(0) translateY(0); }
+}
+
+@keyframes head-talking-bounce {
+  0%, 100% {
+    transform: translateY(0) scaleX(1.03) scaleY(0.97);
+  }
+  50% {
+    transform: translateY(-4px) scaleX(0.97) scaleY(1.03);
+  }
+}
+
+@keyframes head-idle-breath {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -1.2px, 0);
+  }
+}
+
+@keyframes eye-think-scan {
+  0%, 100% {
+    transform: translateX(-0.3px);
+  }
+  50% {
+    transform: translateX(0.3px);
+  }
+}
+
+@keyframes eye-idle-pan {
+  0%, 18% {
+    transform: translate3d(0, 0, 0);
+  }
+  24%, 34% {
+    transform: translate3d(-1.6px, 0, 0);
+  }
+  40%, 48% {
+    transform: translate3d(1.6px, 0, 0);
+  }
+  54%, 62% {
+    transform: translate3d(0, -1.3px, 0);
+  }
+  68%, 76% {
+    transform: translate3d(0, 1.3px, 0);
+  }
+  82%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Flat Ollie Mascot Styles */
+.ollie-flat-host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.ollie-flat-squish-bounce {
+  animation: head-talking-bounce 0.8s ease-in-out infinite;
+}
+
+.ollie-flat-svg {
+  user-select: none;
+}
+
+.ollie-flat-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.ollie-flat-eye-blink {
+  animation: ollie-look-and-blink 6s infinite;
+}
+
+/* Gradient Ollie Mascot Styles */
+.ollie-gradient-host {
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2);
+  transform-origin: center center;
+  will-change: transform;
+  flex-shrink: 0;
+  user-select: none;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ollie-gradient-host.returning {
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.ollie-gradient-body-idle {
+  animation: head-idle-breath 5s ease-in-out infinite;
+}
+
+.ollie-gradient-body-working {
+  animation: head-talking-bounce 0.8s ease-in-out infinite;
+}
+
+.ollie-gradient-avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.ollie-gradient-eyes-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.ollie-gradient-eye {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center center;
+  transform-box: fill-box;
+}
+
+.ollie-gradient-eye.returning {
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.ollie-gradient-eye-idle {
+  animation: eye-idle-pan 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.ollie-gradient-eye-working {
+  animation: eye-think-scan 2.8s ease-in-out infinite;
+}

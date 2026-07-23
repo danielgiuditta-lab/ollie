@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
 import ollieOutlineSvg from '../../assets/ollie-avatar-outline.svg';
+import { OllieMascot } from '../Shared/OllieMascot';
 import { NativeViewer } from './NativeViewer';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
 import { Composer } from '../Chat/Composer';
@@ -863,7 +864,7 @@ export function TheatreView({
                             }`}
                           >
                             {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                            <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                            <span className="truncate max-w-[130px] sm:max-w-[140px]" title={activeSourceName}>{activeSourceName.replace(/\.(gslides|gdoc|gsheet|gform|csv|pdf|html|doc|docx|ppt|pptx)$/i, '')}</span>
                           </div>
                         )}
 
@@ -1023,7 +1024,7 @@ export function TheatreView({
                               }`}
                             >
                               {getFileIcon(activeSourceName, activeTask?.sourceMimeType || activeTask?.type)}
-                              <span className="truncate max-w-[160px]">{activeSourceName}</span>
+                              <span className="truncate max-w-[130px] sm:max-w-[140px]" title={activeSourceName}>{activeSourceName.replace(/\.(gslides|gdoc|gsheet|gform|csv|pdf|html|doc|docx|ppt|pptx)$/i, '')}</span>
                             </div>
                           )}
 
@@ -1208,10 +1209,11 @@ export function TheatreView({
                 }`}
                 title="Add attachment or context"
               >
-                <img 
-                  src={(isInputFocused || steerInput.trim().length > 0) ? ollieAvatarSvg : ollieOutlineSvg} 
-                  alt="Ollie" 
-                  className={`w-5 h-5 object-contain transition-all duration-200 ${(isInputFocused || steerInput.trim().length > 0) ? '' : 'opacity-70 dark:opacity-80'}`} 
+                <OllieMascot 
+                  variant={(isInputFocused || steerInput.trim().length > 0) ? 'gradient' : 'flat'}
+                  size={20}
+                  state={isLoading ? 'working' : 'idle'}
+                  followCursor={true}
                 />
               </button>
 

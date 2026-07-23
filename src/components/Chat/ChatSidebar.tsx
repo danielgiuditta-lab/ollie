@@ -3,6 +3,7 @@ import { BotMessage } from './BotMessage';
 import { UserMessage } from './UserMessage';
 import { Composer } from './Composer';
 import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
+import { OllieMascot } from '../Shared/OllieMascot';
 import { HeroTitle } from '../Shared/HeroTitle';
 import { NullTitle } from '../Shared/NullTitle';
 import { IconButton } from '../Shared/IconButton';
@@ -242,7 +243,7 @@ export function ChatSidebar({
         <div className="flex items-center justify-between px-6 w-full h-[64px] shrink-0 border-b border-transparent">
           <div className="flex items-center gap-2">
             {!isBottom && (
-              <img src={ollieAvatarSvg} alt="Ollie" className="w-5 h-5 object-contain shrink-0" />
+              <OllieMascot size={20} state={isLoading ? 'working' : 'idle'} followCursor={true} />
             )}
             <h2 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{getTitle()}</h2>
           </div>
