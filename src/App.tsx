@@ -6939,10 +6939,10 @@ export default function App() {
                     pointerEvents: isBackdropVisible ? 'auto' : 'none'
                   }}
                   onClick={() => setMessages([])}
-                  className="fixed inset-x-0 bottom-0 h-[38vh] max-h-[340px] z-20 cursor-pointer overflow-hidden"
+                  className="fixed inset-0 z-20 cursor-pointer overflow-hidden"
                   title="Click to dismiss chat overlay"
                 >
-                  <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute bottom-0 inset-x-0 h-[38vh] max-h-[340px] pointer-events-none">
                     {/* Progressive Blur Layer 1: 0.5px */}
                     <motion.div 
                       className="absolute inset-0 pointer-events-none"

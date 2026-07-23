@@ -44,23 +44,15 @@ export function CanvasMain({
         
         {/* Inner Container with rounded corners */}
         <div className="flex flex-col flex-1 h-full min-h-0 relative z-10 bg-transparent border-transparent shadow-none">
-          {!(isLoading && viewState !== 'ai_summary') ? (
-            <div 
-              id="canvas-main-viewport"
-              className="flex-1 w-full h-full relative z-0 min-h-0 overflow-y-auto custom-scrollbar transition-all duration-300 pt-0 flex flex-col"
-            >
-              {children}
-              {peers && viewState !== 'home' && viewState !== 'ai_summary' && (
-                <PeerCursors peers={peers} currentUserId={currentUserId} />
-              )}
-            </div>
-          ) : (
-            <div className="flex-1 w-full h-full relative flex items-center justify-center overflow-hidden bg-transparent">
-              <div className="relative z-10 flex items-center justify-center -translate-y-12">
-                <ShapeLoader size={324} />
-              </div>
-            </div>
-          )}
+          <div 
+            id="canvas-main-viewport"
+            className="flex-1 w-full h-full relative z-0 min-h-0 overflow-y-auto custom-scrollbar transition-all duration-300 pt-0 flex flex-col"
+          >
+            {children}
+            {peers && viewState !== 'home' && viewState !== 'ai_summary' && (
+              <PeerCursors peers={peers} currentUserId={currentUserId} />
+            )}
+          </div>
         </div>
       </div>
     </div>
