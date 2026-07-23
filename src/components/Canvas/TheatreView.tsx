@@ -1110,19 +1110,14 @@ export function TheatreView({
           {chatDockPosition === 'bottom' && messages && messages.length > 0 && (
             <div className="w-full max-w-[600px] relative z-30 flex flex-col items-center">
               {/* Background blur with full-bleed subtle gradient ramp going to 0% blur under chat bubbles */}
-                {(() => {
-                  const isBackdropActive = messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000);
-                  
-                  return (
+                <AnimatePresence>
+                  {messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
                     <motion.div 
                       key="theatre-chat-blur"
-                      initial={false}
-                      animate={{ 
-                        clipPath: isBackdropActive ? 'inset(0% 0% 0% 0%)' : 'inset(100% 0% 0% 0%)',
-                        opacity: isBackdropActive ? 1 : 0,
-                        pointerEvents: isBackdropActive ? 'auto' : 'none'
-                      }}
-                      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.5, ease: [0.33, 0, 0.67, 1] }}
                       className="fixed inset-x-0 bottom-0 h-[38vh] max-h-[340px] z-20 pointer-events-none overflow-hidden"
                     >
                       {/* Progressive Blur Layer 1: 0.5px */}
@@ -1195,8 +1190,8 @@ export function TheatreView({
                         }}
                       />
                     </motion.div>
-                  );
-                })()}
+                  )}
+                </AnimatePresence>
 
               <AnimatePresence>
                 {messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
