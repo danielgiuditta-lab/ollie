@@ -35,19 +35,19 @@ export function CanvasMain({
   const showRainbowRim = false;
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 min-h-0 relative h-full overflow-hidden">
+    <div className="flex-1 flex flex-col min-w-0 min-h-0 relative h-full overflow-y-auto custom-scrollbar">
       {/* Outer wrapper to host the 1px Rainbow Rim Overlay without clipping */}
-      <div className={`flex flex-col flex-1 h-full min-h-0 overflow-hidden relative transition-all duration-300 rounded-[32px] ${showRainbowRim ? 'p-[1px]' : ''}`}>
+      <div className={`flex flex-col flex-1 h-full min-h-0 relative transition-all duration-300 rounded-[32px] ${showRainbowRim ? 'p-[1px]' : ''}`}>
         {showRainbowRim && (
           <RainbowRimOverlay active={true} borderRadiusClass="rounded-[32px]" variant="canvas" />
         )}
         
-        {/* Inner Container with rounded corners and overflow-hidden */}
-        <div className="flex flex-col flex-1 h-full min-h-0 overflow-hidden relative z-10 bg-transparent border-transparent shadow-none">
+        {/* Inner Container with rounded corners */}
+        <div className="flex flex-col flex-1 h-full min-h-0 relative z-10 bg-transparent border-transparent shadow-none">
           {!(isLoading && viewState !== 'ai_summary') ? (
             <div 
               id="canvas-main-viewport"
-              className="flex-1 w-full h-full relative z-0 min-h-0 overflow-hidden transition-all duration-300 pt-0"
+              className="flex-1 w-full h-full relative z-0 min-h-0 overflow-y-auto custom-scrollbar transition-all duration-300 pt-0"
             >
               {children}
               {peers && viewState !== 'home' && viewState !== 'ai_summary' && (

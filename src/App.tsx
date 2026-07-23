@@ -28,6 +28,7 @@ import { getAvatarForPerson } from './utils/personAvatars';
 import { ShapeLoader } from './components/Shared/ShapeLoader';
 import ReactMarkdown from 'react-markdown';
 import { BotMessage, formatPeopleNames } from './components/Chat/BotMessage';
+import { UserMessage } from './components/Chat/UserMessage';
 import { inferChatName, resolveArtifactForChat, findAssociatedChatForFile } from './utils/artifactResolver';
 
 
@@ -6797,11 +6798,11 @@ export default function App() {
                   )}
                   {((viewState === 'app' || viewState === 'files' || viewState === 'file_viewer') || (isTheatreOpen && playOptionMode === 'A')) && (selectedFile || viewState === 'app' || isLoading || (isTheatreOpen && playOptionMode === 'A')) && (
                     <div 
-                      className="w-full h-full flex flex-col overflow-hidden min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200 p-4" 
+                      className="w-full h-full flex flex-col overflow-y-auto custom-scrollbar min-w-0 transition-colors duration-300 bg-transparent animate-fade-in duration-200 p-4" 
                       id="canvas-unified-workspace"
                     >
                       {isTheatreOpen && playOptionMode === 'A' ? (
-                        <div className="w-full h-full relative overflow-hidden bg-white dark:bg-[#18191B] select-text">
+                        <div className="w-full h-full relative overflow-y-auto custom-scrollbar bg-white dark:bg-[#18191B] select-text">
                           <TheatreView
                             todoItems={todoItems}
                             activeIndexProp={optionETaskIndex}
@@ -6921,20 +6922,33 @@ export default function App() {
               )}
             </div>
 
+            {/* Full-bleed subtle gradient ramp going to 0% blur emanating from the bottom screen edge */}
+            {messages && messages.length > 0 && messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
+              <div 
+                className="fixed inset-x-0 bottom-0 h-[60vh] z-20 pointer-events-none transition-all duration-500"
+                style={{
+                  background: appTheme === 'dark'
+                    ? 'linear-gradient(to top, rgba(24, 25, 27, 0.70) 0%, rgba(24, 25, 27, 0.45) 40%, rgba(24, 25, 27, 0.18) 70%, rgba(24, 25, 27, 0.0) 100%)'
+                    : 'linear-gradient(to top, rgba(255, 255, 255, 0.70) 0%, rgba(255, 255, 255, 0.45) 40%, rgba(255, 255, 255, 0.18) 70%, rgba(255, 255, 255, 0.0) 100%)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)',
+                  WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)',
+                }}
+              />
+            )}
+
             {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && !(isTheatreOpen && (playOptionMode === 'D' || playOptionMode === 'A')) && (
               <div 
-                className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
+                className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
                 id="floating-bottom-chat"
               >
+
                 {/* Floating overlay chat messages fading out at top 40% of viewport */}
                 {messages && messages.length > 0 && (
                   <div 
                     ref={bottomOverlayScrollRef}
-                    className="w-full max-h-[40vh] overflow-y-auto flex flex-col gap-3 p-3 select-text scrollbar-hide pointer-events-auto"
-                    style={{
-                      maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
-                      WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
-                    }}
+                    className="w-full max-h-[40vh] overflow-y-auto flex flex-col items-center gap-3 p-3 select-text scrollbar-hide pointer-events-auto"
                   >
                     {messages.map((msg, index) => {
                       const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());
@@ -6945,14 +6959,8 @@ export default function App() {
 
                       if (msg.role === 'user') {
                         return (
-                          <div 
-                            key={`user-${index}`} 
-                            className={`self-end bg-blue-600 text-white rounded-[22px] px-5 py-3 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed ${fadeClass}`}
-                            style={{ fontFamily: '"Inter", sans-serif' }}
-                          >
-                            <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
-                              {msg.text}
-                            </ReactMarkdown>
+                          <div key={`user-${index}`} className={`w-full flex justify-center ${fadeClass}`}>
+                            <UserMessage text={msg.text} theme={appTheme} />
                           </div>
                         );
                       }
@@ -6964,8 +6972,8 @@ export default function App() {
                         <React.Fragment key={`bot-${index}`}>
                           {hasText && (
                             <div 
-                              className={`self-start bg-white dark:bg-[#1E1F22] text-slate-900 dark:text-white border border-slate-200/80 dark:border-[#2B2D31] rounded-[22px] px-5 py-3.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-md leading-relaxed ${fadeClass}`}
-                              style={{ fontFamily: '"Inter", sans-serif' }}
+                              className={`w-fit max-w-[90%] text-slate-800 dark:text-white text-base sm:text-lg font-normal leading-relaxed text-center px-4 py-2 ${fadeClass}`}
+                              style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}
                             >
                               <BotMessage 
                                 text={msg.text} 
@@ -6978,16 +6986,16 @@ export default function App() {
 
                           {hasPills && (
                             <div 
-                              className={`self-start bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] rounded-[22px] p-2.5 shadow-md flex flex-wrap gap-2 max-w-[85%] pointer-events-auto ${fadeClass}`}
+                              className={`flex flex-wrap gap-2.5 max-w-[90%] justify-center pointer-events-auto ${fadeClass}`}
                             >
                               {msg.actionPills.map((pill: any, pIdx: number) => (
                                 <button
                                   key={pIdx}
                                   type="button"
                                   onClick={pill.onClick}
-                                  className="w-fit max-w-full flex items-center gap-2.5 py-2 px-4 rounded-full bg-[#f8fafd] hover:bg-[#f0f4f9] dark:bg-[#2B2D31] dark:hover:bg-[#35373C] text-slate-800 dark:text-neutral-200 text-xs sm:text-sm font-medium transition-all duration-150 cursor-pointer border border-slate-200/60 dark:border-[#383A40] shadow-xs active:scale-95"
+                                  className="w-fit max-w-full flex items-center gap-2.5 py-3 px-6 rounded-full bg-white dark:bg-[#1E1F22] hover:bg-slate-50 dark:hover:bg-[#282A2D] text-slate-900 dark:text-white text-sm font-medium transition-all duration-150 cursor-pointer border border-slate-200/80 dark:border-[#2B2D31] shadow-sm active:scale-95"
                                 >
-                                  <Zap size={16} className="shrink-0 text-slate-500 dark:text-neutral-400" />
+                                  <Zap size={16} className="shrink-0 text-slate-600 dark:text-neutral-300" />
                                   <span style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}>
                                     {pill.label}
                                   </span>
@@ -6999,9 +7007,9 @@ export default function App() {
                       );
                     })}
                     {isLoading && (
-                      <div className="self-start bg-white text-slate-800 border border-slate-200/80 rounded-[22px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-md flex items-center gap-3">
+                      <div className="bg-white dark:bg-[#1E1F22] text-slate-800 dark:text-white border border-slate-200/80 dark:border-[#2B2D31] rounded-[24px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-sm flex items-center gap-3">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                        <span className="text-slate-500 font-medium font-sans">Gemini is thinking...</span>
+                        <span className="text-slate-500 dark:text-neutral-400 font-medium font-sans">Gemini is thinking...</span>
                       </div>
                     )}
                   </div>

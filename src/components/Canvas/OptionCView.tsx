@@ -16,6 +16,7 @@ import ollieOutlineSvg from '../../assets/ollie-avatar-outline.svg';
 import { OllieMascot } from '../Shared/OllieMascot';
 import ReactMarkdown from 'react-markdown';
 import { BotMessage } from '../Chat/BotMessage';
+import { UserMessage } from '../Chat/UserMessage';
 import { NativeViewer } from './NativeViewer';
 import { renderTextWithSourceChips } from '../../utils/sourceChipUtils';
 import { InferredTaskDiffView } from './InferredTaskDiffView';
@@ -428,7 +429,7 @@ export function OptionCView({
   };
 
   return (
-    <div className="w-full h-full min-h-[560px] flex flex-col gap-4 bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-0 relative">
+    <div className="w-full min-h-full flex flex-col gap-4 bg-transparent text-slate-900 dark:text-white select-none font-sans px-2 md:px-4 pt-1 pb-48 relative">
       {/* Floating Close Button positioned absolutely at top right */}
       {isPlayMode && (
         <div className="absolute top-4 right-4 z-50">
@@ -445,7 +446,7 @@ export function OptionCView({
       <LayoutGroup id="option-c-cells-reel">
         {!isPlayMode ? (
           /* Landing Page View: Section headers and task cards */
-          <div className="w-full flex-1 flex flex-col gap-6 max-w-4xl mx-auto overflow-y-auto custom-scrollbar py-2 pb-36 text-left">
+          <div className="w-full flex flex-col gap-6 max-w-4xl mx-auto py-2 text-left">
             {needsApprovalItems.length > 0 && (
               <div className="flex flex-col gap-2">
                 <h2 className="text-[20px] font-medium text-slate-800 dark:text-neutral-200 mt-2 mb-1 text-left">
@@ -862,14 +863,23 @@ export function OptionCView({
             {/* Floating virtual overlay chat in bottom mode */}
             {chatDockPosition === 'bottom' && messages && messages.length > 0 && (
               <div className="w-full max-w-[560px] relative z-30 flex flex-col items-center">
+                {/* Background blur with full-bleed subtle gradient ramp going to 0% blur under chat bubbles */}
+                {messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
+                  <div 
+                    className="fixed inset-x-0 bottom-0 h-[60vh] z-20 pointer-events-none transition-all duration-500"
+                    style={{
+                      background: 'linear-gradient(to top, rgba(255, 255, 255, 0.70) 0%, rgba(255, 255, 255, 0.45) 40%, rgba(255, 255, 255, 0.18) 70%, rgba(255, 255, 255, 0.0) 100%)',
+                      backdropFilter: 'blur(16px)',
+                      WebkitBackdropFilter: 'blur(16px)',
+                      maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)',
+                      WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)',
+                    }}
+                  />
+                )}
 
                 <div 
                   ref={overlayScrollRef}
-                  className="w-full max-h-[40vh] overflow-y-auto flex flex-col gap-3 p-3 select-text scrollbar-hide pointer-events-auto mb-1"
-                  style={{
-                    maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
-                    WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
-                  }}
+                  className="w-full max-h-[40vh] overflow-y-auto flex flex-col items-center gap-3 p-3 select-text scrollbar-hide pointer-events-auto mb-1"
                 >
                   {messages.map((msg, index) => {
                     const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());
@@ -880,14 +890,8 @@ export function OptionCView({
 
                     if (msg.role === 'user') {
                       return (
-                        <div 
-                          key={`user-${index}`} 
-                          className={`self-end bg-blue-600 text-white rounded-[22px] px-5 py-3 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed ${fadeClass}`}
-                          style={{ fontFamily: '"Inter", sans-serif' }}
-                        >
-                          <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
-                            {msg.text}
-                          </ReactMarkdown>
+                        <div key={`user-${index}`} className={`w-full flex justify-center ${fadeClass}`}>
+                          <UserMessage text={msg.text} theme="light" />
                         </div>
                       );
                     }
@@ -899,8 +903,8 @@ export function OptionCView({
                       <React.Fragment key={`bot-${index}`}>
                         {hasText && (
                           <div 
-                            className={`self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] px-5 py-3.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-md leading-relaxed ${fadeClass}`}
-                            style={{ fontFamily: '"Inter", sans-serif' }}
+                            className={`w-fit max-w-[90%] text-slate-800 dark:text-white text-base sm:text-lg font-normal leading-relaxed text-center px-4 py-2 ${fadeClass}`}
+                            style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}
                           >
                             <BotMessage 
                               text={msg.text} 
@@ -912,16 +916,16 @@ export function OptionCView({
 
                         {hasPills && (
                           <div 
-                            className={`self-start bg-white border border-slate-200/80 rounded-[22px] p-2.5 shadow-md flex flex-wrap gap-2 max-w-[85%] pointer-events-auto ${fadeClass}`}
+                            className={`flex flex-wrap gap-2.5 max-w-[90%] justify-center pointer-events-auto ${fadeClass}`}
                           >
                             {msg.actionPills.map((pill: any, pIdx: number) => (
                               <button
                                 key={pIdx}
                                 type="button"
                                 onClick={pill.onClick}
-                                className="w-fit max-w-full flex items-center gap-2.5 py-2 px-4 rounded-full bg-[#f8fafd] hover:bg-[#f0f4f9] text-slate-800 text-xs sm:text-sm font-medium transition-all duration-150 cursor-pointer border border-slate-200/60 shadow-xs active:scale-95"
+                                className="w-fit max-w-full flex items-center gap-2.5 py-3 px-6 rounded-full bg-white dark:bg-[#1E1F22] hover:bg-slate-50 dark:hover:bg-[#282A2D] text-slate-900 dark:text-white text-sm font-medium transition-all duration-150 cursor-pointer border border-slate-200/80 dark:border-[#2B2D31] shadow-sm active:scale-95"
                               >
-                                <Zap size={16} className="shrink-0 text-slate-500" />
+                                <Zap size={16} className="shrink-0 text-slate-600 dark:text-neutral-300" />
                                 <span style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}>
                                   {pill.label}
                                 </span>
@@ -933,7 +937,7 @@ export function OptionCView({
                     );
                   })}
                   {isLoading && (
-                    <div className="self-start bg-white text-slate-800 border border-slate-200/80 rounded-[22px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-md flex items-center gap-3">
+                    <div className="bg-white text-slate-800 border border-slate-200/80 rounded-[24px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-sm flex items-center gap-3">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                       <span className="text-slate-500 font-medium font-sans">Gemini is thinking...</span>
                     </div>

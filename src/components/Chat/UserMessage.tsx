@@ -15,7 +15,7 @@ export function UserMessage({ text, theme = 'light', isGroupChat = false }: User
     <div 
       className={`${themeTokens.filledBg} ${
         isDark ? 'text-[#E3E3E3]' : 'text-slate-800'
-      } rounded-[24px] p-4 text-xs sm:text-base font-normal leading-relaxed max-w-[90%] self-end`}
+      } rounded-[24px] p-4 text-xs sm:text-base font-normal leading-relaxed max-w-[90%]`}
       style={{ fontFamily: '"Inter", sans-serif' }}
     >
       <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>

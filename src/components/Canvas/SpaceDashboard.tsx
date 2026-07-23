@@ -483,7 +483,7 @@ export function SpaceDashboard({
   const isHomeDashboard = spaceId === 'home' || spaceId === 'home_guest' || spaceId === '';
 
   return (
-    <div className="w-full h-full flex flex-col min-h-0 relative select-none">
+    <div className="w-full min-h-full flex flex-col relative select-none">
       <AnimatePresence mode="popLayout">
         {isHomeDashboard && !isOptionCOpen && (
           <motion.div 
@@ -514,7 +514,7 @@ export function SpaceDashboard({
       </AnimatePresence>
 
       {isOptionCOpen ? (
-        <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden p-0">
+        <div className="w-full relative flex flex-col p-0">
           <OptionCView
             todoItems={todoItems || []}
             onClose={onCloseOptionC || (() => {})}
@@ -540,7 +540,7 @@ export function SpaceDashboard({
           }
         }}
         onDrop={handleContainerDrop}
-        className={`w-full flex-1 grid ${gridLayoutClass} gap-4 px-4 sm:px-6 pt-2 pb-6 overflow-y-auto items-stretch justify-stretch relative`}
+        className={`w-full grid ${gridLayoutClass} gap-4 px-4 sm:px-6 pt-2 pb-48 items-stretch justify-stretch relative`}
       >
         {/* Dynamic Container Side Indicators */}
         {dragOverCardId === 'container-left' && (
@@ -699,7 +699,7 @@ export function SpaceDashboard({
                         theme={theme}
                       />
                     ) : (
-                      <div className="w-full h-full overflow-y-auto p-4 flex flex-col gap-4">
+                      <div className="w-full p-4 flex flex-col gap-4">
                         {(() => {
                           const continueWorking = (todoItems || []).filter(t => t.category === 'needs_input' || t.category === 'continue_working' || (t.type !== 'chat' && t.type !== 'fyi' && t.category !== 'needs_approval' && t.category !== 'fyi'));
                           const needsApproval = (todoItems || []).filter(t => t.category === 'needs_approval' || t.type === 'chat');
