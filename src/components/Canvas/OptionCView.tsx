@@ -879,7 +879,7 @@ export function OptionCView({
 
                 <div 
                   ref={overlayScrollRef}
-                  className="w-full max-h-[40vh] overflow-y-auto flex flex-col items-center gap-3 p-3 select-text scrollbar-hide pointer-events-auto mb-1"
+                  className="w-full max-h-[40vh] overflow-y-auto flex flex-col gap-3 px-0 py-2 select-text scrollbar-hide pointer-events-auto mb-1"
                 >
                   {messages.map((msg, index) => {
                     const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());
@@ -890,7 +890,7 @@ export function OptionCView({
 
                     if (msg.role === 'user') {
                       return (
-                        <div key={`user-${index}`} className={`w-full flex justify-end px-2 ${fadeClass}`}>
+                        <div key={`user-${index}`} className={`w-full flex justify-end px-0 ${fadeClass}`}>
                           <UserMessage text={msg.text} theme="light" />
                         </div>
                       );
@@ -902,7 +902,7 @@ export function OptionCView({
                     return (
                       <React.Fragment key={`bot-${index}`}>
                         {hasText && (
-                          <div className={`w-full flex justify-start px-2 ${fadeClass}`}>
+                          <div className={`w-full flex justify-start px-0 ${fadeClass}`}>
                             <div 
                               className="w-fit max-w-[85%] bg-white dark:bg-[#1E1F22] text-slate-900 dark:text-white text-sm sm:text-base font-normal leading-relaxed rounded-[40px] px-6 py-4 shadow-none opacity-100 text-left border-0"
                               style={{ fontFamily: '"Inter", sans-serif' }}
@@ -918,14 +918,14 @@ export function OptionCView({
 
                         {hasPills && (
                           <div 
-                            className={`w-full flex flex-wrap gap-2.5 max-w-[90%] justify-start px-2 pointer-events-auto ${fadeClass}`}
+                            className={`w-full flex flex-wrap gap-2.5 justify-start px-0 pointer-events-auto ${fadeClass}`}
                           >
                             {msg.actionPills.map((pill: any, pIdx: number) => (
                               <button
                                 key={pIdx}
                                 type="button"
                                 onClick={pill.onClick}
-                                className="w-fit max-w-full flex items-center gap-2.5 py-3 px-6 rounded-full bg-white dark:bg-[#1E1F22] hover:bg-slate-50 dark:hover:bg-[#282A2D] text-slate-900 dark:text-white text-sm font-medium transition-all duration-150 cursor-pointer border border-slate-200/80 dark:border-[#2B2D31] shadow-sm active:scale-95"
+                                className="w-fit max-w-full flex items-center gap-2.5 py-3 px-6 rounded-full bg-white dark:bg-[#1E1F22] hover:bg-slate-50 dark:hover:bg-[#282A2D] text-slate-900 dark:text-white text-sm font-medium transition-all duration-150 cursor-pointer border-0 shadow-none active:scale-95"
                               >
                                 <Zap size={16} className="shrink-0 text-slate-600 dark:text-neutral-300" />
                                 <span style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}>

@@ -514,7 +514,7 @@ export function SpaceDashboard({
       </AnimatePresence>
 
       {isOptionCOpen ? (
-        <div className="w-full h-full flex-1 min-h-0 relative flex flex-col p-0 overflow-hidden">
+        <div className="w-full relative flex flex-col p-0">
           <OptionCView
             todoItems={todoItems || []}
             onClose={onCloseOptionC || (() => {})}
