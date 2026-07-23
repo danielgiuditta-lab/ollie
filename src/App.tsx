@@ -20,7 +20,7 @@ import { Composer } from './components/Chat/Composer';
 import { AISummaryView } from './components/Canvas/AISummaryView';
 import { InferredTaskDiffView } from './components/Canvas/InferredTaskDiffView';
 import { TheatreView, TheatreTaskCell } from './components/Canvas/TheatreView';
-import { ArrowLeft, ArrowRight, Check, X, Pencil } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, X, Pencil, Zap } from 'lucide-react';
 import { OptionCView } from './components/Canvas/OptionCView';
 import { ComponentsCatalog } from './components/ComponentsCatalog';
 import { FileIcon, getFileIcon } from './components/Shared/FileIcon';
@@ -6923,9 +6923,21 @@ export default function App() {
 
             {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && !(isTheatreOpen && (playOptionMode === 'D' || playOptionMode === 'A')) && (
               <div 
-                className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none relative"
                 id="floating-bottom-chat"
               >
+                {/* Radiant background gradient blur with surface color alpha at 40% (only when active messages exist) */}
+                {messages && messages.length > 0 && messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
+                  <div 
+                    className="absolute inset-x-0 bottom-0 top-0 -z-10 pointer-events-none rounded-[32px] backdrop-blur-xl transition-all duration-500"
+                    style={{
+                      background: appTheme === 'dark'
+                        ? 'linear-gradient(to top, rgba(24, 25, 27, 0.85) 0%, rgba(24, 25, 27, 0.40) 55%, rgba(24, 25, 27, 0.0) 100%)'
+                        : 'linear-gradient(to top, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.40) 55%, rgba(255, 255, 255, 0.0) 100%)',
+                    }}
+                  />
+                )}
+
                 {/* Floating overlay chat messages fading out at top 40% of viewport */}
                 {messages && messages.length > 0 && (
                   <div 
@@ -6946,8 +6958,8 @@ export default function App() {
                       if (msg.role === 'user') {
                         return (
                           <div 
-                            key={index} 
-                            className={`self-end bg-blue-600 text-white rounded-[22px] px-4 py-2.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed ${fadeClass}`}
+                            key={`user-${index}`} 
+                            className={`self-end bg-blue-600 text-white rounded-[22px] px-5 py-3 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed ${fadeClass}`}
                             style={{ fontFamily: '"Inter", sans-serif' }}
                           >
                             <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
@@ -6957,20 +6969,45 @@ export default function App() {
                         );
                       }
 
+                      const hasText = msg.text && msg.text.trim() !== '' && msg.text.trim() !== '?';
+                      const hasPills = msg.actionPills && msg.actionPills.length > 0;
+
                       return (
-                        <div 
-                          key={index} 
-                          className={`self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] p-4 text-xs sm:text-sm font-normal max-w-[90%] shadow-lg leading-relaxed ${fadeClass}`}
-                          style={{ fontFamily: '"Inter", sans-serif' }}
-                        >
-                          <BotMessage 
-                            text={msg.text} 
-                            theme="light" 
-                            sources={driveFiles} 
-                            onSourceClick={handleFileClick}
-                            actionPills={msg.actionPills}
-                          />
-                        </div>
+                        <React.Fragment key={`bot-${index}`}>
+                          {hasText && (
+                            <div 
+                              className={`self-start bg-white dark:bg-[#1E1F22] text-slate-900 dark:text-white border border-slate-200/80 dark:border-[#2B2D31] rounded-[22px] px-5 py-3.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-md leading-relaxed ${fadeClass}`}
+                              style={{ fontFamily: '"Inter", sans-serif' }}
+                            >
+                              <BotMessage 
+                                text={msg.text} 
+                                theme={appTheme} 
+                                sources={driveFiles} 
+                                onSourceClick={handleFileClick}
+                              />
+                            </div>
+                          )}
+
+                          {hasPills && (
+                            <div 
+                              className={`self-start bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] rounded-[22px] p-2.5 shadow-md flex flex-wrap gap-2 max-w-[85%] pointer-events-auto ${fadeClass}`}
+                            >
+                              {msg.actionPills.map((pill: any, pIdx: number) => (
+                                <button
+                                  key={pIdx}
+                                  type="button"
+                                  onClick={pill.onClick}
+                                  className="w-fit max-w-full flex items-center gap-2.5 py-2 px-4 rounded-full bg-[#f8fafd] hover:bg-[#f0f4f9] dark:bg-[#2B2D31] dark:hover:bg-[#35373C] text-slate-800 dark:text-neutral-200 text-xs sm:text-sm font-medium transition-all duration-150 cursor-pointer border border-slate-200/60 dark:border-[#383A40] shadow-xs active:scale-95"
+                                >
+                                  <Zap size={16} className="shrink-0 text-slate-500 dark:text-neutral-400" />
+                                  <span style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}>
+                                    {pill.label}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </React.Fragment>
                       );
                     })}
                     {isLoading && (

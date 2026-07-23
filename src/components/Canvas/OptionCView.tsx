@@ -8,7 +8,8 @@ import {
   ChevronRight,
   Pencil,
   Plus,
-  ArrowUp
+  ArrowUp,
+  Zap
 } from 'lucide-react';
 import ollieAvatarSvg from '../../assets/ollie-avatar.svg';
 import ollieOutlineSvg from '../../assets/ollie-avatar-outline.svg';
@@ -860,56 +861,93 @@ export function OptionCView({
           >
             {/* Floating virtual overlay chat in bottom mode */}
             {chatDockPosition === 'bottom' && messages && messages.length > 0 && (
-              <div 
-                ref={overlayScrollRef}
-                className="w-full max-w-[560px] max-h-[40vh] overflow-y-auto flex flex-col gap-3 p-3 select-text scrollbar-hide pointer-events-auto z-30 mb-1"
-                style={{
-                  maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
-                  WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
-                }}
-              >
-                {messages.map((msg, index) => {
-                  const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());
-                  const ageMs = overlayNow - msgTime;
-                  if (ageMs >= 30000) return null;
-                  const isFading = ageMs >= 29000;
-                  const fadeClass = isFading ? 'opacity-0 transition-opacity duration-1000' : 'opacity-100 transition-opacity duration-300';
-
-                  if (msg.role === 'user') {
-                    return (
-                      <div 
-                        key={index} 
-                        className={`self-end bg-blue-600 text-white rounded-[22px] px-4 py-2.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed ${fadeClass}`}
-                        style={{ fontFamily: '"Inter", sans-serif' }}
-                      >
-                        <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
-                          {msg.text}
-                        </ReactMarkdown>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div 
-                      key={index} 
-                      className={`self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] p-4 text-xs sm:text-sm font-normal max-w-[90%] shadow-lg leading-relaxed ${fadeClass}`}
-                      style={{ fontFamily: '"Inter", sans-serif' }}
-                    >
-                      <BotMessage 
-                        text={msg.text} 
-                        theme="light" 
-                        sources={driveFiles} 
-                        actionPills={msg.actionPills}
-                      />
-                    </div>
-                  );
-                })}
-                {isLoading && (
-                  <div className="self-start bg-white text-slate-800 border border-slate-200/80 rounded-[22px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-md flex items-center gap-3">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    <span className="text-slate-500 font-medium font-sans">Gemini is thinking...</span>
-                  </div>
+              <div className="w-full max-w-[560px] relative z-30 flex flex-col items-center">
+                {/* Radiant background gradient blur with surface color alpha at 40% (only when active messages exist) */}
+                {messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
+                  <div 
+                    className="absolute inset-x-0 bottom-0 top-0 -z-10 pointer-events-none rounded-[32px] backdrop-blur-xl transition-all duration-500"
+                    style={{
+                      background: 'linear-gradient(to top, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.40) 55%, rgba(255, 255, 255, 0.0) 100%)',
+                    }}
+                  />
                 )}
+
+                <div 
+                  ref={overlayScrollRef}
+                  className="w-full max-h-[40vh] overflow-y-auto flex flex-col gap-3 p-3 select-text scrollbar-hide pointer-events-auto mb-1"
+                  style={{
+                    maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+                    WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+                  }}
+                >
+                  {messages.map((msg, index) => {
+                    const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());
+                    const ageMs = overlayNow - msgTime;
+                    if (ageMs >= 30000) return null;
+                    const isFading = ageMs >= 29000;
+                    const fadeClass = isFading ? 'opacity-0 transition-opacity duration-1000' : 'opacity-100 transition-opacity duration-300';
+
+                    if (msg.role === 'user') {
+                      return (
+                        <div 
+                          key={`user-${index}`} 
+                          className={`self-end bg-blue-600 text-white rounded-[22px] px-5 py-3 text-xs sm:text-sm font-normal max-w-[85%] shadow-sm leading-relaxed ${fadeClass}`}
+                          style={{ fontFamily: '"Inter", sans-serif' }}
+                        >
+                          <ReactMarkdown components={{ p: ({ children }) => <span className="inline">{children}</span> }}>
+                            {msg.text}
+                          </ReactMarkdown>
+                        </div>
+                      );
+                    }
+
+                    const hasText = msg.text && msg.text.trim() !== '' && msg.text.trim() !== '?';
+                    const hasPills = msg.actionPills && msg.actionPills.length > 0;
+
+                    return (
+                      <React.Fragment key={`bot-${index}`}>
+                        {hasText && (
+                          <div 
+                            className={`self-start bg-white text-slate-900 border border-slate-200/80 rounded-[22px] px-5 py-3.5 text-xs sm:text-sm font-normal max-w-[85%] shadow-md leading-relaxed ${fadeClass}`}
+                            style={{ fontFamily: '"Inter", sans-serif' }}
+                          >
+                            <BotMessage 
+                              text={msg.text} 
+                              theme="light" 
+                              sources={driveFiles} 
+                            />
+                          </div>
+                        )}
+
+                        {hasPills && (
+                          <div 
+                            className={`self-start bg-white border border-slate-200/80 rounded-[22px] p-2.5 shadow-md flex flex-wrap gap-2 max-w-[85%] pointer-events-auto ${fadeClass}`}
+                          >
+                            {msg.actionPills.map((pill: any, pIdx: number) => (
+                              <button
+                                key={pIdx}
+                                type="button"
+                                onClick={pill.onClick}
+                                className="w-fit max-w-full flex items-center gap-2.5 py-2 px-4 rounded-full bg-[#f8fafd] hover:bg-[#f0f4f9] text-slate-800 text-xs sm:text-sm font-medium transition-all duration-150 cursor-pointer border border-slate-200/60 shadow-xs active:scale-95"
+                              >
+                                <Zap size={16} className="shrink-0 text-slate-500" />
+                                <span style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}>
+                                  {pill.label}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                  {isLoading && (
+                    <div className="self-start bg-white text-slate-800 border border-slate-200/80 rounded-[22px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-md flex items-center gap-3">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span className="text-slate-500 font-medium font-sans">Gemini is thinking...</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
