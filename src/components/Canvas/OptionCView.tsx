@@ -969,7 +969,7 @@ export function OptionCView({
                   disabled={!steerInput.trim()}
                   className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
                     steerInput.trim()
-                      ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer'
+                      ? 'bg-slate-800 hover:bg-slate-900 dark:bg-slate-200 dark:hover:bg-white dark:text-slate-900 text-white cursor-pointer'
                       : 'bg-black/10 dark:bg-white/10 text-slate-400 dark:text-neutral-500 cursor-not-allowed'
                   }`}
                   title={steerInput.trim() ? "Submit steer" : "Send"}

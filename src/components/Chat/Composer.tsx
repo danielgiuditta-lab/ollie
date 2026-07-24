@@ -224,7 +224,7 @@ export function Composer({
                 disabled={!text.trim() || disabled}
                 className={`w-11 h-11 rounded-full flex items-center justify-center transition border-none outline-none ${
                   text.trim() && !disabled 
-                    ? (theme === 'dark' ? 'bg-[#0B57D0] text-white hover:bg-blue-750 cursor-pointer' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer') 
+                    ? (theme === 'dark' ? 'bg-slate-200 text-slate-900 hover:bg-white cursor-pointer' : 'bg-slate-800 text-white hover:bg-slate-900 cursor-pointer') 
                     : (isGroupChat 
                         ? (theme === 'dark' ? 'bg-transparent text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-transparent text-slate-400 cursor-not-allowed')
                         : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
@@ -287,7 +287,7 @@ export function Composer({
                 disabled={!text.trim() || disabled}
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition border-none outline-none ${
                   text.trim() && !disabled 
-                    ? (theme === 'dark' ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer') 
+                    ? (theme === 'dark' ? 'bg-slate-200 text-slate-900 hover:bg-white cursor-pointer' : 'bg-slate-800 text-white hover:bg-slate-900 cursor-pointer') 
                     : (isGroupChat 
                         ? (theme === 'dark' ? 'bg-transparent text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-transparent text-slate-400 cursor-not-allowed')
                         : (theme === 'dark' ? 'bg-[#2B2D31]/50 text-[#9E9E9E]/40 cursor-not-allowed' : 'bg-[#f0f4f9]/50 text-gray-400 cursor-not-allowed')

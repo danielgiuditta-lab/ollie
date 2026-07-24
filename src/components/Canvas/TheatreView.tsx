@@ -1238,7 +1238,7 @@ export function TheatreView({
                         disabled={!steerInput.trim()}
                         className={`w-10 h-10 rounded-full flex items-center justify-center transition border-none outline-none ${
                           steerInput.trim()
-                            ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer'
+                            ? 'bg-slate-800 hover:bg-slate-900 dark:bg-slate-200 dark:hover:bg-white dark:text-slate-900 text-white cursor-pointer'
                             : isLight ? 'bg-slate-200/60 text-slate-400 cursor-not-allowed' : 'bg-white/10 text-neutral-500 cursor-not-allowed'
                         }`}
                         title="Send"

@@ -281,7 +281,7 @@ export function LandingInput({
             disabled={!value.trim() && selectedContexts.length === 0}
             className={`absolute right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${
               (value.trim() || selectedContexts.length > 0)
-                ? 'bg-[#1a73e8] hover:bg-[#1557b0] text-white scale-100 cursor-pointer shadow-md' 
+                ? 'bg-slate-800 hover:bg-slate-900 dark:bg-slate-200 dark:hover:bg-white dark:text-slate-900 text-white scale-100 cursor-pointer shadow-md' 
                 : 'bg-[#f0f4f9]/50 dark:bg-[#2B2D31]/50 text-gray-300 dark:text-gray-600 scale-95 cursor-not-allowed'
             }`}
             title="Submit request"
