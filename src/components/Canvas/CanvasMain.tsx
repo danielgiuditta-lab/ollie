@@ -1,6 +1,5 @@
 import React from 'react';
 import { PeerCursors } from './PeerCursors';
-import { RainbowRimOverlay } from '../Shared/RainbowRimOverlay';
 import { ShapeLoader } from '../Shared/ShapeLoader';
 
 interface CanvasMainProps {
@@ -32,16 +31,10 @@ export function CanvasMain({
   const isDocTask = currentTask === 'doc' || !!selectedFile?.isDocJourney || selectedFile?.name === 'document.doc' || selectedFile?.name?.endsWith('.doc') || (selectedFile?.mimeType && selectedFile.mimeType.includes('document'));
   const isTransparentContainer = isHome || viewState === 'ai_summary';
 
-  const showRainbowRim = false;
-
   return (
     <div className="flex-1 flex flex-col min-w-0 min-h-0 relative h-full overflow-y-auto custom-scrollbar">
-      {/* Outer wrapper to host the 1px Rainbow Rim Overlay without clipping */}
-      <div className={`flex flex-col flex-1 h-full min-h-0 relative transition-all duration-300 rounded-[32px] ${showRainbowRim ? 'p-[1px]' : ''}`}>
-        {showRainbowRim && (
-          <RainbowRimOverlay active={true} borderRadiusClass="rounded-[32px]" variant="canvas" />
-        )}
-        
+      {/* Outer wrapper */}
+      <div className="flex flex-col flex-1 h-full min-h-0 relative transition-all duration-300 rounded-[32px]">
         {/* Inner Container with rounded corners */}
         <div className="flex flex-col flex-1 h-full min-h-0 relative z-10 bg-transparent border-transparent shadow-none">
           <div 

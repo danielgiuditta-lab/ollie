@@ -1,6 +1,5 @@
 import React from 'react';
 import { Search } from 'lucide-react';
-import { RainbowRimOverlay } from './RainbowRimOverlay';
 
 interface AIModeButtonProps {
   aiMode: boolean;
@@ -35,9 +34,6 @@ export function AIModeButton({ aiMode, onToggle, theme = 'light' }: AIModeButton
 
   return (
     <div className="relative group flex items-center justify-center p-[1px] rounded-full transition-all duration-300">
-      {/* Exact Google Rainbow Rim Overlay on Hover */}
-      <RainbowRimOverlay className="opacity-0 group-hover:opacity-100" borderRadiusClass="rounded-full" />
-      
       <button
         type="button"
         onClick={onToggle}

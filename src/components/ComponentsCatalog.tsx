@@ -46,7 +46,6 @@ import { HeroTitle } from './Shared/HeroTitle';
 import { IconButton } from './Shared/IconButton';
 import { NullChat } from './Shared/NullChat';
 import { NullTitle } from './Shared/NullTitle';
-import { RainbowRimOverlay } from './Shared/RainbowRimOverlay';
 import { ShapeLoader } from './Shared/ShapeLoader';
 import { SourceChip } from './Shared/SourceChip';
 
@@ -134,7 +133,6 @@ export function ComponentsCatalog() {
           {renderItem('IconButton', <div className="flex gap-2"><IconButton variant="header">✦</IconButton><IconButton variant="card">⚙</IconButton></div>)}
           {renderItem('NullChat', <div className="h-[120px] w-full"><NullChat headline="No messages yet" metaline="Start typing below" /></div>)}
           {renderItem('NullTitle', <NullTitle>Null Title</NullTitle>)}
-          {renderItem('RainbowRimOverlay', <div className="relative w-[150px] h-[60px] bg-white rounded flex items-center justify-center shadow-xs"><RainbowRimOverlay active={true} /><span>Rainbow Rim</span></div>)}
           {renderItem('ShapeLoader', <div className="h-[80px] w-[80px] relative flex items-center justify-center"><ShapeLoader /></div>)}
           {renderItem('SourceChip', <div className="flex gap-2"><SourceChip href="#1">index.html</SourceChip><SourceChip href="#2">styles.css</SourceChip></div>)}
         </div>

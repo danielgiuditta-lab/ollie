@@ -883,14 +883,14 @@ export function OptionCView({
               <X className="w-5 h-5 text-red-600 dark:text-red-400 stroke-[2.5]" />
             </IconButton>
 
-            {/* Central Chat Input Pill matching gray background composer */}
+            {/* Central Chat Input Pill matching LandingInput layout */}
             <motion.div 
               layoutId="landing-input-main"
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className={`rounded-full bg-slate-100 dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 relative z-20 transition-all cursor-text ${
+              transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+              className={`h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all cursor-text ${
                 (isInputFocused || steerInput.trim().length > 0)
-                  ? 'min-h-[64px] py-2 w-full max-w-[720px] px-6'
-                  : 'h-14 w-full max-w-[560px] px-5'
+                  ? 'w-full max-w-[720px]'
+                  : 'w-full max-w-[560px]'
               }`}
               onClick={() => {
                 const el = document.getElementById('optionc-steer-input');
@@ -929,7 +929,7 @@ export function OptionCView({
                     }
                   }
                 }}
-                placeholder={getSteerPlaceholder()}
+                placeholder={isInputFocused || steerInput.trim().length > 0 ? getSteerPlaceholder() : "Do differently..."}
                 className="flex-1 bg-transparent text-slate-900 dark:text-white text-[15px] font-normal placeholder-slate-400 focus:outline-none truncate border-none ring-0 h-full"
                 autoComplete="off"
                 autoCorrect="off"
@@ -970,8 +970,8 @@ export function OptionCView({
                   disabled={!steerInput.trim()}
                   className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
                     steerInput.trim()
-                      ? 'bg-slate-200 hover:bg-slate-300 dark:bg-slate-200 dark:hover:bg-slate-300 text-slate-900 dark:text-slate-900 cursor-pointer shadow-xs'
-                      : 'bg-black/5 dark:bg-white/5 text-slate-300 dark:text-neutral-600 cursor-not-allowed'
+                      ? 'bg-slate-800 hover:bg-slate-900 dark:bg-slate-200 dark:hover:bg-white dark:text-slate-900 text-white cursor-pointer'
+                      : 'bg-black/10 dark:bg-white/10 text-slate-400 dark:text-neutral-500 cursor-not-allowed'
                   }`}
                   title={steerInput.trim() ? "Submit steer" : "Send"}
                 >
