@@ -1148,7 +1148,7 @@ export function TheatreView({
                     isLight ? 'bg-slate-100 text-slate-900' : 'bg-[#121316] text-white backdrop-blur-md'
                   } ${
                     (isInputFocused || steerInput.trim().length > 0)
-                      ? 'h-[72px] w-[720px] max-w-[calc(100vw-220px)] px-5' 
+                      ? 'h-[72px] w-[568px] max-w-[calc(100vw-220px)] px-5' 
                       : 'h-14 w-[192px] pl-3 pr-3.5 cursor-pointer'
                   }`}
                   onClick={() => {

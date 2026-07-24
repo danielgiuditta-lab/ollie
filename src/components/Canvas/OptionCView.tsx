@@ -889,7 +889,7 @@ export function OptionCView({
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className={`h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all duration-300 cursor-text shrink-0 ${
                 (isInputFocused || steerInput.trim().length > 0)
-                  ? 'w-[720px] max-w-[calc(100vw-220px)]'
+                  ? 'w-[568px] max-w-[calc(100vw-220px)]'
                   : 'w-full max-w-[560px]'
               }`}
               onClick={() => {
