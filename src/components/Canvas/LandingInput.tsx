@@ -29,12 +29,16 @@ interface LandingInputProps {
   placeholder?: string;
   onCreateArtifact?: (type: 'doc' | 'slide' | 'sheet' | 'pix' | 'site' | 'upload') => void;
   theme?: 'light' | 'dark';
-  mode?: 'search' | 'create';
+  mode?: 'search' | 'create' | 'steer';
   defaultDrawerOpen?: boolean;
   accessToken?: string | null;
   recentItems?: any[];
   userProfile?: any;
   defaultAiMode?: boolean;
+  value?: string;
+  onDockToSide?: () => void;
+  isLoading?: boolean;
+  className?: string;
 }
 
 export function LandingInput({ 
@@ -49,12 +53,19 @@ export function LandingInput({
   accessToken = null,
   recentItems = [],
   userProfile,
-  defaultAiMode = false
+  defaultAiMode = false,
+  value: valueProp,
+  onDockToSide,
+  isLoading = false,
+  className = ""
 }: LandingInputProps) {
-  const [value, setValue] = useState('');
+  const [internalValue, setInternalValue] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(defaultDrawerOpen);
   const [isPlusOpen, setIsPlusOpen] = useState(false);
   const [aiMode, setAiMode] = useState(defaultAiMode);
+
+  const value = valueProp !== undefined ? valueProp : internalValue;
 
   // Selected work contexts (people or files)
   const [selectedContexts, setSelectedContexts] = useState<any[]>([]);
@@ -113,19 +124,21 @@ export function LandingInput({
   }, [value, accessToken, mode, isTypeAheadVisible]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && (value.trim() || selectedContexts.length > 0)) {
+    if (e.key === 'Enter') {
       handleSubmit();
     }
   };
 
   const handleSubmit = () => {
-    if ((value.trim() || selectedContexts.length > 0) && onSubmit) {
+    if (onSubmit) {
       let prefix = '';
       if (selectedContexts.length > 0) {
         prefix = selectedContexts.map(c => `[Context ${c.type}: ${c.name}]`).join(' ') + ' ';
       }
       onSubmit(prefix + value, aiMode, selectedContexts);
-      setValue('');
+      if (valueProp === undefined) {
+        setInternalValue('');
+      }
       setSelectedContexts([]);
       setIsPlusOpen(false);
     }
@@ -133,7 +146,9 @@ export function LandingInput({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    setValue(val);
+    if (valueProp === undefined) {
+      setInternalValue(val);
+    }
     if (onChange) {
       onChange(val);
     }
@@ -150,7 +165,9 @@ export function LandingInput({
     if (onFileSelect) {
       onFileSelect(file);
     }
-    setValue('');
+    if (valueProp === undefined) {
+      setInternalValue('');
+    }
     setIsPlusOpen(false);
   };
 
@@ -194,7 +211,7 @@ export function LandingInput({
     <div 
       id="landing-input-container" 
       ref={containerRef}
-      className="w-full max-w-[720px] mx-auto select-none flex flex-col relative px-4 mt-8 mb-16 z-40"
+      className={className || `w-full max-w-[720px] mx-auto select-none flex flex-col relative ${mode === 'steer' ? 'px-0 my-0' : 'px-4 mt-8 mb-16'} z-40`}
     >
       {/* Main Input Field Wrapper with flex-wrap to accommodate chips dynamically */}
       <div className="relative w-full p-[1px] transition-all duration-300 rounded-full z-40">
@@ -210,8 +227,22 @@ export function LandingInput({
               : 'hover:border-gray-300 dark:hover:border-gray-700 shadow-sm focus-within:shadow-md focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100'
           } transition-all duration-300 flex items-center flex-wrap px-6 relative z-50 rounded-full`}
         >
-          {/* Left icon toggle indicator for search mode */}
-          {(mode === 'search' && aiMode) && (
+          {/* Left icon toggle indicator for search mode or steer mode */}
+          {mode === 'steer' ? (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); }}
+              className="text-slate-400 hover:text-slate-700 dark:hover:text-white mr-3 shrink-0 transition cursor-pointer flex items-center justify-center p-1 rounded-full border-none outline-none"
+              title="Add attachment or context"
+            >
+              <OllieMascot 
+                variant={(isInputFocused || value.trim().length > 0) ? 'gradient' : 'flat'}
+                size={20}
+                state={isLoading ? 'working' : 'idle'}
+                followCursor={true}
+              />
+            </button>
+          ) : (mode === 'search' && aiMode) ? (
             <button
               type="button"
               onClick={() => {
@@ -226,7 +257,7 @@ export function LandingInput({
                 <OllieMascot size={20} state="idle" followCursor={true} />
               )}
             </button>
-          )}
+          ) : null}
 
           {/* Selected Context Chips matching AI mode summary style */}
           {mode === 'search' && selectedContexts.map((context) => (
@@ -244,6 +275,8 @@ export function LandingInput({
             id="landing-input-field"
             type="text"
             value={value}
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => setIsInputFocused(false)}
             onChange={handleInputChange}
             onKeyDown={handleKeyPress}
             placeholder={placeholder || (aiMode ? "Search and get AI summaries of your Drive files..." : "Create or add...")}
@@ -254,11 +287,11 @@ export function LandingInput({
             data-lpignore="true"
             data-1p-ignore="true"
             data-form-type="other"
-            className={`flex-1 bg-transparent border-none outline-none font-sans text-slate-700 dark:text-[#E3E3E3] placeholder-slate-400 text-sm sm:text-[15px] ${mode === 'create' ? 'mr-14' : 'mr-44'} min-w-0 truncate placeholder:truncate h-12`}
+            className={`flex-1 bg-transparent border-none outline-none font-sans text-slate-700 dark:text-[#E3E3E3] placeholder-slate-400 text-sm sm:text-[15px] ${mode === 'create' ? 'mr-14' : mode === 'steer' ? (onDockToSide && (isInputFocused || value.trim().length > 0) ? 'mr-24' : 'mr-14') : 'mr-44'} min-w-0 truncate placeholder:truncate h-12`}
           />
 
           {/* AI Mode Sparkles Toggle Button */}
-          {mode !== 'create' && (
+          {mode !== 'create' && mode !== 'steer' && (
             <div className="absolute right-15 flex items-center justify-center z-20">
               <AIModeButton 
                 aiMode={aiMode} 
@@ -274,15 +307,32 @@ export function LandingInput({
             </div>
           )}
 
-          {/* Right Arrow Submission Button */}
+          {/* Dock to side button in steer mode */}
+          {mode === 'steer' && onDockToSide && (isInputFocused || value.trim().length > 0) && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDockToSide();
+              }}
+              className="absolute right-15 w-9 h-9 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-500 dark:text-neutral-400 flex items-center justify-center transition cursor-pointer border-none outline-none z-20"
+              title="Snap to side chat"
+            >
+              <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+            </button>
+          )}
+
+          {/* Right Arrow Submission Button (Gray CTA with Black Glyph) */}
           <button
             id="landing-input-submit"
+            type="button"
             onClick={handleSubmit}
             disabled={!value.trim() && selectedContexts.length === 0}
             className={`absolute right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${
               (value.trim() || selectedContexts.length > 0)
-                ? 'bg-slate-800 hover:bg-slate-900 dark:bg-slate-200 dark:hover:bg-white dark:text-slate-900 text-white scale-100 cursor-pointer shadow-md' 
-                : 'bg-[#f0f4f9]/50 dark:bg-[#2B2D31]/50 text-gray-300 dark:text-gray-600 scale-95 cursor-not-allowed'
+                ? 'bg-slate-200 hover:bg-slate-300 dark:bg-slate-200 dark:hover:bg-slate-300 text-slate-900 dark:text-slate-900 scale-100 cursor-pointer shadow-xs' 
+                : 'bg-slate-100 dark:bg-neutral-800 text-slate-300 dark:text-neutral-600 scale-95 cursor-not-allowed'
             }`}
             title="Submit request"
           >

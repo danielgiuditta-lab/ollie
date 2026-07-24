@@ -24,6 +24,7 @@ import { Composer } from '../Chat/Composer';
 import { renderTextWithSourceChips } from '../../utils/sourceChipUtils';
 import { getFileIcon } from '../Shared/FileIcon';
 import { getAvatarForPerson } from '../../utils/personAvatars';
+import { LandingInput } from './LandingInput';
 
 interface TheatreTaskCellProps {
   item: any;
@@ -1140,113 +1141,23 @@ export function TheatreView({
                   <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
                 </button>
 
-                {/* Center Steer Input Pill */}
-                <div 
-                  ref={steerContainerRef}
-                  className={`rounded-full flex items-center gap-2 transition-all duration-300 ease-in-out ${
-                    isLight ? 'bg-slate-100 text-slate-900' : 'bg-[#121316] text-white backdrop-blur-md'
-                  } ${
-                    (isInputFocused || steerInput.trim().length > 0)
-                      ? 'h-[72px] w-[340px] md:w-[720px] px-4' 
-                      : 'h-14 w-[192px] pl-3 pr-3.5 cursor-pointer'
-                  }`}
-                  onClick={() => {
-                    setIsInputFocused(true);
-                    const el = document.getElementById('theatre-steer-input');
-                    if (el) el.focus();
-                  }}
-                >
-                  {/* Left Attachment / Ollie Button */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none ${
-                      isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
-                    }`}
-                    title="Add attachment or context"
-                  >
-                    <OllieMascot 
-                      variant={(isInputFocused || steerInput.trim().length > 0) ? 'gradient' : 'flat'}
-                      size={20}
-                      state={isLoading ? 'working' : 'idle'}
-                      followCursor={true}
-                    />
-                  </button>
-
-                  {/* Text Input */}
-                  <input
-                    id="theatre-steer-input"
-                    type="text"
+                {/* Center Steer Input Pill using shared LandingInput component */}
+                <div className="flex-1 max-w-[720px]" ref={steerContainerRef}>
+                  <LandingInput
+                    mode="steer"
                     value={steerInput}
-                    onFocus={() => setIsInputFocused(true)}
-                    onChange={(e) => setSteerInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (steerInput.trim()) {
-                          handleSteerSubmit(steerInput);
-                        } else {
-                          handleApprove();
-                        }
+                    onChange={setSteerInput}
+                    onSubmit={(val) => {
+                      if (val.trim()) {
+                        handleSteerSubmit(val);
+                      } else {
+                        handleApprove();
                       }
                     }}
-                    placeholder={(isInputFocused || steerInput.trim().length > 0) ? getSteerPlaceholder() : "Do differently..."}
-                    className={`flex-1 bg-transparent text-[15px] font-normal focus:outline-none truncate border-none ring-0 ${
-                      isLight ? 'text-slate-900 placeholder-slate-400' : 'text-white placeholder-neutral-400'
-                    }`}
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck={false}
-                    data-lpignore="true"
-                    data-1p-ignore="true"
-                    data-form-type="other"
+                    placeholder={getSteerPlaceholder()}
+                    onDockToSide={handleDockToSide}
+                    isLoading={isLoading}
                   />
-
-                  {/* Right Action Buttons */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    {(isInputFocused || steerInput.trim().length > 0) && (
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDockToSide();
-                        }}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
-                          isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
-                        }`}
-                        title="Snap to side chat"
-                      >
-                        <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
-                      </button>
-                    )}
-
-                    {(isInputFocused || steerInput.trim().length > 0) && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (steerInput.trim()) {
-                            handleSteerSubmit(steerInput);
-                          } else {
-                            handleApprove();
-                          }
-                        }}
-                        disabled={!steerInput.trim()}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition border-none outline-none ${
-                          steerInput.trim()
-                            ? 'bg-slate-800 hover:bg-slate-900 dark:bg-slate-200 dark:hover:bg-white dark:text-slate-900 text-white cursor-pointer'
-                            : isLight ? 'bg-slate-200/60 text-slate-400 cursor-not-allowed' : 'bg-white/10 text-neutral-500 cursor-not-allowed'
-                        }`}
-                        title="Send"
-                      >
-                        <ArrowUp size={18} className="stroke-[2.5]" />
-                      </button>
-                    )}
-                  </div>
                 </div>
 
                 {/* Approve / Accept Button */}
