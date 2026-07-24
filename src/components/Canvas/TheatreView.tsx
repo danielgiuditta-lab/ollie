@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import { BotMessage } from '../Chat/BotMessage';
 import { UserMessage } from '../Chat/UserMessage';
@@ -185,6 +186,32 @@ export function TheatreView({
 
   const [steerInput, setSteerInput] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const steerContainerRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (steerContainerRef.current && !steerContainerRef.current.contains(e.target as Node)) {
+        if (!steerInput.trim()) {
+          setIsInputFocused(false);
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [steerInput]);
+
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const findTarget = () => {
+      const el = document.getElementById('floating-bottom-composer-slot');
+      if (el) setPortalTarget(el);
+    };
+    findTarget();
+    const timer = setTimeout(findTarget, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [isTaskListOpen, setIsTaskListOpen] = useState(initialTaskListOpen !== undefined ? initialTaskListOpen : false);
   const [slideDirection, setSlideDirection] = useState(1);
   const [actionToast, setActionToast] = useState<{ text: 'Approved' | 'Declined' | 'Skipped'; key: number } | null>(null);
@@ -354,25 +381,9 @@ export function TheatreView({
   const handleSteerSubmit = (val: string) => {
     if (!val.trim()) return;
 
-    setSlideDirection(1);
-    triggerActionToast('Approved');
-    if (activeTask) {
-      if (isChatReplyTask) {
-        activeTask.proposedReply = val;
-        setEditableProposalText(val);
-      }
-      const nextCompleted = new Set(completedTaskIds);
-      nextCompleted.add(activeTask.id);
-      setCompletedTaskIds(nextCompleted);
-
-      if (onUpdateTaskStatus) {
-        onUpdateTaskStatus(activeTask.id, 'done');
-      }
-    }
-
     const fullMsg = activeTask 
-      ? `Regarding task "${activeTask.title || activeTask.description}": ${val}`
-      : val;
+      ? `Regarding task "${activeTask.title || activeTask.description}": ${val.trim()}`
+      : val.trim();
 
     onSendMessage(fullMsg);
     if (setActiveSidebar && chatDockPosition === 'side') {
@@ -380,11 +391,7 @@ export function TheatreView({
     }
 
     setSteerInput('');
-
-    // Advance to next task if available
-    if (activeTask && activeIndex < todoItems.length - 1) {
-      setActiveIndex(prev => prev + 1);
-    }
+    setIsInputFocused(true);
   };
 
   // Handle unmarking task as complete (return to default in-queue state)
@@ -1106,342 +1113,178 @@ export function TheatreView({
             </AnimatePresence>
           </div>
 
-          {/* Floating virtual overlay chat in bottom mode */}
-          {chatDockPosition === 'bottom' && messages && messages.length > 0 && (
-            <div className="w-full max-w-[600px] relative z-30 flex flex-col items-center">
-              {/* Background blur with full-bleed subtle gradient ramp going to 0% blur under chat bubbles */}
-                <AnimatePresence>
-                  {messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
-                    <motion.div 
-                      key="theatre-chat-blur"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.5, ease: [0.33, 0, 0.67, 1] }}
-                      className="fixed inset-x-0 bottom-0 h-[38vh] max-h-[340px] z-20 pointer-events-none overflow-hidden"
-                    >
-                      {/* Progressive Blur Layer 1: 0.5px */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          backdropFilter: 'blur(0.5px)',
-                          WebkitBackdropFilter: 'blur(0.5px)',
-                          maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 30%)',
-                          WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 30%)',
-                        }}
-                      />
-                      {/* Progressive Blur Layer 2: 1px */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          backdropFilter: 'blur(1px)',
-                          WebkitBackdropFilter: 'blur(1px)',
-                          maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 45%)',
-                          WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 45%)',
-                        }}
-                      />
-                      {/* Progressive Blur Layer 3: 2px */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          backdropFilter: 'blur(2px)',
-                          WebkitBackdropFilter: 'blur(2px)',
-                          maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 60%)',
-                          WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 60%)',
-                        }}
-                      />
-                      {/* Progressive Blur Layer 4: 4px */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          backdropFilter: 'blur(4px)',
-                          WebkitBackdropFilter: 'blur(4px)',
-                          maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 75%)',
-                          WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 45%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 75%)',
-                        }}
-                      />
-                      {/* Progressive Blur Layer 5: 8px */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          backdropFilter: 'blur(8px)',
-                          WebkitBackdropFilter: 'blur(8px)',
-                          maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 90%)',
-                          WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 90%)',
-                        }}
-                      />
-                      {/* Progressive Blur Layer 6: 12px (max at bottom edge) */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          backdropFilter: 'blur(12px)',
-                          WebkitBackdropFilter: 'blur(12px)',
-                          maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)',
-                          WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)',
-                        }}
-                      />
-                      {/* Very subtle color gradient ramp matching blur localization */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: isLight
-                            ? 'linear-gradient(to top, rgba(255, 255, 255, 0.40) 0%, rgba(255, 255, 255, 0.18) 45%, rgba(255, 255, 255, 0.04) 75%, rgba(255, 255, 255, 0.0) 100%)'
-                            : 'linear-gradient(to top, rgba(18, 19, 21, 0.45) 0%, rgba(18, 19, 21, 0.20) 45%, rgba(18, 19, 21, 0.05) 75%, rgba(18, 19, 21, 0.0) 100%)'
-                        }}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-              <AnimatePresence>
-                {messages.some(m => (overlayNow - (m.createdAt || m._seenAt || Date.now())) < 30000) && (
-                  <motion.div 
-                    key="theatre-chat-messages"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 12 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    ref={overlayScrollRef}
-                    className="w-full max-h-[36vh] overflow-y-auto no-scrollbar flex flex-col gap-3 px-0 py-2 select-text pointer-events-auto mb-1"
-                    style={{
-                      maskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',
-                      WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 30%, black 100%)',
-                    }}
-                  >
-                    {messages.map((msg, index) => {
-                      const msgTime = msg.createdAt || (msg._seenAt = msg._seenAt || Date.now());
-                      const ageMs = overlayNow - msgTime;
-                      if (ageMs >= 30000) return null;
-                      const isFading = ageMs >= 29000;
-                      const fadeClass = isFading ? 'opacity-0 transition-opacity duration-1000' : 'opacity-100 transition-opacity duration-300';
-
-                      if (msg.role === 'user') {
-                        return (
-                          <div key={`user-${index}`} className={`w-full flex justify-end px-0 ${fadeClass}`}>
-                            <UserMessage text={msg.text} theme={theme} shadowClass="shadow-card" borderClass="border border-[#E9EEF6] dark:border-[#2B2D31]" />
-                          </div>
-                        );
-                      }
-
-                      const hasText = msg.text && msg.text.trim() !== '' && msg.text.trim() !== '?';
-                      const hasPills = msg.actionPills && msg.actionPills.length > 0;
-
-                      return (
-                        <React.Fragment key={`bot-${index}`}>
-                          {hasText && (
-                            <div className={`w-full flex justify-start px-0 ${fadeClass}`}>
-                              <div 
-                                className="w-fit max-w-[85%] bg-white/95 dark:bg-[#1E1F22]/95 text-slate-900 dark:text-white text-sm sm:text-base font-normal leading-relaxed rounded-[40px] px-6 py-4 border border-[#E9EEF6] dark:border-[#2B2D31] shadow-card backdrop-blur-md opacity-100 text-left"
-                                style={{ fontFamily: '"Inter", sans-serif' }}
-                              >
-                                <BotMessage 
-                                  text={msg.text} 
-                                  theme={theme} 
-                                  sources={driveFiles} 
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {hasPills && (
-                            <div 
-                              className={`w-full flex flex-wrap gap-2.5 justify-start px-0 pointer-events-auto ${fadeClass}`}
-                            >
-                              {msg.actionPills.map((pill: any, pIdx: number) => (
-                                <button
-                                  key={pIdx}
-                                  type="button"
-                                  onClick={pill.onClick}
-                                  className="w-fit max-w-full flex items-center gap-2.5 py-3 px-6 rounded-full bg-white/95 dark:bg-[#1E1F22]/95 hover:bg-slate-50 dark:hover:bg-[#282A2D] text-slate-900 dark:text-white text-sm font-medium transition-all duration-150 cursor-pointer border border-[#E9EEF6] dark:border-[#2B2D31] shadow-card backdrop-blur-md active:scale-95"
-                                >
-                                  <Zap size={16} className="shrink-0 text-slate-600 dark:text-neutral-300" />
-                                  <span style={{ fontFamily: '"Google Sans Flex", "Google Sans", sans-serif' }}>
-                                    {pill.label}
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                    {isLoading && (
-                      <div className="bg-white/95 dark:bg-[#1E1F22]/95 backdrop-blur-md text-slate-800 dark:text-white border border-[#E9EEF6] dark:border-[#2B2D31] rounded-[24px] px-4 py-3 text-xs sm:text-sm font-normal max-w-[90%] shadow-card flex items-center gap-3">
-                        <OllieMascot variant="flat" size={24} state="idle" />
-                        <span className="text-slate-600 dark:text-neutral-300 font-medium font-sans">Ollie is thinking...</span>
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
-
           {/* Bottom Controls Dock */}
-          <div className="w-full h-[88px] shrink-0 flex items-center justify-center gap-2 relative z-20">
-            {/* Previous Task Arrow Button */}
-            <button
-              onClick={handlePrev}
-              disabled={activeIndex === 0}
-              className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 ${
-                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
-              }`}
-              title="Previous task"
-            >
-              <ArrowLeft className={`w-5 h-5 stroke-[2] ${isLight ? 'text-slate-800' : 'text-white'}`} />
-            </button>
+          {(() => {
+            const controlDockContent = (
+              <div className="w-full h-[88px] shrink-0 flex items-center justify-center gap-2 relative z-50">
+                {/* Previous Task Arrow Button */}
+                <button
+                  onClick={handlePrev}
+                  disabled={activeIndex === 0}
+                  className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 ${
+                    isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
+                  }`}
+                  title="Previous task"
+                >
+                  <ArrowLeft className={`w-5 h-5 stroke-[2] ${isLight ? 'text-slate-800' : 'text-white'}`} />
+                </button>
 
-            {/* Reject / Decline Button */}
-            <button
-              onClick={handleReject}
-              className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-rose-600' : 'bg-[#121316] hover:bg-[#1C1D21]'
-              }`}
-              title="Decline"
-            >
-              <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
-            </button>
+                {/* Reject / Decline Button */}
+                <button
+                  onClick={handleReject}
+                  className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                    isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-rose-600' : 'bg-[#121316] hover:bg-[#1C1D21]'
+                  }`}
+                  title="Decline"
+                >
+                  <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
+                </button>
 
-            {/* Center Steer Input Pill */}
-            <div 
-              className={`rounded-full flex items-center gap-2 transition-all duration-300 ease-in-out ${
-                isLight ? 'bg-slate-100 text-slate-900' : 'bg-[#121316] text-white backdrop-blur-md'
-              } ${
-                (isInputFocused || steerInput.trim().length > 0)
-                  ? 'h-[72px] w-[340px] md:w-[620px] px-4' 
-                  : 'h-14 w-[192px] pl-3 pr-3.5 cursor-pointer'
-              }`}
-              onClick={() => {
-                const el = document.getElementById('theatre-steer-input');
-                if (el) el.focus();
-              }}
-            >
-              {/* Left Attachment / Ollie Button */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none ${
-                  isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
-                }`}
-                title="Add attachment or context"
-              >
-                <OllieMascot 
-                  variant={(isInputFocused || steerInput.trim().length > 0) ? 'gradient' : 'flat'}
-                  size={20}
-                  state={isLoading ? 'working' : 'idle'}
-                  followCursor={true}
-                />
-              </button>
+                {/* Center Steer Input Pill */}
+                <div 
+                  ref={steerContainerRef}
+                  className={`rounded-full flex items-center gap-2 transition-all duration-300 ease-in-out ${
+                    isLight ? 'bg-slate-100 text-slate-900' : 'bg-[#121316] text-white backdrop-blur-md'
+                  } ${
+                    (isInputFocused || steerInput.trim().length > 0)
+                      ? 'h-[72px] w-[340px] md:w-[620px] px-4' 
+                      : 'h-14 w-[192px] pl-3 pr-3.5 cursor-pointer'
+                  }`}
+                  onClick={() => {
+                    setIsInputFocused(true);
+                    const el = document.getElementById('theatre-steer-input');
+                    if (el) el.focus();
+                  }}
+                >
+                  {/* Left Attachment / Ollie Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition shrink-0 cursor-pointer border-none outline-none ${
+                      isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
+                    }`}
+                    title="Add attachment or context"
+                  >
+                    <OllieMascot 
+                      variant={(isInputFocused || steerInput.trim().length > 0) ? 'gradient' : 'flat'}
+                      size={20}
+                      state={isLoading ? 'working' : 'idle'}
+                      followCursor={true}
+                    />
+                  </button>
 
-              {/* Text Input */}
-              <input
-                id="theatre-steer-input"
-                type="text"
-                value={steerInput}
-                onFocus={() => setIsInputFocused(true)}
-                onBlur={() => setIsInputFocused(false)}
-                onChange={(e) => setSteerInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
+                  {/* Text Input */}
+                  <input
+                    id="theatre-steer-input"
+                    type="text"
+                    value={steerInput}
+                    onFocus={() => setIsInputFocused(true)}
+                    onChange={(e) => setSteerInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (steerInput.trim()) {
+                          handleSteerSubmit(steerInput);
+                        } else {
+                          handleApprove();
+                        }
+                      }
+                    }}
+                    placeholder={(isInputFocused || steerInput.trim().length > 0) ? getSteerPlaceholder() : "Do differently..."}
+                    className={`flex-1 bg-transparent text-[15px] font-normal focus:outline-none truncate border-none ring-0 ${
+                      isLight ? 'text-slate-900 placeholder-slate-400' : 'text-white placeholder-neutral-400'
+                    }`}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-form-type="other"
+                  />
+
+                  {/* Right Action Buttons */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {(isInputFocused || steerInput.trim().length > 0) && (
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDockToSide();
+                        }}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
+                          isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
+                        }`}
+                        title="Snap to side chat"
+                      >
+                        <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+                      </button>
+                    )}
+
+                    {(isInputFocused || steerInput.trim().length > 0) && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (steerInput.trim()) {
+                            handleSteerSubmit(steerInput);
+                          } else {
+                            handleApprove();
+                          }
+                        }}
+                        disabled={!steerInput.trim()}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition border-none outline-none ${
+                          steerInput.trim()
+                            ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer'
+                            : isLight ? 'bg-slate-200/60 text-slate-400 cursor-not-allowed' : 'bg-white/10 text-neutral-500 cursor-not-allowed'
+                        }`}
+                        title="Send"
+                      >
+                        <ArrowUp size={18} className="stroke-[2.5]" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Approve / Accept Button */}
+                <button
+                  onClick={() => {
                     if (steerInput.trim()) {
                       handleSteerSubmit(steerInput);
-                      setSteerInput('');
                     } else {
                       handleApprove();
                     }
-                  }
-                }}
-                placeholder={(isInputFocused || steerInput.trim().length > 0) ? getSteerPlaceholder() : "Do differently..."}
-                className={`flex-1 bg-transparent text-[15px] font-normal focus:outline-none truncate border-none ring-0 ${
-                  isLight ? 'text-slate-900 placeholder-slate-400' : 'text-white placeholder-neutral-400'
-                }`}
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck={false}
-                data-lpignore="true"
-                data-1p-ignore="true"
-                data-form-type="other"
-              />
+                  }}
+                  className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                    isLight ? 'bg-slate-100 hover:bg-slate-200/80' : 'bg-[#121316] hover:bg-[#1C1D21]'
+                  }`}
+                  title={steerInput.trim() ? "Submit steer" : "Accept"}
+                >
+                  <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
+                </button>
 
-              {/* Right Action Buttons */}
-              <div className="flex items-center gap-2 shrink-0">
-                {(isInputFocused || steerInput.trim().length > 0) && (
-                  <button
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDockToSide();
-                    }}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer border-none outline-none ${
-                      isLight ? 'hover:bg-slate-200/70 text-slate-500 hover:text-slate-800' : 'hover:bg-white/10 text-neutral-400 hover:text-white'
-                    }`}
-                    title="Snap to side chat"
-                  >
-                    <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
-                  </button>
-                )}
-
-                {(isInputFocused || steerInput.trim().length > 0) && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (steerInput.trim()) {
-                        handleSteerSubmit(steerInput);
-                        setSteerInput('');
-                      } else {
-                        handleApprove();
-                      }
-                    }}
-                    disabled={!steerInput.trim()}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition border-none outline-none ${
-                      steerInput.trim()
-                        ? 'bg-[#0B57D0] text-white hover:bg-blue-600 cursor-pointer'
-                        : isLight ? 'bg-slate-200/60 text-slate-400 cursor-not-allowed' : 'bg-white/10 text-neutral-500 cursor-not-allowed'
-                    }`}
-                    title={steerInput.trim() ? "Submit steer" : "Send"}
-                  >
-                    <ArrowUp size={18} className="stroke-[2.5]" />
-                  </button>
-                )}
+                {/* Next Task Arrow Button */}
+                <button
+                  onClick={handleNext}
+                  disabled={activeIndex === todoItems.length - 1}
+                  className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 ${
+                    isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
+                  }`}
+                  title="Next task"
+                >
+                  <ArrowRight className={`w-5 h-5 stroke-[2] ${isLight ? 'text-slate-800' : 'text-white'}`} />
+                </button>
               </div>
-            </div>
+            );
 
-            {/* Approve / Accept Button */}
-            <button
-              onClick={() => {
-                if (steerInput.trim()) {
-                  handleSteerSubmit(steerInput);
-                  setSteerInput('');
-                } else {
-                  handleApprove();
-                }
-              }}
-              className={`w-14 h-14 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                isLight ? 'bg-slate-100 hover:bg-slate-200/80' : 'bg-[#121316] hover:bg-[#1C1D21]'
-              }`}
-              title={steerInput.trim() ? "Submit steer" : "Accept"}
-            >
-              <Check className="w-6 h-6 text-[#34A853] stroke-[2.5]" />
-            </button>
-
-            {/* Next Task Arrow Button */}
-            <button
-              onClick={handleNext}
-              disabled={activeIndex === todoItems.length - 1}
-              className={`w-12 h-12 rounded-full active:scale-95 flex items-center justify-center cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0 ${
-                isLight ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800' : 'bg-[#121316] hover:bg-[#1C1D21] text-white'
-              }`}
-              title="Next task"
-            >
-              <ArrowRight className={`w-5 h-5 stroke-[2] ${isLight ? 'text-slate-800' : 'text-white'}`} />
-            </button>
-          </div>
+            if (portalTarget) {
+              return createPortal(controlDockContent, portalTarget);
+            }
+            return controlDockContent;
+          })()}
         </div>
       </div>
     </div>

@@ -6925,7 +6925,6 @@ export default function App() {
             {/* Full-bleed subtle progressive blur gradient ramp going seamlessly to 0px blur emanating from bottom */}
             {(() => {
               const isBackdropVisible = Boolean(
-                !isTheatreOpen &&
                 viewState !== 'ai_summary' && 
                 chatDockPosition === 'bottom' && 
                 messages && 
@@ -6939,9 +6938,15 @@ export default function App() {
                   animate={{ 
                     pointerEvents: isBackdropVisible ? 'auto' : 'none'
                   }}
-                  onClick={() => setMessages([])}
-                  className="fixed inset-0 z-20 cursor-pointer overflow-hidden"
+                  className="fixed inset-0 z-30 overflow-hidden pointer-events-none"
                 >
+                  {/* Click target to dismiss backdrop above bottom control dock */}
+                  {isBackdropVisible && (
+                    <div 
+                      onClick={() => setMessages([])} 
+                      className="absolute inset-x-0 top-0 bottom-[96px] pointer-events-auto cursor-pointer" 
+                    />
+                  )}
                   <div className="absolute bottom-0 inset-x-0 h-[38vh] max-h-[340px] pointer-events-none">
                     {/* Progressive Blur Layer 1: 0.5px */}
                     <motion.div 
@@ -7066,9 +7071,9 @@ export default function App() {
               );
             })()}
 
-            {!isTheatreOpen && viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
+            {viewState !== 'ai_summary' && chatDockPosition === 'bottom' && (
               <div 
-                className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-30 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
+                className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[600px] z-50 px-4 select-text flex flex-col items-center gap-2 pointer-events-none"
                 id="floating-bottom-chat"
               >
 
@@ -7155,19 +7160,21 @@ export default function App() {
                   )}
                 </AnimatePresence>
 
-                <div className="w-full pointer-events-auto">
-                  <Composer 
-                    onSend={handleSendMessage}
-                    disabled={isLoading}
-                    placeholder="Search, add files or tell me what you want to build..."
-                    theme={appTheme}
-                    onCreateArtifact={handleCreateArtifactApp}
-                    layout="bottom"
-                    onDockToSide={() => {
-                      setChatDockPosition('side');
-                      setActiveSidebar('gemini');
-                    }}
-                  />
+                <div className="w-full pointer-events-auto flex justify-center" id="floating-bottom-composer-slot">
+                  {!isTheatreOpen && (
+                    <Composer 
+                      onSend={handleSendMessage}
+                      disabled={isLoading}
+                      placeholder="Search, add files or tell me what you want to build..."
+                      theme={appTheme}
+                      onCreateArtifact={handleCreateArtifactApp}
+                      layout="bottom"
+                      onDockToSide={() => {
+                        setChatDockPosition('side');
+                        setActiveSidebar('gemini');
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             )}
