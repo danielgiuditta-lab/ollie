@@ -1144,11 +1144,11 @@ export function TheatreView({
                 {/* Center Steer Input Pill */}
                 <div 
                   ref={steerContainerRef}
-                  className={`rounded-full flex items-center gap-2 transition-all duration-300 ease-in-out ${
+                  className={`rounded-full flex items-center gap-2 transition-all duration-300 ease-in-out shrink-0 ${
                     isLight ? 'bg-slate-100 text-slate-900' : 'bg-[#121316] text-white backdrop-blur-md'
                   } ${
                     (isInputFocused || steerInput.trim().length > 0)
-                      ? 'h-[72px] w-[340px] md:w-[720px] px-4' 
+                      ? 'h-[72px] w-[720px] max-w-[calc(100vw-220px)] px-5' 
                       : 'h-14 w-[192px] pl-3 pr-3.5 cursor-pointer'
                   }`}
                   onClick={() => {
