@@ -212,7 +212,7 @@ export function LandingInput({
     <div 
       id="landing-input-container" 
       ref={containerRef}
-      className={className || `w-full ${mode === 'steer' ? (isSteerCollapsed ? 'max-w-[560px]' : 'max-w-[720px]') : 'max-w-[720px]'} mx-auto select-none flex flex-col relative ${mode === 'steer' ? 'px-0 my-0' : 'px-4 mt-8 mb-16'} transition-all duration-300 z-40`}
+      className={`w-full ${mode === 'steer' ? (isSteerCollapsed ? 'max-w-[560px]' : 'max-w-[720px]') : 'max-w-[720px]'} mx-auto select-none flex flex-col relative ${mode === 'steer' ? 'px-0 my-0' : 'px-4 mt-8 mb-16'} transition-all duration-300 z-40 ${className}`}
     >
       {/* Main Input Field Wrapper with flex-wrap to accommodate chips dynamically */}
       <div className="relative w-full transition-all duration-300 rounded-full z-40">

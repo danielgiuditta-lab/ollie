@@ -1141,7 +1141,7 @@ export function TheatreView({
                   <X className="w-6 h-6 text-[#EA4335] stroke-[2.5]" />
                 </button>
 
-                {/* Center Steer Input Pill matching play mode unclicked design */}
+                {/* Center Steer Input Pill */}
                 <div 
                   ref={steerContainerRef}
                   className={`rounded-full flex items-center gap-2 transition-all duration-300 ease-in-out ${
