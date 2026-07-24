@@ -883,25 +883,102 @@ export function OptionCView({
               <X className="w-5 h-5 text-red-600 dark:text-red-400 stroke-[2.5]" />
             </IconButton>
 
-            {/* Central Chat Input Pill using shared LandingInput component */}
-            <div className="flex-1 max-w-[720px]">
-              <LandingInput
-                mode="steer"
+            {/* Central Chat Input Pill matching gray background composer */}
+            <motion.div 
+              layoutId="landing-input-main"
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              className={`rounded-full bg-slate-100 dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 relative z-20 transition-all cursor-text ${
+                (isInputFocused || steerInput.trim().length > 0)
+                  ? 'min-h-[64px] py-2 w-full max-w-[720px] px-6'
+                  : 'h-14 w-full max-w-[560px] px-5'
+              }`}
+              onClick={() => {
+                const el = document.getElementById('optionc-steer-input');
+                if (el) el.focus();
+              }}
+            >
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); }}
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0 transition cursor-pointer flex items-center justify-center p-1 rounded-full border-none outline-none"
+                title="Add attachment or context"
+              >
+                <OllieMascot 
+                  variant={(isInputFocused || steerInput.trim().length > 0) ? 'gradient' : 'flat'}
+                  size={20}
+                  state={isLoading ? 'working' : 'idle'}
+                  followCursor={true}
+                />
+              </button>
+
+              <input
+                id="optionc-steer-input"
+                type="text"
                 value={steerInput}
-                onChange={setSteerInput}
-                onSubmit={(val) => {
-                  if (val.trim()) {
-                    handleSteerSubmit(val);
-                    setSteerInput('');
-                  } else {
-                    handleApprove();
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+                onChange={(e) => setSteerInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (steerInput.trim()) {
+                      handleSteerSubmit(steerInput);
+                      setSteerInput('');
+                    } else {
+                      handleApprove();
+                    }
                   }
                 }}
                 placeholder={getSteerPlaceholder()}
-                onDockToSide={handleDockToSide}
-                isLoading={isLoading}
+                className="flex-1 bg-transparent text-slate-900 dark:text-white text-[15px] font-normal placeholder-slate-400 focus:outline-none truncate border-none ring-0 h-full"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
               />
-            </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {(isInputFocused || steerInput.trim().length > 0) && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDockToSide();
+                    }}
+                    className="w-9 h-9 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-500 dark:text-neutral-400 flex items-center justify-center transition cursor-pointer border-none outline-none"
+                    title="Snap to side chat"
+                  >
+                    <span className="material-symbols-rounded text-[20px] select-none">dock_to_right</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (steerInput.trim()) {
+                      handleSteerSubmit(steerInput);
+                      setSteerInput('');
+                    } else {
+                      handleApprove();
+                    }
+                  }}
+                  disabled={!steerInput.trim()}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center transition border-none outline-none ${
+                    steerInput.trim()
+                      ? 'bg-slate-200 hover:bg-slate-300 dark:bg-slate-200 dark:hover:bg-slate-300 text-slate-900 dark:text-slate-900 cursor-pointer shadow-xs'
+                      : 'bg-black/5 dark:bg-white/5 text-slate-300 dark:text-neutral-600 cursor-not-allowed'
+                  }`}
+                  title={steerInput.trim() ? "Submit steer" : "Send"}
+                >
+                  <ArrowUp size={16} className="stroke-[2.5]" />
+                </button>
+              </div>
+            </motion.div>
 
             {/* Standard Approve Check Button */}
             <IconButton

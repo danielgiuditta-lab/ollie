@@ -447,8 +447,8 @@ export function AISummaryView({
                   disabled={!inputValue.trim() || isLoading}
                   className={`absolute right-2 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${
                     inputValue.trim() && !isLoading
-                      ? 'bg-[#1a73e8] hover:bg-[#1557b0] text-white scale-100 cursor-pointer shadow-sm'
-                      : 'bg-[#f0f4f9]/50 dark:bg-[#2B2D31]/50 text-gray-350 dark:text-gray-600 scale-95 cursor-not-allowed'
+                      ? 'bg-slate-200 hover:bg-slate-300 dark:bg-slate-200 dark:hover:bg-slate-300 text-slate-900 dark:text-slate-900 scale-100 cursor-pointer shadow-xs'
+                      : 'bg-slate-100 dark:bg-neutral-800 text-slate-300 dark:text-neutral-600 scale-95 cursor-not-allowed'
                   }`}
                   title="Send follow-up"
                 >

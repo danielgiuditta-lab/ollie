@@ -207,11 +207,13 @@ export function LandingInput({
   const filteredRecentFiles = recentFiles.filter(f => f.name.toLowerCase().includes(query));
   const filteredRecentPeople = recentPeople.filter(p => p.name.toLowerCase().includes(query));
 
+  const isSteerCollapsed = mode === 'steer' && !isInputFocused && value.trim().length === 0;
+
   return (
     <div 
       id="landing-input-container" 
       ref={containerRef}
-      className={className || `w-full max-w-[720px] mx-auto select-none flex flex-col relative ${mode === 'steer' ? 'px-0 my-0' : 'px-4 mt-8 mb-16'} z-40`}
+      className={className || `w-full ${mode === 'steer' ? (isSteerCollapsed ? 'max-w-[460px]' : 'max-w-[720px]') : 'max-w-[720px]'} mx-auto select-none flex flex-col relative ${mode === 'steer' ? 'px-0 my-0' : 'px-4 mt-8 mb-16'} transition-all duration-300 z-40`}
     >
       {/* Main Input Field Wrapper with flex-wrap to accommodate chips dynamically */}
       <div className="relative w-full p-[1px] transition-all duration-300 rounded-full z-40">
@@ -221,11 +223,11 @@ export function LandingInput({
         <motion.div 
           layoutId="landing-input-main"
           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          className={`w-full min-h-[64px] py-2 ${theme === 'dark' ? 'bg-[#1E1F22] text-white border-[#2B2D31]' : 'bg-white dark:bg-[#1E1F22] border-gray-200 dark:border-[#2B2D31]'} border ${
+          className={`w-full ${isSteerCollapsed ? 'h-[56px] py-1.5 px-4' : 'min-h-[64px] py-2 px-6'} ${theme === 'dark' ? 'bg-[#1E1F22] text-white border-[#2B2D31]' : 'bg-white dark:bg-[#1E1F22] border-gray-200 dark:border-[#2B2D31]'} border ${
             aiMode 
               ? 'border-transparent' 
               : 'hover:border-gray-300 dark:hover:border-gray-700 shadow-sm focus-within:shadow-md focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100'
-          } transition-all duration-300 flex items-center flex-wrap px-6 relative z-50 rounded-full`}
+          } transition-all duration-300 flex items-center flex-wrap relative z-50 rounded-full`}
         >
           {/* Left icon toggle indicator for search mode or steer mode */}
           {mode === 'steer' ? (
@@ -279,7 +281,7 @@ export function LandingInput({
             onBlur={() => setIsInputFocused(false)}
             onChange={handleInputChange}
             onKeyDown={handleKeyPress}
-            placeholder={placeholder || (aiMode ? "Search and get AI summaries of your Drive files..." : "Create or add...")}
+            placeholder={mode === 'steer' ? (placeholder || "Tell Ollie how to respond...") : (placeholder || (aiMode ? "Search and get AI summaries of your Drive files..." : "Create or add..."))}
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -287,7 +289,7 @@ export function LandingInput({
             data-lpignore="true"
             data-1p-ignore="true"
             data-form-type="other"
-            className={`flex-1 bg-transparent border-none outline-none font-sans text-slate-700 dark:text-[#E3E3E3] placeholder-slate-400 text-sm sm:text-[15px] ${mode === 'create' ? 'mr-14' : mode === 'steer' ? (onDockToSide && (isInputFocused || value.trim().length > 0) ? 'mr-24' : 'mr-14') : 'mr-44'} min-w-0 truncate placeholder:truncate h-12`}
+            className={`flex-1 bg-transparent border-none outline-none font-sans text-slate-700 dark:text-[#E3E3E3] placeholder-slate-400 text-sm sm:text-[15px] ${mode === 'create' ? 'mr-14' : mode === 'steer' ? (onDockToSide && (isInputFocused || value.trim().length > 0) ? 'mr-24' : 'mr-14') : 'mr-44'} min-w-0 truncate placeholder:truncate ${isSteerCollapsed ? 'h-10' : 'h-12'}`}
           />
 
           {/* AI Mode Sparkles Toggle Button */}
@@ -329,14 +331,14 @@ export function LandingInput({
             type="button"
             onClick={handleSubmit}
             disabled={!value.trim() && selectedContexts.length === 0}
-            className={`absolute right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${
+            className={`absolute right-3 ${isSteerCollapsed ? 'w-9 h-9' : 'w-10 h-10'} rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${
               (value.trim() || selectedContexts.length > 0)
                 ? 'bg-slate-200 hover:bg-slate-300 dark:bg-slate-200 dark:hover:bg-slate-300 text-slate-900 dark:text-slate-900 scale-100 cursor-pointer shadow-xs' 
-                : 'bg-slate-100 dark:bg-neutral-800 text-slate-300 dark:text-neutral-600 scale-95 cursor-not-allowed'
+                : 'bg-[#f0f4f9]/80 dark:bg-[#2B2D31] text-gray-300 dark:text-gray-600 scale-95 cursor-not-allowed'
             }`}
             title="Submit request"
           >
-            <ArrowUp size={18} className="stroke-[2.5]" />
+            <ArrowUp size={isSteerCollapsed ? 16 : 18} className="stroke-[2.5]" />
           </button>
         </motion.div>
       </div>
