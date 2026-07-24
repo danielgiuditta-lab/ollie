@@ -886,7 +886,11 @@ export function OptionCView({
             <motion.div 
               layoutId="landing-input-main"
               transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-              className="w-full max-w-[560px] h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all cursor-text"
+              className={`h-[58px] rounded-full bg-white dark:bg-[#1E1F22] border border-slate-200/80 dark:border-[#2B2D31] flex items-center gap-3 px-5 relative z-20 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-950 transition-all cursor-text ${
+                (isInputFocused || steerInput.trim().length > 0)
+                  ? 'w-full max-w-[720px]'
+                  : 'w-full max-w-[560px]'
+              }`}
               onClick={() => {
                 const el = document.getElementById('optionc-steer-input');
                 if (el) el.focus();
